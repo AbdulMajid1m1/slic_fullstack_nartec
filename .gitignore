@@ -4,6 +4,8 @@
 /backend/node_modules
 /backend/.env
 /backend/images/
+/backend/node_modules/.prisma
+/backend/prisma/migrations/
 
 # front end
 /frontend/node_modules
