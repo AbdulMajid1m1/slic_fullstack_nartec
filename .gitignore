@@ -3,6 +3,7 @@
 # back end
 /backend/node_modules
 /backend/.env
+/backend/images/
 
 # front end
 /frontend/node_modules
