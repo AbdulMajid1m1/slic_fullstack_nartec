@@ -1,7 +1,42 @@
+const mod10CheckDigit = require("mod10-check-digit");
 const { validationResult } = require("express-validator");
 
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
+const BarSeriesNo = require("../models/barSeriesNo");
 const generateResponse = require("../utils/response");
+const CustomError = require("../exceptions/customError");
+
+async function generateBarcode(id) {
+  const GCP = "6287898";
+  const seriesNo = await BarSeriesNo.getBarSeriesNo(id);
+  if (!seriesNo) {
+    const error = new CustomError("BarSeriesNo not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const CHECK_DIGIT = mod10CheckDigit(`${GCP}${seriesNo.BarSeriesNo}`);
+  const barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
+
+  if (barcode.length != 13) {
+    const error = new CustomError(
+      "Generated barcode is not 13 characters long"
+    );
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const number = (Number(seriesNo.BarSeriesNo) + 1).toString();
+
+  const result = await BarSeriesNo.updateBarSeriesNo(id, number);
+  if (!result) {
+    const error = new CustomError("Failed to update BarSeriesNo");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  return barcode;
+}
 
 exports.getItemCodes = async (req, res, next) => {
   try {
@@ -60,6 +95,10 @@ exports.postItemCode = async (req, res, next) => {
   try {
     const body = req.body;
 
+    const barcode = await generateBarcode(1);
+
+    res.send(barcode);
+
     const errors = validationResult(req);
     console.log(errors);
     if (!errors.isEmpty()) {
@@ -86,7 +125,10 @@ exports.postItemCode = async (req, res, next) => {
         generateResponse(201, true, "Item code created successfully", itemCode)
       );
   } catch (error) {
-    // console.log(error);
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
