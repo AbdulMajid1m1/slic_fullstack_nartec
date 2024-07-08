@@ -93,14 +93,11 @@ exports.getAllItemCodes = async (req, res, next) => {
 
 exports.postItemCode = async (req, res, next) => {
   try {
-    const body = req.body;
+    const { itemCode, quantity, description, startSize, endSize } = req.body;
 
     const barcode = await generateBarcode(1);
 
-    res.send(barcode);
-
     const errors = validationResult(req);
-    console.log(errors);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
       const error = new Error(msg);
@@ -109,20 +106,31 @@ exports.postItemCode = async (req, res, next) => {
       return next(error);
     }
 
-    // Convert date fields to ISO-8601 strings
-    if (body.ExpiryDate) {
-      body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
-    }
-    if (body.ProductionDate) {
-      body.ProductionDate = new Date(body.ProductionDate).toISOString();
-    }
+    // // Convert date fields to ISO-8601 strings
+    // if (body.ExpiryDate) {
+    //   body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
+    // }
+    // if (body.ProductionDate) {
+    //   body.ProductionDate = new Date(body.ProductionDate).toISOString();
+    // }
 
-    const itemCode = await ItemCodeModel.create(body);
+    // const _itemCode = await ItemCodeModel.create(req.body);
+
+    const body = {
+      GTIN: barcode,
+      ItemCode: itemCode,
+      ItemQty: Number(quantity),
+      EnglishName: description,
+      ArabicName: description,
+      QRCodeInternational: barcode,
+      ProductSize: startSize,
+    };
+    const _itemCode = await ItemCodeModel.create(body);
 
     res
       .status(201)
       .json(
-        generateResponse(201, true, "Item code created successfully", itemCode)
+        generateResponse(201, true, "Item code created successfully", _itemCode)
       );
   } catch (error) {
     console.log(error);
