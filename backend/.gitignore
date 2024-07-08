@@ -1,0 +1,19 @@
+# .gitignore
+
+# Environment variables
+.env
+
+# Node modules
+node_modules/
+
+# Prisma Client
+node_modules/.prisma
+
+# Prisma migrations
+prisma/migrations/
+
+# User-uploaded images
+images/
+
+# vs code settings
+.vscode/

@@ -1,0 +1,120 @@
+.dashBoardDatatable {
+    height: 400px;
+    padding: 20px;
+    padding-bottom: 50px;
+}
+.dashBoardDatatable .datatableTitle {
+    width: 100%;
+    font-size: 24px;
+    color: #1D2F90;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.dashBoardDatatable .datatableTitle .leftDatatableTitle {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+.dashBoardDatatable .datatableTitle .leftDatatableTitle button {
+    text-decoration: none;
+    color: crimson;
+    font-size: 16px;
+    font-weight: 400;
+    border: 1px solid crimson;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.dashBoardDatatable .datatableTitle .leftDatatableTitle .chooseFileBtn {
+    text-decoration: none;
+    color: green;
+    font-size: 16px;
+    font-weight: 400;
+    border: 1px solid green;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dashBoardDatatable .datatableTitle .leftDatatableTitle .chooseFileBtn .icon {
+    font-size: 20px;
+}
+.dashBoardDatatable .datatableTitle .link {
+    text-decoration: none;
+    color: green;
+    font-size: 16px;
+    font-weight: 400;
+    border: 1px solid green;
+    padding: 5px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.dashBoardDatatable .cellWithImg {
+    display: flex;
+    align-items: center;
+}
+.dashBoardDatatable .cellWithImg .cellImg {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+}
+.dashBoardDatatable .cellWithStatus {
+    padding: 5px;
+    border-radius: 5px;
+}
+.dashBoardDatatable .cellWithStatus.active {
+    background-color: rgba(0, 128, 0, 0.05);
+    color: green;
+}
+.dashBoardDatatable .cellWithStatus.pending {
+    background-color: rgba(255, 217, 0, 0.05);
+    color: goldenrod;
+}
+.dashBoardDatatable .cellWithStatus.passive {
+    background-color: rgba(255, 0, 0, 0.05);
+    color: crimson;
+}
+.dashBoardDatatable .cellAction {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.dashBoardDatatable .cellAction .viewButton {
+    padding: 2px 5px;
+    border-radius: 5px;
+    color: darkblue;
+    border: 1px dotted rgba(0, 0, 139, 0.596);
+    cursor: pointer;
+}
+.dashBoardDatatable .cellAction .deleteButton {
+    padding: 2px 5px;
+    border-radius: 5px;
+    color: crimson;
+    border: 1px dotted rgba(220, 20, 60, 0.6);
+    cursor: pointer;
+}
+.cellImg {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+}
+.css-levciy-MuiTablePagination-displayedRows {
+    color: gray;
+}
+.css-zylse7-MuiButtonBase-root-MuiIconButton-root.Mui-disabled {
+    color: gray !important;
+}
+.css-1chpzqh {
+    color: gray !important;
+}
+.css-1deacqj.Mui-disabled {
+    color: gray !important;
+}

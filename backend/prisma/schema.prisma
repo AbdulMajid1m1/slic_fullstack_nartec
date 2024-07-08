@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model TblItemCodes1S1Br {
+  GTIN                String  @id @db.VarChar(50) 
+  ItemCode            String? @db.NVarChar(20)
+  EnglishName         String? @db.NVarChar(255)
+  ArabicName          String? @db.NVarChar(255)
+  LotNo               String? @db.VarChar(50)
+  ExpiryDate          DateTime?
+  sERIALnUMBER        String? @db.VarChar(150)
+  ItemQty             Int?
+  WHLocation          String? @db.VarChar(150)
+  BinLocation         String? @db.VarChar(50)
+  QRCodeInternational String? @db.VarChar(255)
+  ModelName           String? @db.VarChar(100)
+  ProductionDate      DateTime?
+  ProductType         String? @db.VarChar(50)
+  BrandName           String? @db.VarChar(100)
+  PackagingType       String? @db.VarChar(100)
+  ProductUnit         String? @db.VarChar(50)
+  ProductSize         String? @db.VarChar(50)
+}
