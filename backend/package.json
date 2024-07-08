@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mod10-check-digit": "^1.0.0",
     "multer": "1.4.5-lts.1",
     "pm2": "^5.4.1",
     "swagger-jsdoc": "^6.2.8",
