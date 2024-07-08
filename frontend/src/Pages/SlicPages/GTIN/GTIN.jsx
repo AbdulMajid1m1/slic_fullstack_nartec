@@ -19,6 +19,7 @@ import AddGTIN from "./AddGTIN";
 import Swal from "sweetalert2";
 import { useQuery } from "react-query";
 import UpdateGTIN from "./UpdateGTIN";
+import AddGTINPopUp from "./AddGTINPopUp";
 
 const GTIN = () => {
   const [data, setData] = useState([]);
@@ -343,7 +344,7 @@ const GTIN = () => {
 
             {/* AddListOfEmployee component with handleShowCreatePopup prop */}
             {isCreatePopupVisible && (
-              <AddGTIN
+              <AddGTINPopUp
                 isVisible={isCreatePopupVisible}
                 setVisibility={setCreatePopupVisibility}
                 refreshGTINData={fetchData}
