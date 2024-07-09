@@ -1,7 +1,47 @@
+const mod10CheckDigit = require("mod10-check-digit");
 const { validationResult } = require("express-validator");
 
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
+const BarSeriesNo = require("../models/barSeriesNo");
 const generateResponse = require("../utils/response");
+const CustomError = require("../exceptions/customError");
+
+async function generateBarcode(id) {
+  const GCP = "6287898";
+  let barcode;
+  const seriesNo = await BarSeriesNo.getBarSeriesNo(id);
+  if (!seriesNo) {
+    const error = new CustomError("BarSeriesNo not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const CHECK_DIGIT = mod10CheckDigit(`${GCP}${seriesNo.BarSeriesNo}`);
+
+  if (`${GCP}${seriesNo.BarSeriesNo}`.length != 12) {
+    // add 0 after GCP
+    barcode = `${GCP}0${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
+  } else barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
+
+  if (barcode.length != 13) {
+    const error = new CustomError(
+      "Generated barcode is not 13 characters long"
+    );
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const number = (Number(seriesNo.BarSeriesNo) + 1).toString();
+
+  const result = await BarSeriesNo.updateBarSeriesNo(id, number);
+  if (!result) {
+    const error = new CustomError("Failed to update BarSeriesNo");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  return barcode;
+}
 
 exports.getItemCodes = async (req, res, next) => {
   try {
@@ -29,6 +69,10 @@ exports.getItemCodes = async (req, res, next) => {
       })
     );
   } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -51,6 +95,9 @@ exports.getAllItemCodes = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -58,10 +105,11 @@ exports.getAllItemCodes = async (req, res, next) => {
 
 exports.postItemCode = async (req, res, next) => {
   try {
-    const body = req.body;
+    const { itemCode, quantity, description, startSize, endSize } = req.body;
+
+    const barcode = await generateBarcode(1);
 
     const errors = validationResult(req);
-    console.log(errors);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
       const error = new Error(msg);
@@ -70,23 +118,37 @@ exports.postItemCode = async (req, res, next) => {
       return next(error);
     }
 
-    // Convert date fields to ISO-8601 strings
-    if (body.ExpiryDate) {
-      body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
-    }
-    if (body.ProductionDate) {
-      body.ProductionDate = new Date(body.ProductionDate).toISOString();
-    }
+    // // Convert date fields to ISO-8601 strings
+    // if (body.ExpiryDate) {
+    //   body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
+    // }
+    // if (body.ProductionDate) {
+    //   body.ProductionDate = new Date(body.ProductionDate).toISOString();
+    // }
 
-    const itemCode = await ItemCodeModel.create(body);
+    // const _itemCode = await ItemCodeModel.create(req.body);
+
+    const body = {
+      GTIN: barcode,
+      ItemCode: itemCode,
+      ItemQty: Number(quantity),
+      EnglishName: description,
+      ArabicName: description,
+      QRCodeInternational: barcode,
+      ProductSize: startSize,
+    };
+    const _itemCode = await ItemCodeModel.create(body);
 
     res
       .status(201)
       .json(
-        generateResponse(201, true, "Item code created successfully", itemCode)
+        generateResponse(201, true, "Item code created successfully", _itemCode)
       );
   } catch (error) {
-    // console.log(error);
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -95,29 +157,35 @@ exports.postItemCode = async (req, res, next) => {
 exports.putItemCode = async (req, res, next) => {
   try {
     const GTIN = req.params.GTIN;
-    const body = req.body;
 
     const existingItemCode = await ItemCodeModel.findById(GTIN);
 
     if (!existingItemCode) {
-      return res
-        .status(404)
-        .json(generateResponse(404, false, "Item code not found"));
+      const error = new CustomError("Item code not found");
+      error.statusCode = 404;
+      throw error;
     }
 
-    if (body.ExpiryDate) {
-      body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
-    }
-    if (body.ProductionDate) {
-      body.ProductionDate = new Date(body.ProductionDate).toISOString();
-    }
+    const { itemCode, quantity, description, startSize, endSize } = req.body;
 
+    // Prepare the updated data
     const updatedData = {
-      ...existingItemCode,
-      ...body,
+      ItemCode: itemCode || existingItemCode.ItemCode,
+      ItemQty:
+        quantity !== undefined ? Number(quantity) : existingItemCode.ItemQty,
+      EnglishName: description || existingItemCode.EnglishName,
+      ArabicName: description || existingItemCode.ArabicName,
+      ProductSize: startSize || existingItemCode.ProductSize,
     };
 
+    // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(GTIN, updatedData);
+
+    if (!updatedItemCode) {
+      const error = new CustomError(`Couldn't update item code`);
+      error.statusCode = 500;
+      throw error;
+    }
 
     res
       .status(200)
@@ -131,6 +199,9 @@ exports.putItemCode = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -141,9 +212,9 @@ exports.deleteItemCode = async (req, res, next) => {
     const GTIN = req.params.GTIN;
     const itemCode = await ItemCodeModel.findById(GTIN);
     if (!itemCode) {
-      const error = new Error("Item code not found");
+      const error = new CustomError("Item code not found");
       error.statusCode = 404;
-      return next(error);
+      throw error;
     }
     const deletedItemCode = await ItemCodeModel.delete(GTIN);
     res
@@ -158,6 +229,9 @@ exports.deleteItemCode = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }

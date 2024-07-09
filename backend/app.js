@@ -8,7 +8,6 @@ const cors = require("cors");
 
 const swaggerSpec = require("./config/swagger");
 const generateResponse = require("./utils/response");
-const testRoutes = require("./routes/sample");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 
 const app = express();
@@ -18,7 +17,6 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(testRoutes);
 // Add your routes...
 app.use("/api/itemCodes", itemCodesRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

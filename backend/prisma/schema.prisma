@@ -33,3 +33,8 @@ model TblItemCodes1S1Br {
   ProductUnit         String? @db.VarChar(50)
   ProductSize         String? @db.VarChar(50)
 }
+
+model TblBarSeriesNo {
+  TblSysNoID Int    @id @default(autoincrement())
+  BarSeriesNo String? @db.VarChar(10)
+}
