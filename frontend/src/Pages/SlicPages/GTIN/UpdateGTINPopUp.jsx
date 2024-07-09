@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
@@ -8,7 +8,8 @@ import "./AddGTIN.css";
 import Barcode from "react-barcode";
 import { QRCodeSVG } from "qrcode.react";
 
-const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  const [barcode, setBarcode] = useState("");
   const [itemCode, setItemCode] = useState("");
   const [quantity, setQuantiity] = useState("");
   const [description, setDescription] = useState("");
@@ -19,6 +20,20 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
+
+  // get this session data
+  const updateProductsData = JSON.parse(sessionStorage.getItem("updateListOfEmployeeData"));
+
+//   console.log(updateProductsData);
+
+  useEffect(() => {
+    setItemCode(updateProductsData?.ItemCode || "");
+    setQuantiity(updateProductsData?.ItemQty || "");
+    setDescription(updateProductsData?.EnglishName || "");
+    setStartSize(updateProductsData?.ProductSize || "");
+    setEndSize(updateProductsData?.EndSize || "");
+    setBarcode(updateProductsData?.GTIN || "");
+  }, []);
 
   const handleAddGTIN = async (e) => {
     e.preventDefault();
@@ -35,9 +50,9 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
 
       //   console.log(requestBody);
 
-      const response = await newRequest.post("/itemCodes/v1/itemCode", requestBody);
+      const response = await newRequest.put(`/itemCodes/v1/itemCode/${updateProductsData?.GTIN}`, requestBody);
       // console.log(response?.data);
-      toast.success(response?.data?.message || "GTIN added successfully");
+      toast.success(response?.data?.message || "GTIN Updated successfully");
       setLoading(false);
       handleCloseCreatePopup();
       refreshGTINData();
@@ -60,7 +75,7 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Generating Products Barcodes
+                    Update Products Barcodes
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -221,21 +236,21 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           )
                         }
                       >
-                        Generate the Barcodes
+                        Update Changes
                       </Button>
                     </div>
                   </div>
 
-                  <div className="sm:w-1/3 w-full flex flex-col justify-start items-center lg:mt-0 md:mt-3 gap-3">
+                  <div className="sm:w-1/3 w-full flex flex-col justify-start items-center lg:mt-3 md:mt-3 gap-3">
                     <Barcode
-                      value={"192837129739"}
-                      format="EAN13"
+                      value={barcode}
+                    //   format="EAN13"
                       height={75}
                       width={1.3}
                       background="transparent"
                     />
 
-                    <QRCodeSVG value="192837129739" height={120} width={150} />
+                    <QRCodeSVG value={`${barcode}, ${itemCode}, ${quantity}, ${description}, ${startSize}`} height={120} width={150} />
                   </div>
                 </div>
               </form>
@@ -247,4 +262,4 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   );
 };
 
-export default AddGTINPopUp;
+export default UpdateGTINPopUp;

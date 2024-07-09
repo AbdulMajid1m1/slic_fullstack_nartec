@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { useQuery } from "react-query";
 import UpdateGTIN from "./UpdateGTIN";
 import AddGTINPopUp from "./AddGTINPopUp";
+import UpdateGTINPopUp from "./UpdateGTINPopUp";
 
 const GTIN = () => {
   const [data, setData] = useState([]);
@@ -352,7 +353,7 @@ const GTIN = () => {
             )}
 
             {isUpdatePopupVisible && (
-              <UpdateGTIN
+              <UpdateGTINPopUp
                 isVisible={isUpdatePopupVisible}
                 setVisibility={setUpdatePopupVisibility}
                 refreshGTINData={fetchData}
