@@ -69,6 +69,10 @@ exports.getItemCodes = async (req, res, next) => {
       })
     );
   } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -91,6 +95,9 @@ exports.getAllItemCodes = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -150,29 +157,35 @@ exports.postItemCode = async (req, res, next) => {
 exports.putItemCode = async (req, res, next) => {
   try {
     const GTIN = req.params.GTIN;
-    const body = req.body;
 
     const existingItemCode = await ItemCodeModel.findById(GTIN);
 
     if (!existingItemCode) {
-      return res
-        .status(404)
-        .json(generateResponse(404, false, "Item code not found"));
+      const error = new CustomError("Item code not found");
+      error.statusCode = 404;
+      throw error;
     }
 
-    if (body.ExpiryDate) {
-      body.ExpiryDate = new Date(body.ExpiryDate).toISOString();
-    }
-    if (body.ProductionDate) {
-      body.ProductionDate = new Date(body.ProductionDate).toISOString();
-    }
+    const { itemCode, quantity, description, startSize, endSize } = req.body;
 
+    // Prepare the updated data
     const updatedData = {
-      ...existingItemCode,
-      ...body,
+      ItemCode: itemCode || existingItemCode.ItemCode,
+      ItemQty:
+        quantity !== undefined ? Number(quantity) : existingItemCode.ItemQty,
+      EnglishName: description || existingItemCode.EnglishName,
+      ArabicName: description || existingItemCode.ArabicName,
+      ProductSize: startSize || existingItemCode.ProductSize,
     };
 
+    // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(GTIN, updatedData);
+
+    if (!updatedItemCode) {
+      const error = new CustomError(`Couldn't update item code`);
+      error.statusCode = 500;
+      throw error;
+    }
 
     res
       .status(200)
@@ -186,6 +199,9 @@ exports.putItemCode = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
@@ -196,9 +212,9 @@ exports.deleteItemCode = async (req, res, next) => {
     const GTIN = req.params.GTIN;
     const itemCode = await ItemCodeModel.findById(GTIN);
     if (!itemCode) {
-      const error = new Error("Item code not found");
+      const error = new CustomError("Item code not found");
       error.statusCode = 404;
-      return next(error);
+      throw error;
     }
     const deletedItemCode = await ItemCodeModel.delete(GTIN);
     res
@@ -213,6 +229,9 @@ exports.deleteItemCode = async (req, res, next) => {
       );
   } catch (error) {
     console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
     error.message = null;
     next(error);
   }
