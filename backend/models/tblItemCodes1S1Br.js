@@ -69,20 +69,20 @@ class ItemCodeModel {
 
   static async findById(gtin) {
     return await prisma.tblItemCodes1S1Br.findUnique({
-      where: { GTIN: gtin },
+      where: { GTIN: gtin.toString() },
     });
   }
 
   static async update(gtin, data) {
     return await prisma.tblItemCodes1S1Br.update({
-      where: { GTIN: gtin },
+      where: { GTIN: gtin.toString() },
       data,
     });
   }
 
   static async delete(gtin) {
     return await prisma.tblItemCodes1S1Br.delete({
-      where: { GTIN: gtin },
+      where: { GTIN: gtin.toString() },
     });
   }
 }

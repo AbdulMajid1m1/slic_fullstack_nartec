@@ -266,7 +266,7 @@
  *   post:
  *     summary: Creates a new item code
  *     tags:
- *       - ItemCode
+ *       - ItemCodes
  *     requestBody:
  *       required: true
  *       content:
@@ -371,203 +371,18 @@
 
 /**
  * @swagger
- * /api/itemCodes/v1/itemCode:
- *   post:
- *     summary: Create a new item code
- *     description: Create a new item code with the provided details
- *     tags: [ItemCodes]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               GTIN:
- *                 type: string
- *                 example: "0123456789012"
- *               ItemCode:
- *                 type: string
- *                 example: "ABC123"
- *               EnglishName:
- *                 type: string
- *                 example: "Sample Item"
- *               ArabicName:
- *                 type: string
- *                 example: "عينة البند"
- *               LotNo:
- *                 type: string
- *                 example: "LOT12345"
- *               ExpiryDate:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-12-31T00:00:00.000Z"
- *               sERIALnUMBER:
- *                 type: string
- *                 example: "SN123456789"
- *               ItemQty:
- *                 type: integer
- *                 example: 100
- *               WHLocation:
- *                 type: string
- *                 example: "Warehouse A"
- *               BinLocation:
- *                 type: string
- *                 example: "Bin B"
- *               QRCodeInternational:
- *                 type: string
- *                 example: "https://example.com/qrcode"
- *               ModelName:
- *                 type: string
- *                 example: "Model X"
- *               ProductionDate:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-01-01T00:00:00.000Z"
- *               ProductType:
- *                 type: string
- *                 example: "Type A"
- *               BrandName:
- *                 type: string
- *                 example: "Brand Y"
- *               PackagingType:
- *                 type: string
- *                 example: "Box"
- *               ProductUnit:
- *                 type: string
- *                 example: "Piece"
- *               ProductSize:
- *                 type: string
- *                 example: "Small"
- *             required:
- *               - GTIN
- *               - ExpiryDate
- *               - ProductionDate
- *     responses:
- *       201:
- *         description: Item code created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 statusCode:
- *                   type: integer
- *                   example: 201
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Item code created successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     GTIN:
- *                       type: string
- *                       example: "0123456789012"
- *                     ItemCode:
- *                       type: string
- *                       example: "ABC123"
- *                     EnglishName:
- *                       type: string
- *                       example: "Sample Item"
- *                     ArabicName:
- *                       type: string
- *                       example: "عينة البند"
- *                     LotNo:
- *                       type: string
- *                       example: "LOT12345"
- *                     ExpiryDate:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-12-31T00:00:00.000Z"
- *                     sERIALnUMBER:
- *                       type: string
- *                       example: "SN123456789"
- *                     ItemQty:
- *                       type: integer
- *                       example: 100
- *                     WHLocation:
- *                       type: string
- *                       example: "Warehouse A"
- *                     BinLocation:
- *                       type: string
- *                       example: "Bin B"
- *                     QRCodeInternational:
- *                       type: string
- *                       example: "https://example.com/qrcode"
- *                     ModelName:
- *                       type: string
- *                       example: "Model X"
- *                     ProductionDate:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-01-01T00:00:00.000Z"
- *                     ProductType:
- *                       type: string
- *                       example: "Type A"
- *                     BrandName:
- *                       type: string
- *                       example: "Brand Y"
- *                     PackagingType:
- *                       type: string
- *                       example: "Box"
- *                     ProductUnit:
- *                       type: string
- *                       example: "Piece"
- *                     ProductSize:
- *                       type: string
- *                       example: "Small"
- *       400:
- *         description: Bad request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 statusCode:
- *                   type: integer
- *                   example: 400
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Bad request
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 statusCode:
- *                   type: integer
- *                   example: 500
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Internal server error
- */
-
-/**
- * @swagger
  * /api/itemCodes/v1/itemCode/{GTIN}:
  *   put:
  *     summary: Update an item code
- *     description: Update an item code by its GTIN. Only the fields provided in the request body will be updated.
+ *     description: Update the details of an existing item code by GTIN.
  *     tags: [ItemCodes]
  *     parameters:
- *       - name: GTIN
- *         in: path
+ *       - in: path
+ *         name: GTIN
  *         required: true
- *         description: The GTIN of the item code to update
  *         schema:
  *           type: string
- *           example: "0123456789012"
+ *         description: The GTIN of the item code to be updated
  *     requestBody:
  *       required: true
  *       content:
@@ -575,59 +390,21 @@
  *           schema:
  *             type: object
  *             properties:
- *               ItemCode:
+ *               itemCode:
  *                 type: string
- *                 example: "ABC123"
- *               EnglishName:
- *                 type: string
- *                 example: "Sample Item"
- *               ArabicName:
- *                 type: string
- *                 example: "عينة البند"
- *               LotNo:
- *                 type: string
- *                 example: "LOT12345"
- *               ExpiryDate:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-12-31T00:00:00.000Z"
- *               sERIALnUMBER:
- *                 type: string
- *                 example: "SN123456789"
- *               ItemQty:
+ *                 description: The new item code
+ *               quantity:
  *                 type: integer
- *                 example: 100
- *               WHLocation:
+ *                 description: The new quantity
+ *               description:
  *                 type: string
- *                 example: "Warehouse A"
- *               BinLocation:
+ *                 description: The new description
+ *               startSize:
  *                 type: string
- *                 example: "Bin B"
- *               QRCodeInternational:
+ *                 description: The new start size
+ *               endSize:
  *                 type: string
- *                 example: "https://example.com/qrcode"
- *               ModelName:
- *                 type: string
- *                 example: "Model X"
- *               ProductionDate:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-01-01T00:00:00.000Z"
- *               ProductType:
- *                 type: string
- *                 example: "Type A"
- *               BrandName:
- *                 type: string
- *                 example: "Brand Y"
- *               PackagingType:
- *                 type: string
- *                 example: "Box"
- *               ProductUnit:
- *                 type: string
- *                 example: "Piece"
- *               ProductSize:
- *                 type: string
- *                 example: "Small"
+ *                 description: The new end size
  *     responses:
  *       200:
  *         description: Item code updated successfully
@@ -650,62 +427,18 @@
  *                   properties:
  *                     GTIN:
  *                       type: string
- *                       example: "0123456789012"
  *                     ItemCode:
  *                       type: string
- *                       example: "ABC123"
- *                     EnglishName:
- *                       type: string
- *                       example: "Sample Item"
- *                     ArabicName:
- *                       type: string
- *                       example: "عينة البند"
- *                     LotNo:
- *                       type: string
- *                       example: "LOT12345"
- *                     ExpiryDate:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-12-31T00:00:00.000Z"
- *                     sERIALnUMBER:
- *                       type: string
- *                       example: "SN123456789"
  *                     ItemQty:
  *                       type: integer
- *                       example: 100
- *                     WHLocation:
+ *                     EnglishName:
  *                       type: string
- *                       example: "Warehouse A"
- *                     BinLocation:
+ *                     ArabicName:
  *                       type: string
- *                       example: "Bin B"
- *                     QRCodeInternational:
- *                       type: string
- *                       example: "https://example.com/qrcode"
- *                     ModelName:
- *                       type: string
- *                       example: "Model X"
- *                     ProductionDate:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-01-01T00:00:00.000Z"
- *                     ProductType:
- *                       type: string
- *                       example: "Type A"
- *                     BrandName:
- *                       type: string
- *                       example: "Brand Y"
- *                     PackagingType:
- *                       type: string
- *                       example: "Box"
- *                     ProductUnit:
- *                       type: string
- *                       example: "Piece"
  *                     ProductSize:
  *                       type: string
- *                       example: "Small"
- *       400:
- *         description: Bad request
+ *       404:
+ *         description: Item code not found
  *         content:
  *           application/json:
  *             schema:
@@ -713,13 +446,77 @@
  *               properties:
  *                 status:
  *                   type: integer
- *                   example: 400
+ *                   example: 404
  *                 success:
  *                   type: boolean
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Bad request
+ *                   example: Item code not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
+
+/**
+ * @swagger
+ * /api/itemCodes/v1/itemCode/{GTIN}:
+ *   delete:
+ *     summary: Delete an item code
+ *     description: Delete an existing item code by GTIN.
+ *     tags: [ItemCodes]
+ *     parameters:
+ *       - in: path
+ *         name: GTIN
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The GTIN of the item code to be deleted
+ *     responses:
+ *       200:
+ *         description: Item code deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Item code deleted successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     GTIN:
+ *                       type: string
+ *                     ItemCode:
+ *                       type: string
+ *                     ItemQty:
+ *                       type: integer
+ *                     EnglishName:
+ *                       type: string
+ *                     ArabicName:
+ *                       type: string
+ *                     ProductSize:
+ *                       type: string
  *       404:
  *         description: Item code not found
  *         content:
