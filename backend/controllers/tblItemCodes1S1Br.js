@@ -8,6 +8,7 @@ const CustomError = require("../exceptions/customError");
 
 async function generateBarcode(id) {
   const GCP = "6287898";
+  let barcode;
   const seriesNo = await BarSeriesNo.getBarSeriesNo(id);
   if (!seriesNo) {
     const error = new CustomError("BarSeriesNo not found");
@@ -16,7 +17,11 @@ async function generateBarcode(id) {
   }
 
   const CHECK_DIGIT = mod10CheckDigit(`${GCP}${seriesNo.BarSeriesNo}`);
-  const barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
+
+  if (`${GCP}${seriesNo.BarSeriesNo}`.length != 12) {
+    // add 0 after GCP
+    barcode = `${GCP}0${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
+  } else barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
 
   if (barcode.length != 13) {
     const error = new CustomError(
