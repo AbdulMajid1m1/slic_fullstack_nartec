@@ -2,6 +2,7 @@ const express = require("express");
 
 const itemCodesController = require("../controllers/tblItemCodes1S1Br");
 const itemCodesValidators = require("../validators/tblItemCodes1S1Br");
+const isAuth = require("../middleware/is-auth");
 
 const router = express.Router();
 
