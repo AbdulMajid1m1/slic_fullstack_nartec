@@ -65,3 +65,35 @@ exports.login = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.resetPassword = async (req, res, next) => {
+  const { userLoginID, newPassword } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const updatedUser = await User.resetPassword(userLoginID, newPassword);
+    if (!updatedUser) {
+      const error = new CustomError("Reset Password failed");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(generateResponse(200, true, "Password reset successfully"));
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
