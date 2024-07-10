@@ -58,22 +58,24 @@ async function loginUser(userLoginID, userPassword) {
     }
 
     // Update user login status to 1 (assuming UserLogonStatus is a field in tblUsers)
-    await prisma.tblUsers.update({
+    const updatedUser = await prisma.tblUsers.update({
       where: { TblSysNoID: user.TblSysNoID },
       data: {
         UserLoginStatus: 1,
       },
     });
 
-    const token = jwt.sign({ userId: user.TblSysNoID }, JWT_SECRET);
+    const token = jwt.sign(
+      {
+        userId: user.TblSysNoID,
+        email: user.UserLoginID,
+      },
+      JWT_SECRET
+    );
 
     return {
       token,
-      user: {
-        id: user.TblSysNoID,
-        loginID: user.UserLoginID,
-        logonStatus: user.UserLogonStatus,
-      },
+      user: user,
     };
   } catch (error) {
     throw error;
@@ -105,6 +107,36 @@ async function resetPassword(userLoginID, newPassword) {
   } catch (error) {
     // Handle errors
     console.error("Error resetting password:", error);
+    throw error;
+  }
+}
+
+async function logoutUser(userLoginID) {
+  try {
+    const user = await getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (user.UserLoginStatus == 0) {
+      const error = new CustomError("User is already logged out");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Update user login status to 0 (logged out)
+    const updatedUser = await prisma.tblUsers.update({
+      where: { TblSysNoID: user.TblSysNoID },
+      data: {
+        UserLoginStatus: 0,
+      },
+    });
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Error logging out user:", error);
     throw error;
   }
 }
@@ -154,6 +186,7 @@ module.exports = {
   getUserByLoginId,
   loginUser,
   resetPassword,
+  logoutUser,
   //   getUserById,
   //   updateUser,
   //   deleteUser,

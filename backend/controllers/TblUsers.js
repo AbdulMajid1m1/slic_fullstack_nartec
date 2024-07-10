@@ -97,3 +97,36 @@ exports.resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.logout = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const updatedUser = await User.logoutUser(req.email);
+    if (!updatedUser) {
+      const error = new CustomError("Failed to logout");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(200, true, "User logged out successfully", updatedUser)
+      );
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
