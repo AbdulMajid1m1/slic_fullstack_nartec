@@ -23,3 +23,10 @@ exports.reset = [
     .isLength({ min: 8 })
     .withMessage("UserPassword must be at least 8 characters long"),
 ];
+
+exports.verify = [
+  body("userLoginID")
+    .isEmail()
+    .withMessage("UserLoginID must be a valid email address")
+    .normalizeEmail(),
+];

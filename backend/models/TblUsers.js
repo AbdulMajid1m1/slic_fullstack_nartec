@@ -42,7 +42,7 @@ async function loginUser(userLoginID, userPassword) {
     });
 
     if (!user) {
-      const error = new CustomError("Invalid login credentials");
+      const error = new CustomError("Invalid login id entered");
       error.statusCode = 404;
       throw error;
     }
@@ -52,7 +52,7 @@ async function loginUser(userLoginID, userPassword) {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      const error = new CustomError("Invalid login credentials");
+      const error = new CustomError("Invalid login password entered");
       error.statusCode = 404;
       throw error;
     }
@@ -78,6 +78,30 @@ async function loginUser(userLoginID, userPassword) {
       user: user,
     };
   } catch (error) {
+    throw error;
+  }
+}
+
+async function verifyEmail(userLoginID) {
+  try {
+    const user = await getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found", 404);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user.TblSysNoID,
+        email: user.UserLoginID,
+      },
+      JWT_SECRET
+    );
+
+    return token;
+  } catch (error) {
+    console.error("Error verifying email:", error);
     throw error;
   }
 }
@@ -185,6 +209,7 @@ module.exports = {
   createUser,
   getUserByLoginId,
   loginUser,
+  verifyEmail,
   resetPassword,
   logoutUser,
   //   getUserById,
