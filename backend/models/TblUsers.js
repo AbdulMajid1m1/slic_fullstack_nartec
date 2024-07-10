@@ -80,6 +80,35 @@ async function loginUser(userLoginID, userPassword) {
   }
 }
 
+async function resetPassword(userLoginID, newPassword) {
+  try {
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const user = await getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found", 404);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Update the user's password in the database
+    const updatedUser = await prisma.tblUsers.update({
+      where: { TblSysNoID: user.TblSysNoID },
+      data: {
+        UserPassword: hashedPassword,
+      },
+    });
+
+    // Return the updated user object (optional)
+    return updatedUser;
+  } catch (error) {
+    // Handle errors
+    console.error("Error resetting password:", error);
+    throw error;
+  }
+}
+
 // async function getUserById(userId) {
 //   try {
 //     const user = await prisma.tblUsers.findUnique({
@@ -124,6 +153,7 @@ module.exports = {
   createUser,
   getUserByLoginId,
   loginUser,
+  resetPassword,
   //   getUserById,
   //   updateUser,
   //   deleteUser,
