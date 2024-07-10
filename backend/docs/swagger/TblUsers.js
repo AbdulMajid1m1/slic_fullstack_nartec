@@ -225,129 +225,6 @@
 
 /**
  * @swagger
- * /api/users/v1/reset:
- *   put:
- *     summary: Reset user password
- *     description: Reset the password for an existing user.
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userLoginID
- *               - newPassword
- *             properties:
- *               userLoginID:
- *                 type: string
- *                 example: "exampleUser"
- *               newPassword:
- *                 type: string
- *                 example: "newPassword123"
- *     responses:
- *       200:
- *         description: Password reset successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: integer
- *                   example: 200
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Password reset successfully
- *       400:
- *         description: Invalid request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: integer
- *                   example: 400
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Bad request
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: integer
- *                   example: 404
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: User not found
- *       422:
- *         description: Validation error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: integer
- *                   example: 422
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Validation error
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       value:
- *                         type: string
- *                         example: "exampleUser"
- *                       msg:
- *                         type: string
- *                         example: "Invalid value"
- *                       param:
- *                         type: string
- *                         example: "userLoginID"
- *                       location:
- *                         type: string
- *                         example: "body"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: integer
- *                   example: 500
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Internal server error
- */
-
-/**
- * @swagger
  * /api/users/v1/verify-email:
  *   post:
  *     summary: Verify user email
@@ -434,6 +311,133 @@
  *               type: object
  *               properties:
  *                 statusCode:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
+ * /api/users/v1/reset:
+ *   put:
+ *     summary: Reset user password
+ *     description: Resets the password for an existing user account. This action requires user authentication.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userLoginID
+ *               - newPassword
+ *             properties:
+ *               userLoginID:
+ *                 type: string
+ *                 description: The email address of the user whose password is to be reset.
+ *                 example: "user@example.com"
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password to be set for the user.
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: Password reset successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Password reset successfully."
+ *       400:
+ *         description: Invalid request due to incorrect data format or missing fields.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Bad request."
+ *       404:
+ *         description: No user found with the provided email address.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found."
+ *       422:
+ *         description: Validation error for incorrect or incomplete data submitted.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       value:
+ *                         type: string
+ *                         example: "user@example.com"
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid value."
+ *                       param:
+ *                         type: string
+ *                         example: "userLoginID"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       500:
+ *         description: An internal server error occurred during the password reset process.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
  *                   type: integer
  *                   example: 500
  *                 success:

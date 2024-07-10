@@ -16,7 +16,12 @@ router.post(
   userController.verifyEmail
 );
 
-router.put("/v1/reset", userValidators.reset, userController.resetPassword);
+router.put(
+  "/v1/reset",
+  isAuth,
+  userValidators.reset,
+  userController.resetPassword
+);
 
 router.put("/v1/logout", isAuth, userController.logout);
 
