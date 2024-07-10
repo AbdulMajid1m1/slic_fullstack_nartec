@@ -38,3 +38,13 @@ model TblBarSeriesNo {
   TblSysNoID Int    @id @default(autoincrement())
   BarSeriesNo String? @db.VarChar(10)
 }
+
+model TblUsers {
+  TblSysNoID      Int   @id @default(autoincrement())
+  UserLoginID     String?  @db.VarChar(50)
+  UserPassword    String?  @db.VarChar(150)
+  UserLoginStatus Int?     @default(0)
+
+  @@map("TblUsers") // Maps the model to the SQL table "TblUsers"
+}
+

@@ -30,6 +30,7 @@ var options = {
   swaggerDefinition: swaggerDefinition,
   apis: [
     path.join(__dirname, "../docs/swagger/tblItemCodes1S1Br.js"),
+    path.join(__dirname, "../docs/swagger/TblUsers.js"),
     // add more paths...
   ],
 };
