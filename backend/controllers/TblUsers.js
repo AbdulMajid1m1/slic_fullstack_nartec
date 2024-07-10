@@ -66,6 +66,38 @@ exports.login = async (req, res, next) => {
   }
 };
 
+exports.verifyEmail = async (req, res, next) => {
+  const { userLoginID } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const token = await User.verifyEmail(userLoginID);
+    if (!token) {
+      const error = new CustomError("Email verification failed");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(generateResponse(200, true, "Email verified successfully", token));
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
 exports.resetPassword = async (req, res, next) => {
   const { userLoginID, newPassword } = req.body;
   try {
@@ -76,6 +108,14 @@ exports.resetPassword = async (req, res, next) => {
       error.statusCode = 422;
       error.data = errors;
       return next(error);
+    }
+
+    if (req.email != userLoginID) {
+      const error = new CustomError(
+        "You are not authorized to reset password for this user"
+      );
+      error.statusCode = 401;
+      throw error;
     }
 
     const updatedUser = await User.resetPassword(userLoginID, newPassword);
