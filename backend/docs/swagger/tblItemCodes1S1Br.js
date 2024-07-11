@@ -143,11 +143,20 @@
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *
  * /api/itemCodes/v1/itemCodes/all:
  *   get:
  *     summary: Get all item codes
- *     description: Retrieve all item codes without pagination or search functionality
+ *     description: Retrieve all item codes without pagination or search functionality.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Item codes retrieved successfully
@@ -164,7 +173,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item codes retrieved successfully
+ *                   example: "Item codes retrieved successfully"
  *                 data:
  *                   type: array
  *                   items:
@@ -189,7 +198,7 @@
  *                         type: string
  *                         format: date-time
  *                         example: "2024-12-31T00:00:00.000Z"
- *                       sERIALnUMBER:
+ *                       SERIALNUMBER:
  *                         type: string
  *                         example: "SN123456"
  *                       ItemQty:
@@ -241,7 +250,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: No item codes found
+ *                   example: "No item codes found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -257,7 +266,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
 
 /**
@@ -484,6 +493,8 @@
  *     summary: Update an item code
  *     description: Update the details of an existing item code by GTIN.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: GTIN
@@ -529,7 +540,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item code updated successfully
+ *                   example: "Item code updated successfully"
  *                 data:
  *                   type: object
  *                   properties:
@@ -560,7 +571,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Item code not found
+ *                   example: "Item code not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -576,7 +587,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
 
 /**
@@ -586,6 +597,8 @@
  *     summary: Delete an item code
  *     description: Delete an existing item code by GTIN.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: GTIN
@@ -609,7 +622,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item code deleted successfully
+ *                   example: "Item code deleted successfully"
  *                 data:
  *                   type: object
  *                   properties:
@@ -640,7 +653,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Item code not found
+ *                   example: "Item code not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -656,5 +669,5 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
