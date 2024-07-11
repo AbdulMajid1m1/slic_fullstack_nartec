@@ -175,7 +175,7 @@ exports.postItemCodeV2 = async (req, res, next) => {
       const body = {
         GTIN: barcode,
         ItemCode: itemCode,
-        ItemQty: Number(size),
+        ItemQty: 1,
         EnglishName: description,
         ArabicName: description,
         QRCodeInternational: barcode,
