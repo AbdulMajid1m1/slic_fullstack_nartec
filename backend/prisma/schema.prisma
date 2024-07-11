@@ -32,7 +32,10 @@ model TblItemCodes1S1Br {
   PackagingType       String? @db.VarChar(100)
   ProductUnit         String? @db.VarChar(50)
   ProductSize         String? @db.VarChar(50)
+  Created_at           DateTime? @default(now()) @db.DateTime
+  Updated_at           DateTime? @default(now()) @db.DateTime
 }
+
 
 model TblBarSeriesNo {
   TblSysNoID Int    @id @default(autoincrement())
