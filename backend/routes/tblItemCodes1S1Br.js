@@ -12,6 +12,7 @@ router.get("/v1/itemCodes/all", isAuth, itemCodesController.getAllItemCodes);
 
 router.post(
   "/v1/itemCode",
+  isAuth,
   itemCodesValidators.postItemCode,
   itemCodesController.postItemCode
 );

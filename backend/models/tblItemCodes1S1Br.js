@@ -63,7 +63,11 @@ class ItemCodeModel {
   }
 
   static async findAll() {
-    const itemCodes = await prisma.tblItemCodes1S1Br.findMany();
+    const itemCodes = await prisma.tblItemCodes1S1Br.findMany({
+      orderBy: {
+        Created_at: "desc", // or 'desc' for descending order
+      },
+    });
     return itemCodes;
   }
 

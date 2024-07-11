@@ -131,8 +131,8 @@ exports.postItemCode = [
   body("itemCode")
     .notEmpty()
     .withMessage("Item code is required.")
-    .isAlphanumeric()
-    .withMessage("Item code must be alphanumeric."),
+    .isString()
+    .withMessage("Item code must be string."),
 
   body("quantity")
     .notEmpty()
