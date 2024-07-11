@@ -31,6 +31,7 @@ var options = {
   apis: [
     path.join(__dirname, "../docs/swagger/tblItemCodes1S1Br.js"),
     path.join(__dirname, "../docs/swagger/TblUsers.js"),
+    path.join(__dirname, "../docs/swagger/TblPOFPOPMaster.js"),
     // add more paths...
   ],
 };

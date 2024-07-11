@@ -51,3 +51,13 @@ model TblUsers {
   @@map("TblUsers") // Maps the model to the SQL table "TblUsers"
 }
 
+model TblPOFPOPMaster {
+  tblPOFPOPMasterID Int      @id @default(autoincrement())
+  PONumber          String?  @db.VarChar(50)
+  PODate            String?  @db.VarChar(50)
+  SupplierName      String?  @db.VarChar(50)
+  POStatus          String?  @db.VarChar(50)
+  Head_SYS_ID       String?  @db.VarChar(50)
+  createdAt         DateTime? @default(now()) @db.DateTime
+  updatedAt         DateTime? @updatedAt @db.DateTime
+}
