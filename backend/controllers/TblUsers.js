@@ -30,7 +30,9 @@ exports.signup = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    res.status(200).json(generateResponse(201, true, "Login successful", user));
+    res
+      .status(200)
+      .json(generateResponse(201, true, "New user created successfully", user));
   } catch (error) {
     console.log(error);
     if (error instanceof CustomError) {
