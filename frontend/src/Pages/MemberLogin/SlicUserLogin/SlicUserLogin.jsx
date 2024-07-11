@@ -25,7 +25,7 @@ const SlicUserLogin = () => {
         userLoginID: email,
         userPassword: password,
       });
-        console.log(response?.data);
+        // console.log(response?.data);
         sessionStorage.setItem("slicUserData", JSON.stringify(response.data));
         navigate("/gtin-management");
         toast.success(response?.data?.message || "Login Successful");
