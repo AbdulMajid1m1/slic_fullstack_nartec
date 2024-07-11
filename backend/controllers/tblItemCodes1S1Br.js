@@ -154,6 +154,58 @@ exports.postItemCode = async (req, res, next) => {
   }
 };
 
+exports.postItemCodeV2 = async (req, res, next) => {
+  try {
+    const { itemCode, quantity, description, startSize, endSize } = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const numRecords = endSize - startSize + 1;
+    let recordsCreated = [];
+
+    for (let size = startSize; size <= endSize; size++) {
+      const barcode = await generateBarcode(1);
+      const body = {
+        GTIN: barcode,
+        ItemCode: itemCode,
+        ItemQty: Number(quantity),
+        EnglishName: description,
+        ArabicName: description,
+        QRCodeInternational: barcode,
+        ProductSize: size.toString(),
+      };
+
+      const _itemCode = await ItemCodeModel.create(body);
+      recordsCreated.push(_itemCode);
+    }
+
+    res
+      .status(201)
+      .json(
+        generateResponse(
+          201,
+          true,
+          "Item codes created successfully",
+          recordsCreated
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
 exports.putItemCode = async (req, res, next) => {
   try {
     const GTIN = req.params.GTIN;

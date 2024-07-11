@@ -371,6 +371,114 @@
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *
+ * /api/itemCodes/v2/itemCode:
+ *   post:
+ *     summary: Creates new item codes for a range of sizes
+ *     tags:
+ *       - ItemCodes
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               itemCode:
+ *                 type: string
+ *                 example: "abc123"
+ *                 description: "The unique item code"
+ *               quantity:
+ *                 type: integer
+ *                 example: 10
+ *                 description: "The quantity of each item code"
+ *               description:
+ *                 type: string
+ *                 example: "Standard Widget"
+ *                 description: "Description of the item"
+ *               startSize:
+ *                 type: integer
+ *                 example: 30
+ *                 description: "The start size for the item codes"
+ *               endSize:
+ *                 type: integer
+ *                 example: 35
+ *                 description: "The end size for the item codes"
+ *     responses:
+ *       201:
+ *         description: Item codes created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   GTIN:
+ *                     type: string
+ *                     example: "6287898000001"
+ *                   ItemCode:
+ *                     type: string
+ *                     example: "abc123"
+ *                   ItemQty:
+ *                     type: integer
+ *                     example: 10
+ *                   EnglishName:
+ *                     type: string
+ *                     example: "Standard Widget"
+ *                   ArabicName:
+ *                     type: string
+ *                     example: "Standard Widget"
+ *                   QRCodeInternational:
+ *                     type: string
+ *                     example: "6287898000001"
+ *                   ProductSize:
+ *                     type: integer
+ *                     example: 30
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       field:
+ *                         type: string
+ *                       message:
+ *                         type: string
+ *       422:
+ *         description: Validation Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       field:
+ *                         type: string
+ *                       message:
+ *                         type: string
+ */
+
+/**
+ * @swagger
  * /api/itemCodes/v1/itemCode/{GTIN}:
  *   put:
  *     summary: Update an item code

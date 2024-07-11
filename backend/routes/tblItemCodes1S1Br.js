@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/v1/itemCodes", itemCodesController.getItemCodes);
 
-router.get("/v1/itemCodes/all", itemCodesController.getAllItemCodes);
+router.get("/v1/itemCodes/all", isAuth, itemCodesController.getAllItemCodes);
 
 router.post(
   "/v1/itemCode",
@@ -16,8 +16,15 @@ router.post(
   itemCodesController.postItemCode
 );
 
-router.put("/v1/itemCode/:GTIN", itemCodesController.putItemCode);
+router.post(
+  "/v2/itemCode",
+  isAuth,
+  itemCodesValidators.postItemCode,
+  itemCodesController.postItemCodeV2
+);
 
-router.delete("/v1/itemCode/:GTIN", itemCodesController.deleteItemCode);
+router.put("/v1/itemCode/:GTIN", isAuth, itemCodesController.putItemCode);
+
+router.delete("/v1/itemCode/:GTIN", isAuth, itemCodesController.deleteItemCode);
 
 module.exports = router;
