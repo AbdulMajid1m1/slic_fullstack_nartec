@@ -15,10 +15,8 @@ import Barcode from "react-barcode";
 import { DataTableContext } from "../../../Contexts/DataTableContext";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
-import AddGTIN from "./AddGTIN";
 import Swal from "sweetalert2";
 import { useQuery } from "react-query";
-import UpdateGTIN from "./UpdateGTIN";
 import AddGTINPopUp from "./AddGTINPopUp";
 import UpdateGTINPopUp from "./UpdateGTINPopUp";
 

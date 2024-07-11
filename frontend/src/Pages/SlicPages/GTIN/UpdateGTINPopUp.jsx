@@ -46,6 +46,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
         quantity: quantity,
         description: description,
         startSize: startSize,
+        endSize: endSize,
       };
 
       //   console.log(requestBody);

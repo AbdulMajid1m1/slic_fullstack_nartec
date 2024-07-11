@@ -4,50 +4,47 @@ import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
-import "./AddGTIN.css";
-import Barcode from "react-barcode";
-import { QRCodeSVG } from "qrcode.react";
 
-const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
-  const [itemCode, setItemCode] = useState("");
-  const [quantity, setQuantiity] = useState("");
-  const [description, setDescription] = useState("");
-  const [startSize, setStartSize] = useState("");
-  const [endSize, setEndSize] = useState("");
+const NewPasswordPopUp = ({ isVisible, setVisibility, apiResponse, email }) => {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+//   console.log(apiResponse, email);
 
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
 
-  const handleAddGTIN = async (e) => {
+const handleSumbitNewPassword = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const requestBody = {
-        // GTIN: gtin,
-        itemCode: itemCode,
-        quantity: quantity,
-        description: description,
-        startSize: startSize,
-        endSize: endSize,
-      };
-
-      //   console.log(requestBody);
-
-      const response = await newRequest.post("/itemCodes/v1/itemCode", requestBody);
-      // console.log(response?.data);
-      toast.success(response?.data?.message || "GTIN added successfully");
-      setLoading(false);
-      handleCloseCreatePopup();
-      refreshGTINData();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Error in adding GTIN");
-      console.log(error);
-      setLoading(false);
+    if (newPassword !== confirmPassword) {
+      toast.info("Passwords do not match");
+      return;
     }
-  };
+    setLoading(true);
+    newRequest.put("/users/v1/reset", { 
+        userLoginID: email,
+        newPassword: newPassword, 
+    }, 
+    {
+        headers: {
+            Authorization: `Bearer ${apiResponse?.data}`
+        }
+    }
+    )
+    .then((response) => {
+        // console.log(response?.data);
+        toast.success(response?.data?.message || "New Password Created Successfully"); 
+        handleCloseCreatePopup();
+        setLoading(false);
+    })
+    .catch((err) => {
+          console.log(err);
+        toast.error(err?.response?.data?.error || err?.response?.data?.message || "Something went wrong");
+        setLoading(false);
+    });
+};
 
   return (
     <div>
@@ -61,7 +58,7 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Generating Products Barcodes
+                    New Password
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -122,91 +119,41 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                   </div>
                 </div>
               </div>
-              <form onSubmit={handleAddGTIN} className="w-full overflow-y-auto">
+              <form onSubmit={handleSumbitNewPassword} className="w-full overflow-y-auto">
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                    <div className="flex flex-col gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
-                          Item Code
+                        <label htmlFor="password" className={`text-secondary`}>
+                          New Password
                         </label>
                         <input
                           type="text"
-                          id="itemCode"
-                          value={itemCode}
-                          onChange={(e) => setItemCode(e.target.value)}
-                          placeholder="Enter item Code"
+                          id="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter New Password"
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
                         />
                       </div>
+                  
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="quantity" className={`text-secondary`}>
-                          Quantity
+                        <label htmlFor="confirmpassword" className={`text-secondary`}>
+                          Confirm Password
                         </label>
                         <input
                           type="text"
-                          id="quantity"
-                          value={quantity}
-                          onChange={(e) => setQuantiity(e.target.value)}
-                          placeholder="Enter Quantity"
+                          id="confirmpassword"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Enter Confirm Password"
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
                         />
                       </div>
                     </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label
-                          htmlFor="englishName"
-                          className={`text-secondary`}
-                        >
-                          Description
-                        </label>
-                        <textarea
-                          type="text"
-                          id="englishName"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Enter Description"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
-                          Start Size
-                        </label>
-                        <input
-                          type="number"
-                          id="startsize"
-                          value={startSize}
-                          onChange={(e) => setStartSize(e.target.value)}
-                          placeholder="Enter Start Size"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
-                      </div>
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="endsize" className={`text-secondary`}>
-                          End Size
-                        </label>
-                        <input
-                          type="number"
-                          id="endsize"
-                          placeholder="Enter End Size"
-                          value={endSize}
-                          onChange={(e) => setEndSize(e.target.value)}
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
-                      </div>
-                    </div>
-
+                 
                     <div className="mt-5">
                       <Button
                         variant="contained"
@@ -222,21 +169,9 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           )
                         }
                       >
-                        Generate the Barcodes
+                        New Password
                       </Button>
                     </div>
-                  </div>
-
-                  <div className="sm:w-1/3 w-full flex flex-col justify-start items-center lg:mt-0 md:mt-3 gap-3">
-                    <Barcode
-                      value={"192837129739"}
-                      format="EAN13"
-                      height={75}
-                      width={1.3}
-                      background="transparent"
-                    />
-
-                    <QRCodeSVG value="192837129739" height={120} width={150} />
                   </div>
                 </div>
               </form>
@@ -248,4 +183,4 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   );
 };
 
-export default AddGTINPopUp;
+export default NewPasswordPopUp;
