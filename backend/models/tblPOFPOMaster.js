@@ -7,7 +7,7 @@ class TblPOFPOPMasterModel {
   // Create a new record
   static async create(data) {
     try {
-      const newRecord = await prisma.tblPOFPOPMaster.create({
+      const newRecord = await prisma.tblPOFPOMaster.create({
         data,
       });
       return newRecord;
@@ -19,13 +19,10 @@ class TblPOFPOPMasterModel {
   // Read all records
   static async findAll() {
     try {
-      const records = await prisma.tblPOFPOPMaster.findMany({
-        orderBy: {
-          createdAt: "asc", // Or 'desc' for descending order
-        },
-      });
+      const records = await prisma.tblPOFPOMaster.findMany();
       return records;
     } catch (error) {
+      console.log(error);
       throw new CustomError("Error fetching records");
     }
   }
@@ -34,7 +31,7 @@ class TblPOFPOPMasterModel {
   static async findPaginated(page = 1, limit = 10) {
     try {
       const offset = (page - 1) * limit;
-      const records = await prisma.tblPOFPOPMaster.findMany({
+      const records = await prisma.tblPOFPOMaster.findMany({
         skip: offset,
         take: limit,
         orderBy: {
@@ -42,7 +39,7 @@ class TblPOFPOPMasterModel {
         },
       });
 
-      const totalRecords = await prisma.tblPOFPOPMaster.count();
+      const totalRecords = await prisma.tblPOFPOMaster.count();
 
       return {
         records,
@@ -58,8 +55,8 @@ class TblPOFPOPMasterModel {
   // Read a single record by ID
   static async findById(id) {
     try {
-      const record = await prisma.tblPOFPOPMaster.findUnique({
-        where: { tblPOFPOPMasterID: id },
+      const record = await prisma.tblPOFPOMaster.findUnique({
+        where: { tblPOFPOMasterID: id },
       });
       return record;
     } catch (error) {
@@ -70,8 +67,8 @@ class TblPOFPOPMasterModel {
   // Update a record by ID
   static async update(id, data) {
     try {
-      const updatedRecord = await prisma.tblPOFPOPMaster.update({
-        where: { tblPOFPOPMasterID: id },
+      const updatedRecord = await prisma.tblPOFPOMaster.update({
+        where: { tblPOFPOMasterID: id },
         data,
       });
       return updatedRecord;
@@ -83,8 +80,8 @@ class TblPOFPOPMasterModel {
   // Delete a record by ID
   static async delete(id) {
     try {
-      const deletedRecord = await prisma.tblPOFPOPMaster.delete({
-        where: { tblPOFPOPMasterID: id },
+      const deletedRecord = await prisma.tblPOFPOMaster.delete({
+        where: { tblPOFPOMasterID: id },
       });
       return deletedRecord;
     } catch (error) {

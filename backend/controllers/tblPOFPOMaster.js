@@ -1,4 +1,4 @@
-const POFPOPModel = require("../models/TblPOFPOPMaster");
+const POFPOPModel = require("../models/tblPOFPOMaster");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
 

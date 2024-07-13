@@ -10,7 +10,7 @@ const swaggerSpec = require("./config/swagger");
 const generateResponse = require("./utils/response");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 const userRoutes = require("./routes/TblUsers");
-const foreignPORoutes = require("./routes/TblPOFPOPMaster");
+const foreignPORoutes = require("./routes/tblPOFPOMaster");
 
 const app = express();
 const port = process.env.PORT || 8080;

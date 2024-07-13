@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/TblPOFPOPMaster");
+const controller = require("../controllers/tblPOFPOMaster");
 const isAuth = require("../middleware/is-auth");
 
 router.post("/v1/foreignPO", controller.createRecord);
