@@ -9,6 +9,8 @@ const cors = require("cors");
 const swaggerSpec = require("./config/swagger");
 const generateResponse = require("./utils/response");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
+const userRoutes = require("./routes/TblUsers");
+const foreignPORoutes = require("./routes/tblPOFPOMaster");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -19,6 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Add your routes...
 app.use("/api/itemCodes", itemCodesRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/foreignPO", foreignPORoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {

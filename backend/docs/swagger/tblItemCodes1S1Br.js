@@ -143,11 +143,20 @@
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *
  * /api/itemCodes/v1/itemCodes/all:
  *   get:
  *     summary: Get all item codes
- *     description: Retrieve all item codes without pagination or search functionality
+ *     description: Retrieve all item codes without pagination or search functionality.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Item codes retrieved successfully
@@ -164,7 +173,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item codes retrieved successfully
+ *                   example: "Item codes retrieved successfully"
  *                 data:
  *                   type: array
  *                   items:
@@ -189,7 +198,7 @@
  *                         type: string
  *                         format: date-time
  *                         example: "2024-12-31T00:00:00.000Z"
- *                       sERIALnUMBER:
+ *                       SERIALNUMBER:
  *                         type: string
  *                         example: "SN123456"
  *                       ItemQty:
@@ -241,7 +250,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: No item codes found
+ *                   example: "No item codes found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -257,7 +266,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
 
 /**
@@ -371,11 +380,121 @@
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *
+ * /api/itemCodes/v2/itemCode:
+ *   post:
+ *     summary: Creates new item codes for a range of sizes
+ *     tags:
+ *       - ItemCodes
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               itemCode:
+ *                 type: string
+ *                 example: "abc123"
+ *                 description: "The unique item code"
+ *               quantity:
+ *                 type: integer
+ *                 example: 6
+ *                 description: "The quantity of each item code"
+ *               description:
+ *                 type: string
+ *                 example: "Standard Widget"
+ *                 description: "Description of the item"
+ *               startSize:
+ *                 type: integer
+ *                 example: 30
+ *                 description: "The start size for the item codes"
+ *               endSize:
+ *                 type: integer
+ *                 example: 35
+ *                 description: "The end size for the item codes"
+ *     responses:
+ *       201:
+ *         description: Item codes created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   GTIN:
+ *                     type: string
+ *                     example: "6287898000001"
+ *                   ItemCode:
+ *                     type: string
+ *                     example: "abc123"
+ *                   ItemQty:
+ *                     type: integer
+ *                     example: 1
+ *                   EnglishName:
+ *                     type: string
+ *                     example: "Standard Widget"
+ *                   ArabicName:
+ *                     type: string
+ *                     example: "Standard Widget"
+ *                   QRCodeInternational:
+ *                     type: string
+ *                     example: "6287898000001"
+ *                   ProductSize:
+ *                     type: integer
+ *                     example: 30
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       field:
+ *                         type: string
+ *                       message:
+ *                         type: string
+ *       422:
+ *         description: Validation Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       field:
+ *                         type: string
+ *                       message:
+ *                         type: string
+ */
+
+/**
+ * @swagger
  * /api/itemCodes/v1/itemCode/{GTIN}:
  *   put:
  *     summary: Update an item code
  *     description: Update the details of an existing item code by GTIN.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: GTIN
@@ -421,7 +540,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item code updated successfully
+ *                   example: "Item code updated successfully"
  *                 data:
  *                   type: object
  *                   properties:
@@ -452,7 +571,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Item code not found
+ *                   example: "Item code not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -468,7 +587,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
 
 /**
@@ -478,6 +597,8 @@
  *     summary: Delete an item code
  *     description: Delete an existing item code by GTIN.
  *     tags: [ItemCodes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: GTIN
@@ -501,7 +622,7 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Item code deleted successfully
+ *                   example: "Item code deleted successfully"
  *                 data:
  *                   type: object
  *                   properties:
@@ -532,7 +653,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Item code not found
+ *                   example: "Item code not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -548,5 +669,5 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
  */
