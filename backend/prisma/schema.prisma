@@ -51,8 +51,8 @@ model TblUsers {
   @@map("TblUsers") // Maps the model to the SQL table "TblUsers"
 }
 
-model TblPOFPOPMaster {
-  tblPOFPOPMasterID Int      @id @default(autoincrement())
+model tblPOFPOMaster {
+  tblPOFPOMasterID Int      @id @default(autoincrement())
   PONumber          String?  @db.VarChar(50)
   PODate            String?  @db.VarChar(50)
   SupplierName      String?  @db.VarChar(50)

@@ -407,7 +407,7 @@
  *                 description: "The unique item code"
  *               quantity:
  *                 type: integer
- *                 example: 10
+ *                 example: 6
  *                 description: "The quantity of each item code"
  *               description:
  *                 type: string
@@ -439,7 +439,7 @@
  *                     example: "abc123"
  *                   ItemQty:
  *                     type: integer
- *                     example: 10
+ *                     example: 1
  *                   EnglishName:
  *                     type: string
  *                     example: "Standard Widget"
