@@ -23,11 +23,11 @@ const SlicUserSignUp = () => {
         userLoginID: email,
         userPassword: password,
       });
-        console.log(response?.data);
+        // console.log(response?.data);
         navigate("/");
         toast.success(response?.data?.message || "Login Successful");
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
       setLoading(false);
     }
@@ -45,7 +45,7 @@ const SlicUserSignUp = () => {
               alt=""
               className="w-full object-contain sm:h-52 h-auto rounded-md mt-3"
             />
-            <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3 mt-6">SLIC Sign In</h2>
+            <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3 mt-6">SLIC Sign up</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="w-full flex justify-center items-center h-[45%] mt-6 sm:mt-0">
@@ -94,7 +94,7 @@ const SlicUserSignUp = () => {
                     className="w-full bg-[#B6BAD6] border-b-2 border-[#350F9F] hover:bg-[#9699b1] mb-6 text-white font-medium font-body text-xl rounded-md px-5 py-2"
                     endIcon={loading ? <CircularProgress size={24} color="inherit" /> : <SendIcon />}
                   >
-                    Sign in
+                    Sign up
                   </Button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
@@ -10,11 +10,18 @@ import { QRCodeSVG } from "qrcode.react";
 
 const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const [itemCode, setItemCode] = useState("");
-  const [quantity, setQuantiity] = useState("");
+  const [quantity, setQuantity] = useState(0);
   const [description, setDescription] = useState("");
-  const [startSize, setStartSize] = useState("");
-  const [endSize, setEndSize] = useState("");
+  const [startSize, setStartSize] = useState(30);
+  const [endSize, setEndSize] = useState(50);
   const [loading, setLoading] = useState(false);
+  const memberDataString = sessionStorage.getItem('slicUserData');
+  const memberData = JSON.parse(memberDataString);
+  // console.log(memberData)
+
+  useEffect(() => {
+    setQuantity(endSize - startSize + 1);
+  }, [startSize, endSize]);
 
   const handleCloseCreatePopup = () => {
     setVisibility(false);
@@ -22,11 +29,11 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
 
   const handleAddGTIN = async (e) => {
     e.preventDefault();
+    // console.log("1", itemCode, "2", quantity, "3", description, "4", startSize, "5", endSize);
     setLoading(true);
 
     try {
       const requestBody = {
-        // GTIN: gtin,
         itemCode: itemCode,
         quantity: quantity,
         description: description,
@@ -34,10 +41,11 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
         endSize: endSize,
       };
 
-      //   console.log(requestBody);
-
-      const response = await newRequest.post("/itemCodes/v1/itemCode", requestBody);
-      // console.log(response?.data);
+      const response = await newRequest.post("/itemCodes/v2/itemCode", requestBody, {
+        headers: {
+          Authorization: `Bearer ${memberData?.data?.token}`,
+        },
+      });
       toast.success(response?.data?.message || "GTIN added successfully");
       setLoading(false);
       handleCloseCreatePopup();
@@ -148,10 +156,8 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           type="text"
                           id="quantity"
                           value={quantity}
-                          onChange={(e) => setQuantiity(e.target.value)}
-                          placeholder="Enter Quantity"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
+                          readOnly
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3 bg-gray-100`}
                         />
                       </div>
                     </div>
@@ -181,29 +187,35 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                         <label htmlFor="startsize" className={`text-secondary`}>
                           Start Size
                         </label>
-                        <input
-                          type="number"
+                        <select
                           id="startsize"
                           value={startSize}
-                          onChange={(e) => setStartSize(e.target.value)}
-                          placeholder="Enter Start Size"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
+                          onChange={(e) => setStartSize(parseInt(e.target.value))}
+                          className={`border w-full rounded-md border-secondary p-2 mb-3`}
+                        >
+                          {Array.from({ length: 21 }, (_, i) => 30 + i).map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="endsize" className={`text-secondary`}>
                           End Size
                         </label>
-                        <input
-                          type="number"
+                        <select
                           id="endsize"
-                          placeholder="Enter End Size"
                           value={endSize}
-                          onChange={(e) => setEndSize(e.target.value)}
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
+                          onChange={(e) => setEndSize(parseInt(e.target.value))}
+                          className={`border w-full rounded-md border-secondary p-2 mb-3`}
+                        >
+                          {Array.from({ length: 21 }, (_, i) => 30 + i).map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -236,7 +248,9 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                       background="transparent"
                     />
 
-                    <QRCodeSVG value="192837129739" height={120} width={150} />
+                    <QRCodeSVG value={`${itemCode}, ${startSize}, ${description}`} height={120} width={150} />
+
+                    <p className="text-secondary font-sans">Total Barcodes: {quantity}</p>
                   </div>
                 </div>
               </form>

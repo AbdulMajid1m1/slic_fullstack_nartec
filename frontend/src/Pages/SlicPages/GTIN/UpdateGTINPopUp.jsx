@@ -16,7 +16,10 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const [startSize, setStartSize] = useState("");
   const [endSize, setEndSize] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const memberDataString = sessionStorage.getItem('slicUserData');
+  const memberData = JSON.parse(memberDataString);
+  // console.log(memberData)
+  
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
@@ -24,11 +27,11 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   // get this session data
   const updateProductsData = JSON.parse(sessionStorage.getItem("updateListOfEmployeeData"));
 
-//   console.log(updateProductsData);
+  // console.log(updateProductsData);
 
   useEffect(() => {
     setItemCode(updateProductsData?.ItemCode || "");
-    setQuantiity(updateProductsData?.ItemQty || "");
+    setQuantiity(1 || "");
     setDescription(updateProductsData?.EnglishName || "");
     setStartSize(updateProductsData?.ProductSize || "");
     setEndSize(updateProductsData?.EndSize || "");
@@ -37,21 +40,26 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
 
   const handleAddGTIN = async (e) => {
     e.preventDefault();
+    // console.log(itemCode, quantity, description, startSize, endSize);
     setLoading(true);
 
     try {
       const requestBody = {
         // GTIN: gtin,
-        itemCode: itemCode,
-        quantity: quantity,
+        // itemCode: itemCode,
+        // quantity: quantity,
         description: description,
-        startSize: startSize,
-        endSize: endSize,
+        // startSize: startSize,
+        // endSize: endSize,
       };
 
       //   console.log(requestBody);
 
-      const response = await newRequest.put(`/itemCodes/v1/itemCode/${updateProductsData?.GTIN}`, requestBody);
+      const response = await newRequest.put(`/itemCodes/v1/itemCode/${updateProductsData?.GTIN}`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${memberData?.data?.token}`,
+        }
+      });
       // console.log(response?.data);
       toast.success(response?.data?.message || "GTIN Updated successfully");
       setLoading(false);
@@ -138,9 +146,9 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                 </div>
               </div>
               <form onSubmit={handleAddGTIN} className="w-full overflow-y-auto">
-                <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
+                <div className="flex justify-between items-center flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                    {/* <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="itemCode" className={`text-secondary`}>
                           Item Code
@@ -169,7 +177,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
@@ -192,21 +200,21 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                     </div>
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="startsize" className={`text-secondary`}>
-                          Start Size
+                          Size
                         </label>
                         <input
                           type="number"
                           id="startsize"
                           value={startSize}
                           onChange={(e) => setStartSize(e.target.value)}
-                          placeholder="Enter Start Size"
+                          placeholder="Enter Size"
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
                         />
-                      </div>
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                      </div> */}
+                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="endsize" className={`text-secondary`}>
                           End Size
                         </label>
@@ -219,7 +227,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
                         />
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="mt-5">

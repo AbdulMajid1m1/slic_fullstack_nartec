@@ -26,11 +26,11 @@ const SlicUserLogin = () => {
         userPassword: password,
       });
         // console.log(response?.data);
-        sessionStorage.setItem("slicUserData", JSON.stringify(response.data));
+        sessionStorage.setItem("slicUserData", JSON.stringify(response?.data));
         navigate("/gtin-management");
         toast.success(response?.data?.message || "Login Successful");
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
       setLoading(false);
     }
@@ -126,7 +126,7 @@ const SlicUserLogin = () => {
                       onClick={() => navigate("/slic-signup")}
                       className="hover:text-primary hover:cursor-pointer transition-colors duration-300 ease-in-out"
                     >
-                      Sign In to Your Account
+                      Create your Account
                     </span>
                     <span 
                       onClick={handleShowResetPasswordPopup}

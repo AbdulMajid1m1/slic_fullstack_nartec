@@ -5,6 +5,10 @@ import sliclogo from "../../Images/sliclogo.png";
 import dashboard from "../../Images/dashboard.png"
 import barcode from "../../Images/barcode.png"
 import userprofile from "../../Images/userprofile.png"
+import posicon from "../../Images/posicon.png"
+import Purchase from "../../Images/Purchase.png"
+import salesorders from "../../Images/salesorders.png"
+import directinvoice from "../../Images/directinvoice.png"
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import logout from "../../Images/logout.png";
@@ -92,7 +96,58 @@ function SideNav({ children }) {
                           className="w-10 h-10 object-cover"
                         />
                         <span className="text-secondary font-medium text-lg">
-                          GTIN
+                          Products
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                  <li className="mt-3">
+                    <Link
+                      to="/purchase-order"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={Purchase}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Purchase Orders
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                  <li className="mt-3">
+                    <Link
+                      to="/sales-order"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={salesorders}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Sales Orders
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                  <li className="mt-3">
+                    <Link
+                      to="/direct-invoice"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={directinvoice}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Direct Invoice
                         </span>
                       </div>
                     </Link>
@@ -114,23 +169,23 @@ function SideNav({ children }) {
                       </div>
                     </Link>
                   </li>
-                  {/* <li className="mt-3">
+                  <li className="mt-3">
                     <Link
-                      to="/employee-meals"
+                      to="/pos"
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
                     >
                       <div className="flex justify-center items-center gap-3">
                         <img
-                          src={employeemealsicon}
+                          src={posicon}
                           alt="logo"
-                          className="w-10 h-10 object-cover"
+                          className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                         />
                         <span className="text-secondary font-medium text-lg">
-                          Employee Meals
+                          POS
                         </span>
                       </div>
                     </Link>
-                  </li> */}
+                  </li>
                   <li className="mt-3">
                     <Link
                       to="/"

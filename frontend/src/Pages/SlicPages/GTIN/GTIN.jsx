@@ -19,11 +19,15 @@ import Swal from "sweetalert2";
 import { useQuery } from "react-query";
 import AddGTINPopUp from "./AddGTINPopUp";
 import UpdateGTINPopUp from "./UpdateGTINPopUp";
+import { QRCodeSVG } from "qrcode.react";
 
 const GTIN = () => {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const memberDataString = sessionStorage.getItem('slicUserData');
+  const memberData = JSON.parse(memberDataString);
+  // console.log(memberData)
+
   const {
     rowSelectionModel,
     setRowSelectionModel,
@@ -35,7 +39,11 @@ const GTIN = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await newRequest.get("/itemCodes/v1/itemCodes/all");
+      const response = await newRequest.get("/itemCodes/v1/itemCodes/all", {
+        headers: {
+          Authorization: `Bearer ${memberData?.data?.token}`,
+        },
+      });
       // console.log(response?.data?.data);
       setData(response?.data?.data || []);
     } catch (err) {
@@ -145,6 +153,56 @@ const GTIN = () => {
     };
 
 
+    const handleGtinPage = () => {
+    if (tableSelectedRows.length === 0) {
+      toast.info("Please select a row to print.");
+      return;
+    }
+    const printWindow = window.open("", "Print Window", "height=400,width=800");
+    const html =
+      "<html><head><title>GTIN Number</title>" +
+      "<style>" +
+      "@page { size: 2in 1in; margin: 0; }" +
+      "body { font-size: 13px; line-height: 0.1;}" +
+      "#header { display: flex; justify-content: start;}" +
+      "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +
+      "#itemcode { font-size: 8px; font-weight: 400; }" +
+      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -11px;}" +
+
+      "#description { width: 100%; display: flex; flex-direction: column; justify-content: between; align-items: center; }" +
+      "#itemSerialNo { font-size: 13px; font-weight: 400;}" +
+      "#gtin { font-size: 7px; font-weight: 500; margin-top: 5px;}" +
+      "#expiry { font-size: 8px; font-weight: 600; margin-top: 9px;}" +
+      "#batch { font-size: 9px; font-weight: 600; margin-top: 9px;}" +
+
+      "#Qrcodeserails { height: 100%; width: 100%;}" +
+      "</style>" +
+      "</head><body>" +
+      '<div id="printBarcode12"></div>' +
+      "</body></html>";
+
+    printWindow.document.write(html);
+    const barcodeContainer =
+      printWindow.document.getElementById("printBarcode12");
+    const barcode = document
+      .getElementById("priniproducts")
+      .cloneNode(true);
+    barcodeContainer.appendChild(barcode);
+
+    const logoImg = new Image();
+    logoImg.src = logo;
+
+    logoImg.onload = function () {
+      // printWindow.document.getElementById('imglogo').src = logoImg.src;
+      printWindow.print();
+      printWindow.close();
+      setTimeout(() => {
+        setTableSelectedRows([]);
+        setRowSelectionModel([]);
+      }, 500);
+    };
+  };
+
     const handleRowClickInParent = (item) => {
       if (!item || item?.length === 0) {
         // setTableSelectedRows(item)
@@ -228,7 +286,7 @@ const GTIN = () => {
         <div className="h-auto w-full">
           <div className="h-auto w-full p-0 bg-white shadow-xl rounded-md pb-10">
             <div
-              className={`flex justify-between items-center flex-wrap gap-2 py-7 px-5`}
+              className={`flex justify-end items-center flex-wrap gap-2 py-7 px-5`}
             >
               <Button
                 variant="contained"
@@ -241,6 +299,7 @@ const GTIN = () => {
 
               <Button
                 variant="contained"
+                onClick={handleGtinPage}
                 style={{
                   backgroundColor: "#CFDDE0",
                   color: "#1D2F90",
@@ -250,7 +309,7 @@ const GTIN = () => {
                 className="bg-[#B6BAD6]"
                 startIcon={<MdPrint />}
               >
-                Print GTIN
+                Print Products
               </Button>
 
               <Button
@@ -264,10 +323,10 @@ const GTIN = () => {
               </Button>
             </div>
 
-            <div>
+            <div style={{marginTop: '-15px'}}>
               <DataTable
                 data={data}
-                title={"GTIN List"}
+                title={"Products List"}
                 columnsName={GtinColumn}
                 loading={isLoading}
                 secondaryColor="secondary"
@@ -338,6 +397,38 @@ const GTIN = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+
+            {/* print barcode */}
+            <div id="priniproducts">
+              {tableSelectedRows.map((barcode, index) => {
+                return (
+                  <div id="Qrcodeserails" className="hidden" key={index}>
+                    <div id="header">
+                      <div>
+                        <img src={logo} id="imglogo" alt="" />
+                      </div>
+                    </div>
+
+                    <div id="itemcode">
+                      <div id="inside-BRCode">
+                        <QRCodeSVG
+                          value={`${barcode?.GTIN} - ${barcode?.EnglishName} - ${barcode?.ProductSize}`}
+                          width="65"
+                          height="45"
+                        />
+                      </div>
+
+                      <div id="description">
+                        <div id="gtin">Style# : {barcode?.EnglishName}</div>
+                        <div id="expiry">Size# : {barcode?.ProductSize}</div>
+                        <div id="batch">{barcode?.GTIN}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
 
