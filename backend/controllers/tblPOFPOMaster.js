@@ -26,6 +26,11 @@ exports.createRecord = async (req, res, next) => {
 exports.getAllRecords = async (req, res, next) => {
   try {
     const records = await POFPOPModel.findAll();
+    if (!records || records.length <= 0) {
+      const error = new CustomError("Records not found");
+      error.statusCode = 404;
+      throw error;
+    }
     res
       .status(200)
       .json(

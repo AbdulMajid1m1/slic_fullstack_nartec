@@ -11,6 +11,7 @@ const generateResponse = require("./utils/response");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 const userRoutes = require("./routes/TblUsers");
 const foreignPORoutes = require("./routes/tblPOFPOMaster");
+const locationsCompaniesRoutes = require("./routes/locationCompany");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/itemCodes", itemCodesRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/foreignPO", foreignPORoutes);
+app.use("/api/locationsCompanies", locationsCompaniesRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {
