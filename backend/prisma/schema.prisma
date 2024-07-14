@@ -84,3 +84,8 @@ model TblPOFPODetails {
   RECEIVED_QTY  String?
   ITEM_SYS_ID   Float?
 }
+
+model TblCustomerNames {
+  CUST_CODE  String  @id
+  CUST_NAME  String?
+}
