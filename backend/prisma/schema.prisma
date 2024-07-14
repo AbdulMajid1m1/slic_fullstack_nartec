@@ -61,3 +61,15 @@ model tblPOFPOMaster {
   createdAt         DateTime? @default(now()) @db.DateTime
   updatedAt         DateTime? @updatedAt @db.DateTime
 }
+
+model TblLocationNames {
+    TblSysNoID        Int      @id @default(autoincrement())
+    LocationCode          String?  @db.VarChar(50)
+    LocationName            String?  @db.VarChar(150)
+}
+
+model TblCompanyNames {
+    TblSysNoID        Int      @id @default(autoincrement())
+    CompanyCode          String?  @db.VarChar(50)
+    CompanyName            String?  @db.VarChar(150)
+}
