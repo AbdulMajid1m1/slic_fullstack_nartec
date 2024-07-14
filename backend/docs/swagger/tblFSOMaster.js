@@ -14,7 +14,6 @@
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/SalesOrder'
  *       404:
  *         description: No sales orders found.
  *       500:
