@@ -5,9 +5,9 @@ class TblIFSOMaster {
   // Fetch all records
   static async fetchAll() {
     try {
-      return await prisma.tblIFSOMaster.findMany();
+      return await prisma.tblFSOMaster.findMany();
     } catch (error) {
-      console.error("Failed to retrieve records from tblIFSOMaster:", error);
+      console.error("Failed to retrieve records from tblFSOMaster:", error);
       throw error;
     }
   }
@@ -15,7 +15,7 @@ class TblIFSOMaster {
   // Fetch a single record by SO_NUMBER
   static async findBySONumber(soNumber) {
     try {
-      return await prisma.tblIFSOMaster.findUnique({
+      return await prisma.tblFSOMaster.findUnique({
         where: { SO_NUMBER: soNumber },
       });
     } catch (error) {
@@ -30,11 +30,11 @@ class TblIFSOMaster {
   // Create a new record
   static async create(data) {
     try {
-      return await prisma.tblIFSOMaster.create({
+      return await prisma.tblFSOMaster.create({
         data: data,
       });
     } catch (error) {
-      console.error("Failed to create a new record in tblIFSOMaster:", error);
+      console.error("Failed to create a new record in tblFSOMaster:", error);
       throw error;
     }
   }
@@ -42,7 +42,7 @@ class TblIFSOMaster {
   // Update a record by SO_NUMBER
   static async update(soNumber, data) {
     try {
-      return await prisma.tblIFSOMaster.update({
+      return await prisma.tblFSOMaster.update({
         where: { SO_NUMBER: soNumber },
         data: data,
       });
@@ -58,7 +58,7 @@ class TblIFSOMaster {
   // Delete a record by SO_NUMBER
   static async delete(soNumber) {
     try {
-      return await prisma.tblIFSOMaster.delete({
+      return await prisma.tblFSOMaster.delete({
         where: { SO_NUMBER: soNumber },
       });
     } catch (error) {
