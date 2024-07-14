@@ -89,3 +89,12 @@ model TblCustomerNames {
   CUST_CODE  String  @id
   CUST_NAME  String?
 }
+
+model tblFSOMaster {
+  SO_NUMBER   String   @id
+  SO_CUST_NAME String?
+  SO_LOCN_CODE String?
+  DEL_LOCN     String?
+  STATUS       String?
+  HEAD_SYS_ID  Float?
+}

@@ -10,7 +10,6 @@ class CustomerName {
       return customers;
     } catch (error) {
       error.message = "Failed to retrieve customers";
-      error.statusCode = 404;
       throw error;
     }
   }
