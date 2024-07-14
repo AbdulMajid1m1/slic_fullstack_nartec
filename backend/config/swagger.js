@@ -32,6 +32,7 @@ var options = {
     path.join(__dirname, "../docs/swagger/tblItemCodes1S1Br.js"),
     path.join(__dirname, "../docs/swagger/TblUsers.js"),
     path.join(__dirname, "../docs/swagger/TblPOFPOPMaster.js"),
+    path.join(__dirname, "../docs/swagger/TblIPOFPODetails.js"),
     // add more paths...
   ],
 };

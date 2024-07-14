@@ -73,3 +73,14 @@ model TblCompanyNames {
     CompanyCode          String?  @db.VarChar(50)
     CompanyName            String?  @db.VarChar(150)
 }
+
+model TblPOFPODetails {
+  HEAD_SYS_ID   Float     @id
+  ITEM_CODE     String
+  ITEM_NAME     String
+  GRADE         String?
+  UOM           String?
+  PO_QTY        Float?
+  RECEIVED_QTY  String?
+  ITEM_SYS_ID   Float?
+}

@@ -12,6 +12,7 @@ const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 const userRoutes = require("./routes/TblUsers");
 const foreignPORoutes = require("./routes/tblPOFPOMaster");
 const locationsCompaniesRoutes = require("./routes/locationCompany");
+const lineItemsRoutes = require("./routes/TblIPOFPODetails");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -25,6 +26,7 @@ app.use("/api/itemCodes", itemCodesRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/foreignPO", foreignPORoutes);
 app.use("/api/locationsCompanies", locationsCompaniesRoutes);
+app.use("/api/lineItems", lineItemsRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {
