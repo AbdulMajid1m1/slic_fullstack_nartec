@@ -19,7 +19,11 @@ class TblPOFPOPMasterModel {
   // Read all records
   static async findAll() {
     try {
-      const records = await prisma.tblPOFPOMaster.findMany();
+      const records = await prisma.tblPOFPOMaster.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
       return records;
     } catch (error) {
       console.log(error);
@@ -35,7 +39,7 @@ class TblPOFPOPMasterModel {
         skip: offset,
         take: limit,
         orderBy: {
-          createdAt: "asc", // Or 'desc' for descending order
+          createdAt: "desc", // Or 'desc' for descending order
         },
       });
 

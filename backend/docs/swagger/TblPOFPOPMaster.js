@@ -2,7 +2,7 @@
  * @swagger
  * /api/foreignPO/v1/foreignPO:
  *   post:
- *     summary: Create a new purchase order record
+ *     summary: Create a new purchase order
  *     description: Adds a new purchase order to the system.
  *     tags: [Purchase Orders]
  *     requestBody:
@@ -14,23 +14,28 @@
  *             properties:
  *               PONumber:
  *                 type: string
+ *                 description: "Unique purchase order number."
  *                 example: "123"
  *               PODate:
  *                 type: string
  *                 format: date-time
+ *                 description: "Date and time when the purchase order was issued."
  *                 example: "2024-01-01T12:00:00Z"
  *               SupplierName:
  *                 type: string
+ *                 description: "Name of the supplier."
  *                 example: "ABC Supplies"
  *               POStatus:
  *                 type: string
+ *                 description: "Current status of the purchase order."
  *                 example: "Active"
  *               Head_SYS_ID:
  *                 type: string
+ *                 description: "System identifier for the department head."
  *                 example: "SYS12345"
  *     responses:
  *       201:
- *         description: Purchase order created successfully.
+ *         description: "Purchase order created successfully."
  *         content:
  *           application/json:
  *             schema:
@@ -44,11 +49,9 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Purchase order created successfully"
- *                 data:
- *                   $ref: '#/definitions/PurchaseOrder'
+ *                   example: "Purchase order created successfully."
  *       400:
- *         description: Invalid input data
+ *         description: "Invalid input data."
  *         content:
  *           application/json:
  *             schema:
@@ -62,19 +65,19 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Invalid input data"
+ *                   example: "Invalid input data."
  */
 
 /**
  * @swagger
  * /api/foreignPO/v1/foreignPO/all:
  *   get:
- *     summary: Retrieve all purchase orders
- *     description: Returns a list of all purchase orders in the system.
+ *     summary: Retrieve all purchase order records
+ *     description: Returns a list of all purchase order records in the system.
  *     tags: [Purchase Orders]
  *     responses:
  *       200:
- *         description: A list of purchase orders.
+ *         description: "A list of purchase order records."
  *         content:
  *           application/json:
  *             schema:
@@ -82,7 +85,7 @@
  *               items:
  *                 $ref: '#/definitions/PurchaseOrder'
  *       404:
- *         description: No purchase orders found
+ *         description: "No records found."
  *         content:
  *           application/json:
  *             schema:
@@ -96,7 +99,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "No purchase orders found"
+ *                   example: "No records found."
  */
 
 /**
@@ -104,7 +107,7 @@
  * /api/foreignPO/v1/foreignPO/{id}:
  *   get:
  *     summary: Retrieve a purchase order by ID
- *     description: Returns a single purchase order by its ID.
+ *     description: Returns a single purchase order based on the provided ID.
  *     tags: [Purchase Orders]
  *     parameters:
  *       - in: path
@@ -112,15 +115,16 @@
  *         required: true
  *         schema:
  *           type: string
+ *           description: "The ID of the purchase order to retrieve."
  *     responses:
  *       200:
- *         description: Purchase order retrieved successfully.
+ *         description: "Purchase order retrieved successfully."
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/definitions/PurchaseOrder'
  *       404:
- *         description: Purchase order not found
+ *         description: "Purchase order not found."
  *         content:
  *           application/json:
  *             schema:
@@ -134,7 +138,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Purchase order not found"
+ *                   example: "Purchase order not found."
  */
 
 /**
@@ -142,7 +146,7 @@
  * /api/foreignPO/v1/foreignPO/{id}:
  *   put:
  *     summary: Update a purchase order
- *     description: Updates an existing purchase order by ID.
+ *     description: Updates an existing purchase order based on the provided ID.
  *     tags: [Purchase Orders]
  *     parameters:
  *       - in: path
@@ -150,6 +154,7 @@
  *         required: true
  *         schema:
  *           type: string
+ *           description: "The ID of the purchase order to update."
  *     requestBody:
  *       required: true
  *       content:
@@ -159,23 +164,28 @@
  *             properties:
  *               PONumber:
  *                 type: string
+ *                 description: "Updated purchase order number."
  *                 example: "123"
  *               PODate:
  *                 type: string
  *                 format: date-time
+ *                 description: "Updated date and time of the purchase order."
  *                 example: "2024-01-01T12:00:00Z"
  *               SupplierName:
  *                 type: string
+ *                 description: "Updated supplier name."
  *                 example: "XYZ Corp"
  *               POStatus:
  *                 type: string
+ *                 description: "Updated status of the purchase order."
  *                 example: "Completed"
  *               Head_SYS_ID:
  *                 type: string
+ *                 description: "Updated system identifier for the department head."
  *                 example: "SYS67890"
  *     responses:
  *       200:
- *         description: Purchase order updated successfully.
+ *         description: "Purchase order updated successfully."
  *         content:
  *           application/json:
  *             schema:
@@ -189,9 +199,9 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Purchase order updated successfully"
+ *                   example: "Purchase order updated successfully."
  *       400:
- *         description: Invalid input data
+ *         description: "Invalid input data."
  *         content:
  *           application/json:
  *             schema:
@@ -205,7 +215,7 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Invalid input data"
+ *                   example: "Invalid input data."
  */
 
 /**
@@ -213,7 +223,7 @@
  * /api/foreignPO/v1/foreignPO/{id}:
  *   delete:
  *     summary: Delete a purchase order
- *     description: Deletes an existing purchase order by ID.
+ *     description: Deletes an existing purchase order based on the provided ID.
  *     tags: [Purchase Orders]
  *     parameters:
  *       - in: path
@@ -221,9 +231,10 @@
  *         required: true
  *         schema:
  *           type: string
+ *           description: "The ID of the purchase order to delete."
  *     responses:
  *       200:
- *         description: Purchase order deleted successfully.
+ *         description: "Purchase order deleted successfully."
  *         content:
  *           application/json:
  *             schema:
@@ -237,9 +248,9 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Purchase order deleted successfully"
+ *                   example: "Purchase order deleted successfully."
  *       404:
- *         description: Purchase order not found
+ *         description: "Purchase order not found."
  *         content:
  *           application/json:
  *             schema:
@@ -253,5 +264,5 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Purchase order not found"
+ *                   example: "Purchase order not found."
  */
