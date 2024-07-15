@@ -6,6 +6,8 @@ const salesOrdersController = require("../controllers/tblFSOMaster");
 
 router.get("/v1/all", salesOrdersController.getAll);
 
+router.get("/v1/bySalesOrder/:id");
+
 router.post("/v1/create", salesOrdersController.createOrder);
 
 router.get("/v1/:soNumber", salesOrdersController.getOrder);
