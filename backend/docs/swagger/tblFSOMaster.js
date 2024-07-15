@@ -33,18 +33,98 @@
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SalesOrder'
+ *             type: object
+ *             properties:
+ *               SO_NUMBER:
+ *                 type: string
+ *                 description: "Unique sales order number."
+ *                 example: "SO123"
+ *               SO_CUST_NAME:
+ *                 type: string
+ *                 description: "Name of the customer for the sales order."
+ *                 example: "John Doe"
+ *               SO_LOCN_CODE:
+ *                 type: string
+ *                 description: "Location code for the sales order."
+ *                 example: "LOC001"
+ *               DEL_LOCN:
+ *                 type: string
+ *                 description: "Delivery location for the sales order."
+ *                 example: "Warehouse A"
+ *               STATUS:
+ *                 type: string
+ *                 description: "Current status of the sales order."
+ *                 example: "Pending"
+ *               HEAD_SYS_ID:
+ *                 type: number
+ *                 format: float
+ *                 description: "System identifier for the department head."
+ *                 example: 12345.67
  *     responses:
  *       201:
  *         description: Sales order created successfully.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SalesOrder'
+ *               type: object
+ *               properties:
+ *                 SO_NUMBER:
+ *                   type: string
+ *                   description: "Unique sales order number."
+ *                   example: "SO123"
+ *                 SO_CUST_NAME:
+ *                   type: string
+ *                   description: "Name of the customer for the sales order."
+ *                   example: "John Doe"
+ *                 SO_LOCN_CODE:
+ *                   type: string
+ *                   description: "Location code for the sales order."
+ *                   example: "LOC001"
+ *                 DEL_LOCN:
+ *                   type: string
+ *                   description: "Delivery location for the sales order."
+ *                   example: "Warehouse A"
+ *                 STATUS:
+ *                   type: string
+ *                   description: "Current status of the sales order."
+ *                   example: "Pending"
+ *                 HEAD_SYS_ID:
+ *                   type: number
+ *                   format: float
+ *                   description: "System identifier for the department head."
+ *                   example: 12345.67
  *       400:
  *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid input data."
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
  */
 
 /**
