@@ -172,3 +172,95 @@ exports.logout = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const users = await User.fetchAll();
+    if (!users) {
+      const error = new CustomError("No users found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json(generateResponse(200, true, "Users found", users));
+  } catch (error) {
+    console.error("Error getting users:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
+exports.updateUser = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const user = await User.getUserById(id);
+    if (!user) {
+      const error = new CustomError("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const updatedUser = await User.updateUser(id, req.body);
+    if (!updatedUser) {
+      const error = new CustomError("An error has occurred while updating");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(200, true, "User updated successfully", updatedUser)
+      );
+  } catch (error) {
+    console.error("Error updating user:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
+exports.deleteUser = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await User.getUserById(id);
+    if (!user) {
+      const error = new CustomError("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    const deletedUser = await User.deleteUser(id);
+    if (!deletedUser) {
+      const error = new CustomError("An error has occurred while deleting");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(200, true, "User deleted successfully", deletedUser)
+      );
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};

@@ -25,4 +25,10 @@ router.put(
 
 router.put("/v1/logout", isAuth, userController.logout);
 
+router.get("/v1/all", userController.getUsers);
+
+router.put("/v1/:id", userController.updateUser);
+
+router.delete("/v1/:id", userController.deleteUser);
+
 module.exports = router;

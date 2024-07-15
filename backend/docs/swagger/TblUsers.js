@@ -533,3 +533,290 @@
  *                   type: string
  *                   example: Internal server error
  */
+
+/**
+ * @swagger
+ * /api/users/v1/all:
+ *   get:
+ *     summary: Retrieve a list of users
+ *     description: Fetches all users from the database.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Users found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Users found"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       TblSysNoID:
+ *                         type: integer
+ *                         example: 1
+ *                       UserLoginID:
+ *                         type: string
+ *                         example: "user@example.com"
+ *                       UserPassword:
+ *                         type: string
+ *                         example: "$2b$10$AX1UFxFrSbMTTISomWAmVuMAvvFB64xG4zUGEouMTNY9XW/xvydhC"
+ *                       UserLoginStatus:
+ *                         type: integer
+ *                         example: 1
+ *       404:
+ *         description: No users found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No users found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
+/**
+ * @swagger
+ * /api/users/v1/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Deletes a user by ID from the database.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the user to be deleted
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     TblSysNoID:
+ *                       type: integer
+ *                       example: 1
+ *                     UserLoginID:
+ *                       type: string
+ *                       example: "user@example.com"
+ *                     UserPassword:
+ *                       type: string
+ *                       example: "$2b$10$AX1UFxFrSbMTTISomWAmVuMAvvFB64xG4zUGEouMTNY9XW/xvydhC"
+ *                     UserLoginStatus:
+ *                       type: integer
+ *                       example: 1
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
+/**
+ * @swagger
+ * /api/users/v1/{id}:
+ *   put:
+ *     summary: Update a user
+ *     description: Updates a user's information in the database by ID.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the user to be updated
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               UserLoginID:
+ *                 type: string
+ *                 description: "Login ID of the user."
+ *                 example: "user@example.com"
+ *               UserPassword:
+ *                 type: string
+ *                 description: "Password of the user."
+ *                 example: "password123"
+ *               UserLoginStatus:
+ *                 type: integer
+ *                 description: "Login status of the user."
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User updated successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     TblSysNoID:
+ *                       type: integer
+ *                       example: 1
+ *                     UserLoginID:
+ *                       type: string
+ *                       example: "user@example.com"
+ *                     UserPassword:
+ *                       type: string
+ *                       example: "newpassword123"
+ *                     UserLoginStatus:
+ *                       type: integer
+ *                       example: 1
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       422:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid value"
+ *                       param:
+ *                         type: string
+ *                         example: "UserLoginID"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
