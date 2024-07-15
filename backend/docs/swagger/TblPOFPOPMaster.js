@@ -18,9 +18,8 @@
  *                 example: "123"
  *               PODate:
  *                 type: string
- *                 format: date-time
- *                 description: "Date and time when the purchase order was issued."
- *                 example: "2024-01-01T12:00:00Z"
+ *                 description: "Date when the purchase order was issued in mm-dd-yyyy format."
+ *                 example: "01-01-2024"
  *               SupplierName:
  *                 type: string
  *                 description: "Name of the supplier."
