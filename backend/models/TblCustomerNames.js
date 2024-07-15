@@ -9,8 +9,7 @@ class CustomerName {
       const customers = await prisma.tblCustomerNames.findMany();
       return customers;
     } catch (error) {
-      error.message = "Failed to retrieve customers";
-      throw error;
+      throw new CustomError("Error fetching customers");
     }
   }
 

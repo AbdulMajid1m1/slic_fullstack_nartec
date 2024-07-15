@@ -671,3 +671,83 @@
  *                   type: string
  *                   example: "Internal server error"
  */
+
+/**
+ * @swagger
+ * /api/itemCodes/v1/searchByGTIN:
+ *   get:
+ *     summary: Retrieve item codes by GTIN
+ *     description: Retrieve item codes using the provided GTIN.
+ *     tags: [ItemCodes]
+ *     parameters:
+ *       - name: GTIN
+ *         in: query
+ *         required: true
+ *         description: The GTIN to search for item codes
+ *         schema:
+ *           type: string
+ *           example: "12345678901234"
+ *     responses:
+ *       200:
+ *         description: Item code retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Item code retrieved successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       TXN_CODE:
+ *                         type: string
+ *                         example: "TXN12345"
+ *                       TXN_NAME:
+ *                         type: string
+ *                         example: "Sample Transaction"
+ *                       TXN_TYPE:
+ *                         type: string
+ *                         example: "Type A"
+ *       404:
+ *         description: No item codes found with the given GTIN
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No item codes found with the given GTIN"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */

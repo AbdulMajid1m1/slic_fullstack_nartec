@@ -89,6 +89,16 @@ class ItemCodeModel {
       where: { GTIN: gtin.toString() },
     });
   }
+
+  static async searchByGtin(gtin) {
+    return await prisma.tblItemCodes1S1Br.findMany({
+      where: {
+        GTIN: {
+          contains: gtin.toString(),
+        },
+      },
+    });
+  }
 }
 
 module.exports = ItemCodeModel;
