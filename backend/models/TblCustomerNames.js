@@ -13,6 +13,31 @@ class CustomerName {
     }
   }
 
+  static async searchByPartialNameOrCode(query) {
+    try {
+      const customers = await prisma.tblCustomerNames.findMany({
+        where: {
+          OR: [
+            {
+              CUST_CODE: {
+                contains: query.toString(),
+              },
+            },
+            {
+              CUST_NAME: {
+                contains: query.toString(),
+              },
+            },
+          ],
+        },
+      });
+      return customers;
+    } catch (error) {
+      console.log(error);
+      throw new CustomError("Error searching customers");
+    }
+  }
+
   // Add more methods as needed, e.g., create, update, delete
 }
 

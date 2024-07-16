@@ -13,6 +13,7 @@ const locationsCompaniesRoutes = require("./routes/locationCompany");
 const lineItemsRoutes = require("./routes/TblIPOFPODetails");
 const customerNamesRoutes = require("./routes/TblCustomerNames");
 const salesOrdersRoutes = require("./routes/tblFSOMaster");
+const transactionsRoutes = require("./routes/TrxCodesType");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -29,6 +30,7 @@ app.use("/api/locationsCompanies", locationsCompaniesRoutes);
 app.use("/api/lineItems", lineItemsRoutes);
 app.use("/api/customerNames", customerNamesRoutes);
 app.use("/api/salesOrders", salesOrdersRoutes);
+app.use("/api/transactions", transactionsRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {

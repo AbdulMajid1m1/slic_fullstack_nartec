@@ -100,7 +100,7 @@ model tblFSOMaster {
 }
 
 model TrxCodesType {
-  TXN_CODE String? @db.NVarChar(255)
+  TXN_CODE String  @db.NVarChar(255) @id
   TXN_NAME String? @db.NVarChar(255)
-  TXN_TYPE String  @db.NVarChar(255)
+  TXN_TYPE String?  @db.NVarChar(255)
 }
