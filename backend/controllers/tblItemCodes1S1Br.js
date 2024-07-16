@@ -288,3 +288,32 @@ exports.deleteItemCode = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.searchByGTIN = async (req, res, next) => {
+  try {
+    const GTIN = req.query.GTIN;
+    const itemCodes = await ItemCodeModel.searchByGtin(GTIN);
+    if (!itemCodes || itemCodes.length <= 0) {
+      const error = new CustomError("No item codes found with the given GTIN");
+      error.statusCode = 404;
+      throw error;
+    }
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Item code retrieved successfully",
+          itemCodes
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};

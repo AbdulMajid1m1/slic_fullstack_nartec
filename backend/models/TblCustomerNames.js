@@ -9,8 +9,32 @@ class CustomerName {
       const customers = await prisma.tblCustomerNames.findMany();
       return customers;
     } catch (error) {
-      error.message = "Failed to retrieve customers";
-      throw error;
+      throw new CustomError("Error fetching customers");
+    }
+  }
+
+  static async searchByPartialNameOrCode(query) {
+    try {
+      const customers = await prisma.tblCustomerNames.findMany({
+        where: {
+          OR: [
+            {
+              CUST_CODE: {
+                contains: query.toString(),
+              },
+            },
+            {
+              CUST_NAME: {
+                contains: query.toString(),
+              },
+            },
+          ],
+        },
+      });
+      return customers;
+    } catch (error) {
+      console.log(error);
+      throw new CustomError("Error searching customers");
     }
   }
 

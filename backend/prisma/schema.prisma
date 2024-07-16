@@ -98,3 +98,9 @@ model tblFSOMaster {
   STATUS       String?
   HEAD_SYS_ID  Float?
 }
+
+model TrxCodesType {
+  TXN_CODE String  @db.NVarChar(255) @id
+  TXN_NAME String? @db.NVarChar(255)
+  TXN_TYPE String?  @db.NVarChar(255)
+}
