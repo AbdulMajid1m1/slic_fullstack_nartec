@@ -203,13 +203,26 @@ async function updateUser(userId, data) {
     if (data.UserPassword) {
       data.UserPassword = await bcrypt.hash(data.UserPassword, 10);
     }
+    const existingUser = await getUserByLoginId(data.UserLoginID);
+    if (!existingUser) {
+      const error = new CustomError("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (existingUser.TblSysNoID != userId) {
+      const error = new CustomError("This email address is already in use");
+      error.statusCode = 404;
+      throw error;
+    }
+
     const updatedUser = await prisma.tblUsers.update({
       where: { TblSysNoID: Number(userId) },
       data: data,
     });
     return updatedUser;
   } catch (error) {
-    throw new CustomError("Error updating user");
+    throw error;
   }
 }
 
