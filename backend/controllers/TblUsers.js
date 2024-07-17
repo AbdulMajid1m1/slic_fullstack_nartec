@@ -205,13 +205,6 @@ exports.updateUser = async (req, res, next) => {
       return next(error);
     }
 
-    const user = await User.getUserById(id);
-    if (!user) {
-      const error = new CustomError("User not found");
-      error.statusCode = 404;
-      throw error;
-    }
-
     const updatedUser = await User.updateUser(id, req.body);
     if (!updatedUser) {
       const error = new CustomError("An error has occurred while updating");

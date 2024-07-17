@@ -1,12 +1,12 @@
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
-const model = require("../models/TblIPOFPODetails");
+const LineItem = require("../models/TblIPOFPODetails");
 
 exports.getLineItemsByHeadSysId = async (req, res, next) => {
   const headSysId = parseFloat(req.params.headSysId);
 
   try {
-    const records = await model.getRecordsByHeadSysId(headSysId);
+    const records = await LineItem.getRecordsByHeadSysId(headSysId);
 
     if (!records || records.length === 0) {
       const error = new CustomError(
@@ -42,7 +42,7 @@ exports.fetchByMultipleIds = async (req, res, next) => {
       throw error;
     }
 
-    const records = await model.fetchByMultipleIds(headSysIds);
+    const records = await LineItem.fetchByMultipleIds(headSysIds);
     if (!records || records.length === 0) {
       const error = new CustomError("No records found!");
       error.statusCode = 404;
