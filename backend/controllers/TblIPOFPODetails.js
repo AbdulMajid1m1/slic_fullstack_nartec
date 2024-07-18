@@ -44,7 +44,9 @@ exports.fetchByMultipleIds = async (req, res, next) => {
 
     const records = await LineItem.fetchByMultipleIds(headSysIds);
     if (!records || records.length === 0) {
-      const error = new CustomError("No records found!");
+      const error = new CustomError(
+        "No line items found for the selected orders"
+      );
       error.statusCode = 404;
       throw error;
     }
