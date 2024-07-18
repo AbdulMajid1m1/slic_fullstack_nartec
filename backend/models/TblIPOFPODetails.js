@@ -29,8 +29,7 @@ class POFPODetails {
       });
       return records;
     } catch (error) {
-      console.log(error);
-      throw new CustomError("Error occured while fetching line items");
+      throw error;
     }
   }
 }
