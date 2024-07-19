@@ -1,5 +1,3 @@
-const path = require("path");
-
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const bodyParser = require("body-parser");
@@ -11,6 +9,11 @@ const generateResponse = require("./utils/response");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 const userRoutes = require("./routes/TblUsers");
 const foreignPORoutes = require("./routes/tblPOFPOMaster");
+const locationsCompaniesRoutes = require("./routes/locationCompany");
+const lineItemsRoutes = require("./routes/TblIPOFPODetails");
+const customerNamesRoutes = require("./routes/TblCustomerNames");
+const salesOrdersRoutes = require("./routes/tblFSOMaster");
+const transactionsRoutes = require("./routes/TrxCodesType");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -23,6 +26,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/itemCodes", itemCodesRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/foreignPO", foreignPORoutes);
+app.use("/api/locationsCompanies", locationsCompaniesRoutes);
+app.use("/api/lineItems", lineItemsRoutes);
+app.use("/api/customerNames", customerNamesRoutes);
+app.use("/api/salesOrders", salesOrdersRoutes);
+app.use("/api/transactions", transactionsRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {

@@ -165,45 +165,66 @@ async function logoutUser(userLoginID) {
   }
 }
 
-// async function getUserById(userId) {
-//   try {
-//     const user = await prisma.tblUsers.findUnique({
-//       where: { TblSysNoID: userId },
-//     });
-//     return user;
-//   } catch (error) {
-//     console.error("Error fetching user:", error);
-//     throw new CustomError("Error fetching user");
-//   }
-// }
+async function fetchAll() {
+  try {
+    const users = await prisma.tblUsers.findMany();
+    return users;
+  } catch (error) {
+    throw new CustomError("Error fetching users");
+  }
+}
 
-// async function updateUser(userId, data) {
-//   try {
-//     if (data.UserPassword) {
-//       data.UserPassword = await bcrypt.hash(data.UserPassword, 10);
-//     }
-//     const updatedUser = await prisma.tblUsers.update({
-//       where: { TblSysNoID: userId },
-//       data: data,
-//     });
-//     return updatedUser;
-//   } catch (error) {
-//     console.error("Error updating user:", error);
-//     throw new CustomError("Error updating user");
-//   }
-// }
+async function deleteUser(userId) {
+  try {
+    const deletedUser = await prisma.tblUsers.delete({
+      where: { TblSysNoID: Number(userId) },
+    });
+    return deletedUser;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw new CustomError("Error deleting user");
+  }
+}
 
-// async function deleteUser(userId) {
-//   try {
-//     const deletedUser = await prisma.tblUsers.delete({
-//       where: { TblSysNoID: userId },
-//     });
-//     return deletedUser;
-//   } catch (error) {
-//     console.error("Error deleting user:", error);
-//     throw new CustomError("Error deleting user");
-//   }
-// }
+async function getUserById(userId) {
+  try {
+    const user = await prisma.tblUsers.findUnique({
+      where: { TblSysNoID: Number(userId) },
+    });
+    return user;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    throw new CustomError("Error fetching user");
+  }
+}
+
+async function updateUser(userId, data) {
+  try {
+    if (data.UserPassword) {
+      data.UserPassword = await bcrypt.hash(data.UserPassword, 10);
+    }
+    const existingUser = await getUserByLoginId(data.UserLoginID);
+    if (!existingUser) {
+      const error = new CustomError("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (existingUser.TblSysNoID != userId) {
+      const error = new CustomError("This email address is already in use");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const updatedUser = await prisma.tblUsers.update({
+      where: { TblSysNoID: Number(userId) },
+      data: data,
+    });
+    return updatedUser;
+  } catch (error) {
+    throw error;
+  }
+}
 
 module.exports = {
   createUser,
@@ -212,7 +233,8 @@ module.exports = {
   verifyEmail,
   resetPassword,
   logoutUser,
-  //   getUserById,
-  //   updateUser,
-  //   deleteUser,
+  fetchAll,
+  deleteUser,
+  getUserById,
+  updateUser,
 };
