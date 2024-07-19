@@ -397,3 +397,182 @@ export const archivedUserColumn = [
     },
   },
 ];
+
+
+
+export const purchaseOrderColumn = [
+  {
+    field: "Head_SYS_ID",
+    headerName: "Head System ID",
+    width: 180,
+  },
+  {
+    field: "SupplierName",
+    headerName: "Supplier Name",
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "PONumber",
+    headerName: "PO Number",
+    width: 180,
+  },
+  {
+    field: "POStatus",
+    headerName: "PO Status",
+    width: 180,
+  },
+  {
+    field: "PODate",
+    headerName: "PO Date",
+    width: 180,
+  },
+  {
+    field: "tblPOFPOMasterID",
+    headerName: "POF PO Master ID",
+    width: 180,
+  },
+  {
+    field: "createdAt",
+    headerName: "Created At",
+    width: 180,
+
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  {
+    field: "updatedAt",
+    headerName: "Updated At",
+    width: 180,
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+
+
+
+]
+
+
+
+export const purchaseOrderDetailsColumn = [
+  {
+    field: "HEAD_SYS_ID",
+    headerName: "Head System ID",
+    width: 180,
+  },
+  {
+    field: "ITEM_CODE",
+    headerName: "Item Code",
+    width: 180,
+  },
+  {
+    field: "ITEM_NAME",
+    headerName: "Item Name",
+    renderCell: GTINCell,
+    width: 180,
+  },
+  {
+    field: "ITEM_SYS_ID",
+    headerName: "Item System ID",
+    width: 180,
+  },
+  {
+    field: "PO_QTY",
+    headerName: "PO Quantity",
+    width: 180,
+  },
+  {
+    field: "RECEIVED_QTY",
+    headerName: "Received Quantity",
+    width: 180,
+  },
+  {
+    field: "UOM",
+    headerName: "UOM",
+    width: 180,
+  },
+  
+  
+
+]
+
+
+
+export const salesOrderColumn = [
+  {
+    field: "Head_SYS_ID",
+    headerName: "Head System ID",
+    width: 180,
+  },
+  {
+    field: "SO_CUST_NAME",
+    headerName: "SO Customar Name",
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "SO_NUMBER",
+    headerName: "So Number",
+    width: 180,
+  },
+  {
+    field: "DEL_LOCN",
+    headerName: "Del Location",
+    width: 180,
+  },
+  {
+    field: "SO_LOCN_CODE",
+    headerName: "SO Location Code",
+    width: 180,
+  },
+  {
+    field: "STATUS",
+    headerName: "Status",
+    width: 180,
+    renderCell: (params) => {
+      const style = {
+        backgroundColor: params.value === "Approved" ? "green" : "red",
+        color: params.value === "Approved" ? "white" : "black",
+        borderRadius: "30px",
+        padding: "2px 10px",
+        border: params.value === "Approved" ? "1px solid white" : "none",
+      };
+      return <div style={style}>{params.value}</div>;
+    },
+  },
+];
+
+
+export const usersColumn = [
+  {
+    field: "UserLoginID",
+    headerName: "User Login ID",
+    width: 280,
+  },
+  {
+    field: "UserLoginStatus",
+    headerName: "User Login Status",
+    renderCell: (params) => {
+      const style = {
+        backgroundColor: params.value === 1 ? "green" : "red",
+        color: params.value === 1 ? "white" : "white",
+        borderRadius: "30px",
+        padding: "2px 10px",
+        border: params.value === 1 ? "1px solid white" : "none",
+      };
+      return <div style={style}>{params.value === 1 ? "Active" : "Inactive"}</div>;
+    },
+    width: 180,
+  },
+  {
+    field: "UserPassword",
+    headerName: "User Password",
+    width: 180,
+  },
+];

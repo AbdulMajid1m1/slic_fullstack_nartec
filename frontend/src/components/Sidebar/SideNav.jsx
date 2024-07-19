@@ -9,6 +9,7 @@ import posicon from "../../Images/posicon.png"
 import Purchase from "../../Images/Purchase.png"
 import salesorders from "../../Images/salesorders.png"
 import directinvoice from "../../Images/directinvoice.png"
+import { FaChevronDown, FaChevronUp, FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import logout from "../../Images/logout.png";
@@ -185,6 +186,66 @@ function SideNav({ children }) {
                         </span>
                       </div>
                     </Link>
+                  </li>
+                  <li className="mt-3">
+                    <div
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer"
+                      onClick={handleToggleMange}
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={userprofile}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Master Data
+                        </span>
+                      </div>
+                      <span className="inline-block ml-auto sidenav-arrow">
+                        {isMangeOpen ? <FaChevronUp /> : <FaChevronDown />}
+                      </span>
+                    </div>
+                    {isMangeOpen && (
+                      <div className="pl-1 ml-3 transition border-gray-500 dropdown-section nested-menu">
+                        <ul className="text-sm">
+                          <li className="mt-3">
+                            <Link
+                              to="/users"
+                              className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                            >
+                              <div className="flex justify-center items-center gap-3">
+                                <img
+                                  src={posicon}
+                                  alt="logo"
+                                  className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                                />
+                                <span className="text-secondary font-medium text-lg">
+                                  Users
+                                </span>
+                              </div>
+                            </Link>
+                          </li>
+                          <li className="mt-3">
+                            <Link
+                              // to="/pos"
+                              className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                            >
+                              <div className="flex justify-center items-center gap-3">
+                                <img
+                                  src={posicon}
+                                  alt="logo"
+                                  className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                                />
+                                <span className="text-secondary font-medium text-lg">
+                                  Roles
+                                </span>
+                              </div>
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                   </li>
                   <li className="mt-3">
                     <Link

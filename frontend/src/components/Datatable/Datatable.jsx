@@ -129,6 +129,8 @@ const DataTable = ({
     'customerListId',
     'memberInvoiceId',
     'adminListId',
+    'assemblingId',
+    'salesOrderId',
   ]
   const handleRowClick = (item) => {
     console.log(item)
