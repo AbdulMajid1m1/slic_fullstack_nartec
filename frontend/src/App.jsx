@@ -12,6 +12,7 @@ import PurchaseOrder from "./Pages/SlicPages/PurchaseOrder/PurchaseOrder.jsx";
 import SalesOrder from "./Pages/SlicPages/SalesOrder/SalesOrder.jsx";
 import DirectInvoice from "./Pages/SlicPages/DirectInvoice/DirectInvoice.jsx";
 import Users from "./Pages/SlicPages/MasterData/Users/Users.jsx";
+import SlicFirstScreen from "./Pages/MemberLogin/SlicUserLogin/SlicFirstScreen.jsx";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,8 @@ const App = () => {
           <BrowserRouter>
             <QueryClientProvider client={queryClient}>
               <Routes>
-                <Route path="/" element={<SlicUserLogin />} />
+                {/* <Route path="/" element={<SlicUserLogin />} /> */}
+                <Route path="/" element={<SlicFirstScreen />} />
                 <Route path="slic-signup" element={<SlicUserSignUp />} />
                 <Route path="gtin-management" element={<GtinManagement />} />
                 <Route path="gtin" element={<GTIN />} />
