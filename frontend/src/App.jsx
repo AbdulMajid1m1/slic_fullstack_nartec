@@ -24,8 +24,8 @@ const App = () => {
           <BrowserRouter>
             <QueryClientProvider client={queryClient}>
               <Routes>
-                {/* <Route path="/" element={<SlicUserLogin />} /> */}
                 <Route path="/" element={<SlicFirstScreen />} />
+                <Route path="/user-login" element={<SlicUserLogin />} />
                 <Route path="slic-signup" element={<SlicUserSignUp />} />
                 <Route path="gtin-management" element={<GtinManagement />} />
                 <Route path="gtin" element={<GTIN />} />
