@@ -1,6 +1,7 @@
 const POFPOPModel = require("../models/tblPOFPOMaster");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
+const client = require("../config/redisClient");
 
 // Create a new record
 exports.createRecord = async (req, res, next) => {
@@ -25,12 +26,29 @@ exports.createRecord = async (req, res, next) => {
 // Read all records
 exports.getAllRecords = async (req, res, next) => {
   try {
+    const poRecords = await client.get("poRecords");
+
+    if (poRecords) {
+      res
+        .status(200)
+        .json(
+          generateResponse(
+            200,
+            true,
+            "Records retrieved successfully",
+            JSON.parse(poRecords)
+          )
+        );
+      return;
+    }
     const records = await POFPOPModel.findAll();
     if (!records || records.length <= 0) {
       const error = new CustomError("Records not found");
       error.statusCode = 404;
       throw error;
     }
+    client.set("poRecords", JSON.stringify(records));
+    client.expire("poRecords", 60);
     res
       .status(200)
       .json(
