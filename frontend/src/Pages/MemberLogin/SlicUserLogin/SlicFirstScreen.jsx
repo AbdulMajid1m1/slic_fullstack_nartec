@@ -6,6 +6,7 @@ import supplychain from "../../../Images/supplychain.png";
 import pointofsale from "../../../Images/pointofsale.png";
 import { useNavigate } from "react-router-dom";
 import newRequest from "../../../utils/userRequest";
+import axios from "axios";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
@@ -14,6 +15,27 @@ const SlicFirstScreen = () => {
   const [selectedLocationCode, setSelectedLocationCode] = useState("");
   const navigate = useNavigate();
 
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        "http://slicuat05api.oneerpcloud.com/oneerpauth/api/login",
+        {
+          apiKey: "b4d21674cd474705f6caa07d618b389ddc7ebc25a77a0dc591f49e9176beda01",
+        },
+        {
+          headers: {
+            "X-tenanttype": "live",
+          },
+        }
+      );
+      console.log(response.data);
+      sessionStorage.setItem("slicLoginToken", JSON.stringify(response?.data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
 
   const getAllCompaniesAndLocations = async () => {
     try {
@@ -27,6 +49,7 @@ const SlicFirstScreen = () => {
   }
 
   useEffect(() => {
+    handleLogin();
     getAllCompaniesAndLocations();
   }, []);
 
