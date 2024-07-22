@@ -6,4 +6,6 @@ const router = express.Router();
 
 router.post("/v1/slicLogin", controller.slicLogin);
 
+router.post("/v1/getApi", controller.slicGetApi);
+
 module.exports = router;
