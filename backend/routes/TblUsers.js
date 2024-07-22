@@ -10,8 +10,6 @@ router.post("/v1/signup", userValidators.auth, userController.signup);
 
 router.post("/v1/login", userValidators.auth, userController.login);
 
-router.post("/v1/slicLogin", userController.slicLogin);
-
 router.post(
   "/v1/verify-email",
   userValidators.verify,
