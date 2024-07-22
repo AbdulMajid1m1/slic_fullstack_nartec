@@ -1,23 +1,31 @@
-const axios = require("axios");
-
-const CustomError = require("../exceptions/customError");
+const fetch = require("node-fetch");
 
 exports.slicLogin = async (req, res, next) => {
   const url = "http://slicuat05api.oneerpcloud.com/oneerpauth/api/login";
-  const apiKey =
-    "b4d21674cd474705f6caa07d618b389ddc7ebc25a77a0dc591f49e9176beda01";
+  const { apiKey } = req.body;
 
   const data = {
     apiKey: apiKey,
   };
 
   const headers = {
+    "Content-Type": "application/json",
     "X-tenanttype": "live",
   };
 
   try {
-    const response = await axios.post(url, data, { headers: headers });
-    res.status(200).json(response.data);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    res.status(200).json(responseData);
   } catch (error) {
     console.error("Error verifying email:", error);
     if (error instanceof CustomError) {
