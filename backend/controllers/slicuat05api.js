@@ -1,33 +1,61 @@
-const fetch = require("node-fetch");
+const https = require("https");
+const { CustomError } = require("../exceptions/customError");
 
 exports.slicLogin = async (req, res, next) => {
-  const url = "http://slicuat05api.oneerpcloud.com/oneerpauth/api/login";
+  const url = "https://slicuat05api.oneerpcloud.com/oneerpauth/api/login";
   const { apiKey } = req.body;
 
-  const data = {
+  const data = JSON.stringify({
     apiKey: apiKey,
-  };
+  });
 
   const headers = {
     "Content-Type": "application/json",
     "X-tenanttype": "live",
   };
 
+  const urlObject = new URL(url);
+
+  const options = {
+    hostname: urlObject.hostname,
+    path: urlObject.pathname,
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Length": data.length,
+    },
+  };
+
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(data),
+    const request = https.request(options, (response) => {
+      let responseData = "";
+
+      response.on("data", (chunk) => {
+        responseData += chunk;
+      });
+
+      response.on("end", () => {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          res.status(200).json(JSON.parse(responseData));
+        } else {
+          next(new Error(`HTTP error! status: ${response.statusCode}`));
+        }
+      });
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    request.on("error", (error) => {
+      console.error("Error verifying email:", error);
+      if (error instanceof CustomError) {
+        return next(error);
+      }
+      error.message = null;
+      next(error);
+    });
 
-    const responseData = await response.json();
-    res.status(200).json(responseData);
+    request.write(data);
+    request.end();
   } catch (error) {
-    console.error("Error verifying email:", error);
+    console.error("Unexpected error:", error);
     if (error instanceof CustomError) {
       return next(error);
     }
