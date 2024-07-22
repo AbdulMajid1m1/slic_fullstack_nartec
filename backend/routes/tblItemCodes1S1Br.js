@@ -14,8 +14,6 @@ router.get(
   itemCodesController.getAllItemCodes
 );
 
-router.get("/v1/getByGTIN", isAuth, itemCodesController.getByGTIN);
-
 router.post(
   "/v1/itemCode",
   isAuth,
