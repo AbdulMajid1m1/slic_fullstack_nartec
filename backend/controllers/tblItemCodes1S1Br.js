@@ -103,6 +103,33 @@ exports.getAllItemCodes = async (req, res, next) => {
   }
 };
 
+exports.getByGTIN = async (req, res, next) => {
+  try {
+    const { GTIN } = req.query;
+
+    const result = await ItemCodeModel.findByGTIN(GTIN);
+
+    if (!result || result.length <= 0) {
+      const error = new Error("No item codes found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(200, true, "Item codes retrieved successfully", result)
+      );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
 exports.postItemCode = async (req, res, next) => {
   try {
     const { itemCode, quantity, description, startSize, endSize } = req.body;
