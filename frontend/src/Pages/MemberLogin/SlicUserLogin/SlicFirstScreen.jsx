@@ -7,6 +7,7 @@ import pointofsale from "../../../Images/pointofsale.png";
 import { useNavigate } from "react-router-dom";
 import newRequest from "../../../utils/userRequest";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
@@ -18,8 +19,8 @@ const SlicFirstScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        "http://slicuat05api.oneerpcloud.com/oneerpauth/api/login",
+      const response = await newRequest.post(
+        "/slicuat05api/v1/slicLogin",
         {
           apiKey: "b4d21674cd474705f6caa07d618b389ddc7ebc25a77a0dc591f49e9176beda01",
         },
@@ -29,28 +30,101 @@ const SlicFirstScreen = () => {
           },
         }
       );
-      console.log(response.data);
-      sessionStorage.setItem("slicLoginToken", JSON.stringify(response?.data));
+      // console.log(response.data);
+      sessionStorage.setItem("slicLoginToken", JSON.stringify(response?.data?.token));
     } catch (error) {
       console.log(error);
     }
   };
   
 
-  const getAllCompaniesAndLocations = async () => {
+  // map All the companies api response data
+  const flattenCompanies = (data) => {
+    return data.map(company => {
+      if (company.CompanyMaster) {
+        return company.CompanyMaster;
+      }
+      return company;
+    });
+  };
+  
+  const getAllCompaniesDetails = async () => {
     try {
-      const res = await newRequest.get("/locationsCompanies/v1/all");
+      const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+      const res = await newRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          "filter": {},
+          "M_COMP_CODE": "001",
+          "M_USER_ID": "SYSADMIN",
+          "APICODE": "CompanyMaster",
+          "M_LANG_CODE": "ENG"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       // console.log(res.data);
-      setCompanies(res?.data?.data?.companies);
-      setLocations(res?.data?.data?.locations);
+      const flattenedData = flattenCompanies(res.data);
+      setCompanies(flattenedData);
+      
     } catch (error) {
       console.log(error);
+      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
     }
-  }
+  
+  };
 
+
+  // map All the location api response data
+  const flattenLocations = (data) => {
+    return data.map(location => {
+      if (location.LocationMaster) {
+        return location.LocationMaster;
+      }
+      return location;
+    });
+  };
+
+  const getAllLocationsDetails = async () => {
+    try {
+      const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+      const res = await newRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          "filter": {},
+          "M_COMP_CODE": "001",
+          "M_USER_ID": "SYSADMIN",
+          "APICODE": "LocationMaster",
+          "M_LANG_CODE": "ENG"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(res.data);
+      const flattenedData = flattenLocations(res.data);
+      setLocations(flattenedData);
+      
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
+    }
+  
+  };
+  
   useEffect(() => {
-    handleLogin();
-    getAllCompaniesAndLocations();
+    const initialize = async () => {
+      await handleLogin();
+      await getAllCompaniesDetails();
+      await getAllLocationsDetails();
+    };
+  
+    initialize();
   }, []);
 
   return (
@@ -78,8 +152,8 @@ const SlicFirstScreen = () => {
                 >
                   <option value="" disabled>Select Company</option>
                   {companies.map((company) => (
-                    <option key={company.TblSysNoID} value={company.CompanyCode}>
-                      {company.CompanyName}
+                    <option key={company.COMP_CODE} value={company.COMP_CODE}>
+                      {company.COMP_NAME}
                     </option>
                   ))}
                 </select>
@@ -99,8 +173,8 @@ const SlicFirstScreen = () => {
                 >
                   <option value="" disabled>Select Location</option>
                   {locations.map((location) => (
-                    <option key={location?.TblSysNoID} value={location?.LocationCode}>
-                      {location?.LocationName}
+                    <option key={location?.LOCN_CODE} value={location?.LOCN_CODE}>
+                      {location?.LOCN_NAME}
                     </option>
                   ))}
                 </select>
