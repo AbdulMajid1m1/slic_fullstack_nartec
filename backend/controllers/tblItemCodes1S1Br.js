@@ -289,7 +289,7 @@ exports.deleteItemCode = async (req, res, next) => {
   }
 };
 
-exports.searchByGTIN = async (req, res, next) => {
+exports.searchByPartialGTIN = async (req, res, next) => {
   try {
     const GTIN = req.query.GTIN;
     const itemCodes = await ItemCodeModel.searchByGtin(GTIN);
@@ -306,6 +306,35 @@ exports.searchByGTIN = async (req, res, next) => {
           true,
           "Item code retrieved successfully",
           itemCodes
+        )
+      );
+  } catch (error) {
+    console.log(error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
+exports.searchByGTIN = async (req, res, next) => {
+  try {
+    const GTIN = req.query.GTIN;
+    const itemCode = await ItemCodeModel.findById(GTIN);
+    if (!itemCode) {
+      const error = new CustomError("No item code found with the given GTIN");
+      error.statusCode = 404;
+      throw error;
+    }
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Item code retrieved successfully",
+          itemCode
         )
       );
   } catch (error) {

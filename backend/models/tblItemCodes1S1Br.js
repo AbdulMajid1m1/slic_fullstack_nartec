@@ -77,6 +77,16 @@ class ItemCodeModel {
     });
   }
 
+  static async findByGTIN(gtin) {
+    return await prisma.tblItemCodes1S1Br.findMany({
+      where: {
+        GTIN: {
+          contains: gtin.toString(),
+        },
+      },
+    });
+  }
+
   static async update(gtin, data) {
     return await prisma.tblItemCodes1S1Br.update({
       where: { GTIN: gtin.toString() },
