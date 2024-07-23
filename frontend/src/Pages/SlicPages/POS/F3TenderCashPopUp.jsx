@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import sliclogo from "../../../Images/sliclogo.png";
+import cash from "../../../Images/tendercash/cash.png";
+import creditcard from "../../../Images/tendercash/creditcard.png";
+import visamaster from "../../../Images/tendercash/visamaster.png";
+import americanexpress from "../../../Images/tendercash/americanexpress.png";
+import paypal from "../../../Images/tendercash/paypal.png";
+import wallet from "../../../Images/tendercash/wallet.png";
+import bitcoins from "../../../Images/tendercash/bitcoins.png";
+import stcpay from "../../../Images/tendercash/stcpay.png";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
+  const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
@@ -18,7 +29,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Add Sales Orders
+                    F3 Tender Cash
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -81,31 +92,46 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                   </div>
                 </div>
               </div>
-              <div className="p-4">
+              <div className="p-0">
                 <div className="grid grid-cols-3 gap-4">
                   <div className="border p-4">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between font-semibold">
                       <p>5 X PROMAX SP 0W16 API SP</p>
                       <p>1,437</p>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between font-semibold">
                       <p>10 X SUPER SYNTHETIC 10W 40 API SN</p>
                       <p>5,750</p>
                     </div>
-                    <div className="flex justify-between mt-4 border-t pt-2">
+                    <div className="flex justify-between mt-4 border-t pt-2 font-semibold">
                       <p>Sub Total</p>
                       <p>7,187</p>
                     </div>
-                    <button className="bg-blue-700 text-white mt-4 py-2 px-4 w-full">
-                      Print
-                    </button>
+                    <div className="mt-10">
+                    <Button
+                        variant="contained"
+                        style={{ backgroundColor: "#021F69", color: "#ffffff" }}
+                        type="submit"
+                        disabled={loading}
+                        className="sm:w-[70%] w-full ml-2"
+                        endIcon={
+                          loading ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : (
+                            null
+                          )
+                        }
+                      >
+                        Print
+                      </Button>
+                    </div>
                   </div>
-                  <div className="border p-4">
+                  <div className="border p-2">
                     <div className="mb-4">
                       <p className="font-semibold">Amount Due</p>
                       <input
                         type="text"
-                        className="w-full border px-2 py-3  placeholder:text-black rounded-sm bg-[#E3EDEF]"
+                        className="w-full border border-gray-300 px-2 py-3 placeholder:text-black rounded-md bg-[#E3EDEF]"
                         placeholder="7,187"
                         readOnly
                       />
@@ -114,7 +140,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                       <p className="font-semibold">Amount Received</p>
                       <input
                         type="text"
-                        className="w-full border px-2 py-3 placeholder:text-black rounded-sm bg-[#E3EDEF]"
+                        className="w-full border border-gray-300 px-2 py-3 placeholder:text-black rounded-md bg-[#E3EDEF]"
                         placeholder="SAR 0.00"
                       />
                     </div>
@@ -122,7 +148,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                       <p className="font-semibold">Change</p>
                       <input
                         type="text"
-                        className="w-full border px-2 py-3  placeholder:text-black rounded-sm bg-[#E3EDEF]"
+                        className="w-full border border-gray-300 px-2 py-3 placeholder:text-black rounded-md bg-[#E3EDEF]"
                         placeholder="SAR 0.00"
                         readOnly
                       />
@@ -131,10 +157,10 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, "0", "Back"].map((item) => (
                         <button
                           key={item}
-                          className={`py-2 text-center rounded-sm bg-[#35393C] text-white ${
+                          className={`py-2 text-center rounded-sm ${
                             item === "Back"
-                              ? "bg-red-500"
-                              : "bg-gray-300"
+                              ? "bg-red-500 text-white"
+                              : "bg-[#35393C] text-white"
                           }`}
                         >
                           {item}
@@ -143,18 +169,59 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                     </div>
                   </div>
                   <div className="p-1">
-                  <div className="flex justify-start items-center w-full h-14 p-2 shadow-md border border-gray-200 rounded-lg bg-white">
-                    <img src={sliclogo} className="h-8 w-14 mr-2" alt="Visa / Master" />
-                    <p className="">Visa / Master</p>
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img src={cash} className="h-10 w-16 mr-2 ml-3 object-contain" alt="cash" />
+                      <p className="">Cash</p>
                     </div>
-                    <div className="flex justify-start items-center w-full h-14 p-2 shadow-md border border-gray-200 rounded-lg bg-white">
-                    <img src={sliclogo} className="h-8 w-14 mr-2" alt="Visa / Master" />
-                    <p className="">Visa / Master</p>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img src={creditcard} className="h-10 w-16 mr-2 ml-3" alt="creditcard" />
+                      <p className="">Credit / Debit</p>
                     </div>
-                    <div className="flex justify-start items-center w-full h-14 p-2 shadow-md border border-gray-200 rounded-lg bg-white">
-                    <img src={sliclogo} className="h-8 w-14 mr-2" alt="Visa / Master" />
-                    <p className="">Visa / Master</p>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img
+                        src={visamaster}
+                        className="h-10 w-16 mr-2 ml-3 object-contain"
+                        alt="visamaster"
+                      />
+                      <p className="">Visa / Master</p>
                     </div>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img
+                        src={americanexpress}
+                        className="h-10 w-16 mr-2 ml-3 object-contain"
+                        alt="americanexpress"
+                      />
+                      <p className="">American Express</p>
+                    </div>
+
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img
+                        src={paypal}
+                        className="h-10 w-16 mr-2 ml-3 object-contain"
+                        alt="paypal"
+                      />
+                      <p className="">PayPal</p>
+                    </div>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img src={wallet} className="h-10 w-16 mr-2 ml-3 object-contain" alt="wallet" />
+                      <p className="">Wallet</p>
+                    </div>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img src={bitcoins} className="h-10 w-16 mr-2 ml-3 object-contain" alt="bitcoin" />
+                      <p className="">Bitcoin</p>
+                    </div>
+
+                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                      <img src={stcpay} className="h-10 w-16 mr-2 ml-3 object-contain" alt="stcpay" />
+                      <p className="">STC Pay</p>
+                    </div>
+                    
                   </div>
                 </div>
               </div>
