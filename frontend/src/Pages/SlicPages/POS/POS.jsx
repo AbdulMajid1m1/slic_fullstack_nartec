@@ -7,6 +7,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import { Autocomplete, CircularProgress, debounce, TextField } from "@mui/material";
+import F3TenderCashPopUp from "./F3TenderCashPopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -136,6 +137,11 @@ const POS = () => {
       // setFilteredData(data);
       return;
     }
+  };
+
+  const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
+  const handleShowCreatePopup = () => {
+    setCreatePopupVisibility(true);
   };
 
   return (
@@ -367,7 +373,7 @@ const POS = () => {
                 <button className="bg-blue-500 text-white py-4 px-4 rounded">
                   F4 - Last Receipt
                 </button>
-                <button className="bg-red-500 text-white py-4 px-4 rounded">
+                <button onClick={handleShowCreatePopup} className="bg-red-500 text-white py-4 px-4 rounded">
                   F3 - Tender Cash
                 </button>
                 <button className="bg-black text-white py-4 px-4 rounded">
@@ -427,6 +433,13 @@ const POS = () => {
               </div>
             </div>
           </div>
+
+          {isCreatePopupVisible && (
+            <F3TenderCashPopUp
+              isVisible={isCreatePopupVisible}
+              setVisibility={setCreatePopupVisibility}
+            />
+          )}
         </div>
       </div>
     </SideNav>
