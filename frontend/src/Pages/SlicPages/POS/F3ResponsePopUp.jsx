@@ -97,39 +97,59 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
               <div className="w-full overflow-y-auto">
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemcode" className={`text-secondary`}>
-                          Item Code
+                      <div className="w-full font-body sm:text-lg text-sm flex flex-wrap gap-3">
+                        <label htmlFor="itemcode" className={`text-secondary border-b border-gray-300 font-semibold`}>
+                          Transaction Code:
                         </label>
                         <p className="text-secondary border-b border-gray-300">{itemCode}</p>
                       </div>
                  
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-6">
+                      <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-6">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                          className={`text-secondary border-b border-gray-300 font-semibold`}
                         >
-                          Product Size
+                          Success
                         </label>
-                         <p className="text-secondary border-b border-gray-300">{productSize}</p>
+                         <p className="text-secondary border-b border-gray-300 ">{productSize}</p>
                       </div>
                  
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-5">
+                      <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
                         <label
                           htmlFor="rate"
-                          className={`text-secondary`}
+                          className={`text-secondary border-b border-gray-300 font-semibold`}
                         >
-                          Rate
+                          Company Code:
                         </label>
                         <p className="text-secondary border-b border-gray-300">{rate}</p>
                       </div>
                  
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-5">
+                      <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
                         <label
                           htmlFor="quantity"
-                          className={`text-secondary`}
+                          className={`text-secondary border-b border-gray-300 font-semibold`}
                         >
-                          Quantity
+                          Message:
+                        </label>
+                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                     </div>
+
+                     <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                        <label
+                          htmlFor="quantity"
+                          className={`text-secondary border-b border-gray-300 font-semibold`}
+                        >
+                          Reference Number/System ID:
+                        </label>
+                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                     </div>
+
+                     <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                        <label
+                          htmlFor="quantity"
+                          className={`text-secondary border-b border-gray-300 font-semibold`}
+                        >
+                          Documents No:
                         </label>
                         {/* <textarea
                           type="text"
