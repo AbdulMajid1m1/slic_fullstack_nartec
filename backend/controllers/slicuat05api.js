@@ -142,34 +142,6 @@ exports.slicPostData = async (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
-  //   {
-  //     _keyword_: "Invoice",
-  //     "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //     data: [
-  //       {
-  //         Company: "SLIC",
-  //         TransactionCode: "DCIN",
-  //         CustomerCode: "CF100005",
-  //         SalesLocationCode: "FG101",
-  //         DeliveryLocationCode: "FG101",
-  //         UserId: "SYSADMIN",
-  //         Item: [
-  //           {
-  //             "Item-Code": "4435",
-  //             Size: "39",
-  //             Rate: "85",
-  //             Qty: "1",
-  //             UserId: "SYSADMIN",
-  //           },
-  //         ],
-  //       },
-  //     ],
-  //     COMPANY: "SLIC",
-  //     USERID: "SYSADMIN",
-  //     APICODE: "INVOICE",
-  //     LANG: "ENG",
-  //   }
-
   const data = JSON.stringify(req.body);
 
   const headers = {
