@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import sliclogo from "../../../Images/sliclogo.png";
+import React, { useEffect, useState } from "react";
 import cash from "../../../Images/tendercash/cash.png";
 import creditcard from "../../../Images/tendercash/creditcard.png";
 import visamaster from "../../../Images/tendercash/visamaster.png";
@@ -10,12 +9,104 @@ import bitcoins from "../../../Images/tendercash/bitcoins.png";
 import stcpay from "../../../Images/tendercash/stcpay.png";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import newRequest from "../../../utils/userRequest";
+import { toast } from "react-toastify";
 
-const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
+const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
+
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    // slic login api token get
+    const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+    setToken(token);
+    console.log(token);
+
+    const storedCompanyData = sessionStorage.getItem('selectedCompany');
+    if (storedCompanyData) {
+      const companyData = JSON.parse(storedCompanyData);
+      // Only update state if different from current state
+      if (JSON.stringify(companyData) !== JSON.stringify(selectedCompany)) {
+        setSelectedCompany(companyData);
+        // console.log(companyData);
+      }
+    }
+
+    const storedLocationData = sessionStorage.getItem('selectedLocation');
+    if (storedLocationData) {
+      const locationData = JSON.parse(storedLocationData);
+      // Only update state if different from current state
+      if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
+        setSelectedLocation(locationData);
+        console.log(locationData);
+      }
+    }
+  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+
+  useEffect(() => {
+    if (isVisible) {
+      console.log("Popup Data:", storeDatagridData);
+    }
+  }, [isVisible, storeDatagridData]);
+
+
+  const handleSubmit =  async (e) => {
+    e.preventDefault();
+    console.log(selectedLocation?.LOCN_CODE, )
+    setLoading(true);
+   try {
+    const res = await newRequest.post('/slicuat05api/v1/postData' , {
+      "_keyword_": "Invoice",
+      "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+      "data": [
+        {
+          "Company": "SLIC",
+          "TransactionCode": "DCIN",
+          "CustomerCode": "CF100005",
+          "SalesLocationCode": selectedLocation?.LOCN_CODE,
+          "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+          "UserId": "SYSADMIN",
+          "Item": [
+            {
+              "Item-Code": storeDatagridData[0]?.ItemCode,
+              "Size": storeDatagridData[0]?.ProductSize,
+              "Rate": "85",
+              "Qty": `${storeDatagridData[0]?.ItemQty}`,
+              "UserId": "SYSADMIN"
+            }
+          ]
+        }
+      ],
+      "COMPANY": "SLIC",
+      "USERID": "SYSADMIN",
+      "APICODE": "INVOICE",
+      "LANG": "ENG"
+    }, 
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+    )
+
+    console.log(res?.data);
+    showOtpPopup(res?.data);
+    handleCloseCreatePopup();
+    toast.success("Invoice Created Successfully");
+    setLoading(false);
+   } catch (err)
+    {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Something went wrong");
+      setLoading(false);
+    }
+  }
 
   return (
     <div>
@@ -92,20 +183,20 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                   </div>
                 </div>
               </div>
-              <div className="p-0">
+              <div className="p-0 w-full">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="border p-4">
+                  <form onSubmit={handleSubmit} className="border p-4 w-full">
                     <div className="flex justify-between font-semibold">
-                      <p>5 X PROMAX SP 0W16 API SP</p>
-                      <p>1,437</p>
+                      <p>Item Code</p>
+                      <p>{storeDatagridData[0]?.ItemCode}</p>
                     </div>
                     <div className="flex justify-between font-semibold">
-                      <p>10 X SUPER SYNTHETIC 10W 40 API SN</p>
-                      <p>5,750</p>
+                      <p>Product Size</p>
+                      <p>{storeDatagridData[0]?.ProductSize}</p>
                     </div>
                     <div className="flex justify-between mt-4 border-t pt-2 font-semibold">
                       <p>Sub Total</p>
-                      <p>7,187</p>
+                      {/* <p>7,187</p> */}
                     </div>
                     <div className="mt-10">
                     <Button
@@ -125,8 +216,8 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                         Print
                       </Button>
                     </div>
-                  </div>
-                  <div className="border p-2">
+                  </form>
+                  <div className="border p-2 w-full">
                     <div className="mb-4">
                       <p className="font-semibold">Amount Due</p>
                       <input
@@ -168,7 +259,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility }) => {
                       ))}
                     </div>
                   </div>
-                  <div className="p-1">
+                  <div className="p-1 w-full">
                     <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img src={cash} className="h-10 w-16 mr-2 ml-3 object-contain" alt="cash" />
                       <p className="">Cash</p>

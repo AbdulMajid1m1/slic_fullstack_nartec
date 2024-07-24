@@ -12,8 +12,6 @@ import { toast } from "react-toastify";
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [selectedCompanyCode, setSelectedCompanyCode] = useState("");
-  const [selectedLocationCode, setSelectedLocationCode] = useState("");
   const navigate = useNavigate();
 
 
@@ -127,6 +125,36 @@ const SlicFirstScreen = () => {
     initialize();
   }, []);
 
+
+
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  useEffect(() => {
+    if (selectedCompany) {
+      sessionStorage.setItem('selectedCompany', JSON.stringify(selectedCompany));
+      // console.log(selectedCompany);
+    }
+  }, [selectedCompany]);
+
+  useEffect(() => {
+    if (selectedLocation) {
+      sessionStorage.setItem('selectedLocation', JSON.stringify(selectedLocation));
+      // console.log(selectedLocation);
+    }
+  }, [selectedLocation]);
+
+  const handleCompanyChange = (e) => {
+    const selectedComp = companies.find(company => company.COMP_NAME === e.target.value);
+    setSelectedCompany(selectedComp);
+  };
+
+  const handleLocationChange = (e) => {
+    const selectedLoc = locations.find(location => location.LOCN_NAME === e.target.value);
+    setSelectedLocation(selectedLoc);
+  };
+
+
   return (
     <div>
       <div className="px-3 py-3 bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5">
@@ -146,13 +174,12 @@ const SlicFirstScreen = () => {
                 </label>
                 <select
                   id="company"
-                  value={selectedCompanyCode}
-                  onChange={(e) => setSelectedCompanyCode(e.target.value)}
+                  onChange={handleCompanyChange}
                   className="block sm:w-[70%] w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="" disabled>Select Company</option>
                   {companies.map((company) => (
-                    <option key={company.COMP_CODE} value={company.COMP_CODE}>
+                    <option>
                       {company.COMP_NAME}
                     </option>
                   ))}
@@ -167,13 +194,12 @@ const SlicFirstScreen = () => {
                 </label>
                 <select
                   id="locations"
-                  value={selectedLocationCode}
-                  onChange={(e) => setSelectedLocationCode(e.target.value)}
+                  onChange={handleLocationChange}
                   className="block sm:w-[70%] w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="" disabled>Select Location</option>
                   {locations.map((location) => (
-                    <option key={location?.LOCN_CODE} value={location?.LOCN_CODE}>
+                    <option>
                       {location?.LOCN_NAME}
                     </option>
                   ))}
@@ -224,7 +250,8 @@ const SlicFirstScreen = () => {
               </div>
             </div>
 
-            <div onClick={() => window.open('/pos', '_blank')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
+            {/* <div onClick={() => window.open('/pos', '_blank')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"> */}
+            <div onClick={() => navigate('/pos')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
               <div className="h-auto w-[35%]">
                 <img
                   src={pointofsale}
