@@ -2,14 +2,20 @@ import React, { useState, useEffect } from "react";
 
 const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
   const [itemCode, setItemCode] = useState("");
-  const [description, setDescription] = useState("");
+  const [productSize, setProductSize] = useState("");
+  const [rate, setRate] = useState("");
+  const [quantity, setQuantity] = useState("");
   // console.log(apiResponse);
 
-  // useEffect(() => {
-  //   if (apiResponse) {
-  //     setItemCode(apiResponse?.message?.whenValidateINVI_QTY_LS);
-  //   }
-  //   }, []);
+  useEffect(() => {
+    if (apiResponse) {
+      setItemCode(apiResponse?.message?.whenValidateINVI_QTY_LS);
+      setProductSize(apiResponse?.message?.whenValidateINVI_QTY);
+      setRate(apiResponse?.message?.whenValidateINVI_RATE);
+      setQuantity(apiResponse?.message?.whenValidateINVI_UOM_CODE);
+    }
+    // console.log(apiResponse);
+    }, []);
   
   const handleCloseCreatePopup = () => {
     setVisibility(false);
@@ -91,78 +97,50 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
               <div className="w-full overflow-y-auto">
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="itemcode" className={`text-secondary`}>
                           Item Code
                         </label>
-                        <textarea
-                          type="text"
-                          id="itemcode"
-                          value={apiResponse?.message?.whenValidateINVI_QTY_LS}
-                          placeholder="Enter item Code"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
+                        <p className="text-secondary border-b border-gray-300">{itemCode}</p>
                       </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                 
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-6">
                         <label
                           htmlFor="englishName"
                           className={`text-secondary`}
                         >
                           Product Size
                         </label>
-                        <textarea
-                          type="text"
-                          id="englishName"
-                          value={description}
-                          placeholder="Enter Product Size"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
+                         <p className="text-secondary border-b border-gray-300">{productSize}</p>
                       </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                 
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-5">
                         <label
                           htmlFor="rate"
                           className={`text-secondary`}
                         >
                           Rate
                         </label>
-                        <textarea
-                          type="text"
-                          id="rate"
-                          value={description}
-                          placeholder="Enter Rate"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
-                          required
-                        />
+                        <p className="text-secondary border-b border-gray-300">{rate}</p>
                       </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                 
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mt-5">
                         <label
                           htmlFor="quantity"
                           className={`text-secondary`}
                         >
                           Quantity
                         </label>
-                        <textarea
+                        {/* <textarea
                           type="text"
                           id="quantity"
-                          value={description}
+                          value={quantity}
                           placeholder="Enter Quantity"
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
-                        />
-                      </div>
-                    </div>
+                        /> */}
+                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                     </div>
 
                   </div>
                 </div>
