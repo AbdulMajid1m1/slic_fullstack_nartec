@@ -6,14 +6,38 @@ import { GtinColumn } from "../../../utils/datatablesource";
 import DeleteIcon from "@mui/icons-material/Delete";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
-import { Autocomplete, CircularProgress, debounce, TextField } from "@mui/material";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
+import F3ResponsePopUp from "./F3ResponsePopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  useEffect(() => {
+    const storedCompanyData = sessionStorage.getItem('selectedCompany');
+    if (storedCompanyData) {
+      const companyData = JSON.parse(storedCompanyData);
+      // Only update state if different from current state
+      if (JSON.stringify(companyData) !== JSON.stringify(selectedCompany)) {
+        setSelectedCompany(companyData);
+        // console.log(companyData);
+      }
+    }
+
+    const storedLocationData = sessionStorage.getItem('selectedLocation');
+    if (storedLocationData) {
+      const locationData = JSON.parse(storedLocationData);
+      // Only update state if different from current state
+      if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
+        setSelectedLocation(locationData);
+        console.log(locationData);
+      }
+    }
+  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
@@ -32,104 +56,6 @@ const POS = () => {
   }, []);
 
 
-
-  const [isSubmitClicked, setIsSubmitClicked] = useState(false);
-  const [selectedGtin, setSelectedGtin] = useState(null);
-  const [isAutocompleteFilled, setIsAutocompleteFilled] = useState(false);
-  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  const [adminList, setAdminList] = useState([]);
-  const abortControllerRef = React.useRef(null);
-
-  const handleGPCAutoCompleteChange = (event, value) => {
-    setSelectedGtin(value);
-
-
-    // Update the state variable when Autocomplete field is filled
-    setIsAutocompleteFilled(value !== null && value !== '');
-
-    // if (value) {
-    //   fetchData(value);
-    // }
-  }
-
-  // Use debounce to wrap the handleAutoCompleteInputChange function
-  const debouncedHandleAutoCompleteInputChange = debounce(async (event, newInputValue, reason) => {
-    setIsSubmitClicked(false);
-    if (reason === 'reset' || reason === 'clear') {
-      setAdminList([]); // Clear the data list if there is no input
-      return; // Do not perform search if the input is cleared or an option is selected
-    }
-    if (reason === 'option') {
-      return; // Do not perform search if the option is selected
-    }
-
-    if (!newInputValue || newInputValue.trim() === '') {
-      // perform operation when input is cleared
-      setAdminList([]);
-      return;
-    }
-
-    // console.log(newInputValue);
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort(); // Abort previous request
-    }
-    abortControllerRef.current = new AbortController(); // Create a new controller for the new request
-
-    try {
-      setAutocompleteLoading(true);
-      setOpen(true);
-
-      const res = await newRequest.get(`/itemCodes/v1/searchByGTIN?GTIN=${newInputValue}`, {
-        signal: abortControllerRef.current.signal
-      });
-      // console.log(res?.data);
-      
-      const crs = res?.data?.data?.map(item => {
-        return {
-          GTIN: item.GTIN,
-          ItemCode: item.ItemCode,
-          EnglishName: item.EnglishName,
-          ProductSize: item.ProductSize,
-          
-        };
-      });
-
-      setAdminList(crs);
-
-      setOpen(true);
-      setAutocompleteLoading(false);
-
-      // fetchData();
-
-    } catch (error) {
-      // console.log(error);
-      setAdminList([]); // Clear the data list if an error occurs
-      setOpen(false);
-      setAutocompleteLoading(false);
-    }
-  }, 400);
-
-  const handleGetBarcodes = async () => {
-    if (!selectedGtin) {
-      toast.info("Please enter a barcode");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const res = await newRequest.get(`/itemCodes/v1/searchByGTIN?GTIN=${selectedGtin?.GTIN}`);
-      // console.log(res?.data);
-      setData(res?.data?.data || []);
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.error || "Failed to load data");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   const handleRowClickInParent = (item) => {
     if (!item || item?.length === 0) {
       // setTableSelectedRows(item)
@@ -139,9 +65,36 @@ const POS = () => {
     }
   };
 
+
+  const handleGetBarcodes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await newRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
+      // console.log(response?.data?.data);
+      setData([response?.data?.data] || []);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
+  const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
-    setCreatePopupVisibility(true);
+    if (!isCreatePopupVisible) {
+      setStoreDatagridData([...data]); // Create a new array to avoid reference issues
+      setCreatePopupVisibility(true);
+    }
+  };
+
+  const [apiResponse, setApiResponse] = useState(null);
+  const [isOpenOtpPopupVisible, setIsOpenOtpPopupVisible] = useState(false);
+  const handleShowOtpPopup = (response) => {
+    setCreatePopupVisibility(false);
+    setApiResponse(response);
+    setIsOpenOtpPopupVisible(true);
   };
 
   return (
@@ -166,9 +119,10 @@ const POS = () => {
             </div>
             <div>
               <label className="block text-gray-700">Sales Locations *</label>
-              <select className="w-full mt-1 p-2 border rounded border-gray-400">
-                <option>Choose...</option>
-              </select>
+              <input className="w-full mt-1 p-2 border rounded border-gray-400" 
+                value={selectedLocation?.LOCN_NAME} 
+                readOnly 
+              />
             </div>
             <div>
               <label className="block text-gray-700">VAT #</label>
@@ -199,9 +153,10 @@ const POS = () => {
             </div>
             <div>
               <label className="block text-gray-700">Delivery *</label>
-              <select className="w-full mt-1 p-2 border rounded border-gray-400">
-                <option>Choose...</option>
-              </select>
+              <input 
+               type="text"
+               value={selectedLocation?.LOCN_NAME}
+               className="w-full mt-1 p-2 border rounded border-gray-400" />
             </div>
             <div>
               <label className="block text-gray-700">Customer *</label>
@@ -222,67 +177,13 @@ const POS = () => {
             <div className="flex items-center">
               <div className="w-full">
                 <label className="block text-gray-700">Scan Barcode</label>
-                <Autocomplete
-                    id="companyName"
-                    required
-                    options={adminList}
-                    
-                    getOptionLabel={(option) => (option && option.GTIN) ? `${option?.GTIN} - ${option?.ItemCode} - ${option?.EnglishName} - ${option?.ProductSize} ` : ''}
-                    onChange={handleGPCAutoCompleteChange}
-                    value={selectedGtin}
-                    onInputChange={(event, newInputValue, params) => debouncedHandleAutoCompleteInputChange(event, newInputValue, params)}
-                    loading={autocompleteLoading}
-                    sx={{ marginTop: '10px' }}
-                    open={open}
-                    onOpen={() => {
-                      // setOpen(true);
-                    }}
-                    onClose={() => {
-                      setOpen(false);
-                    }}
-                    renderOption={(props, option) => (
-                      <li key={option.GTIN} {...props}>
-                        {option ? `${option.GTIN} - ${option.ItemCode} - ${option.EnglishName} - ${option?.ProductSize} ` : 'No options'}
-                      </li>
-                    )}
-
-
-                    renderInput={(params) => (
-                      <TextField
-                        // required
-                        error={isSubmitClicked && !selectedGtin}
-                        helperText={isSubmitClicked && !selectedGtin ? "Products is required" : ""}
-                        {...params}
-                        label={'Search Barcodes'}
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: (
-                            <React.Fragment>
-                              {autocompleteLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                              {params.InputProps.endAdornment}
-                            </React.Fragment>
-                          ),
-                        }}
-                        sx={{
-                          '& label.Mui-focused': {
-                            color: '#00006A',
-                          },
-                          '& .MuiInput-underline:after': {
-                            borderBottomColor: '#00006A',
-                          },
-                          '& .MuiOutlinedInput-root': {
-                            '&:hover fieldset': {
-                              borderColor: '#000000',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#000000',
-                            },
-                          },
-                        }}
-                      />
-                    )}
-
-                  />
+                <input
+                  type="text"
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  placeholder="Search Barcode"
+                />
               </div>
               <button 
                 onClick={handleGetBarcodes}
@@ -438,8 +339,18 @@ const POS = () => {
             <F3TenderCashPopUp
               isVisible={isCreatePopupVisible}
               setVisibility={setCreatePopupVisibility}
+              storeDatagridData={storeDatagridData}
+              showOtpPopup={handleShowOtpPopup}
             />
           )}
+
+        {isOpenOtpPopupVisible && (
+          <F3ResponsePopUp 
+            isVisible={isOpenOtpPopupVisible}
+             setVisibility={setIsOpenOtpPopupVisible} 
+              apiResponse={apiResponse}
+          />
+        )}
         </div>
       </div>
     </SideNav>
