@@ -131,6 +131,7 @@ const DataTable = ({
     'adminListId',
     'assemblingId',
     'salesOrderId',
+    'posListId',
   ]
   const handleRowClick = (item) => {
     console.log(item)
@@ -462,10 +463,11 @@ const DataTable = ({
   let xtraSmallHeightTableScreens = [
     "gs1ResistriesId",
   ];
-
+  
   let smallHeightTableScreens = [
     "journalMovementClId",
     "journalMovementClDetId",
+    "posListId",
   ];
   let mediumHeightTableScreens = ["userRolesAssignedId", "adminListId", "customerListId", "customerListDateAndAttendanceId", "employeeMealsListId", "userAccountRoleId"];
   let largeHeightTableScreens = ["admin_registered_members"];

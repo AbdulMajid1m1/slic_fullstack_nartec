@@ -224,7 +224,7 @@ const SlicFirstScreen = () => {
               </div>
             </div>
 
-            <div onClick={() => navigate('/user-login')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
+            <div onClick={() => window.open('/pos', '_blank')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
               <div className="h-auto w-[35%]">
                 <img
                   src={pointofsale}
