@@ -8,4 +8,6 @@ router.post("/v1/slicLogin", controller.slicLogin);
 
 router.post("/v1/getApi", controller.slicGetApi);
 
+router.post("/v1/postData", controller.slicPostData);
+
 module.exports = router;
