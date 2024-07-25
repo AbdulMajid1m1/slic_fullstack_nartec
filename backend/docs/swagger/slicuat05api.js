@@ -98,3 +98,60 @@
  *             schema:
  *               type: object
  */
+
+/**
+ * @swagger
+ * /api/slicuat05api/v1/getApi:
+ *   post:
+ *     summary: Call external SLIC API
+ *     tags: [SLIC API]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: The request body to be sent to the SLIC API
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *           format: bearer
+ *         required: true
+ *         description: Bearer token for authorization
+ *     responses:
+ *       200:
+ *         description: Successful response from SLIC API
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Successful response from SLIC API
+ *                 data:
+ *                   type: object
+ *                   description: The data returned from the SLIC API
+ *       401:
+ *         description: Authorization token is missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Authorization token is missing or invalid
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
