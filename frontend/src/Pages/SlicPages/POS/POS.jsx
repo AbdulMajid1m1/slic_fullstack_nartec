@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { IoBarcodeSharp } from "react-icons/io5";
 import DataTable from "../../../components/Datatable/Datatable";
@@ -8,9 +8,11 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
 import F3ResponsePopUp from "./F3ResponsePopUp";
+import { DataContext } from "../../../Contexts/DataContext";
 
 const POS = () => {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+  const { data, setData } = useContext(DataContext);
   const [barcode, setBarcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -65,13 +67,74 @@ const POS = () => {
     }
   };
 
-
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+  
   const handleGetBarcodes = async () => {
     setIsLoading(true);
     try {
       const response = await newRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
-      // console.log(response?.data?.data);
-      setData([response?.data?.data] || []);
+      const data = response?.data?.data;
+      // console.log(data);
+  
+      if (data) {
+        const { ItemCode, ProductSize, GTIN, ItemQty } = data;
+
+        setData(prevData => {
+          // Check if the GTIN already exists in the previous data
+          const existingRecordIndex = prevData.findIndex(record => record.GTIN === GTIN);
+
+          if (existingRecordIndex !== -1) {
+            // If it exists, update the ItemQty
+            const updatedData = [...prevData];
+            updatedData[existingRecordIndex].ItemQty += ItemQty;
+            return updatedData;
+          } else {
+            // If it doesn't exist, append the new data
+            return [...prevData, data];
+          }
+        });
+  
+        // Prepare the body for the second API request
+        const secondApiBody = {
+          "filter": {
+              "P_COMP_CODE": "SLIC",
+              "P_CUST_CODE": "CL100729",
+              "P_ITEM_CODE": ItemCode,
+              "P_GRADE_CODE_1": ProductSize,
+          },
+          "M_COMP_CODE": "001",
+          "M_USER_ID": "SYSADMIN",
+          "APICODE": "ItemRate",
+          "M_LANG_CODE": "ENG"
+        };
+  
+      // Call the second API
+      try {
+        const secondApiResponse = await newRequest.post('/slicuat05api/v1/getApi', secondApiBody, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const secondApiData = secondApiResponse?.data;
+        // console.log(secondApiData);
+
+        // Retrieve the current session storage
+        let storedData = sessionStorage.getItem("secondApiResponses");
+        storedData = storedData ? JSON.parse(storedData) : {};
+
+        // Update the session storage with new key-value pair
+        storedData[ItemCode] = secondApiData;
+
+        // Save the updated session storage
+        sessionStorage.setItem("secondApiResponses", JSON.stringify(storedData));
+
+      } catch (secondApiError) {
+        toast.error(secondApiError?.response?.data?.message || "An error occurred while calling the second API");
+        console.error(secondApiError);
+      }
+    } else {
+      setData([]);
+    }
     } catch (error) {
       toast.error(error?.response?.data?.message || "An error occurred");
       console.error(error);
@@ -79,6 +142,8 @@ const POS = () => {
       setIsLoading(false);
     }
   };
+  
+
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);

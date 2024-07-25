@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import cash from "../../../Images/tendercash/cash.png";
 import creditcard from "../../../Images/tendercash/creditcard.png";
 import visamaster from "../../../Images/tendercash/visamaster.png";
@@ -11,27 +11,28 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
+import { DataContext } from "../../../Contexts/DataContext";
 
-const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup }) => {
+const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup, rateApiResponse }) => {
   const [loading, setLoading] = useState(false);
+  const { setData } = useContext(DataContext);
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedSecondApiData, setSelectedSecondApiData] = useState(null);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     // slic login api token get
     const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
     setToken(token);
-    console.log(token);
-
+   
     const storedCompanyData = sessionStorage.getItem('selectedCompany');
     if (storedCompanyData) {
       const companyData = JSON.parse(storedCompanyData);
-      // Only update state if different from current state
       if (JSON.stringify(companyData) !== JSON.stringify(selectedCompany)) {
         setSelectedCompany(companyData);
         // console.log(companyData);
@@ -41,27 +42,53 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
     const storedLocationData = sessionStorage.getItem('selectedLocation');
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
-      // Only update state if different from current state
       if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
         setSelectedLocation(locationData);
-        console.log(locationData);
+        // console.log(locationData);
       }
     }
-  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+    const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+    console.log(secondApiResponses);
+    
+    // If you need to retrieve and display the list of key-value pairs
+    const itemRateList = Object.entries(secondApiResponses).map(([itemCode, itemRate]) => ({
+      itemCode,
+      itemRate,
+    }));
+    
+    // console.log(itemRateList);
+   
+  }, []);
 
   useEffect(() => {
     if (isVisible) {
-      console.log("Popup Data:", storeDatagridData);
+      // console.log("Popup Data:", storeDatagridData);
+      
     }
   }, [isVisible, storeDatagridData]);
 
 
   const handleSubmit =  async (e) => {
     e.preventDefault();
-    console.log(selectedLocation?.LOCN_CODE, )
     setLoading(true);
    try {
-    const res = await newRequest.post('/slicuat05api/v1/postData' , {
+    const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+
+    const items = storeDatagridData.map(item => {
+      const itemRateObj = secondApiResponses[item.ItemCode];
+      const rate = itemRateObj?.ItemRate?.Rate || "0";
+
+      return {
+        "Item-Code": item.ItemCode,
+        "Size": item.ProductSize,
+        "Rate": rate,
+        "Qty": item.ItemQty,
+        "UserId": "SYSADMIN"
+      };
+    });
+    // console.log(items)
+
+    const res = await newRequest.post('/slicuat05api/v1/postData', {
       "_keyword_": "Invoice",
       "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
       "data": [
@@ -72,15 +99,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
           "SalesLocationCode": selectedLocation?.LOCN_CODE,
           "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
           "UserId": "SYSADMIN",
-          "Item": [
-            {
-              "Item-Code": storeDatagridData[0]?.ItemCode,
-              "Size": storeDatagridData[0]?.ProductSize,
-              "Rate": "85",
-              "Qty": `${storeDatagridData[0]?.ItemQty}`,
-              "UserId": "SYSADMIN"
-            }
-          ]
+          "Item": items
         }
       ],
       "COMPANY": "SLIC",
@@ -108,6 +127,9 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
     }
   }
 
+  const lastItemCode = storeDatagridData[storeDatagridData.length - 1]?.ItemCode;
+  const lastProductSize = storeDatagridData[storeDatagridData.length - 1]?.ProductSize;
+  
   return (
     <div>
       {isVisible && (
@@ -188,11 +210,11 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
                     <div className="flex justify-between font-semibold">
                       <p>Item Code</p>
-                      <p>{storeDatagridData[0]?.ItemCode}</p>
+                      <p>{lastItemCode}</p>
                     </div>
                     <div className="flex justify-between font-semibold">
                       <p>Product Size</p>
-                      <p>{storeDatagridData[0]?.ProductSize}</p>
+                      <p>{lastProductSize}</p>
                     </div>
                     <div className="flex justify-between mt-4 border-t pt-2 font-semibold">
                       <p>Sub Total</p>
