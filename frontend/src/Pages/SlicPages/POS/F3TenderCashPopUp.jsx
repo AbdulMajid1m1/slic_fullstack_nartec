@@ -12,7 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 
-const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup }) => {
+const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup, handleClearData, selectedSalesType }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
     setVisibility(false);
@@ -26,12 +26,10 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
     // slic login api token get
     const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
     setToken(token);
-    console.log(token);
-
+   
     const storedCompanyData = sessionStorage.getItem('selectedCompany');
     if (storedCompanyData) {
       const companyData = JSON.parse(storedCompanyData);
-      // Only update state if different from current state
       if (JSON.stringify(companyData) !== JSON.stringify(selectedCompany)) {
         setSelectedCompany(companyData);
         // console.log(companyData);
@@ -41,73 +39,95 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
     const storedLocationData = sessionStorage.getItem('selectedLocation');
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
-      // Only update state if different from current state
       if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
         setSelectedLocation(locationData);
-        console.log(locationData);
+        // console.log(locationData);
       }
     }
-  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+    const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+    // console.log(secondApiResponses);
+  }, []);
 
   useEffect(() => {
     if (isVisible) {
-      console.log("Popup Data:", storeDatagridData);
+      // console.log("Popup Data:", storeDatagridData);   
     }
   }, [isVisible, storeDatagridData]);
 
 
-  const handleSubmit =  async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(selectedLocation?.LOCN_CODE, )
     setLoading(true);
-   try {
-    const res = await newRequest.post('/slicuat05api/v1/postData' , {
-      "_keyword_": "Invoice",
-      "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-      "data": [
-        {
-          "Company": "SLIC",
-          "TransactionCode": "DCIN",
-          "CustomerCode": "CF100005",
-          "SalesLocationCode": selectedLocation?.LOCN_CODE,
-          "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
-          "UserId": "SYSADMIN",
-          "Item": [
-            {
-              "Item-Code": storeDatagridData[0]?.ItemCode,
-              "Size": storeDatagridData[0]?.ProductSize,
-              "Rate": "85",
-              "Qty": `${storeDatagridData[0]?.ItemQty}`,
-              "UserId": "SYSADMIN"
-            }
-          ]
+    try {
+        const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+        console.log(secondApiResponses);
+
+        const items = storeDatagridData.map(item => {
+            const itemRateObj = secondApiResponses[item.SKU];
+            const rate = itemRateObj?.ItemRate?.Rate || "0";
+
+            const commonFields = {
+                "Item-Code": item.SKU,
+                "Size": item.ProductSize || '40', // Use the correct size if available
+                "Qty": item.Qty,
+                "UserId": "SYSADMIN"
+            };
+
+            return selectedSalesType === 'DIRECT SALES INVOICE' 
+                ? { ...commonFields, "Rate": rate } 
+                : commonFields;
+        });
+
+        const body = {
+            "data": [
+                {
+                    "Company": "SLIC",
+                    "TransactionCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "DCIN" : "EXSR",
+                    "CustomerCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "CF100005" : "CL102511",
+                    "SalesLocationCode": selectedLocation?.LOCN_CODE,
+                    "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+                    "UserId": "SYSADMIN",
+                    "Item": items
+                }
+            ],
+            "COMPANY": "SLIC",
+            "USERID": "SYSADMIN",
+            "APICODE": selectedSalesType === 'DIRECT SALES INVOICE' ? "INVOICE" : "SALESRETURN",
+            "LANG": "ENG"
+        };
+
+        if (selectedSalesType === 'DIRECT SALES RETURN') {
+            body.keyword = "salesreturn";
+            body["secret-key"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
+        } else {
+            body["_keyword_"] = "Invoice";
+            body["_secret-key_"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
         }
-      ],
-      "COMPANY": "SLIC",
-      "USERID": "SYSADMIN",
-      "APICODE": "INVOICE",
-      "LANG": "ENG"
-    }, 
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-    )
 
-    console.log(res?.data);
-    showOtpPopup(res?.data);
-    handleCloseCreatePopup();
-    toast.success("Invoice Created Successfully");
-    setLoading(false);
-   } catch (err)
-    {
-      console.log(err);
-      toast.error(err?.response?.data?.message || "Something went wrong");
-      setLoading(false);
-    }
-  }
+        const res = await newRequest.post('/slicuat05api/v1/postData', body, 
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
+        console.log(res?.data);
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        toast.success("Transaction Created Successfully");
+        setLoading(false);
+    } catch (err) {
+        console.log(err);
+        toast.error(err?.response?.data?.message || "Something went wrong");
+        setLoading(false);
+    }
+};
+
+
+  const lastItemCode = storeDatagridData[storeDatagridData.length - 1]?.SKU;
+  const lastProductSize = storeDatagridData[storeDatagridData.length - 1]?.ItemSize;
+  
   return (
     <div>
       {isVisible && (
@@ -188,11 +208,11 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
                     <div className="flex justify-between font-semibold">
                       <p>Item Code</p>
-                      <p>{storeDatagridData[0]?.ItemCode}</p>
+                      <p>{lastItemCode}</p>
                     </div>
                     <div className="flex justify-between font-semibold">
                       <p>Product Size</p>
-                      <p>{storeDatagridData[0]?.ProductSize}</p>
+                      <p>{lastProductSize}</p>
                     </div>
                     <div className="flex justify-between mt-4 border-t pt-2 font-semibold">
                       <p>Sub Total</p>

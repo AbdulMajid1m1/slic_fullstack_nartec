@@ -576,3 +576,57 @@ export const usersColumn = [
     width: 180,
   },
 ];
+
+
+
+export const posColumn = [
+  {
+    field: "ItemCode",
+    headerName: "SKU",
+    width: 180,
+  },
+  {
+    field: "GTIN",
+    headerName: "Barcode",
+    renderCell: GTINCell,
+    width: 180,
+  },
+  {
+    field: "EnglishName",
+    headerName: "Description",
+    width: 180,
+  },
+  {
+    field: "ItemQty",
+    headerName: "Qty",
+    width: 180,
+  },
+  {
+    field: "ItemPrice",
+    headerName: "Item Price",
+    width: 180,
+  },
+  {
+    field: "ProductSize",
+    headerName: "Item Size",
+    width: 180,
+  },
+  {
+    field: "Discount",
+    headerName: "VAT",
+    width: 180,
+  },
+  {
+    field: "VAT(15%)",
+    headerName: "VAT",
+    width: 180,
+  },
+  {
+    field: "Total",
+    headerName: "Total Price",
+    width: 180,
+  },
+  
+  
+
+]
