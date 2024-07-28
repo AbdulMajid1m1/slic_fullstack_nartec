@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 
 const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
-  const [itemCode, setItemCode] = useState("");
-  const [productSize, setProductSize] = useState("");
-  const [rate, setRate] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [transaction, setTransaction] = useState("");
+  const [success, setSuccess] = useState('');
+  const [documentNo, setDocumentNo] = useState('');
+  const [companyCode, setCompanyCode] = useState('');
+  const [message, setMessage] = useState('');
+  const [referenceNo, setReferenceNo] = useState('');
   // console.log(apiResponse);
 
   useEffect(() => {
     if (apiResponse) {
-      setItemCode(apiResponse?.message?.whenValidateINVI_QTY_LS);
-      setProductSize(apiResponse?.message?.whenValidateINVI_QTY);
-      setRate(apiResponse?.message?.whenValidateINVI_RATE);
-      setQuantity(apiResponse?.message?.whenValidateINVI_UOM_CODE);
+      setTransaction(apiResponse.message?.["Transaction Code"]);
+      setSuccess(apiResponse.message?.["Company Code"]);
+      setDocumentNo(apiResponse.message?.["Document No"]);
+      setCompanyCode(apiResponse.message?.["Company Code"]);
+      setMessage(apiResponse.message?.message);
+      setReferenceNo(apiResponse.message?.["Ref-No/SysID"]);
     }
     // console.log(apiResponse);
     }, []);
@@ -101,7 +105,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         <label htmlFor="itemcode" className={`text-secondary border-b border-gray-300 font-semibold`}>
                           Transaction Code:
                         </label>
-                        <p className="text-secondary border-b border-gray-300">{itemCode}</p>
+                        <p className="text-secondary border-b border-gray-300">{transaction}</p>
                       </div>
                  
                       <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-6">
@@ -111,7 +115,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         >
                           Success
                         </label>
-                         <p className="text-secondary border-b border-gray-300 ">{productSize}</p>
+                         <p className="text-secondary border-b border-gray-300 ">{success}</p>
                       </div>
                  
                       <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
@@ -121,7 +125,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         >
                           Company Code:
                         </label>
-                        <p className="text-secondary border-b border-gray-300">{rate}</p>
+                        <p className="text-secondary border-b border-gray-300">{companyCode}</p>
                       </div>
                  
                       <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
@@ -131,7 +135,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         >
                           Message:
                         </label>
-                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                        <p className="text-secondary border-b border-gray-300">{message}</p>
                      </div>
 
                      <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
@@ -141,7 +145,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         >
                           Reference Number/System ID:
                         </label>
-                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                        <p className="text-secondary border-b border-gray-300">{referenceNo}</p>
                      </div>
 
                      <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
@@ -159,7 +163,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
                           required
                         /> */}
-                        <p className="text-secondary border-b border-gray-300">{quantity}</p>
+                        <p className="text-secondary border-b border-gray-300">{documentNo}</p>
                      </div>
 
                   </div>

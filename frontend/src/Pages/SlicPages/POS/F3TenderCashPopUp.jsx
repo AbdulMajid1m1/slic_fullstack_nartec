@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import cash from "../../../Images/tendercash/cash.png";
 import creditcard from "../../../Images/tendercash/creditcard.png";
 import visamaster from "../../../Images/tendercash/visamaster.png";
@@ -11,18 +11,15 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
-import { DataContext } from "../../../Contexts/DataContext";
 
-const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup, rateApiResponse }) => {
+const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup, handleClearData, selectedSalesType }) => {
   const [loading, setLoading] = useState(false);
-  const { setData } = useContext(DataContext);
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [selectedSecondApiData, setSelectedSecondApiData] = useState(null);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -48,87 +45,88 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
       }
     }
     const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
-    console.log(secondApiResponses);
-    
-    // If you need to retrieve and display the list of key-value pairs
-    const itemRateList = Object.entries(secondApiResponses).map(([itemCode, itemRate]) => ({
-      itemCode,
-      itemRate,
-    }));
-    
-    // console.log(itemRateList);
-   
+    // console.log(secondApiResponses);
   }, []);
 
   useEffect(() => {
     if (isVisible) {
-      // console.log("Popup Data:", storeDatagridData);
-      
+      // console.log("Popup Data:", storeDatagridData);   
     }
   }, [isVisible, storeDatagridData]);
 
 
-  const handleSubmit =  async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-   try {
-    const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+    try {
+        const secondApiResponses = JSON.parse(sessionStorage.getItem("secondApiResponses"));
+        console.log(secondApiResponses);
 
-    const items = storeDatagridData.map(item => {
-      const itemRateObj = secondApiResponses[item.ItemCode];
-      const rate = itemRateObj?.ItemRate?.Rate || "0";
+        const items = storeDatagridData.map(item => {
+            const itemRateObj = secondApiResponses[item.SKU];
+            const rate = itemRateObj?.ItemRate?.Rate || "0";
 
-      return {
-        "Item-Code": item.ItemCode,
-        "Size": item.ProductSize,
-        "Rate": rate,
-        "Qty": item.ItemQty,
-        "UserId": "SYSADMIN"
-      };
-    });
-    // console.log(items)
+            const commonFields = {
+                "Item-Code": item.SKU,
+                "Size": item.ProductSize || '40', // Use the correct size if available
+                "Qty": item.Qty,
+                "UserId": "SYSADMIN"
+            };
 
-    const res = await newRequest.post('/slicuat05api/v1/postData', {
-      "_keyword_": "Invoice",
-      "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-      "data": [
-        {
-          "Company": "SLIC",
-          "TransactionCode": "DCIN",
-          "CustomerCode": "CF100005",
-          "SalesLocationCode": selectedLocation?.LOCN_CODE,
-          "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
-          "UserId": "SYSADMIN",
-          "Item": items
+            return selectedSalesType === 'DIRECT SALES INVOICE' 
+                ? { ...commonFields, "Rate": rate } 
+                : commonFields;
+        });
+
+        const body = {
+            "data": [
+                {
+                    "Company": "SLIC",
+                    "TransactionCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "DCIN" : "EXSR",
+                    "CustomerCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "CF100005" : "CL102511",
+                    "SalesLocationCode": selectedLocation?.LOCN_CODE,
+                    "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+                    "UserId": "SYSADMIN",
+                    "Item": items
+                }
+            ],
+            "COMPANY": "SLIC",
+            "USERID": "SYSADMIN",
+            "APICODE": selectedSalesType === 'DIRECT SALES INVOICE' ? "INVOICE" : "SALESRETURN",
+            "LANG": "ENG"
+        };
+
+        if (selectedSalesType === 'DIRECT SALES RETURN') {
+            body.keyword = "salesreturn";
+            body["secret-key"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
+        } else {
+            body["_keyword_"] = "Invoice";
+            body["_secret-key_"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
         }
-      ],
-      "COMPANY": "SLIC",
-      "USERID": "SYSADMIN",
-      "APICODE": "INVOICE",
-      "LANG": "ENG"
-    }, 
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-    )
 
-    console.log(res?.data);
-    showOtpPopup(res?.data);
-    handleCloseCreatePopup();
-    toast.success("Invoice Created Successfully");
-    setLoading(false);
-   } catch (err)
-    {
-      console.log(err);
-      toast.error(err?.response?.data?.message || "Something went wrong");
-      setLoading(false);
-    }
-  }
+        const res = await newRequest.post('/slicuat05api/v1/postData', body, 
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-  const lastItemCode = storeDatagridData[storeDatagridData.length - 1]?.ItemCode;
-  const lastProductSize = storeDatagridData[storeDatagridData.length - 1]?.ProductSize;
+        console.log(res?.data);
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        toast.success("Transaction Created Successfully");
+        setLoading(false);
+    } catch (err) {
+        console.log(err);
+        toast.error(err?.response?.data?.message || "Something went wrong");
+        setLoading(false);
+    }
+};
+
+
+  const lastItemCode = storeDatagridData[storeDatagridData.length - 1]?.SKU;
+  const lastProductSize = storeDatagridData[storeDatagridData.length - 1]?.ItemSize;
   
   return (
     <div>

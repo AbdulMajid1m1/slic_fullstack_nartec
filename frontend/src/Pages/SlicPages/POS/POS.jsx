@@ -1,44 +1,36 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { IoBarcodeSharp } from "react-icons/io5";
-import DataTable from "../../../components/Datatable/Datatable";
-import { GtinColumn } from "../../../utils/datatablesource";
-import DeleteIcon from "@mui/icons-material/Delete";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
 import F3ResponsePopUp from "./F3ResponsePopUp";
-import { DataContext } from "../../../Contexts/DataContext";
 
 const POS = () => {
-  // const [data, setData] = useState([]);
-  const { data, setData } = useContext(DataContext);
+  const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedSalesType, setSelectedSalesType] = useState('DIRECT SALES INVOICE');
 
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem('selectedCompany');
     if (storedCompanyData) {
       const companyData = JSON.parse(storedCompanyData);
-      // Only update state if different from current state
       if (JSON.stringify(companyData) !== JSON.stringify(selectedCompany)) {
         setSelectedCompany(companyData);
-        // console.log(companyData);
       }
     }
 
     const storedLocationData = sessionStorage.getItem('selectedLocation');
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
-      // Only update state if different from current state
       if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
         setSelectedLocation(locationData);
-        console.log(locationData);
       }
     }
-  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+  }, []);
 
   const [currentTime, setCurrentTime] = useState('');
 
@@ -51,50 +43,30 @@ const POS = () => {
       }));
     };
 
-    updateTime(); // Set initial time
-    const intervalId = setInterval(updateTime, 1000); // Update every second
+    updateTime();
+    const intervalId = setInterval(updateTime, 1000);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => clearInterval(intervalId);
   }, []);
-
 
   const handleRowClickInParent = (item) => {
     if (!item || item?.length === 0) {
-      // setTableSelectedRows(item)
-      // setTableSelectedExportRows(item);
-      // setFilteredData(data);
       return;
     }
   };
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
-  
+
   const handleGetBarcodes = async () => {
     setIsLoading(true);
     try {
       const response = await newRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
       const data = response?.data?.data;
-      // console.log(data);
+      console.log(data);
   
       if (data) {
-        const { ItemCode, ProductSize, GTIN, ItemQty } = data;
-
-        setData(prevData => {
-          // Check if the GTIN already exists in the previous data
-          const existingRecordIndex = prevData.findIndex(record => record.GTIN === GTIN);
-
-          if (existingRecordIndex !== -1) {
-            // If it exists, update the ItemQty
-            const updatedData = [...prevData];
-            updatedData[existingRecordIndex].ItemQty += ItemQty;
-            return updatedData;
-          } else {
-            // If it doesn't exist, append the new data
-            return [...prevData, data];
-          }
-        });
+        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
   
-        // Prepare the body for the second API request
         const secondApiBody = {
           "filter": {
               "P_COMP_CODE": "SLIC",
@@ -108,48 +80,67 @@ const POS = () => {
           "M_LANG_CODE": "ENG"
         };
   
-      // Call the second API
-      try {
-        const secondApiResponse = await newRequest.post('/slicuat05api/v1/getApi', secondApiBody, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const secondApiData = secondApiResponse?.data;
-        // console.log(secondApiData);
-
-        // Retrieve the current session storage
-        let storedData = sessionStorage.getItem("secondApiResponses");
-        storedData = storedData ? JSON.parse(storedData) : {};
-
-        // Update the session storage with new key-value pair
-        storedData[ItemCode] = secondApiData;
-
-        // Save the updated session storage
-        sessionStorage.setItem("secondApiResponses", JSON.stringify(storedData));
-
-      } catch (secondApiError) {
-        toast.error(secondApiError?.response?.data?.message || "An error occurred while calling the second API");
-        console.error(secondApiError);
+        try {
+          const secondApiResponse = await newRequest.post('/slicuat05api/v1/getApi', secondApiBody, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const secondApiData = secondApiResponse?.data;
+  
+          let storedData = sessionStorage.getItem("secondApiResponses");
+          storedData = storedData ? JSON.parse(storedData) : {};
+  
+          storedData[ItemCode] = secondApiData;
+  
+          sessionStorage.setItem("secondApiResponses", JSON.stringify(storedData));
+  
+          const itemPrice = secondApiData.ItemRate || 0;
+          const vat = itemPrice * 0.15;
+          const total = itemPrice + vat;
+  
+          setData(prevData => {
+            const existingRecordIndex = prevData.findIndex(record => record.Barcode === GTIN);
+  
+            if (existingRecordIndex !== -1) {
+              const updatedData = [...prevData];
+              updatedData[existingRecordIndex].Qty += 1;
+              updatedData[existingRecordIndex].Total = (updatedData[existingRecordIndex].Qty * itemPrice) + (updatedData[existingRecordIndex].Qty * vat);
+              return updatedData;
+            } else {
+              return [...prevData, {
+                SKU: ItemCode,
+                Barcode: GTIN,
+                Description: EnglishName,
+                ItemSize: ProductSize,
+                Qty: 1,
+                ItemPrice: itemPrice,
+                Discount: 0,
+                VAT: vat,
+                Total: total
+              }];
+            }
+          });
+  
+        } catch (secondApiError) {
+          toast.error(secondApiError?.response?.data?.message || "An error occurred while calling the second API");
+        }
+      } else {
+        setData([]);
       }
-    } else {
-      setData([]);
-    }
     } catch (error) {
       toast.error(error?.response?.data?.message || "An error occurred");
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
-  };
+  };    
   
-
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
     if (!isCreatePopupVisible) {
-      setStoreDatagridData([...data]); // Create a new array to avoid reference issues
+      setStoreDatagridData([...data]);
       setCreatePopupVisibility(true);
     }
   };
@@ -162,24 +153,33 @@ const POS = () => {
     setIsOpenOtpPopupVisible(true);
   };
 
+  const handleClearData = () => {
+    setData([]);
+  };
+
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
         <div className="bg-white p-6 shadow-md">
           <div className="px-3 py-3 flex justify-between bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5">
-            <span>Sales Entry Form (Direct Invoice)</span>
-            <p className="text-end">{currentTime}</p>
+              <span>{selectedSalesType === 'DIRECT SALES INVOICE' ? 'Sales Entry Form (Direct Invoice)' : 'Sales Entry Form (Direct Sales Return)'}</span>
+              <p className="text-end">{currentTime}</p>
           </div>
 
           <div className="mb-4 mt-4 flex justify-between">
-            <h2 className="text-2xl font-semibold bg-yellow-100 px-2 py-1">NEW SALE</h2>
-            <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">Cashier : CreativeM</p>
+              <h2 className="text-2xl font-semibold bg-yellow-100 px-2 py-1">{selectedSalesType === 'DIRECT SALES INVOICE' ? 'NEW SALE' : 'SALES RETURN'}</h2>
+              <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">Cashier : CreativeM</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-gray-700">Transactions *</label>
-              <select className="w-full mt-1 p-2 border rounded border-gray-400">
-                <option>Direct Sales Invoice</option>
+              <select 
+                className="w-full mt-1 p-2 border rounded border-gray-400"
+                value={selectedSalesType}
+                onChange={(e) => setSelectedSalesType(e.target.value)}
+              >
+                <option value="DIRECT SALES INVOICE">DIRECT SALES INVOICE</option>
+                <option value="DIRECT SALES RETURN">DIRECT SALES RETURN</option>
               </select>
             </div>
             <div>
@@ -274,42 +274,58 @@ const POS = () => {
             </div>
           </div>
           <div className="mt-10">
-            {/* <div className="bg-blue-500 text-white font-semibold flex justify-between flex-wrap">
-              <div className="px-4 py-2">GTIN</div>
-              <div className="px-4 py-2">Description</div>
-              <div className="px-4 py-2">Price</div>
-              <div className="px-4 py-2">Qty</div>
-              <div className="px-4 py-2">Discount</div>
-              <div className="px-4 py-2">VAT</div>
-              <div className="px-4 py-2">Total</div>
-              <div className="px-4 py-2">Action</div>
-            </div> */}
-            <div style={{marginLeft: '-20px', marginRight: '-20px', marginTop: '-25px'}}>
-              <DataTable
-                data={data}
-                // title={"Products List"}
-                columnsName={GtinColumn}
-                loading={isLoading}
-                secondaryColor="secondary"
-                uniqueId="posListId"
-                handleRowClickInParent={handleRowClickInParent}
-                showToolbarSlot={false}
-                checkboxSelection="disabled"
-                dropDownOptions={[
-                  {
-                    label: "Delete",
-                    icon: (
-                      <DeleteIcon
-                        fontSize="small"
-                        color="action"
-                        style={{ color: "rgb(37 99 235)" }}
+            <table className="table-auto w-full">
+              <thead className="bg-blue-500 text-white">
+                <tr>
+                  <th className="px-4 py-2">SKU</th>
+                  <th className="px-4 py-2">Barcode</th>
+                  <th className="px-4 py-2">Description</th>
+                  <th className="px-4 py-2">Item Size</th>
+                  <th className="px-4 py-2">Qty</th>
+                  <th className="px-4 py-2">Item Price</th>
+                  <th className="px-4 py-2">Discount</th>
+                  <th className="px-4 py-2">VAT (15%)</th>
+                  <th className="px-4 py-2">Total</th>
+                  <th className="px-4 py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, index) => (
+                  <tr key={index} className="bg-gray-100">
+                    <td className="border px-4 py-2">{row.SKU}</td>
+                    <td className="border px-4 py-2">{row.Barcode}</td>
+                    <td className="border px-4 py-2">{row.Description}</td>
+                    <td className="border px-4 py-2">{row.ItemSize}</td>
+                    <td className="border px-4 py-2">{row.Qty}</td>
+                    <td className="border px-4 py-2">{row.ItemPrice}</td>
+                    <td className="border px-4 py-2">
+                      <input
+                        type="number"
+                        value={row.Discount}
+                        onChange={(e) => {
+                          const discount = parseFloat(e.target.value) || 0;
+                          const updatedData = [...data];
+                          updatedData[index].Discount = discount;
+                          updatedData[index].Total = (updatedData[index].ItemPrice - discount) + updatedData[index].VAT;
+                          setData(updatedData);
+                        }}
+                        className="w-full text-center"
                       />
-                    ),
-                    // action: handleDelete,
-                  },
-                ]}
-              />
-            </div>
+                    </td>
+                    <td className="border px-4 py-2">{row.VAT.toFixed(2)}</td>
+                    <td className="border px-4 py-2">{row.Total.toFixed(2)}</td>
+                    <td className="border px-4 py-2 text-center">
+                      <button onClick={() => {
+                        const updatedData = data.filter((_, i) => i !== index);
+                        setData(updatedData);
+                      }}>
+                        <span className="text-red-500 font-bold">X</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -403,9 +419,11 @@ const POS = () => {
           {isCreatePopupVisible && (
             <F3TenderCashPopUp
               isVisible={isCreatePopupVisible}
-              setVisibility={setCreatePopupVisibility}
-              storeDatagridData={storeDatagridData}
-              showOtpPopup={handleShowOtpPopup}
+                setVisibility={setCreatePopupVisibility}
+                  storeDatagridData={storeDatagridData}
+                    showOtpPopup={handleShowOtpPopup}
+                      handleClearData={handleClearData}
+                        selectedSalesType={selectedSalesType}
             />
           )}
 
