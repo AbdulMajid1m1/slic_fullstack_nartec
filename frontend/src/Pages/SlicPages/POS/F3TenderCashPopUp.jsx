@@ -69,7 +69,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
             const commonFields = {
                 "Item-Code": item.SKU,
                 "Size": item.ProductSize || '40', // Use the correct size if available
-                "Qty": item.Qty,
+                "Qty": `${item.Qty}`,
                 "UserId": "SYSADMIN"
             };
 
@@ -78,31 +78,45 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                 : commonFields;
         });
 
-        const body = {
-            "data": [
-                {
-                    "Company": "SLIC",
-                    "TransactionCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "DCIN" : "EXSR",
-                    "CustomerCode": selectedSalesType === 'DIRECT SALES INVOICE' ? "CF100005" : "CL102511",
-                    "SalesLocationCode": selectedLocation?.LOCN_CODE,
-                    "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
-                    "UserId": "SYSADMIN",
-                    "Item": items
-                }
-            ],
-            "COMPANY": "SLIC",
-            "USERID": "SYSADMIN",
-            "APICODE": selectedSalesType === 'DIRECT SALES INVOICE' ? "INVOICE" : "SALESRETURN",
-            "LANG": "ENG"
-        };
-
-        if (selectedSalesType === 'DIRECT SALES RETURN') {
-            body.keyword = "salesreturn";
-            body["secret-key"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
-        } else {
-            body["_keyword_"] = "Invoice";
-            body["_secret-key_"] = "2bf52be7-9f68-4d52-9523-53f7f267153b";
-        }
+        const body = selectedSalesType === 'DIRECT SALES INVOICE' 
+            ? {
+                "_keyword_": "Invoice",
+                "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+                "data": [
+                    {
+                        "Company": "SLIC",
+                        "TransactionCode": "DCIN",
+                        "CustomerCode": "CF100005",
+                        "SalesLocationCode": selectedLocation?.LOCN_CODE,
+                        "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+                        "UserId": "SYSADMIN",
+                        "Item": items
+                    }
+                ],
+                "COMPANY": "SLIC",
+                "USERID": "SYSADMIN",
+                "APICODE": "INVOICE",
+                "LANG": "ENG"
+              }
+            : {
+                "keyword": "salesreturn",
+                "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+                "data": [
+                    {
+                        "Company": "SLIC",
+                        "TransactionCode": "EXSR",
+                        "CustomerCode": "CL102511",
+                        "SalesLocationCode": selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+                        "DeliveryLocationCode": selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+                        "UserId": "SYSADMIN",
+                        "Item": items
+                    }
+                ],
+                "COMPANY": "SLIC",
+                "USERID": "SYSADMIN",
+                "APICODE": "SALESRETURN",
+                "LANG": "ENG"
+              };
 
         const res = await newRequest.post('/slicuat05api/v1/postData', body, 
         {
@@ -123,6 +137,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
         setLoading(false);
     }
 };
+
 
 
   const lastItemCode = storeDatagridData[storeDatagridData.length - 1]?.SKU;
