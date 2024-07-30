@@ -5,6 +5,7 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
 import F3ResponsePopUp from "./F3ResponsePopUp";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -49,12 +50,7 @@ const POS = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleRowClickInParent = (item) => {
-    if (!item || item?.length === 0) {
-      return;
-    }
-  };
-
+ 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
   const handleGetBarcodes = async () => {
@@ -157,6 +153,46 @@ const POS = () => {
     setData([]);
   };
 
+  // transaction Codes Api
+  const [transactionCodes, setTransactionCodes] = useState([]);
+  const [selectedTransactionCode, setSelectedTransactionCode] = useState('');
+
+  const fetchTransactionCodes = async () => {
+    try {
+      const response = await newRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          filter: {
+            P_TXN_TYPE: "LTRFO"
+          },
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "ListOfTransactionCode",
+          M_LANG_CODE: "ENG"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(response.data);
+      setTransactionCodes(response.data);
+    } catch (err) {
+      // console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactionCodes();
+  }, []);
+
+  useEffect(() => {
+    // console.log(selectedTransactionCode)
+  },[selectedTransactionCode])
+
+
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
@@ -171,8 +207,22 @@ const POS = () => {
               <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">Cashier : CreativeM</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+           <div>
+              <label className="block text-gray-700">Transactions Codes *</label>
+              <select 
+                className="w-full mt-1 p-2 border rounded border-gray-400"
+                value={selectedTransactionCode}
+                onChange={(e) => setSelectedTransactionCode(e.target.value)}
+              >
+                {transactionCodes.map((code, index) => (
+                  <option key={index} value={code.ListOfTransactionCod.TXN_CODE}>
+                    {code.ListOfTransactionCod.TXN_CODE}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
-              <label className="block text-gray-700">Transactions *</label>
+              <label className="block text-gray-700">Sale Type *</label>
               <select 
                 className="w-full mt-1 p-2 border rounded border-gray-400"
                 value={selectedSalesType}
@@ -190,20 +240,12 @@ const POS = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700">VAT #</label>
-              <input
-                type="text"
-                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                placeholder="VAT"
-              />
-            </div>
-            <div>
               <label className="block text-gray-700">Invoice #</label>
               <input
                 type="text"
                 className="w-full mt-1 p-2 border rounded border-gray-400"
-                value="1720253863"
-                readOnly
+                placeholder="Invoice"
+                // readOnly
               />
             </div>
           </div>
@@ -272,10 +314,18 @@ const POS = () => {
                 <option>Cash</option>
               </select>
             </div>
+            <div>
+              <label className="block text-gray-700">VAT #</label>
+              <input
+                type="text"
+                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                placeholder="VAT"
+              />
+            </div>
           </div>
           <div className="mt-10">
             <table className="table-auto w-full">
-              <thead className="bg-blue-500 text-white">
+              <thead className="bg-secondary text-white">
                 <tr>
                   <th className="px-4 py-2">SKU</th>
                   <th className="px-4 py-2">Barcode</th>
@@ -289,6 +339,11 @@ const POS = () => {
                   <th className="px-4 py-2">Action</th>
                 </tr>
               </thead>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-14">
+                  <CircularProgress size={24} color="inherit" />
+                </div>
+              ) : (
               <tbody>
                 {data.map((row, index) => (
                   <tr key={index} className="bg-gray-100">
@@ -325,13 +380,14 @@ const POS = () => {
                   </tr>
                 ))}
               </tbody>
+              )}
             </table>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <button className="bg-[#2596be] text-white py-4 px-4 rounded">
+                <button className="bg-[#2596be] t</div>ext-white py-4 px-4 rounded">
                   F10 - Open Drawer
                 </button>
                 <button className="bg-[#037de2] text-white py-4 px-4 rounded">
