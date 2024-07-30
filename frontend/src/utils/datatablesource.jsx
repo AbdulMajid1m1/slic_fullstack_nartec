@@ -413,8 +413,8 @@ export const purchaseOrderColumn = [
     width: 280,
   },
   {
-    field: "PONumber",
-    headerName: "PO Number",
+    field: "Document_No",
+    headerName: "Document No",
     width: 180,
   },
   {
@@ -427,33 +427,7 @@ export const purchaseOrderColumn = [
     headerName: "PO Date",
     width: 180,
   },
-  {
-    field: "tblPOFPOMasterID",
-    headerName: "POF PO Master ID",
-    width: 180,
-  },
-  {
-    field: "createdAt",
-    headerName: "Created At",
-    width: 180,
-
-    type: "dateTime",
-    valueGetter: (params) => {
-      // Convert the string date to a Date object
-      return params.value ? new Date(params.value) : null;
-    },
-  },
-  {
-    field: "updatedAt",
-    headerName: "Updated At",
-    width: 180,
-    type: "dateTime",
-    valueGetter: (params) => {
-      // Convert the string date to a Date object
-      return params.value ? new Date(params.value) : null;
-    },
-  },
-
+  
 
 
 ]
@@ -462,8 +436,8 @@ export const purchaseOrderColumn = [
 
 export const purchaseOrderDetailsColumn = [
   {
-    field: "HEAD_SYS_ID",
-    headerName: "Head System ID",
+    field: "ITEM_SYS_ID",
+    headerName: "Item System ID",
     width: 180,
   },
   {
@@ -475,12 +449,7 @@ export const purchaseOrderDetailsColumn = [
     field: "ITEM_NAME",
     headerName: "Item Name",
     renderCell: GTINCell,
-    width: 180,
-  },
-  {
-    field: "ITEM_SYS_ID",
-    headerName: "Item System ID",
-    width: 180,
+    width: 280,
   },
   {
     field: "PO_QTY",
@@ -495,6 +464,11 @@ export const purchaseOrderDetailsColumn = [
   {
     field: "UOM",
     headerName: "UOM",
+    width: 180,
+  },
+  {
+    field: "GRADE",
+    headerName: "GRADE",
     width: 180,
   },
   
