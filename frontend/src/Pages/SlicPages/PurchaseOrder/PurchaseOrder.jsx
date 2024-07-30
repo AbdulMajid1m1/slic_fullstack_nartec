@@ -18,34 +18,57 @@ const PurchaseOrder = () => {
   const memberDataString = sessionStorage.getItem("slicUserData");
   const memberData = JSON.parse(memberDataString);
   // console.log(memberData)
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+
 
   const [isLoading, setIsLoading] = useState(true);
   const [secondGridData, setSecondGridData] = useState([]);
   const [filteredData, setFilteredData] = useState([]); // for the map markers
   const navigate = useNavigate();
   const [isPurchaseOrderDataLoading, setIsPurchaseOrderDataLoading] = useState(false);
-
-      const fetchData = async () => {
-        setIsLoading(true);
-        try {
-          const response = await newRequest.get('/foreignPO/v1/foreignPO/all', {
-            headers: {
-              Authorization: `Bearer ${memberData?.data?.token}`,
-            },
-          });
-          // console.log(response.data);
-          setData(response?.data?.data || []);
-          setIsLoading(false);
-        } catch (err) {
-          // console.log(err);
-          setIsLoading(false);
-          toast.error(err?.response?.data?.message || "Something went Wrong")
+  
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      // const response = await newRequest.get('/foreignPO/v1/foreignPO/all', {
+      const response = await newRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          filter: {},
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "ListOfPO",
+          M_LANG_CODE: "ENG"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      };
+      );
+      console.log(response.data);
+      
+      // Map the API response to the expected data structure
+      const mappedData = response.data.map(item => ({
+        Head_SYS_ID: item.ListOfPO.HEAD_SYS_ID,
+        SupplierName: item.ListOfPO.SUPP_NAME,
+        Document_No: item.ListOfPO.DOC_NO,
+        POStatus: item.ListOfPO.STATUS,
+        PODate: item.ListOfPO.DOC_DT,
+      }));
+
+      setData(mappedData);
+      setIsLoading(false);
+    } catch (err) {
+      setIsLoading(false);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };  
 
     useEffect(() => {
     fetchData(); // Calling the function within useEffect, not inside itself
   }, []);
+
 
   const handleRowClickInParent = async (item) => {
     // console.log(item)
@@ -53,24 +76,43 @@ const PurchaseOrder = () => {
       setFilteredData(secondGridData);
       return;
     }
-    const filteredData = secondGridData.filter((singleItem) => {
-      return Number(singleItem?.ProvGLN) == Number(item[0]?.ProvGLN);
-    });
 
     // call api
     setIsPurchaseOrderDataLoading(true);
     try {
-      // const res = await newRequest.get(`/lineItems/v1/699}`, {
-      const res = await newRequest.get(`/lineItems/v1/${item[0]?.Head_SYS_ID}`, {
-        headers: {
-          Authorization: `Bearer ${memberData?.data?.token}`,
+      const res = await newRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          filter: {
+            P_PI_PH_SYS_ID: item[0]?.Head_SYS_ID
+          },
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "ListOfPOItem",
+          M_LANG_CODE: "ENG"
         },
-      });
-      console.log(res?.data)
-      const filteredData = res?.data?.data ?? [];
-      setFilteredData(filteredData);
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(res?.data);
+
+      // Map the response data to the expected structure for the second grid
+      const mappedData = res?.data.map(item => ({
+        GRADE: item.ListOfPOItem.GRADE,
+        ITEM_CODE: item.ListOfPOItem.ITEM_CODE,
+        ITEM_NAME: item.ListOfPOItem.ITEM_NAME,
+        ITEM_SYS_ID: item.ListOfPOItem.ITEM_SYS_ID,
+        PO_QTY: item.ListOfPOItem.PO_QTY,
+        RECEIVED_QTY: item.ListOfPOItem.RECEIVED_QTY,
+        UOM: item.ListOfPOItem.UOM,
+      }));
+
+      setFilteredData(mappedData);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       toast.error(error?.response?.data?.message ||"Something went wrong");
       setFilteredData([]);
     } finally {
