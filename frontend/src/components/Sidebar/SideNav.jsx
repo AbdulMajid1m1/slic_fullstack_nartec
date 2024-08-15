@@ -136,7 +136,7 @@ function SideNav({ children }) {
                       </div>
                     </Link>
                   </li>
-                  <li className="mt-3">
+                  {/* <li className="mt-3">
                     <Link
                       to="/direct-invoice"
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
@@ -152,7 +152,7 @@ function SideNav({ children }) {
                         </span>
                       </div>
                     </Link>
-                  </li>
+                  </li> */}
                   <li className="mt-3">
                     <Link
                       to="/user-profile"
@@ -170,7 +170,7 @@ function SideNav({ children }) {
                       </div>
                     </Link>
                   </li>
-                  <li className="mt-3">
+                  {/* <li className="mt-3">
                     <Link
                       to="/pos"
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
@@ -186,7 +186,7 @@ function SideNav({ children }) {
                         </span>
                       </div>
                     </Link>
-                  </li>
+                  </li> */}
                   <li className="mt-3">
                     <div
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer"
