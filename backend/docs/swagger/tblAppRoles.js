@@ -1,5 +1,74 @@
 /**
  * @swagger
+ * /api/roles/v1/get-all-roles:
+ *   get:
+ *     summary: Get all roles
+ *     description: Retrieves all roles available in the system.
+ *     tags: [Roles]
+ *     responses:
+ *       200:
+ *         description: Roles found successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles found."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       RoleID:
+ *                         type: integer
+ *                         example: 1
+ *                       RoleName:
+ *                         type: string
+ *                         example: "Admin"
+ *       404:
+ *         description: No roles found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No roles found."
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
  * /api/roles/v1/create-role:
  *   post:
  *     summary: Create a new role

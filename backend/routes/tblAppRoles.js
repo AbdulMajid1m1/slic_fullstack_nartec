@@ -15,6 +15,10 @@ router.post("/v1/assign-role", roleController.assignRole);
 // Route to get roles for a user
 router.post("/v1/get-roles", isAuth, roleController.getRolesByUser);
 
+// Route to get all roles
+
+router.get("/v1/get-all-roles", roleController.getAllRoles);
+
 // Route to update a role
 router.put("/v1/update-role/:roleID", roleController.updateRole);
 

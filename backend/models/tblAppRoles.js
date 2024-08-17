@@ -64,6 +64,16 @@ class Role {
     }
   }
 
+  static async getRoles() {
+    try {
+      const roles = await prisma.TblAppRoles.findMany({});
+      return roles;
+    } catch (error) {
+      console.error("Error fetching roles for user:", error);
+      throw new Error("Error fetching roles for user");
+    }
+  }
+
   static async getRoleById(roleID) {
     try {
       const role = await prisma.tblAppRoles.findUnique({
