@@ -137,6 +137,28 @@ exports.removeRoleFromUser = async (req, res, next) => {
   }
 };
 
+exports.getAllRoles = async (req, res, next) => {
+  try {
+    const roles = await Role.getRoles();
+    if (!roles || roles.length === 0) {
+      const error = new CustomError("No roles found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(response(200, true, "Roles found successfully", roles));
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
 exports.getRolesByUser = async (req, res, next) => {
   const { userLoginID } = req.body;
   try {
