@@ -173,6 +173,7 @@ exports.slicPostData = async (req, res, next) => {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           res.status(200).json(JSON.parse(responseData));
         } else {
+          console.log(responseData);
           return next(new Error(`HTTP error! status: ${response.statusCode}`));
         }
       });
