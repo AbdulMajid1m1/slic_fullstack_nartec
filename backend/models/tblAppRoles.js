@@ -66,7 +66,7 @@ class Role {
 
   static async getRoles() {
     try {
-      const roles = await prisma.TblAppRoles.findMany({});
+      const roles = await prisma.tblAppRoles.findMany({});
       return roles;
     } catch (error) {
       console.error("Error fetching roles for user:", error);
@@ -127,6 +127,48 @@ class Role {
     } catch (error) {
       console.error("Error removing role from user:", error);
       throw new Error("Error removing role from user");
+    }
+  }
+
+  static async assignRoles(userLoginID, roleNames) {
+    try {
+      const roles = await Promise.all(
+        roleNames.map((roleName) => this.getRoleByName(roleName))
+      );
+
+      const userRoles = await prisma.tblUserRoles.createMany({
+        data: roles.map((role) => ({
+          UserLoginID: userLoginID,
+          RoleID: role.RoleID,
+        })),
+      });
+
+      return userRoles;
+    } catch (error) {
+      console.error("Error assigning roles to user:", error);
+      throw new Error("Error assigning roles to user");
+    }
+  }
+
+  static async removeRoles(userLoginID, roleNames) {
+    try {
+      const roles = await Promise.all(
+        roleNames.map((roleName) => this.getRoleByName(roleName))
+      );
+
+      const removedRoles = await prisma.tblUserRoles.deleteMany({
+        where: {
+          UserLoginID: userLoginID,
+          RoleID: {
+            in: roles.map((role) => role.RoleID),
+          },
+        },
+      });
+
+      return removedRoles;
+    } catch (error) {
+      console.error("Error removing roles from user:", error);
+      throw new Error("Error removing roles from user");
     }
   }
 }

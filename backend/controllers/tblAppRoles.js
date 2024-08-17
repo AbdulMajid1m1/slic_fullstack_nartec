@@ -278,3 +278,83 @@ exports.updateRole = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.assignRoles = async (req, res, next) => {
+  const { userLoginID, roleNames } = req.body;
+  try {
+    // Validate the input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const user = await User.getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found for specified login ID");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const assignedRoles = await Role.assignRoles(userLoginID, roleNames);
+    if (!assignedRoles) {
+      const error = new CustomError("Role assignment failed");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(response(200, true, "Roles assigned successfully", assignedRoles));
+  } catch (error) {
+    console.error("Error assigning roles:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
+exports.removeRoles = async (req, res, next) => {
+  const { userLoginID, roleNames } = req.body;
+  try {
+    // Validate the input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const user = await User.getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found for specified login ID");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const removedRoles = await Role.removeRoles(userLoginID, roleNames);
+    if (!removedRoles || removedRoles.count === 0) {
+      const error = new CustomError("Role removal failed");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(response(200, true, "Roles removed successfully", removedRoles));
+  } catch (error) {
+    console.error("Error removing roles:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
