@@ -553,3 +553,109 @@
  *                   type: string
  *                   example: "Internal server error."
  */
+
+/**
+ * @swagger
+ * /api/roles/v1/remove-role:
+ *   post:
+ *     summary: Remove a role from a user
+ *     description: Removes a specified role from a user based on their login ID.
+ *     tags: [Roles]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userLoginID
+ *               - roleName
+ *             properties:
+ *               userLoginID:
+ *                 type: string
+ *                 description: The login ID of the user from whom the role will be removed.
+ *                 example: "user@example.com"
+ *               roleName:
+ *                 type: string
+ *                 description: The name of the role to remove from the user.
+ *                 example: "Admin"
+ *     responses:
+ *       200:
+ *         description: Role removed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Role removed successfully."
+ *       404:
+ *         description: User or role not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Role assignment not found for this user."
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid role name."
+ *                       param:
+ *                         type: string
+ *                         example: "roleName"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
