@@ -100,6 +100,25 @@ class Role {
       throw new Error("Error updating role");
     }
   }
+
+  static async removeRoleFromUser(userLoginID, roleName) {
+    try {
+      const role = await this.getRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+      const removedRole = await prisma.tblUserRoles.deleteMany({
+        where: {
+          UserLoginID: userLoginID,
+          RoleID: role.RoleID,
+        },
+      });
+      return removedRole;
+    } catch (error) {
+      console.error("Error removing role from user:", error);
+      throw new Error("Error removing role from user");
+    }
+  }
 }
 
 module.exports = Role;

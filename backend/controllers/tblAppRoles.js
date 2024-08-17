@@ -94,6 +94,49 @@ exports.assignRole = async (req, res, next) => {
   }
 };
 
+exports.removeRoleFromUser = async (req, res, next) => {
+  const { userLoginID, roleName } = req.body;
+  try {
+    // Validate the input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new Error(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    // Check if the user exists
+    const user = await User.getUserByLoginId(userLoginID);
+    if (!user) {
+      const error = new CustomError("User not found for specified login ID");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Remove the role from the user
+    const removedRole = await Role.removeRoleFromUser(userLoginID, roleName);
+    if (removedRole.count === 0) {
+      const error = new CustomError("Role assignment not found for this user");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Return success response
+    res
+      .status(200)
+      .json(response(200, true, "Role removed successfully", removedRole));
+  } catch (error) {
+    console.error("Error removing role from user:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = null;
+    next(error);
+  }
+};
+
 exports.getRolesByUser = async (req, res, next) => {
   const { userLoginID } = req.body;
   try {
