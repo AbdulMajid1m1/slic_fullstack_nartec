@@ -8,19 +8,26 @@ import { useNavigate } from "react-router-dom";
 import newRequest from "../../../utils/userRequest";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import SendIcon from "@mui/icons-material/Send";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
   const [locations, setLocations] = useState([]);
+  // login states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
 
   const handleLogin = async () => {
     try {
       const response = await newRequest.post(
         "/slicuat05api/v1/slicLogin",
         {
-          apiKey: "b4d21674cd474705f6caa07d618b389ddc7ebc25a77a0dc591f49e9176beda01",
+          apiKey:
+            "b4d21674cd474705f6caa07d618b389ddc7ebc25a77a0dc591f49e9176beda01",
         },
         {
           headers: {
@@ -29,34 +36,36 @@ const SlicFirstScreen = () => {
         }
       );
       // console.log(response.data);
-      sessionStorage.setItem("slicLoginToken", JSON.stringify(response?.data?.token));
+      sessionStorage.setItem(
+        "slicLoginToken",
+        JSON.stringify(response?.data?.token)
+      );
     } catch (error) {
       console.log(error);
     }
   };
-  
 
   // map All the companies api response data
   const flattenCompanies = (data) => {
-    return data.map(company => {
+    return data.map((company) => {
       if (company.CompanyMaster) {
         return company.CompanyMaster;
       }
       return company;
     });
   };
-  
+
   const getAllCompaniesDetails = async () => {
     try {
       const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
       const res = await newRequest.post(
-        '/slicuat05api/v1/getApi',
+        "/slicuat05api/v1/getApi",
         {
-          "filter": {},
-          "M_COMP_CODE": "001",
-          "M_USER_ID": "SYSADMIN",
-          "APICODE": "CompanyMaster",
-          "M_LANG_CODE": "ENG"
+          filter: {},
+          M_COMP_CODE: "001",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "CompanyMaster",
+          M_LANG_CODE: "ENG",
         },
         {
           headers: {
@@ -67,18 +76,19 @@ const SlicFirstScreen = () => {
       // console.log(res.data);
       const flattenedData = flattenCompanies(res.data);
       setCompanies(flattenedData);
-      
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
+      toast.error(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Something went wrong!"
+      );
     }
-  
   };
-
 
   // map All the location api response data
   const flattenLocations = (data) => {
-    return data.map(location => {
+    return data.map((location) => {
       if (location.LocationMaster) {
         return location.LocationMaster;
       }
@@ -90,13 +100,13 @@ const SlicFirstScreen = () => {
     try {
       const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
       const res = await newRequest.post(
-        '/slicuat05api/v1/getApi',
+        "/slicuat05api/v1/getApi",
         {
-          "filter": {},
-          "M_COMP_CODE": "001",
-          "M_USER_ID": "SYSADMIN",
-          "APICODE": "LocationMaster",
-          "M_LANG_CODE": "ENG"
+          filter: {},
+          M_COMP_CODE: "001",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "LocationMaster",
+          M_LANG_CODE: "ENG",
         },
         {
           headers: {
@@ -107,53 +117,78 @@ const SlicFirstScreen = () => {
       // console.log(res.data);
       const flattenedData = flattenLocations(res.data);
       setLocations(flattenedData);
-      
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
+      toast.error(
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          "Something went wrong!"
+      );
     }
-  
   };
-  
+
   useEffect(() => {
     const initialize = async () => {
       await handleLogin();
       await getAllCompaniesDetails();
       await getAllLocationsDetails();
     };
-  
+
     initialize();
   }, []);
-
-
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
     if (selectedCompany) {
-      sessionStorage.setItem('selectedCompany', JSON.stringify(selectedCompany));
+      sessionStorage.setItem(
+        "selectedCompany",
+        JSON.stringify(selectedCompany)
+      );
       // console.log(selectedCompany);
     }
   }, [selectedCompany]);
 
   useEffect(() => {
     if (selectedLocation) {
-      sessionStorage.setItem('selectedLocation', JSON.stringify(selectedLocation));
+      sessionStorage.setItem(
+        "selectedLocation",
+        JSON.stringify(selectedLocation)
+      );
       // console.log(selectedLocation);
     }
   }, [selectedLocation]);
 
   const handleCompanyChange = (e) => {
-    const selectedComp = companies.find(company => company.COMP_NAME === e.target.value);
+    const selectedComp = companies.find(
+      (company) => company.COMP_NAME === e.target.value
+    );
     setSelectedCompany(selectedComp);
   };
 
   const handleLocationChange = (e) => {
-    const selectedLoc = locations.find(location => location.LOCN_NAME === e.target.value);
+    const selectedLoc = locations.find(
+      (location) => location.LOCN_NAME === e.target.value
+    );
     setSelectedLocation(selectedLoc);
   };
 
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const validEmail = "123123";
+    const validPassword = "123123";
+
+    // Validate user input against hardcoded credentials
+    if (email === validEmail && password === validPassword) {
+      toast.success("Login successful!");
+      navigate("/gtin-management"); // Redirect to a new page on successful login
+    } else {
+      toast.error("Invalid email or password!");
+    }
+  };
 
   return (
     <div>
@@ -162,9 +197,9 @@ const SlicFirstScreen = () => {
       </div>
       <div className="flex justify-center items-center h-auto mt-6 mb-6">
         <div className="3xl:h-[725px] 2xl:h-[725px] lg:h-[725px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl">
-          <div className="flex flex-col sm:flex-row items-center justify-between w-full p-10">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full sm:p-10 p-3">
             <div className="flex flex-col items-start space-y-4 w-full">
-              <img src={sliclogo} alt="SLIC Logo" className="h-36 mb-4" />
+              <img src={sliclogo} alt="SLIC Logo" className="h-32 mb-4" />
               <div className="w-full">
                 <label
                   className="block text-gray-700 text-sm font-bold mb-2"
@@ -175,13 +210,13 @@ const SlicFirstScreen = () => {
                 <select
                   id="company"
                   onChange={handleCompanyChange}
-                  className="block sm:w-[70%] w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
+                  className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
-                  <option value="" disabled>Select Company</option>
+                  <option value="" disabled>
+                    Select Company
+                  </option>
                   {companies.map((company) => (
-                    <option>
-                      {company.COMP_NAME}
-                    </option>
+                    <option>{company.COMP_NAME}</option>
                   ))}
                 </select>
               </div>
@@ -195,25 +230,99 @@ const SlicFirstScreen = () => {
                 <select
                   id="locations"
                   onChange={handleLocationChange}
-                  className="block sm:w-[70%] w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
+                  className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
-                  <option value="" disabled>Select Location</option>
+                  <option value="" disabled>
+                    Select Location
+                  </option>
                   {locations.map((location) => (
-                    <option>
-                      {location?.LOCN_NAME}
-                    </option>
+                    <option>{location?.LOCN_NAME}</option>
                   ))}
                 </select>
               </div>
             </div>
-            <div className="flex-shrink-0 ml-8">
-              <img src={warehouse} alt="Warehouse" className="h-64" />
+            <div className="sm:ml-0 flex justify-center items-end h-full">
+              <img
+                src={warehouse}
+                alt="Warehouse"
+                className="h-auto w-full mb-6 object-contain"
+              />
             </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="sm:w-[90%] w-full flex flex-col justify-center items-center sm:p-4 bg-white h-[100%] mt-6 sm:mt-0">
+              <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3">
+                SLIC User Log in
+              </h2>
+              {/* username */}
+              <div className="w-full sm:px-0 px-4 mb-6">
+                <label
+                  htmlFor="email"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
+                  Email
+                </label>
+                <div className="flex flex-col gap-6">
+                  <input
+                    id="email"
+                    type="text"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your Email"
+                    className="p-2 border rounded-md border-secondary text-lg"
+                  />
+                </div>
+
+                <div className="mt-6">
+                  <label
+                    htmlFor="password"
+                    className="sm:text-2xl text-secondary text-lg font-sans"
+                  >
+                    Password
+                  </label>
+                  <div className="flex flex-col gap-6">
+                    <input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="p-2 border border-secondary rounded-md text-lg"
+                    />
+                    <Button
+                      variant="contained"
+                      type="submit"
+                      style={{
+                        backgroundColor: "#1D2F90",
+                        color: "#ffffff",
+                        padding: "10px",
+                      }}
+                      disabled={loading}
+                      className="w-full bg-[#B6BAD6] border-b-2 border-[#350F9F] hover:bg-[#9699b1] mb-6 text-white font-medium font-body text-xl rounded-md px-5 py-2"
+                      endIcon={
+                        loading ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          <SendIcon />
+                        )
+                      }
+                    >
+                      Log in
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
 
           {/* Last Cards */}
           <div className="grid 3xl:grid-cols-3 2xl:grid-cols-3 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 sm:gap-6 gap-4 sm:px-6 px-2 mt-6">
-            <div onClick={() => navigate('/user-login')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
+            <div
+              // onClick={() => navigate("/user-login")}
+              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+            >
               <div className="h-auto w-[35%]">
                 <img
                   src={gtinmanagement}
@@ -232,7 +341,10 @@ const SlicFirstScreen = () => {
               </div>
             </div>
 
-            <div onClick={() => navigate('/user-login')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
+            <div
+              // onClick={() => navigate("/user-login")}
+              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+            >
               <div className="h-auto w-[35%]">
                 <img
                   src={supplychain}
@@ -245,13 +357,16 @@ const SlicFirstScreen = () => {
                   Supply Chain Application
                 </h2>
                 <p className="text-sm font-light text-black font-sans">
-                  Optimize your supply chain with advanced applications for efficiency and transparency.
+                  Optimize your supply chain with advanced applications for
+                  efficiency and transparency.
                 </p>
               </div>
             </div>
 
-            <div onClick={() => window.open('/pos', '_blank')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90">
-            {/* <div onClick={() => navigate('/pos')} className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"> */}
+            <div
+              // onClick={() => navigate("/user-login")}
+              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+            >
               <div className="h-auto w-[35%]">
                 <img
                   src={pointofsale}
@@ -264,7 +379,8 @@ const SlicFirstScreen = () => {
                   Point of Sale System
                 </h2>
                 <p className="text-sm font-light text-black font-sans">
-                  Efficiently manage sales, inventory, and customer data with a robust Point of Sale System.
+                  Efficiently manage sales, inventory, and customer data with a
+                  robust Point of Sale System.
                 </p>
               </div>
             </div>
