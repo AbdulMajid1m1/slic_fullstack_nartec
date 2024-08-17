@@ -104,3 +104,22 @@ model TrxCodesType {
   TXN_NAME String? @db.NVarChar(255)
   TXN_TYPE String?  @db.NVarChar(255)
 }
+
+model TblAppRoles {
+  RoleID   Int     @id @default(autoincrement()) // Primary key, auto-incrementing
+  RoleName String? @db.VarChar(255)              // Nullable varchar(255)
+
+  userRoles TblUserRoles[] // Relation to user roles
+
+  @@map("TblAppRoles")
+}
+
+model TblUserRoles {
+  id          Int    @id @default(autoincrement()) // Primary key, auto-incrementing
+  UserLoginID String @db.VarChar(255)              // Nullable varchar(255)
+  RoleID      Int
+
+  role        TblAppRoles @relation(fields: [RoleID], references: [RoleID])
+
+  @@map("TblUserRoles")
+}

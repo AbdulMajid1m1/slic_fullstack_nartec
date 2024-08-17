@@ -1,4 +1,4 @@
-function generateResponse(status, success, message, data = null) {
+function response(status, success, message, data = null) {
   return {
     status: status,
     success: success,
@@ -7,4 +7,4 @@ function generateResponse(status, success, message, data = null) {
   };
 }
 
-module.exports = generateResponse;
+module.exports = response;

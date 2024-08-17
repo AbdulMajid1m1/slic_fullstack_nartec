@@ -16,6 +16,7 @@ const customerNamesRoutes = require("./routes/TblCustomerNames");
 const salesOrdersRoutes = require("./routes/tblFSOMaster");
 const transactionsRoutes = require("./routes/TrxCodesType");
 const slicuat05apiRoutes = require("./routes/slicuat05api");
+const rolesRoutes = require("./routes/tblAppRoles");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -34,6 +35,7 @@ app.use("/api/customerNames", customerNamesRoutes);
 app.use("/api/salesOrders", salesOrdersRoutes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/slicuat05api", slicuat05apiRoutes);
+app.use("/api/roles", rolesRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {
