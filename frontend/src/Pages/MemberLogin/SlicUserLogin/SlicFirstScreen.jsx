@@ -6,11 +6,11 @@ import supplychain from "../../../Images/supplychain.png";
 import pointofsale from "../../../Images/pointofsale.png";
 import { useNavigate } from "react-router-dom";
 import newRequest from "../../../utils/userRequest";
-import axios from "axios";
 import { toast } from "react-toastify";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
+import SlicUserSignUpPopUp from "../SlicUserSignUp/SlicUserSignUpPopUp";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
@@ -175,19 +175,29 @@ const SlicFirstScreen = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const validEmail = "123123";
-    const validPassword = "123123";
-
-    // Validate user input against hardcoded credentials
-    if (email === validEmail && password === validPassword) {
-      toast.success("Login successful!");
-      navigate("/gtin-management"); // Redirect to a new page on successful login
-    } else {
-      toast.error("Invalid email or password!");
+    setLoading(true);
+    try {
+      const response = await newRequest.post("/users/v1/login", {
+        userLoginID: email,
+        userPassword: password,
+      });
+        // console.log(response?.data);
+        sessionStorage.setItem("slicUserData", JSON.stringify(response?.data));
+        navigate("/gtin-management");
+        toast.success(response?.data?.message || "Login Successful");
+    } catch (error) {
+      // console.log(error);
+      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
+      setLoading(false);
     }
+  };
+
+
+  const [isResetPasswordPopupVisible, setIsResetPasswordPopupVisible] = useState(false);
+  const handleShowResetPasswordPopup = (value) => {
+    setIsResetPasswordPopupVisible(true);
   };
 
   return (
@@ -312,6 +322,14 @@ const SlicFirstScreen = () => {
                       Log in
                     </Button>
                   </div>
+                  <div className="text-secondary text-lg font-sans mt-2">
+                    <span 
+                      onClick={handleShowResetPasswordPopup}
+                      className="hover:text-primary hover:cursor-pointer transition-colors duration-300 ease-in-out"
+                    >
+                      Create your Account
+                    </span>
+                  </div>
                 </div>
               </div>
             </form>
@@ -387,6 +405,13 @@ const SlicFirstScreen = () => {
           </div>
         </div>
       </div>
+
+      {isResetPasswordPopupVisible && (
+        <SlicUserSignUpPopUp 
+            isVisible={isResetPasswordPopupVisible} 
+             setVisibility={setIsResetPasswordPopupVisible}
+          />
+        )}
     </div>
   );
 };
