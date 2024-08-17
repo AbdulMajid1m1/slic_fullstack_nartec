@@ -1,6 +1,7 @@
 const express = require("express");
 
 const roleController = require("../controllers/tblAppRoles");
+const isAuth = require("../middleware/is-auth");
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post("/v1/create-role", roleController.createRole);
 router.post("/v1/assign-role", roleController.assignRole);
 
 // Route to get roles for a user
-router.post("/v1/get-roles", roleController.getRolesByUser);
+router.post("/v1/get-roles", isAuth, roleController.getRolesByUser);
 
 // Route to update a role
 router.put("/v1/update-role/:roleID", roleController.updateRole);

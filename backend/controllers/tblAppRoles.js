@@ -97,6 +97,13 @@ exports.assignRole = async (req, res, next) => {
 exports.getRolesByUser = async (req, res, next) => {
   const { userLoginID } = req.body;
   try {
+    if (req.email != userLoginID) {
+      const error = new CustomError(
+        "Unauthorized access, you can use your own email only"
+      );
+      error.statusCode = 401;
+      throw error;
+    }
     // Validate the input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

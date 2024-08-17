@@ -18,9 +18,15 @@ module.exports = (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
-    err.statusCode = 500;
-    err.message = null;
-    throw err;
+    if (err.name === "TokenExpiredError") {
+      const error = new CustomError("Token has expired.");
+      error.statusCode = 401;
+      throw error;
+    } else {
+      err.statusCode = 500;
+      err.message = "Failed to authenticate token.";
+      throw err;
+    }
   }
 
   if (!decodedToken) {

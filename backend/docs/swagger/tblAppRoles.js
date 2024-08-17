@@ -231,8 +231,10 @@
  * /api/roles/v1/get-roles:
  *   post:
  *     summary: Get roles assigned to a user
- *     description: Retrieves all roles assigned to a user based on their login ID.
+ *     description: Retrieves all roles assigned to a user based on their login ID. The user can only retrieve their own roles.
  *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: [] # Indicates that this endpoint requires a bearer token for authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -244,7 +246,7 @@
  *             properties:
  *               userLoginID:
  *                 type: string
- *                 description: The login ID of the user whose roles are being retrieved.
+ *                 description: The login ID (email) of the user whose roles are being retrieved. It must match the email associated with the authorization token.
  *                 example: "user@example.com"
  *     responses:
  *       200:
@@ -277,6 +279,22 @@
  *                       UserLoginID:
  *                         type: string
  *                         example: "user@example.com"
+ *       401:
+ *         description: Unauthorized access. The user tried to access roles for an email that doesn't match the authorization token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized access, you can use your own email only."
  *       404:
  *         description: No roles found for the user.
  *         content:
