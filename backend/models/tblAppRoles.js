@@ -132,18 +132,43 @@ class Role {
 
   static async assignRoles(userLoginID, roleNames) {
     try {
+      // Get all roles by their names
       const roles = await Promise.all(
         roleNames.map((roleName) => this.getRoleByName(roleName))
       );
 
-      const userRoles = await prisma.tblUserRoles.createMany({
-        data: roles.map((role) => ({
+      // Get the roles already assigned to the user
+      const existingRoles = await prisma.tblUserRoles.findMany({
+        where: {
           UserLoginID: userLoginID,
-          RoleID: role.RoleID,
-        })),
+          RoleID: {
+            in: roles.map((role) => role.RoleID),
+          },
+        },
+        select: {
+          RoleID: true,
+        },
       });
 
-      return userRoles;
+      // Filter out roles that are already assigned to the user
+      const existingRoleIDs = existingRoles.map((userRole) => userRole.RoleID);
+      const newRoles = roles.filter(
+        (role) => !existingRoleIDs.includes(role.RoleID)
+      );
+
+      // Assign the new roles to the user
+      if (newRoles.length > 0) {
+        const userRoles = await prisma.tblUserRoles.createMany({
+          data: newRoles.map((role) => ({
+            UserLoginID: userLoginID,
+            RoleID: role.RoleID,
+          })),
+        });
+
+        return userRoles;
+      } else {
+        return { message: "All roles are already assigned to the user" };
+      }
     } catch (error) {
       console.error("Error assigning roles to user:", error);
       throw new Error("Error assigning roles to user");
@@ -152,20 +177,47 @@ class Role {
 
   static async removeRoles(userLoginID, roleNames) {
     try {
+      // Get all roles by their names
       const roles = await Promise.all(
         roleNames.map((roleName) => this.getRoleByName(roleName))
       );
 
-      const removedRoles = await prisma.tblUserRoles.deleteMany({
+      // Get the roles currently assigned to the user
+      const existingRoles = await prisma.tblUserRoles.findMany({
         where: {
           UserLoginID: userLoginID,
           RoleID: {
             in: roles.map((role) => role.RoleID),
           },
         },
+        select: {
+          RoleID: true,
+        },
       });
 
-      return removedRoles;
+      // Filter out roles that are not assigned to the user
+      const existingRoleIDs = existingRoles.map((userRole) => userRole.RoleID);
+      const rolesToRemove = roles.filter((role) =>
+        existingRoleIDs.includes(role.RoleID)
+      );
+
+      // Remove the roles that are currently assigned to the user
+      if (rolesToRemove.length > 0) {
+        const removedRoles = await prisma.tblUserRoles.deleteMany({
+          where: {
+            UserLoginID: userLoginID,
+            RoleID: {
+              in: rolesToRemove.map((role) => role.RoleID),
+            },
+          },
+        });
+
+        return removedRoles;
+      } else {
+        return {
+          message: "None of the specified roles are assigned to the user",
+        };
+      }
     } catch (error) {
       console.error("Error removing roles from user:", error);
       throw new Error("Error removing roles from user");

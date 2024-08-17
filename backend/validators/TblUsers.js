@@ -3,8 +3,8 @@ const { body } = require("express-validator");
 exports.auth = [
   body("userLoginID")
     .isEmail()
-    .withMessage("UserLoginID must be a valid email address")
-    .normalizeEmail(),
+    .withMessage("UserLoginID must be a valid email address"),
+  // .normalizeEmail(),
   body("userPassword")
     .isString()
     .withMessage("UserPassword must be a string")
@@ -15,8 +15,8 @@ exports.auth = [
 exports.reset = [
   body("userLoginID")
     .isEmail()
-    .withMessage("UserLoginID must be a valid email address")
-    .normalizeEmail(),
+    .withMessage("UserLoginID must be a valid email address"),
+  // .normalizeEmail(),
   body("newPassword")
     .isString()
     .withMessage("UserPassword must be a string")
@@ -27,6 +27,6 @@ exports.reset = [
 exports.verify = [
   body("userLoginID")
     .isEmail()
-    .withMessage("UserLoginID must be a valid email address")
-    .normalizeEmail(),
+    .withMessage("UserLoginID must be a valid email address"),
+  // .normalizeEmail(),
 ];
