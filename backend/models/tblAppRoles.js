@@ -182,13 +182,13 @@ class Role {
         roleNames.map((roleName) => this.getRoleByName(roleName))
       );
 
+      // Filter out any roles that were not found
+      const validRoles = roles.filter((role) => role !== null);
+
       // Get the roles currently assigned to the user
       const existingRoles = await prisma.tblUserRoles.findMany({
         where: {
           UserLoginID: userLoginID,
-          RoleID: {
-            in: roles.map((role) => role.RoleID),
-          },
         },
         select: {
           RoleID: true,
@@ -197,11 +197,11 @@ class Role {
 
       // Filter out roles that are not assigned to the user
       const existingRoleIDs = existingRoles.map((userRole) => userRole.RoleID);
-      const rolesToRemove = roles.filter((role) =>
+      const rolesToRemove = validRoles.filter((role) =>
         existingRoleIDs.includes(role.RoleID)
       );
 
-      // Remove the roles that are currently assigned to the user
+      // If there are roles to remove, remove them
       if (rolesToRemove.length > 0) {
         const removedRoles = await prisma.tblUserRoles.deleteMany({
           where: {
