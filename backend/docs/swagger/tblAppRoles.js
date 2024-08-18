@@ -964,7 +964,7 @@
 
 /**
  * @swagger
- * /api/roles/v1/get-user-roles-for-admin/{userLoginID}:
+ * /api/roles/v1/get-roles/{userLoginID}:
  *   get:
  *     summary: Get roles assigned to a user for admin
  *     description: Retrieves all roles assigned to a specified user based on their login ID. This endpoint is intended for use by administrators.
