@@ -66,3 +66,133 @@ exports.fetchByMultipleIds = async (req, res, next) => {
     next(error);
   }
 };
+
+// Controller to create a new line item
+exports.createLineItem = async (req, res, next) => {
+  const data = req.body;
+
+  try {
+    const newRecord = await LineItem.createRecord(data);
+
+    if (!newRecord) {
+      const error = new CustomError("Failed to create the line item");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res
+      .status(201)
+      .json(
+        generateResponse(201, true, "Line item created successfully", newRecord)
+      );
+  } catch (error) {
+    console.error("Error creating line item:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = "Server error occurred";
+    next(error);
+  }
+};
+
+// Controller to get all line items
+exports.getAllLineItems = async (req, res, next) => {
+  try {
+    const records = await LineItem.getAllRecords();
+
+    if (!records || records.length === 0) {
+      const error = new CustomError("No line items found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "All line items retrieved successfully",
+          records
+        )
+      );
+  } catch (error) {
+    console.error("Error fetching all line items:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = "Server error occurred";
+    next(error);
+  }
+};
+
+// Controller to update a line item by HEAD_SYS_ID and ITEM_CODE
+exports.updateLineItem = async (req, res, next) => {
+  const { headSysId, itemCode } = req.params;
+  const data = req.body;
+
+  try {
+    const updatedRecord = await LineItem.updateRecord(
+      headSysId,
+      itemCode,
+      data
+    );
+
+    if (!updatedRecord) {
+      const error = new CustomError("Failed to update the line item");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Line item updated successfully",
+          updatedRecord
+        )
+      );
+  } catch (error) {
+    console.error("Error updating line item:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = "Server error occurred";
+    next(error);
+  }
+};
+
+// Controller to delete a line item by HEAD_SYS_ID and ITEM_CODE
+exports.deleteLineItem = async (req, res, next) => {
+  const { headSysId, itemCode } = req.params;
+
+  try {
+    const deletedRecord = await LineItem.deleteRecord(headSysId, itemCode);
+
+    if (!deletedRecord) {
+      const error = new CustomError("Failed to delete the line item");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Line item deleted successfully",
+          deletedRecord
+        )
+      );
+  } catch (error) {
+    console.error("Error deleting line item:", error);
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = "Server error occurred";
+    next(error);
+  }
+};

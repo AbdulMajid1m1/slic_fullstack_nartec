@@ -1,7 +1,7 @@
 import React, { createContext, useState } from "react";
 import newRequest from "../utils/userRequest.jsx";
-const memberDataString = sessionStorage.getItem('slicUserData');
-const getToken = JSON.parse(memberDataString) || {};
+// const memberDataString = sessionStorage.getItem('slicUserData');
+// const getToken = JSON.parse(memberDataString) || {};
 // const getToken = JSON.parse(memberDataString);
 // console.log(getToken)
 export const RolesContext = createContext();
@@ -13,11 +13,13 @@ const RolesProvider = ({ children }) => {
     console.log(userID)
     newRequest.post("/roles/v1/get-roles", {
       userLoginID: userID,
-  }, {
-      headers: {
-        Authorization: `Bearer ${getToken.data?.token}`,
-      },
-  }).then((response) => {
+  }
+  // , {
+  //     headers: {
+  //       Authorization: `Bearer ${getToken.data?.token}`,
+  //     },
+  // }
+).then((response) => {
       setUserRoles(response.data.data);
       console.log(response.data.data);
     })
