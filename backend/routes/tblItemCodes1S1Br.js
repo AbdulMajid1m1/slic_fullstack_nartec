@@ -8,11 +8,7 @@ const router = express.Router();
 
 router.get("/v1/itemCodes", itemCodesController.getItemCodes);
 
-router.get(
-  "/v1/itemCodes/itemCodes/all",
-  isAuth,
-  itemCodesController.getAllItemCodes
-);
+router.get("/v1/itemCodes/all", isAuth, itemCodesController.getAllItemCodes);
 
 router.post(
   "/v1/itemCode",
