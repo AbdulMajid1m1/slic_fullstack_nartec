@@ -11,6 +11,7 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOtpPopup, handleClearData, selectedSalesType }) => {
   const [loading, setLoading] = useState(false);
@@ -118,7 +119,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                 "LANG": "ENG"
               };
 
-        const res = await newRequest.post('/slicuat05api/v1/postData', body, 
+        const res = await ErpTeamRequest.post('/slicuat05api/v1/postData', body, 
         {
             headers: {
                 Authorization: `Bearer ${token}`,

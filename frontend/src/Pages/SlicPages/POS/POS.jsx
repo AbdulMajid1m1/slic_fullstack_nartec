@@ -9,6 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from 'qrcode';
 import { encode } from 'js-base64';
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -59,7 +60,7 @@ const POS = () => {
   const handleGetBarcodes = async () => {
     setIsLoading(true);
     try {
-      const response = await newRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
+      const response = await ErpTeamRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
       const data = response?.data?.data;
       console.log(data);
   
@@ -80,7 +81,7 @@ const POS = () => {
         };
   
         try {
-          const secondApiResponse = await newRequest.post('/slicuat05api/v1/getApi', secondApiBody, {
+          const secondApiResponse = await ErpTeamRequest.post('/slicuat05api/v1/getApi', secondApiBody, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -162,7 +163,7 @@ const POS = () => {
 
   const fetchTransactionCodes = async () => {
     try {
-      const response = await newRequest.post(
+      const response = await ErpTeamRequest.post(
         '/slicuat05api/v1/getApi',
         {
           filter: {

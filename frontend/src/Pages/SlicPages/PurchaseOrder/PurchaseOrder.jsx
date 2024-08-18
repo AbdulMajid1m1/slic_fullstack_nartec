@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import AddPurchaseOrderPopUp from "./AddPurchaseOrderPopUp";
 import { Button } from "@mui/material";
 import UpdatePurchaseOrderPopUp from "./UpdatePurchaseOrderPopUp";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const PurchaseOrder = () => {
   const [data, setData] = useState([]);
@@ -31,7 +32,7 @@ const PurchaseOrder = () => {
     setIsLoading(true);
     try {
       // const response = await newRequest.get('/foreignPO/v1/foreignPO/all', {
-      const response = await newRequest.post(
+      const response = await ErpTeamRequest.post(
         '/slicuat05api/v1/getApi',
         {
           filter: {},
@@ -80,7 +81,7 @@ const PurchaseOrder = () => {
     // call api
     setIsPurchaseOrderDataLoading(true);
     try {
-      const res = await newRequest.post(
+      const res = await ErpTeamRequest.post(
         '/slicuat05api/v1/getApi',
         {
           filter: {
