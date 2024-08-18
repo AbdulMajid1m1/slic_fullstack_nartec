@@ -21,26 +21,23 @@
 import axios from "axios";
 import { baseUrl } from './config.jsx';
 
-// Create the Axios instance
 const newRequest = axios.create({
     baseURL: baseUrl,
+    // withCredentials: true,
     headers: {
         "Content-Type": "application/json",
-    },
+    }
 });
 
-// Use Axios request interceptor to set Authorization header dynamically
+// Dynamically set the token for each request
 newRequest.interceptors.request.use((config) => {
     const memberDataString = sessionStorage.getItem('slicUserData');
     const getToken = JSON.parse(memberDataString);
-
+    // console.log(getToken);
     if (getToken?.data?.token) {
         config.headers.Authorization = `Bearer ${getToken.data.token}`;
     }
-
     return config;
-}, (error) => {
-    return Promise.reject(error);
 });
 
 export default newRequest;

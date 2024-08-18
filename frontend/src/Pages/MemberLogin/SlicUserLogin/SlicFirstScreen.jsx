@@ -12,6 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
 import SlicUserSignUpPopUp from "../SlicUserSignUp/SlicUserSignUpPopUp";
 import { RolesContext } from '../../../Contexts/FetchRolesContext'
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
@@ -20,7 +21,7 @@ const SlicFirstScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await newRequest.post(
+      const response = await ErpTeamRequest.post(
         "/slicuat05api/v1/slicLogin",
         {
           apiKey:
@@ -55,7 +56,7 @@ const SlicFirstScreen = () => {
   const getAllCompaniesDetails = async () => {
     try {
       const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
-      const res = await newRequest.post(
+      const res = await ErpTeamRequest.post(
         "/slicuat05api/v1/getApi",
         {
           filter: {},
@@ -96,7 +97,7 @@ const SlicFirstScreen = () => {
   const getAllLocationsDetails = async () => {
     try {
       const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
-      const res = await newRequest.post(
+      const res = await ErpTeamRequest.post(
         "/slicuat05api/v1/getApi",
         {
           filter: {},
