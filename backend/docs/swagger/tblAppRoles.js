@@ -961,3 +961,110 @@
  *                   type: string
  *                   example: "Internal server error."
  */
+
+/**
+ * @swagger
+ * /api/roles/v1/get-user-roles-for-admin/{userLoginID}:
+ *   get:
+ *     summary: Get roles assigned to a user for admin
+ *     description: Retrieves all roles assigned to a specified user based on their login ID. This endpoint is intended for use by administrators.
+ *     tags: [Roles]
+ *     parameters:
+ *       - in: path
+ *         name: userLoginID
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The login ID of the user whose roles are being retrieved.
+ *         example: "user@example.com"
+ *     responses:
+ *       200:
+ *         description: Roles found successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles found."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       RoleID:
+ *                         type: integer
+ *                         example: 1
+ *                       RoleName:
+ *                         type: string
+ *                         example: "Admin"
+ *       404:
+ *         description: User or roles not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found for specified login ID."
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid login ID."
+ *                       param:
+ *                         type: string
+ *                         example: "userLoginID"
+ *                       location:
+ *                         type: string
+ *                         example: "path"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
