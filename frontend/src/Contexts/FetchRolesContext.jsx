@@ -1,7 +1,8 @@
 import React, { createContext, useState } from "react";
 import newRequest from "../utils/userRequest.jsx";
 const memberDataString = sessionStorage.getItem('slicUserData');
-const getToken = JSON.parse(memberDataString);
+const getToken = JSON.parse(memberDataString) || {};
+// const getToken = JSON.parse(memberDataString);
 // console.log(getToken)
 export const RolesContext = createContext();
 
