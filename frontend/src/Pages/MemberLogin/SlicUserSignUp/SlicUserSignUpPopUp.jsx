@@ -28,6 +28,8 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
       // console.log(response?.data);
       navigate("/");
       toast.success(response?.data?.message || "Login Successful");
+      setLoading(false);
+      handleCloseCreatePopup();
     } catch (error) {
       // console.log(error);
       toast.error(
