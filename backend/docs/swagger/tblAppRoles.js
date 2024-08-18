@@ -1,5 +1,74 @@
 /**
  * @swagger
+ * /api/roles/v1/get-all-roles:
+ *   get:
+ *     summary: Get all roles
+ *     description: Retrieves all roles available in the system.
+ *     tags: [Roles]
+ *     responses:
+ *       200:
+ *         description: Roles found successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles found."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       RoleID:
+ *                         type: integer
+ *                         example: 1
+ *                       RoleName:
+ *                         type: string
+ *                         example: "Admin"
+ *       404:
+ *         description: No roles found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No roles found."
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
  * /api/roles/v1/create-role:
  *   post:
  *     summary: Create a new role
@@ -642,6 +711,346 @@
  *                       location:
  *                         type: string
  *                         example: "body"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
+ * /api/roles/v1/assign-roles:
+ *   post:
+ *     summary: Assign multiple roles to a user
+ *     description: Assigns multiple specified roles to a user based on their login ID.
+ *     tags: [Roles]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userLoginID
+ *               - roleNames
+ *             properties:
+ *               userLoginID:
+ *                 type: string
+ *                 description: The login ID of the user to whom the roles will be assigned.
+ *                 example: "user@example.com"
+ *               roleNames:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   description: The names of the roles to assign to the user.
+ *                 example: ["Admin", "Editor"]
+ *     responses:
+ *       200:
+ *         description: Roles assigned successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles assigned successfully."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     assignedRoles:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           RoleID:
+ *                             type: integer
+ *                             example: 1
+ *                           RoleName:
+ *                             type: string
+ *                             example: "Admin"
+ *                           UserLoginID:
+ *                             type: string
+ *                             example: "user@example.com"
+ *       404:
+ *         description: User or one or more roles not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User or one or more roles not found."
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid role name."
+ *                       param:
+ *                         type: string
+ *                         example: "roleNames"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
+ * /api/roles/v1/remove-roles:
+ *   post:
+ *     summary: Remove multiple roles from a user
+ *     description: Removes multiple specified roles from a user based on their login ID.
+ *     tags: [Roles]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userLoginID
+ *               - roleNames
+ *             properties:
+ *               userLoginID:
+ *                 type: string
+ *                 description: The login ID of the user from whom the roles will be removed.
+ *                 example: "user@example.com"
+ *               roleNames:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   description: The names of the roles to remove from the user.
+ *                 example: ["Admin", "Editor"]
+ *     responses:
+ *       200:
+ *         description: Roles removed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles removed successfully."
+ *       404:
+ *         description: User or one or more roles not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User or role assignment not found."
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid role name."
+ *                       param:
+ *                         type: string
+ *                         example: "roleNames"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
+ * /api/roles/v1/user-roles/{userLoginID}:
+ *   get:
+ *     summary: Get roles assigned to a user for admin
+ *     description: Retrieves all roles assigned to a specified user based on their login ID. This endpoint is intended for use by administrators.
+ *     tags: [Roles]
+ *     parameters:
+ *       - in: path
+ *         name: userLoginID
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The login ID of the user whose roles are being retrieved.
+ *         example: "user@example.com"
+ *     responses:
+ *       200:
+ *         description: Roles found successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles found."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       RoleID:
+ *                         type: integer
+ *                         example: 1
+ *                       RoleName:
+ *                         type: string
+ *                         example: "Admin"
+ *       404:
+ *         description: User or roles not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found for specified login ID."
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 422
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "Invalid login ID."
+ *                       param:
+ *                         type: string
+ *                         example: "userLoginID"
+ *                       location:
+ *                         type: string
+ *                         example: "path"
  *       500:
  *         description: Internal server error.
  *         content:
