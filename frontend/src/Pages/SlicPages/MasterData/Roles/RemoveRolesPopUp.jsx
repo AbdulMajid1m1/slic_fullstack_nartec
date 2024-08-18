@@ -63,8 +63,6 @@ const RemoveRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
       (role) => !selectedRoles.some((selectedRole) => selectedRole.RoleID === role.RoleID)
     );
 
-    console.log(availableRoles)
-
   const handleRolesTypesChange = (event, value) => {
     setSelectedRoles(value);
     // console.log(value);
@@ -74,10 +72,13 @@ const RemoveRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
   const handleRemoveRoles = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // console.log(availableRoles.map((role) => role.RoleName))
+
     try {
       const requestBody = {
         userLoginID: email,
-        roleNames: selectedRoles.map((role) => role.RoleName),
+        roleNames: availableRoles.map((role) => role.RoleName),
         // roleName: selectedRoles?.RoleName,
       };
         // console.log(requestBody);
