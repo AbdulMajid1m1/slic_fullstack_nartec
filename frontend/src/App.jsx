@@ -13,6 +13,9 @@ import SalesOrder from "./Pages/SlicPages/SalesOrder/SalesOrder.jsx";
 import DirectInvoice from "./Pages/SlicPages/DirectInvoice/DirectInvoice.jsx";
 import Users from "./Pages/SlicPages/MasterData/Users/Users.jsx";
 import SlicFirstScreen from "./Pages/MemberLogin/SlicUserLogin/SlicFirstScreen.jsx";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import Roles from "./Pages/SlicPages/MasterData/Roles/Roles.jsx";
+import RolesProvider from "./Contexts/FetchRolesContext.jsx";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +23,7 @@ const App = () => {
   return (
     <>
       <DataTableProvider>
+      <RolesProvider>
         <div>
           <BrowserRouter>
             <QueryClientProvider client={queryClient}>
@@ -27,18 +31,77 @@ const App = () => {
                 <Route path="/" element={<SlicFirstScreen />} />
                 <Route path="/user-login" element={<SlicUserLogin />} />
                 <Route path="slic-signup" element={<SlicUserSignUp />} />
+
                 <Route path="gtin-management" element={<GtinManagement />} />
-                <Route path="gtin" element={<GTIN />} />
-                <Route path="user-profile" element={<UserProfile />} />
-                <Route path="pos" element={<POS />} />
-                <Route path="purchase-order" element={<PurchaseOrder />} />
-                <Route path="sales-order" element={<SalesOrder />} />
-                <Route path="direct-invoice" element={<DirectInvoice />} />
-                <Route path="users" element={<Users />} />
+                <Route
+                  path="gtin"
+                  element={
+                    <ProtectedRoute requiredRoles="Products">
+                      <GTIN />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="gtin" element={<GTIN />} /> */}
+                <Route
+                  path="user-profile"
+                  element={
+                    <ProtectedRoute requiredRoles="user_profile">
+                      <UserProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="user-profile" element={<UserProfile />} /> */}
+                <Route
+                  path="pos"
+                  element={
+                    <ProtectedRoute requiredRoles="point_of_sale">
+                      <POS />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="pos" element={<POS />} /> */}
+                <Route
+                  path="purchase-order"
+                  element={
+                    <ProtectedRoute requiredRoles="purchase_order">
+                      <PurchaseOrder />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="purchase-order" element={<PurchaseOrder />} /> */}
+                <Route
+                  path="sales-order"
+                  element={
+                    <ProtectedRoute requiredRoles="sales_order">
+                      <SalesOrder />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="sales-order" element={<SalesOrder />} /> */}
+                {/* <Route path="direct-invoice" element={<DirectInvoice />} /> */}
+                <Route
+                  path="users"
+                  element={
+                    <ProtectedRoute requiredRoles="users">
+                      <Users />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="users" element={<Users />} /> */}
+                <Route
+                  path="roles"
+                  element={
+                    <ProtectedRoute requiredRoles="Roles">
+                      <Roles />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="roles" element={<Roles />} /> */}
               </Routes>
             </QueryClientProvider>
           </BrowserRouter>
         </div>
+        </RolesProvider>
       </DataTableProvider>
     </>
   );

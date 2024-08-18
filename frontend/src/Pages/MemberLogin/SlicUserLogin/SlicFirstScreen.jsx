@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import sliclogo from "../../../Images/sliclogo.png";
 import warehouse from "../../../Images/warehouse.png";
 import gtinmanagement from "../../../Images/gtinmanagement.png";
@@ -11,14 +11,11 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
 import SlicUserSignUpPopUp from "../SlicUserSignUp/SlicUserSignUpPopUp";
+import { RolesContext } from '../../../Contexts/FetchRolesContext'
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
   const [locations, setLocations] = useState([]);
-  // login states
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -174,6 +171,13 @@ const SlicFirstScreen = () => {
     setSelectedLocation(selectedLoc);
   };
 
+
+  // login states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { fetchRoles, userRoles } = useContext(RolesContext);
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,8 +187,12 @@ const SlicFirstScreen = () => {
         userLoginID: email,
         userPassword: password,
       });
-        // console.log(response?.data);
-        sessionStorage.setItem("slicUserData", JSON.stringify(response?.data));
+        const adminData = response?.data;
+         
+        console.log(adminData);
+      
+        sessionStorage.setItem('slicUserData', JSON.stringify(adminData));
+        fetchRoles(adminData.data?.user?.UserLoginID);
         navigate("/gtin-management");
         toast.success(response?.data?.message || "Login Successful");
     } catch (error) {
