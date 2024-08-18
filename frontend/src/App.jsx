@@ -88,15 +88,15 @@ const App = () => {
                   }
                 />
                 {/* <Route path="users" element={<Users />} /> */}
-                <Route
+                {/* <Route
                   path="roles"
                   element={
                     <ProtectedRoute requiredRoles="Roles">
                       <Roles />
                     </ProtectedRoute>
                   }
-                />
-                {/* <Route path="roles" element={<Roles />} /> */}
+                /> */}
+                <Route path="roles" element={<Roles />} />
               </Routes>
             </QueryClientProvider>
           </BrowserRouter>

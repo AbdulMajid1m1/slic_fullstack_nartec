@@ -72,16 +72,19 @@ const RemoveRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
   const handleRemoveRoles = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // console.log(availableRoles.map((role) => role.RoleName))
+
     try {
       const requestBody = {
         userLoginID: email,
-        roleNames: selectedRoles.map((role) => role.RoleName),
+        roleNames: availableRoles.map((role) => role.RoleName),
         // roleName: selectedRoles?.RoleName,
       };
         // console.log(requestBody);
 
       const response = await newRequest.post('roles/v1/remove-roles', requestBody);
-      // console.log(response?.data);
+      console.log(response?.data);
       toast.success(response?.data?.message || "Role Remove successfully");
       setLoading(false);
       handleCloseCreatePopup();
