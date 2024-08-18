@@ -28,7 +28,9 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
     }
 
     // Check if user has the required roles
+    // const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role.RoleName));
     const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role.RoleName));
+    console.log(userRoles);
     console.log(hasRequiredRole)
     console.log(requiredRoles)
     if (!hasRequiredRole) {
