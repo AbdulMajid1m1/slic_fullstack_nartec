@@ -192,9 +192,12 @@ const SlicFirstScreen = () => {
         console.log(adminData);
       
         sessionStorage.setItem('slicUserData', JSON.stringify(adminData));
-        fetchRoles(adminData.data?.user?.UserLoginID);
+        // fetchRoles(adminData.data?.user?.UserLoginID);
+
+        await fetchRoles(adminData.data?.user?.UserLoginID);
         navigate("/gtin-management");
         toast.success(response?.data?.message || "Login Successful");
+        setLoading(false);
     } catch (error) {
       // console.log(error);
       toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
