@@ -604,3 +604,40 @@ export const posColumn = [
   
 
 ]
+
+
+
+export const transactionCodesColumn = [
+  {
+    field: "TXN_CODE",
+    headerName: "Transaction Code",
+    width: 220,
+  },
+  {
+    field: "TXN_NAME",
+    headerName: "Transaction Name",
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "TXN_TYPE",
+    headerName: "Transaction Type",
+    width: 280,
+  },
+]
+
+
+
+export const customerCodesColumn = [
+  {
+    field: "CUST_CODE",
+    headerName: "Customer Code",
+    width: 220,
+  },
+  {
+    field: "CUST_NAME",
+    headerName: "Customer Name",
+    renderCell: GTINCell,
+    width: 320,
+  },
+]

@@ -16,6 +16,8 @@ import SlicFirstScreen from "./Pages/MemberLogin/SlicUserLogin/SlicFirstScreen.j
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Roles from "./Pages/SlicPages/MasterData/Roles/Roles.jsx";
 import RolesProvider from "./Contexts/FetchRolesContext.jsx";
+import TransactionCodes from "./Pages/SlicPages/MasterData/TransactionCodes/TransactionCodes.jsx";
+import CustomerCodes from "./Pages/SlicPages/MasterData/CustomerCodes/CustomerCodes.jsx";
 
 const queryClient = new QueryClient();
 
@@ -51,15 +53,15 @@ const App = () => {
                   }
                 />
                 {/* <Route path="user-profile" element={<UserProfile />} /> */}
-                {/* <Route
+                <Route
                   path="pos"
                   element={
                     <ProtectedRoute requiredRoles="point_of_sale">
                       <POS />
                     </ProtectedRoute>
                   }
-                /> */}
-                <Route path="pos" element={<POS />} />
+                />
+                {/* <Route path="pos" element={<POS />} /> */}
                 <Route
                   path="purchase-order"
                   element={
@@ -97,6 +99,24 @@ const App = () => {
                   }
                 />
                 {/* <Route path="roles" element={<Roles />} /> */}
+                {/* <Route path="transaction-codes" element={<TransactionCodes />} /> */}
+                <Route
+                  path="transaction-codes"
+                  element={
+                    <ProtectedRoute requiredRoles="transaction_codes">
+                      <TransactionCodes />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* <Route path="customer-codes" element={<CustomerCodes />} /> */}
+                <Route
+                  path="customer-codes"
+                  element={
+                    <ProtectedRoute requiredRoles="customer_codes">
+                      <CustomerCodes />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </QueryClientProvider>
           </BrowserRouter>
