@@ -13,6 +13,9 @@ import ActionDropdown from "../../utils/ActionDropdown";
 import { DataTableContext } from "../../Contexts/DataTableContext";
 import { useTranslation } from 'react-i18next';
 import Swal from "sweetalert2";
+import { Button, CircularProgress } from "@mui/material";
+import SyncIcon from "@mui/icons-material/Sync"; // Import SyncIcon
+
 // import * as XLSX from 'xlsx';
 
 const DataTable = ({
@@ -47,6 +50,12 @@ const DataTable = ({
   getFilteredOptions,
   globalSearch = false,
   showToolbarSlot,
+  headerButtonVisibility = false,
+  buttonTitle = "Submit", // Default button title
+  buttonFunction, // Callback for button click
+  endIcon = <SyncIcon />,
+  disableHeaderBtn = false,
+  headerBtnLoading,
 }) => {
   const navigate = useNavigate();
   const [qrcodeValue, setQRCodeValue] = useState("");
@@ -542,7 +551,7 @@ const DataTable = ({
         }
       >
         <div className="datatableTitle">
-          <div className="left-div">
+          <div className="left-div flex justify-between flex-wrap w-full">
 
             {/* if global search is true than show search bar instead of title */}
             {globalSearch ? (
@@ -557,6 +566,30 @@ const DataTable = ({
               </span>
             ) : <span>{title}</span>
             }
+
+            {headerButtonVisibility && (
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: disableHeaderBtn ? "#ccc" : "#1D2F90",
+                      color: "white",
+                      marginLeft: "10px",
+                      width: "30%",
+                    }}
+                    type="submit"
+                    disabled={disableHeaderBtn || headerBtnLoading}
+                    onClick={buttonFunction} // Button click callback
+                    endIcon={
+                      headerBtnLoading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        endIcon || <SyncIcon />
+                      )
+                    }
+                  >
+                    {t(buttonTitle)} {/* Customizable button title */}
+                  </Button>
+                )}
 
             {ShipmentIdSearchEnable && ShipmentIdSearchEnable === true ? (
               <span>
