@@ -38,7 +38,51 @@ class CustomerName {
     }
   }
 
-  // Add more methods as needed, e.g., create, update, delete
+  static async findByCode(code) {
+    try {
+      const customer = await prisma.tblCustomerNames.findUnique({
+        where: { CUST_CODE: code },
+      });
+      return customer;
+    } catch (error) {
+      throw new CustomError(`Error finding customer: ${code}`);
+    }
+  }
+
+  static async bulkCreate(customersList) {
+    try {
+      const createdCustomers = await prisma.tblCustomerNames.createMany({
+        data: customersList,
+        skipDuplicates: true,
+      });
+      return createdCustomers;
+    } catch (error) {
+      throw new CustomError("Error creating customers in bulk");
+    }
+  }
+
+  static async upsert(code, data) {
+    try {
+      const upsertedCustomer = await prisma.tblCustomerNames.upsert({
+        where: { CUST_CODE: code },
+        update: data,
+        create: { ...data, CUST_CODE: code },
+      });
+      return upsertedCustomer;
+    } catch (error) {
+      throw new CustomError(`Error upserting customer: ${code}`);
+    }
+  }
+
+  static async deleteByCode(code) {
+    try {
+      await prisma.tblCustomerNames.delete({
+        where: { CUST_CODE: code },
+      });
+    } catch (error) {
+      throw new CustomError(`Error deleting customer: ${code}`);
+    }
+  }
 }
 
 module.exports = CustomerName;
