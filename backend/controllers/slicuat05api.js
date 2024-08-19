@@ -1,66 +1,30 @@
-const https = require("https");
+const axios = require("axios");
 const { CustomError } = require("../exceptions/customError");
 
 exports.slicLogin = async (req, res, next) => {
   const url = "https://slicuat05api.oneerpcloud.com/oneerpauth/api/login";
   const { apiKey } = req.body;
 
-  const data = JSON.stringify({
+  const data = {
     apiKey: apiKey,
-  });
+  };
 
   const headers = {
     "Content-Type": "application/json",
     "X-tenanttype": "live",
   };
 
-  const urlObject = new URL(url);
-
-  const options = {
-    hostname: urlObject.hostname,
-    path: urlObject.pathname,
-    method: "POST",
-    headers: {
-      ...headers,
-      "Content-Length": data.length,
-    },
-  };
-
   try {
-    const request = https.request(options, (response) => {
-      let responseData = "";
+    const response = await axios.post(url, data, { headers });
 
-      response.on("data", (chunk) => {
-        responseData += chunk;
-      });
-
-      response.on("end", () => {
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          res.status(200).json(JSON.parse(responseData));
-        } else {
-          next(new Error(`HTTP error! status: ${response.statusCode}`));
-        }
-      });
-    });
-
-    request.on("error", (error) => {
-      console.error("Error verifying email:", error);
-      if (error instanceof CustomError) {
-        return next(error);
-      }
-      error.message = null;
-      next(error);
-    });
-
-    request.write(data);
-    request.end();
+    res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Unexpected error:", error);
-    if (error instanceof CustomError) {
-      return next(error);
+    console.error("Error verifying email:", error);
+    if (error.response) {
+      // Server responded with a status other than 200 range
+      return next(new Error(`HTTP error! status: ${error.response.status}`));
     }
-    error.message = null;
-    next(error);
+    next(error instanceof CustomError ? error : new Error("Unexpected error"));
   }
 };
 
@@ -77,56 +41,22 @@ exports.slicGetApi = async (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
-  const data = JSON.stringify(requestBody);
-
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
 
-  const urlObject = new URL(url);
-
-  const options = {
-    hostname: urlObject.hostname,
-    path: urlObject.pathname,
-    method: "POST",
-    headers: {
-      ...headers,
-      "Content-Length": data.length,
-    },
-  };
-
   try {
-    const request = https.request(options, (response) => {
-      let responseData = "";
+    const response = await axios.post(url, requestBody, { headers });
 
-      response.on("data", (chunk) => {
-        responseData += chunk;
-      });
-
-      response.on("end", () => {
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          res.status(200).json(JSON.parse(responseData));
-        } else {
-          return next(new Error(`HTTP error! status: ${response.statusCode}`));
-        }
-      });
-    });
-
-    request.on("error", (error) => {
-      console.error("Error calling API:", error);
-      if (error instanceof CustomError) {
-        return next(error);
-      }
-      error.message = null;
-      return next(error);
-    });
-
-    request.write(data);
-    request.end();
+    res.status(response.status).json(response.data);
   } catch (error) {
-    console.log(error);
-    next(error);
+    console.error("Error calling API:", error);
+    if (error.response) {
+      // Server responded with a status other than 200 range
+      return next(new Error(`HTTP error! status: ${error.response.status}`));
+    }
+    next(error instanceof CustomError ? error : new Error("Unexpected error"));
   }
 };
 
@@ -142,56 +72,21 @@ exports.slicPostData = async (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
-  const data = JSON.stringify(req.body);
-
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
 
-  const urlObject = new URL(url);
-
-  const options = {
-    hostname: urlObject.hostname,
-    path: urlObject.pathname,
-    method: "POST",
-    headers: {
-      ...headers,
-      "Content-Length": data.length,
-    },
-  };
-
   try {
-    const request = https.request(options, (response) => {
-      let responseData = "";
+    const response = await axios.post(url, req.body, { headers });
 
-      response.on("data", (chunk) => {
-        responseData += chunk;
-      });
-
-      response.on("end", () => {
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          res.status(200).json(JSON.parse(responseData));
-        } else {
-          console.log(responseData);
-          return next(new Error(`HTTP error! status: ${response.statusCode}`));
-        }
-      });
-    });
-
-    request.on("error", (error) => {
-      console.error("Error calling API:", error);
-      if (error instanceof CustomError) {
-        return next(error);
-      }
-      error.message = null;
-      return next(error);
-    });
-
-    request.write(data);
-    request.end();
+    res.status(response.status).json(response.data);
   } catch (error) {
-    console.log(error);
-    next(error);
+    console.error("Error calling API:", error);
+    if (error.response) {
+      // Server responded with a status other than 200 range
+      return next(new Error(`HTTP error! status: ${error.response.status}`));
+    }
+    next(error instanceof CustomError ? error : new Error("Unexpected error"));
   }
 };
