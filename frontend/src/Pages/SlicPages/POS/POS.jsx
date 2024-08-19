@@ -71,7 +71,8 @@ const POS = () => {
           "filter": {
               "P_COMP_CODE": "SLIC",
               "P_CUST_CODE": "CL100729",
-              "P_ITEM_CODE": ItemCode,
+              // "P_ITEM_CODE": ItemCode,
+              "P_ITEM_CODE": "45",
               "P_GRADE_CODE_1": ProductSize,
           },
           "M_COMP_CODE": "001",
@@ -95,9 +96,10 @@ const POS = () => {
   
           sessionStorage.setItem("secondApiResponses", JSON.stringify(storedData));
   
-          const itemPrice = secondApiData.ItemRate || 0;
+          const itemPrice = secondApiData[0].ItemRate?.RATE;
           const vat = itemPrice * 0.15;
           const total = itemPrice + vat;
+          // console.log(itemPrice)
   
           setData(prevData => {
             const existingRecordIndex = prevData.findIndex(record => record.Barcode === GTIN);
