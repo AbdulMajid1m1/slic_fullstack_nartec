@@ -143,3 +143,80 @@
  *                   type: string
  *                   example: "Server error occurred"
  */
+
+/**
+ * @swagger
+ * /api/customerNames/v1/sync:
+ *   post:
+ *     summary: Synchronize customer names with external API
+ *     description: Fetches customer names from an external API and updates the local database with new or updated customers.
+ *     tags: [Customers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sync completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Sync completed. 5 customers added or updated."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     upsertedCustomers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           CUST_CODE:
+ *                             type: string
+ *                             example: "CUST12345"
+ *                           CUST_NAME:
+ *                             type: string
+ *                             example: "Sample Customer"
+ *                           CUST_TYPE:
+ *                             type: string
+ *                             example: "Type A"
+ *       401:
+ *         description: Authorization header is missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Authorization header is missing or invalid"
+ *       500:
+ *         description: Server error occurred during sync
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Server error occurred during sync"
+ */

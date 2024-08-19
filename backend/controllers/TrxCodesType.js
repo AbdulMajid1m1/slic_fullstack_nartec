@@ -1,5 +1,8 @@
+const axios = require("axios");
+
 const TrxCodesType = require("../models/TrxCodesType");
 const CustomError = require("../exceptions/customError");
+const response = require("../utils/response");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -10,18 +13,190 @@ exports.getAll = async (req, res, next) => {
       throw error;
     }
 
-    res.status(200).json({
-      status: 200,
-      success: true,
-      message: "Transaction codes retrieved successfully",
-      data: trxCodes,
-    });
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          "Transaction codes retrieved successfully",
+          trxCodes
+        )
+      );
   } catch (error) {
     console.error(error);
     if (error instanceof CustomError) {
       return next(error);
     }
     error.message = "Server error occurred";
+    next(error);
+  }
+};
+
+// exports.sync = async (req, res, next) => {
+//   try {
+//     // Extract Bearer token from the Authorization header
+//     const authHeader = req.headers.authorization || req.headers.Authorization;
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//       throw new CustomError("Authorization header is missing or invalid", 401);
+//     }
+//     const token = authHeader.split(" ")[1];
+
+//     // Configuration for the external API request
+//     const externalApiUrl =
+//       "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
+//     const requestBody = {
+//       filter: {
+//         P_TXN_TYPE: "LTRFO",
+//       },
+//       M_COMP_CODE: "SLIC",
+//       M_USER_ID: "SYSADMIN",
+//       APICODE: "ListOfTransactionCode",
+//       M_LANG_CODE: "ENG",
+//     };
+//     const headers = {
+//       Authorization: `Bearer ${token}`,
+//       "Content-Type": "application/json",
+//     };
+
+//     // Make the request to the external API
+//     const externalApiResponse = await axios.post(
+//       externalApiUrl,
+//       JSON.stringify(requestBody),
+//       {
+//         headers,
+//       }
+//     );
+
+//     console.log("response" + externalApiResponse);
+
+//     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
+//       throw new CustomError("Invalid response from external API", 500);
+//     }
+
+//     // Assuming the external API returns an array of transaction codes
+//     const externalTrxCodes = externalApiResponse.data;
+
+//     // Fetch all existing transaction codes from your database
+//     const existingTrxCodes = await TrxCodesType.fetchAll();
+
+//     // Create a map of existing codes for easy lookup
+//     const existingCodesMap = new Map(
+//       existingTrxCodes.map((code) => [code.code, code])
+//     );
+
+//     // Array to store new codes that need to be added
+//     const newCodes = [];
+
+//     // Iterate through external codes and check if they exist in your database
+//     for (const externalCode of externalTrxCodes) {
+//       if (!existingCodesMap.has(externalCode.code)) {
+//         newCodes.push(externalCode);
+//       }
+//     }
+
+//     // If there are new codes, add them to your database
+//     if (newCodes.length > 0) {
+//       await TrxCodesType.bulkCreate(newCodes);
+//     }
+
+//     res
+//       .status(200)
+//       .json(
+//         response(
+//           200,
+//           true,
+//           `Sync completed. ${newCodes.length} new codes added.`,
+//           { addedCodes: newCodes }
+//         )
+//       );
+//   } catch (error) {
+//     if (error instanceof CustomError) {
+//       return next(error);
+//     }
+//     error.message = "Server error occurred during sync";
+//     next(error);
+//   }
+// };
+
+exports.sync = async (req, res, next) => {
+  try {
+    // Extract Bearer token from the Authorization header
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new CustomError("Authorization header is missing or invalid", 401);
+    }
+    const token = authHeader.split(" ")[1];
+
+    // Configuration for the external API request
+    const externalApiUrl =
+      "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
+    const requestBody = {
+      filter: { P_TXN_TYPE: "LTRFO" },
+      M_COMP_CODE: "SLIC",
+      M_USER_ID: "SYSADMIN",
+      APICODE: "ListOfTransactionCode",
+      M_LANG_CODE: "ENG",
+    };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    // Make the request to the external API
+    const externalApiResponse = await axios.post(externalApiUrl, requestBody, {
+      headers,
+    });
+
+    if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
+      throw new CustomError("Invalid response from external API", 500);
+    }
+
+    // Map the response data to match your Prisma schema model
+    const externalTrxCodes = externalApiResponse.data.map((item) => ({
+      TXN_CODE: item.ListOfTransactionCod.TXN_CODE,
+      TXN_NAME: item.ListOfTransactionCod.TXN_NAME,
+      TXN_TYPE: requestBody.filter.P_TXN_TYPE, // You can adjust this if you need to map different types
+    }));
+
+    // Fetch all existing transaction codes from your database
+    const existingTrxCodes = await TrxCodesType.fetchAll();
+
+    // Create a map of existing codes for easy lookup
+    const existingCodesMap = new Map(
+      existingTrxCodes.map((code) => [code.TXN_CODE, code])
+    );
+
+    // Array to store new codes that need to be added
+    const newCodes = [];
+
+    // Iterate through external codes and check if they exist in your database
+    for (const externalCode of externalTrxCodes) {
+      if (!existingCodesMap.has(externalCode.TXN_CODE)) {
+        newCodes.push(externalCode);
+      }
+    }
+
+    // If there are new codes, add them to your database
+    if (newCodes.length > 0) {
+      await TrxCodesType.bulkCreate(newCodes);
+    }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          `Sync completed. ${newCodes.length} new codes added.`,
+          { addedCodes: newCodes }
+        )
+      );
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+    error.message = "Server error occurred during sync";
     next(error);
   }
 };
