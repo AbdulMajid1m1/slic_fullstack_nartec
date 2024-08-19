@@ -156,7 +156,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    F3 Tender Cash
+                    F3 Tender Cash - {selectedSalesType}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -280,7 +280,7 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                         readOnly
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-8 mb-4">
+                    {/* <div className="grid grid-cols-3 gap-8 mb-4">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, "0", "Back"].map((item) => (
                         <button
                           key={item}
@@ -293,20 +293,20 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                           {item}
                         </button>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                   <div className="p-1 w-full">
-                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img src={cash} className="h-10 w-16 mr-2 ml-3 object-contain" alt="cash" />
                       <p className="">Cash</p>
                     </div>
 
-                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img src={creditcard} className="h-10 w-16 mr-2 ml-3" alt="creditcard" />
                       <p className="">Credit / Debit</p>
                     </div>
 
-                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    {/* <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img
                         src={visamaster}
                         className="h-10 w-16 mr-2 ml-3 object-contain"
@@ -342,9 +342,9 @@ const F3TenderCashPopUp = ({ isVisible, setVisibility, storeDatagridData, showOt
                     <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img src={bitcoins} className="h-10 w-16 mr-2 ml-3 object-contain" alt="bitcoin" />
                       <p className="">Bitcoin</p>
-                    </div>
+                    </div> */}
 
-                    <div className="flex justify-start items-center w-full h-16 p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
                       <img src={stcpay} className="h-10 w-16 mr-2 ml-3 object-contain" alt="stcpay" />
                       <p className="">STC Pay</p>
                     </div>

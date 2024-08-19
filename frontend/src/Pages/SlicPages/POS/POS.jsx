@@ -77,7 +77,7 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_CUST_CODE: "CL100729",
-            // "P_ITEM_CODE": ItemCode,
+            "P_ITEM_CODE": ItemCode,
             P_ITEM_CODE: "45",
             P_GRADE_CODE_1: ProductSize,
           },
@@ -135,7 +135,8 @@ const POS = () => {
                   Description: EnglishName,
                   ItemSize: ProductSize,
                   Qty: 1,
-                  ItemPrice: itemPrice,
+                  // ItemPrice: itemPrice,
+                  ItemPrice: 250.00,
                   Discount: 0,
                   VAT: vat,
                   Total: total,
@@ -452,7 +453,7 @@ const POS = () => {
                 : "SALES RETURN"}
             </h2>
             <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
-              Cashier : CreativeM
+              Cashier : {selectedLocation?.LOCN_NAME}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -724,7 +725,7 @@ const POS = () => {
                 </button>
                 <button
                   onClick={handleShowCreatePopup}
-                  className="bg-red-500 text-white py-4 px-4 rounded"
+                  className="bg-red-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
                 >
                   F3 - Tender Cash
                 </button>
