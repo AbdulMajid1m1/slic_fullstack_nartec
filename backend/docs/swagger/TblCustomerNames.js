@@ -151,12 +151,8 @@
  *     summary: Synchronize customer names with external API
  *     description: Fetches customer names from an external API and updates the local database with new or updated customers.
  *     tags: [Customers]
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         required: true
- *         type: string
- *         description: Bearer token for authorization
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Sync completed successfully
