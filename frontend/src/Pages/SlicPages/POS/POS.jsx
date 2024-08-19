@@ -60,7 +60,7 @@ const POS = () => {
   const handleGetBarcodes = async () => {
     setIsLoading(true);
     try {
-      const response = await ErpTeamRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
+      const response = await newRequest.get(`/itemCodes/v2/searchByGTIN?GTIN=${barcode}`);
       const data = response?.data?.data;
       console.log(data);
   
