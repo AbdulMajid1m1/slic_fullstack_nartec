@@ -9,6 +9,8 @@ import posicon from "../../Images/posicon.png"
 import Purchase from "../../Images/Purchase.png"
 import salesorders from "../../Images/salesorders.png"
 import directinvoice from "../../Images/directinvoice.png"
+import transactioncodes from "../../Images/transactioncodes.png"
+import customercodes from "../../Images/customercodes.png"
 import { FaChevronDown, FaChevronUp, FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -239,6 +241,40 @@ function SideNav({ children }) {
                                 />
                                 <span className="text-secondary font-medium text-lg">
                                   Roles
+                                </span>
+                              </div>
+                            </Link>
+                          </li>
+                          <li className="mt-3">
+                            <Link
+                              // to="/roles"
+                              className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                            >
+                              <div className="flex justify-center items-center gap-3">
+                                <img
+                                  src={transactioncodes}
+                                  alt="logo"
+                                  className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                                />
+                                <span className="text-secondary font-medium text-lg">
+                                  Transaction Codes
+                                </span>
+                              </div>
+                            </Link>
+                          </li>
+                          <li className="mt-3">
+                            <Link
+                              // to="/roles"
+                              className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                            >
+                              <div className="flex justify-center items-center gap-3">
+                                <img
+                                  src={customercodes}
+                                  alt="logo"
+                                  className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                                />
+                                <span className="text-secondary font-medium text-lg">
+                                  Customer Codes
                                 </span>
                               </div>
                             </Link>
