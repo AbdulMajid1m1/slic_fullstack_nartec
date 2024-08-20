@@ -22,11 +22,6 @@ exports.getAllLocationsCompanies = async (req, res, next) => {
       })
     );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -52,11 +47,6 @@ exports.getAllLocations = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };

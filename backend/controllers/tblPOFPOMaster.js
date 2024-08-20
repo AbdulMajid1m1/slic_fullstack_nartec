@@ -1,5 +1,5 @@
 const POFPOPModel = require("../models/tblPOFPOMaster");
-const generateResponse = require("../utils/response");
+const response = require("../utils/response");
 const CustomError = require("../exceptions/customError");
 
 // Create a new record
@@ -9,15 +9,8 @@ exports.createRecord = async (req, res, next) => {
     const newRecord = await POFPOPModel.create(data);
     res
       .status(201)
-      .json(
-        generateResponse(201, true, "Record created successfully", newRecord)
-      );
+      .json(response(201, true, "Record created successfully", newRecord));
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -33,15 +26,8 @@ exports.getAllRecords = async (req, res, next) => {
     }
     res
       .status(200)
-      .json(
-        generateResponse(200, true, "Records retrieved successfully", records)
-      );
+      .json(response(200, true, "Records retrieved successfully", records));
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -57,19 +43,9 @@ exports.getPaginatedRecords = async (req, res, next) => {
     res
       .status(200)
       .json(
-        generateResponse(
-          200,
-          true,
-          "Paginated records retrieved successfully",
-          result
-        )
+        response(200, true, "Paginated records retrieved successfully", result)
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -82,20 +58,13 @@ exports.getRecordById = async (req, res, next) => {
     if (record) {
       res
         .status(200)
-        .json(
-          generateResponse(200, true, "Record retrieved successfully", record)
-        );
+        .json(response(200, true, "Record retrieved successfully", record));
     } else {
       const error = new CustomError("Record not found");
       error.statusCode = 404;
       throw error;
     }
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -108,20 +77,8 @@ exports.updateRecord = async (req, res, next) => {
     const updatedRecord = await POFPOPModel.update(parseInt(id), data);
     res
       .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Record updated successfully",
-          updatedRecord
-        )
-      );
+      .json(response(200, true, "Record updated successfully", updatedRecord));
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -133,20 +90,8 @@ exports.deleteRecord = async (req, res, next) => {
     const deletedRecord = await POFPOPModel.delete(parseInt(id));
     res
       .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Record deleted successfully",
-          deletedRecord
-        )
-      );
+      .json(response(200, true, "Record deleted successfully", deletedRecord));
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };

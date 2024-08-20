@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const CustomError = require("./exceptions/customError");
 const swaggerSpec = require("./config/swagger");
-const generateResponse = require("./utils/response");
+const response = require("./utils/response");
 const itemCodesRoutes = require("./routes/tblItemCodes1S1Br");
 const userRoutes = require("./routes/TblUsers");
 const foreignPORoutes = require("./routes/tblPOFPOMaster");
@@ -58,7 +58,7 @@ app.use((error, req, res, next) => {
     data = error.data || null;
   }
 
-  res.status(status).json(generateResponse(status, success, message, data));
+  res.status(status).json(response(status, success, message, data));
 });
 
 app.listen(port, function () {

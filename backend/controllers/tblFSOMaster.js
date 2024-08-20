@@ -21,11 +21,6 @@ exports.getAll = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -40,8 +35,6 @@ exports.createOrder = async (req, res, next) => {
         generateResponse(201, true, "Record created successfully", newOrder)
       );
   } catch (error) {
-    console.error(error);
-    error.message = null;
     next(error);
   }
 };
@@ -61,11 +54,6 @@ exports.getOrder = async (req, res, next) => {
         generateResponse(200, true, "Record retrieved successfully", order)
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -81,8 +69,6 @@ exports.updateOrder = async (req, res, next) => {
         generateResponse(200, true, "Record updated successfully", updatedOrder)
       );
   } catch (error) {
-    console.error(error);
-    error.message = null;
     next(error);
   }
 };
@@ -96,7 +82,6 @@ exports.deleteOrder = async (req, res, next) => {
       .json(generateResponse(200, true, "Record deleted successfully", null));
   } catch (error) {
     console.error(error);
-    error.message = null;
     next(error);
   }
 };
