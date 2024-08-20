@@ -217,21 +217,27 @@ const F3TenderCashPopUp = ({
               <div className="p-0 w-full">
                 <div className="grid grid-cols-3 gap-4">
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
-                    <div className="border border-gray-300 rounded-lg p-2 bg-gray-50">
-                      <div className="grid grid-cols-2 gap-2 bg-gray-200 p-2 rounded-t-lg">
-                        <p className="font-semibold text-sm">Item Code</p>
-                        <p className="font-semibold text-sm">Size</p>
+                  <div className="border border-gray-300 rounded-lg p-2 bg-gray-50 overflow-x-auto">
+                    <div className="min-w-[300px] min-h-[100px]">
+                      {/* Header */}
+                      <div className="grid grid-cols-3 gap-2 bg-gray-200 p-2 rounded-t-lg">
+                        <p className="text-sm">Item Code</p>
+                        <p className="text-sm">Size</p>
+                        <p className="text-sm">Item Price</p>
                       </div>
+
                       {storeDatagridData.map((item, index) => (
                         <div
                           key={index}
-                          className="grid grid-cols-2 gap-2 border-t border-gray-300 p-2"
+                          className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
                         >
                           <p className="text-sm">{item.SKU}</p>
                           <p className="text-sm">{item.ItemSize}</p>
+                          <p className="text-sm">{item.ItemPrice}</p>
                         </div>
                       ))}
                     </div>
+                  </div>
                     <div className="mt-10">
                       <Button
                         variant="contained"
