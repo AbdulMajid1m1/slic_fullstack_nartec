@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 
 const User = require("../models/TblUsers");
-const generateResponse = require("../utils/response");
+const response = require("../utils/response");
 const CustomError = require("../exceptions/customError");
 
 exports.signup = async (req, res, next) => {
@@ -32,13 +32,8 @@ exports.signup = async (req, res, next) => {
     }
     res
       .status(200)
-      .json(generateResponse(201, true, "New user created successfully", user));
+      .json(response(201, true, "New user created successfully", user));
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -49,7 +44,7 @@ exports.login = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
-      const error = new Error(msg);
+      const error = new CustomError(msg);
       error.statusCode = 422;
       error.data = errors;
       return next(error);
@@ -57,13 +52,8 @@ exports.login = async (req, res, next) => {
 
     const user = await User.loginUser(userLoginID, userPassword);
 
-    res.status(200).json(generateResponse(200, true, "Login successful", user));
+    res.status(200).json(response(200, true, "Login successful", user));
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -74,7 +64,7 @@ exports.verifyEmail = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
-      const error = new Error(msg);
+      const error = new CustomError(msg);
       error.statusCode = 422;
       error.data = errors;
       return next(error);
@@ -89,13 +79,8 @@ exports.verifyEmail = async (req, res, next) => {
 
     res
       .status(200)
-      .json(generateResponse(200, true, "Email verified successfully", token));
+      .json(response(200, true, "Email verified successfully", token));
   } catch (error) {
-    console.error("Error verifying email:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -127,15 +112,8 @@ exports.resetPassword = async (req, res, next) => {
       throw error;
     }
 
-    res
-      .status(200)
-      .json(generateResponse(200, true, "Password reset successfully"));
+    res.status(200).json(response(200, true, "Password reset successfully"));
   } catch (error) {
-    console.error("Error resetting password:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -160,15 +138,8 @@ exports.logout = async (req, res, next) => {
 
     res
       .status(200)
-      .json(
-        generateResponse(200, true, "User logged out successfully", updatedUser)
-      );
+      .json(response(200, true, "User logged out successfully", updatedUser));
   } catch (error) {
-    console.error("Error resetting password:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -182,13 +153,8 @@ exports.getUsers = async (req, res, next) => {
       throw error;
     }
 
-    res.status(200).json(generateResponse(200, true, "Users found", users));
+    res.status(200).json(response(200, true, "Users found", users));
   } catch (error) {
-    console.error("Error getting users:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -214,15 +180,8 @@ exports.updateUser = async (req, res, next) => {
 
     res
       .status(200)
-      .json(
-        generateResponse(200, true, "User updated successfully", updatedUser)
-      );
+      .json(response(200, true, "User updated successfully", updatedUser));
   } catch (error) {
-    console.error("Error updating user:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -245,15 +204,8 @@ exports.deleteUser = async (req, res, next) => {
 
     res
       .status(200)
-      .json(
-        generateResponse(200, true, "User deleted successfully", deletedUser)
-      );
+      .json(response(200, true, "User deleted successfully", deletedUser));
   } catch (error) {
-    console.error("Error deleting user:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };

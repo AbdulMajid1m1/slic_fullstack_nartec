@@ -45,11 +45,6 @@ exports.createRole = async (req, res, next) => {
       .status(201)
       .json(response(201, true, "Role created successfully", newRole));
   } catch (error) {
-    console.error("Error creating role:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -85,11 +80,6 @@ exports.assignRole = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Role assigned successfully", role));
   } catch (error) {
-    console.error("Error assigning role:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -128,11 +118,6 @@ exports.removeRoleFromUser = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Role removed successfully", removedRole));
   } catch (error) {
-    console.error("Error removing role from user:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -150,11 +135,6 @@ exports.getAllRoles = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Roles found successfully", roles));
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -195,11 +175,6 @@ exports.getUserRoles = async (req, res, next) => {
 
     res.status(200).json(response(200, true, "Roles found", roles));
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -232,11 +207,6 @@ exports.getUserRolesForAdmin = async (req, res, next) => {
 
     res.status(200).json(response(200, true, "Roles found", roles));
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -264,11 +234,6 @@ exports.deleteRole = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Role deleted successfully", deletedRole));
   } catch (error) {
-    console.error("Error deleting role:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -307,11 +272,6 @@ exports.updateRole = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Role updated successfully", updatedRole));
   } catch (error) {
-    console.error("Error updating role:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -347,11 +307,6 @@ exports.assignRoles = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Roles assigned successfully", assignedRoles));
   } catch (error) {
-    console.error("Error assigning roles:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -387,11 +342,6 @@ exports.removeRoles = async (req, res, next) => {
       .status(200)
       .json(response(200, true, "Roles removed successfully", removedRoles));
   } catch (error) {
-    console.error("Error removing roles:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
