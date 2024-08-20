@@ -5,6 +5,7 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
 import F3ResponsePopUp from "./F3ResponsePopUp";
+import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
@@ -244,38 +245,41 @@ const POS = () => {
     // console.log(selectedTransactionCode)
   }, [selectedTransactionCode]);
 
-  const sellerName = "Saudi Leather Industries Company Ltd.";
-  const vatRegistrationNumber = "300456416500003";
-  const invoiceDate = new Date().toISOString(); // Current timestamp for example
-  const totalWithVat = 1000.0; // Example total with VAT
-  const vatTotal = totalWithVat * 0.15; // 15% VAT on the total
 
-  const generateZatcaTLV = () => {
-    const encodeTLV = (tag, value) => {
-      const tagHex = tag.toString(16).padStart(2, "0");
-      const lengthHex = value.length.toString(16).padStart(2, "0");
-      return `${tagHex}${lengthHex}${value}`; // Semicolon added here
-    };
+  // Invoice States
+  const [netWithVat, setNetWithVat] = useState('');
+  const [totalVat, setTotalVat] = useState('');
+  const [todayDate, setTodayDate] = useState(new Date().toISOString());
+  const [invoiceLoader, setInvoiceLoader] = useState(false);
+ 
+  const handleInvoiceGenerator = async (e) => {
+    e.preventDefault();
+    setInvoiceLoader(true);
+    try {
+      const res = await newRequest.post('/zatca/generateZatcaQRCode', {
+        invoiceDate: todayDate,
+        totalWithVat: Number(netWithVat),
+        vatTotal: Number(totalVat),
+      }
+    )
+      // console.log('invoice', res?.data);
+      
+      const qrCodeDataFromApi = res?.data?.qrCodeData;
+      handlePrintSalesInvoice(qrCodeDataFromApi);
 
-    const sellerNameTLV = encodeTLV(1, sellerName);
-    const vatRegistrationNumberTLV = encodeTLV(2, vatRegistrationNumber);
-    const invoiceDateTLV = encodeTLV(3, invoiceDate);
-    const totalWithVatTLV = encodeTLV(4, totalWithVat.toFixed(2));
-    const vatTotalTLV = encodeTLV(5, vatTotal.toFixed(2));
-
-    return (
-      sellerNameTLV +
-      vatRegistrationNumberTLV +
-      invoiceDateTLV +
-      totalWithVatTLV +
-      vatTotalTLV
-    );
-  };
-
-  const zatcaQRCodeData = encode(generateZatcaTLV());
-
+      setNetWithVat('');
+      setTotalVat('');
+      toast.success('Invoice generated successfully!');
+      setInvoiceLoader(false);
+    } catch(error) {
+      console.log(error);
+      toast.error('Failed to generate invoice. Please try again.');
+      setInvoiceLoader(false);
+    }
+  }
+  
   // invoice generate
-  const handlePrintSalesInvoice = () => {
+  const handlePrintSalesInvoice = (qrCodeData) => {
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
     const html = `
@@ -284,10 +288,10 @@ const POS = () => {
           <title>Sales Invoice</title>
           <style>
             @page { size: 3in 8in; margin: 0; }
-            body { font-family: Arial, sans-serif; font-size: 12px; padding: 5px; }
+            body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
             .invoice-header, .invoice-footer {
               text-align: center;
-              font-size: 10px;
+              font-size: 15px;
               margin-bottom: 5px;
             }
             .invoice-header {
@@ -295,11 +299,11 @@ const POS = () => {
             }
             .invoice-section {
               margin: 10px 0;
-              font-size: 10px;
+              font-size: 15px;
             }
             .sales-invoice-title {
               text-align: center;
-              font-size: 12px;
+              font-size: 16px;
               font-weight: bold;
               margin-top: 5px;
               margin-bottom: 10px;
@@ -313,10 +317,10 @@ const POS = () => {
               text-align: left;
               padding: 5px;
               border-bottom: 1px solid black;
-              font-size: 10px;
+              font-size: 15px;
             }
             .total-section {
-              font-size: 10px;
+              font-size: 15px;
               text-align: left;
               line-height: 1.5;
               display: flex;
@@ -333,13 +337,13 @@ const POS = () => {
             }
             .qr-section {
               text-align: center;
-              margin-top: 20px;
+              margin-top: 50px;
             }
             .receipt-footer {
               margin-top: 20px;
               text-align: center;
               font-weight: bold;
-              font-size: 12px;
+              font-size: 14px;
             }
             .customer-info div {
               margin-bottom: 6px; /* Add space between each div */
@@ -348,7 +352,7 @@ const POS = () => {
         </head>
         <body>
           <div class="invoice-header">
-            <img src="${sliclogo}" alt="SLIC Logo" width="100"/>
+            <img src="${sliclogo}" alt="SLIC Logo" width="120"/>
             <div>Saudi Leather Industries Factory Co.</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
@@ -359,11 +363,10 @@ const POS = () => {
           <div class="sales-invoice-title">Sales Invoice</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>Miscellaneous</div>
-            <div><span class="field-label">VAT#: </span>CL100586</div>
+            <div><span class="field-label">Customer: </span>${selectedCustomerName?.CUST_NAME}</div>
+            <div><span class="field-label">VAT#: </span>${netWithVat}</div>
             <div><span class="field-label">Receipt: </span>2024003612</div>
-            <div><span class="field-label">Date: </span>27/03/2024, 2:55:03 PM</div>
-            <div><span class="field-label">Name: </span>Miscellaneous</div>
+            <div><span class="field-label">Date: </span>${todayDate}</div>
           </div>
 
           <table class="table">
@@ -377,25 +380,25 @@ const POS = () => {
             </thead>
             <tbody>
               <tr class="item">
-                <td>Safety Shoe</td>
-                <td>1.00</td>
-                <td>65.00 SAR</td>
-                <td>65.00 SAR</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>${totalVat}</td>
               </tr>
             </tbody>
           </table>
 
           <div class="total-section">
             <div class="left-side">
-              <div><strong>Gross:</strong> 65.00 SAR</div>
-              <div><strong>VAT (15%):</strong> 9.75 SAR</div>
-              <div><strong>Total:</strong> 74.75 SAR</div>
-              <div><strong>Paid:</strong> 74.75 SAR</div>
-              <div><strong>Change Due:</strong> 0.00 SAR</div>
+              <div><strong>Gross:</strong></div>
+              <div><strong>VAT :</strong> ${netWithVat}</div>
+              <div><strong>Total VAT:</strong> ${totalVat}</div>
+              <div><strong>Paid:</strong> </div>
+              <div><strong>Change Due:</strong> </div>
             </div>
             <div class="right-side">
               <div>(ريال) المجموع</div>
-              <div>ضريبة القيمة المضافة 15%</div>
+              <div>ضريبة القيمة المضافة</div>
               <div>المجموع</div>
               <div>المدفوع</div>
               <div>المتبقي</div>
@@ -418,9 +421,9 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
-let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
+      // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
       // Generate the QR code using the `qrcode` library
-      QRCode.toCanvas(qrCodeCanvas, newQR, function (error) {
+      QRCode.toCanvas(qrCodeCanvas, qrCodeData, function (error) {
         if (error) console.error(error);
         else {
           // Trigger the print dialog after the QR code is rendered
@@ -428,11 +431,8 @@ let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6M
           printWindow.close();
         }
       });
-      console.log(zatcaQRCodeData);
-      const decodedString = atob(
-        "ASBTYXVkaSBMZWF0aGVyIEluZHVzdHJpZXMgQ29tcGFueQIPMzAwNDU2NDE2NTAwMDAzAxQyMDI0LTA4LTE3VDEyOjAwOjAwWgQHMTAwMC4wMAUDMTUwBkA2NzQyMmQ2NGE3N2IxNDVhMzEwNTMxMjgzNTA4NjgzNjI5ZjRmZTZmNGM2N2YyY2YxZjlkYWNkYzA2YmZiZTA4B5AzMDQ2MDIyMTAwYjBmNGVhMGMyOTVlZTQ0NzY4MzgwMjE5MjFiYTFkYmJlMzcwNGU1NGQ0MWNjYTc1OTZjYTUxNmJkMTIwMzM5YzAyMjEwMGMwMmZmZGJiYjNmOWM5OWM2NzRjMDY2OTE4ZTFhYjVlNjczODZlYzkwZmI2NjlkNGNkZTVhZDk1ODEzNzU3N2EIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI="
-      );
-      console.log(decodedString);
+
+      // console.log(qrCodeData);
     };
   };
 
@@ -745,60 +745,65 @@ let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6M
             </div>
             <div>
               <div className="bg-white p-4 rounded shadow-md">
-                <div className="flex flex-col gap-4">
+                <form onSubmit={handleInvoiceGenerator} className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
                       Net With VAT:
                     </label>
                     <input
                       type="number"
+                      value={netWithVat}
+                      onChange={(e) => setNetWithVat(e.target.value)}
                       className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
                       placeholder="0"
+                      required
                     />
                   </div>
 
                   <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
-                      Total VAT(15%):
+                      Total VAT:
                     </label>
                     <input
                       type="number"
+                      value={totalVat}
+                      onChange={(e) => setTotalVat(e.target.value)}
                       className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
                       placeholder="0"
+                      required
                     />
                   </div>
 
                   <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
-                      Tender Amount:
+                      Today Date:
                     </label>
                     <input
-                      type="number"
+                      type="date"
+                      value={todayDate}
+                      onChange={(e) => setTodayDate(e.target.value)}
                       className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">
-                      Balance:
-                    </label>
-                    <input
-                      type="number"
-                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                      placeholder="0.00"
+                      required
                     />
                   </div>
 
                   <div className="flex justify-between items-center w-full">
-                    <button
-                      onClick={handlePrintSalesInvoice}
-                      className="bg-[#2596be] text-white py-2 px-4 rounded w-full"
-                    >
-                      Print Receipt
-                    </button>
+                    <Button
+                        variant="contained"
+                        style={{ backgroundColor: "#021F69", color: "#ffffff" }}
+                        type="submit"
+                        disabled={invoiceLoader}
+                        className="w-full ml-2"
+                        endIcon={
+                          invoiceLoader ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : null
+                        }
+                      >
+                        Print Receipt
+                      </Button>
                   </div>
-                </div>
+                </form>
               </div>
             </div>
           </div>
