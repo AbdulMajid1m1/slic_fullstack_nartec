@@ -18,11 +18,6 @@ exports.getCustomerNames = async (req, res, next) => {
         generateResponse(200, true, "Records retrieved successfully", customers)
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -42,11 +37,6 @@ exports.getSearch = async (req, res, next) => {
       generateResponse(200, true, "Successfully found customers", customers)
     );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -126,11 +116,6 @@ exports.sync = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred during sync";
     next(error);
   }
 };

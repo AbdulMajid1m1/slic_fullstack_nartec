@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
     console.log(userRoles);
     console.log(hasRequiredRole)
     console.log(requiredRoles)
-    if (!hasRequiredRole) {
+    if (userRoles && !hasRequiredRole) {
         const toastShownKey = `toastShown_${requiredRoles}`;
         if (!sessionStorage.getItem(toastShownKey)) {
             console.log(`You don't have permission ${requiredRoles} to access this page`);

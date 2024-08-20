@@ -24,11 +24,6 @@ exports.getAll = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };
@@ -193,10 +188,6 @@ exports.sync = async (req, res, next) => {
         )
       );
   } catch (error) {
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred during sync";
     next(error);
   }
 };

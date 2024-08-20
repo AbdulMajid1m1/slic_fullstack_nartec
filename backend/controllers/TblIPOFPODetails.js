@@ -22,11 +22,6 @@ exports.getLineItemsByHeadSysId = async (req, res, next) => {
         generateResponse(200, true, "Records retrieved successfully", records)
       );
   } catch (error) {
-    console.error("Error fetching records:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -58,11 +53,6 @@ exports.fetchByMultipleIds = async (req, res, next) => {
       data: records,
     });
   } catch (error) {
-    console.error(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };
@@ -86,11 +76,6 @@ exports.createLineItem = async (req, res, next) => {
         generateResponse(201, true, "Line item created successfully", newRecord)
       );
   } catch (error) {
-    console.error("Error creating line item:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };
@@ -117,11 +102,6 @@ exports.getAllLineItems = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error("Error fetching all line items:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };
@@ -155,11 +135,6 @@ exports.updateLineItem = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error("Error updating line item:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };
@@ -188,11 +163,6 @@ exports.deleteLineItem = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.error("Error deleting line item:", error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = "Server error occurred";
     next(error);
   }
 };

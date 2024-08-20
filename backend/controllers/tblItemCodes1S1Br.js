@@ -57,7 +57,7 @@ exports.getItemCodes = async (req, res, next) => {
     const { itemCodes, pagination } = result;
 
     if (!itemCodes || itemCodes.length <= 0) {
-      const error = new Error("No item codes found");
+      const error = new CustomError("No item codes found");
       error.statusCode = 404;
       return next(error);
     }
@@ -69,11 +69,6 @@ exports.getItemCodes = async (req, res, next) => {
       })
     );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -83,7 +78,7 @@ exports.getAllItemCodes = async (req, res, next) => {
     const result = await ItemCodeModel.findAll();
 
     if (!result || result.length <= 0) {
-      const error = new Error("No item codes found");
+      const error = new CustomError("No item codes found");
       error.statusCode = 404;
       return next(error);
     }
@@ -112,7 +107,7 @@ exports.postItemCode = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
-      const error = new Error(msg);
+      const error = new CustomError(msg);
       error.statusCode = 422;
       error.data = errors;
       return next(error);
@@ -145,11 +140,6 @@ exports.postItemCode = async (req, res, next) => {
         generateResponse(201, true, "Item code created successfully", _itemCode)
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -161,7 +151,7 @@ exports.postItemCodeV2 = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const msg = errors.errors[0].msg;
-      const error = new Error(msg);
+      const error = new CustomError(msg);
       error.statusCode = 422;
       error.data = errors;
       return next(error);
@@ -197,11 +187,6 @@ exports.postItemCodeV2 = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -250,11 +235,6 @@ exports.putItemCode = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -280,11 +260,6 @@ exports.deleteItemCode = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -309,11 +284,6 @@ exports.searchByPartialGTIN = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
@@ -338,11 +308,6 @@ exports.searchByGTIN = async (req, res, next) => {
         )
       );
   } catch (error) {
-    console.log(error);
-    if (error instanceof CustomError) {
-      return next(error);
-    }
-    error.message = null;
     next(error);
   }
 };
