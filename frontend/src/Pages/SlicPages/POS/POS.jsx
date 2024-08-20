@@ -163,7 +163,10 @@ const POS = () => {
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
-    if (!isCreatePopupVisible) {
+    // if (!isCreatePopupVisible) {
+    if (!data || data.length === 0) {
+      toast.warning("The datagrid is empty. Please ensure data is available before proceeding.");
+    } else {
       setStoreDatagridData([...data]);
       setCreatePopupVisibility(true);
     }
