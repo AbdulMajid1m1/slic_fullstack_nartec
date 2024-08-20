@@ -147,22 +147,22 @@ const GtinManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4 bg-gradient-to-r from-primary">
             {/* <!-- Social Traffic --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={rawMaterials} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Issue Barcode in Production"} UniqueId="assetPrintingId" />
+              <DashboardTable data={rawMaterials} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Issue Barcode in Production"} UniqueId="barcodeInProductionId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50  w-full shadow-lg rounded">
-              <DashboardTable data={consumables} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Finished Goods"} UniqueId="assetPrintingId" />
+              <DashboardTable data={consumables} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Finished Goods"} UniqueId="finishedGoodsId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={supplies} columnsName={archivedUserColumn} secondaryColor="secondary" title={"Raw Materials"} UniqueId="assetPrintingId" />
+              <DashboardTable data={supplies} columnsName={archivedUserColumn} secondaryColor="secondary" title={"Raw Materials"} UniqueId="rawMaterialsId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={data} columnsName={archivedUserColumn} loading={isLoading} secondaryColor="secondary" title={"Products Sold"} UniqueId="assetPrintingId" />
+              <DashboardTable data={data} columnsName={archivedUserColumn} loading={isLoading} secondaryColor="secondary" title={"Products Sold"} UniqueId="productSoldId" />
             </div>
 
           </div>

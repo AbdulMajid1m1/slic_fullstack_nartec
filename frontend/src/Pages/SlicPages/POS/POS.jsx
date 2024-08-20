@@ -415,9 +415,9 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
-
+let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
       // Generate the QR code using the `qrcode` library
-      QRCode.toCanvas(qrCodeCanvas, zatcaQRCodeData, function (error) {
+      QRCode.toCanvas(qrCodeCanvas, newQR, function (error) {
         if (error) console.error(error);
         else {
           // Trigger the print dialog after the QR code is rendered
@@ -427,7 +427,7 @@ const POS = () => {
       });
       console.log(zatcaQRCodeData);
       const decodedString = atob(
-        "MDEyNVNhdWRpIExlYXRoZXIgSW5kdXN0cmllcyBDb21wYW55IEx0ZC4wMjBmMzAwNDU2NDE2NTAwMDAzMDMxODIwMjQtMDgtMTdUMDk6NDk6MjguNzc5WjA0MDcxMDAwLjAwMDUwNjE1MC4wMA=="
+        "ASBTYXVkaSBMZWF0aGVyIEluZHVzdHJpZXMgQ29tcGFueQIPMzAwNDU2NDE2NTAwMDAzAxQyMDI0LTA4LTE3VDEyOjAwOjAwWgQHMTAwMC4wMAUDMTUwBkA2NzQyMmQ2NGE3N2IxNDVhMzEwNTMxMjgzNTA4NjgzNjI5ZjRmZTZmNGM2N2YyY2YxZjlkYWNkYzA2YmZiZTA4B5AzMDQ2MDIyMTAwYjBmNGVhMGMyOTVlZTQ0NzY4MzgwMjE5MjFiYTFkYmJlMzcwNGU1NGQ0MWNjYTc1OTZjYTUxNmJkMTIwMzM5YzAyMjEwMGMwMmZmZGJiYjNmOWM5OWM2NzRjMDY2OTE4ZTFhYjVlNjczODZlYzkwZmI2NjlkNGNkZTVhZDk1ODEzNzU3N2EIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI="
       );
       console.log(decodedString);
     };
