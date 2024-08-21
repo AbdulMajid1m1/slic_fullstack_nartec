@@ -41,27 +41,111 @@ const POS = () => {
     }
   }, []);
 
-  const [currentTime, setCurrentTime] = useState("");
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(
-        now.toLocaleString("en-US", {
-          dateStyle: "short",
-          timeStyle: "medium",
-        })
-      );
-    };
-
-    updateTime();
-    const intervalId = setInterval(updateTime, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+  const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
 
+  // const handleGetBarcodes = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await newRequest.get(
+  //       `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+  //     );
+  //     const data = response?.data?.data;
+  //     console.log(data);
+
+  //     if (data) {
+  //       const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+
+  //       const secondApiBody = {
+  //         filter: {
+  //           P_COMP_CODE: "SLIC",
+  //           P_CUST_CODE: "CL100729",
+  //           "P_ITEM_CODE": ItemCode,
+  //           P_ITEM_CODE: "45",
+  //           P_GRADE_CODE_1: ProductSize,
+  //         },
+  //         M_COMP_CODE: "001",
+  //         M_USER_ID: "SYSADMIN",
+  //         APICODE: "ItemRate",
+  //         M_LANG_CODE: "ENG",
+  //       };
+
+  //       try {
+  //         const secondApiResponse = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/getApi",
+  //           secondApiBody,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //           }
+  //         );
+  //         const secondApiData = secondApiResponse?.data;
+
+  //         let storedData = sessionStorage.getItem("secondApiResponses");
+  //         storedData = storedData ? JSON.parse(storedData) : {};
+
+  //         storedData[ItemCode] = secondApiData;
+
+  //         sessionStorage.setItem(
+  //           "secondApiResponses",
+  //           JSON.stringify(storedData)
+  //         );
+
+  //         const itemPrice = secondApiData[0].ItemRate?.RATE;
+  //         const vat = itemPrice * 0.15;
+  //         const total = itemPrice + vat;
+  //         // console.log(itemPrice)
+
+  //         setData((prevData) => {
+  //           const existingRecordIndex = prevData.findIndex(
+  //             (record) => record.Barcode === GTIN
+  //           );
+
+  //           if (existingRecordIndex !== -1) {
+  //             const updatedData = [...prevData];
+  //             updatedData[existingRecordIndex].Qty += 1;
+  //             updatedData[existingRecordIndex].Total =
+  //               updatedData[existingRecordIndex].Qty * itemPrice +
+  //               updatedData[existingRecordIndex].Qty * vat;
+  //             return updatedData;
+  //           } else {
+  //             return [
+  //               ...prevData,
+  //               {
+  //                 SKU: ItemCode,
+  //                 Barcode: GTIN,
+  //                 Description: EnglishName,
+  //                 ItemSize: ProductSize,
+  //                 Qty: 1,
+  //                 // ItemPrice: itemPrice,
+  //                 ItemPrice: 250.00,
+  //                 Discount: 0,
+  //                 VAT: vat,
+  //                 Total: total,
+  //               },
+  //             ];
+  //           }
+  //         });
+  //       } catch (secondApiError) {
+  //         toast.error(
+  //           secondApiError?.response?.data?.message ||
+  //             "An error occurred while calling the second API"
+  //         );
+  //       }
+  //     } else {
+  //       setData([]);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error?.response?.data?.message || "An error occurred");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
+  // Fetch barcode data from API
   const handleGetBarcodes = async () => {
     setIsLoading(true);
     try {
@@ -69,88 +153,41 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      console.log(data);
 
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
-        const secondApiBody = {
-          filter: {
-            P_COMP_CODE: "SLIC",
-            P_CUST_CODE: "CL100729",
-            "P_ITEM_CODE": ItemCode,
-            P_ITEM_CODE: "45",
-            P_GRADE_CODE_1: ProductSize,
-          },
-          M_COMP_CODE: "001",
-          M_USER_ID: "SYSADMIN",
-          APICODE: "ItemRate",
-          M_LANG_CODE: "ENG",
-        };
+        const itemPrice = 250.00; // Hardcoded for now, ideally fetched from the second API.
+        const vat = itemPrice * 0.15;
+        const total = itemPrice + vat;
 
-        try {
-          const secondApiResponse = await ErpTeamRequest.post(
-            "/slicuat05api/v1/getApi",
-            secondApiBody,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
+        setData((prevData) => {
+          const existingItemIndex = prevData.findIndex(item => item.Barcode === GTIN);
+  
+          if (existingItemIndex !== -1) {
+            // If the item already exists, just update the Qty and Total
+            const updatedData = [...prevData];
+            updatedData[existingItemIndex].Qty += 1;
+            updatedData[existingItemIndex].Total = updatedData[existingItemIndex].Qty * (itemPrice + vat);
+            return updatedData;
+          } else {
+            // If the item is new, add it to the data array
+            return [
+              ...prevData,
+              {
+                SKU: ItemCode,
+                Barcode: GTIN,
+                Description: EnglishName,
+                ItemSize: ProductSize,
+                Qty: 1,
+                ItemPrice: itemPrice,
+                VAT: vat,
+                Total: total,
               },
-            }
-          );
-          const secondApiData = secondApiResponse?.data;
+            ];
+          }
+        });
 
-          let storedData = sessionStorage.getItem("secondApiResponses");
-          storedData = storedData ? JSON.parse(storedData) : {};
-
-          storedData[ItemCode] = secondApiData;
-
-          sessionStorage.setItem(
-            "secondApiResponses",
-            JSON.stringify(storedData)
-          );
-
-          const itemPrice = secondApiData[0].ItemRate?.RATE;
-          const vat = itemPrice * 0.15;
-          const total = itemPrice + vat;
-          // console.log(itemPrice)
-
-          setData((prevData) => {
-            const existingRecordIndex = prevData.findIndex(
-              (record) => record.Barcode === GTIN
-            );
-
-            if (existingRecordIndex !== -1) {
-              const updatedData = [...prevData];
-              updatedData[existingRecordIndex].Qty += 1;
-              updatedData[existingRecordIndex].Total =
-                updatedData[existingRecordIndex].Qty * itemPrice +
-                updatedData[existingRecordIndex].Qty * vat;
-              return updatedData;
-            } else {
-              return [
-                ...prevData,
-                {
-                  SKU: ItemCode,
-                  Barcode: GTIN,
-                  Description: EnglishName,
-                  ItemSize: ProductSize,
-                  Qty: 1,
-                  // ItemPrice: itemPrice,
-                  ItemPrice: 250.00,
-                  Discount: 0,
-                  VAT: vat,
-                  Total: total,
-                },
-              ];
-            }
-          });
-        } catch (secondApiError) {
-          toast.error(
-            secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
-          );
-        }
       } else {
         setData([]);
       }
@@ -160,6 +197,26 @@ const POS = () => {
       setIsLoading(false);
     }
   };
+
+  // Calculate totals for Net with VAT, Total VAT, and Total Amount with VAT
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+    
+      data.forEach(item => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [data]);
+
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
@@ -246,10 +303,30 @@ const POS = () => {
   }, [selectedTransactionCode]);
 
 
+  // picked current date and time 
+  const [currentTime, setCurrentTime] = useState("");
+  const [todayDate, setTodayDate] = useState('');
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTodayDate(now.toISOString());
+      setCurrentTime(
+        now.toLocaleString("en-US", {
+          dateStyle: "short",
+          timeStyle: "medium",
+        })
+      );
+    };
+
+    updateTime();
+    const intervalId = setInterval(updateTime, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Invoice States
   const [netWithVat, setNetWithVat] = useState('');
   const [totalVat, setTotalVat] = useState('');
-  const [todayDate, setTodayDate] = useState(new Date().toISOString());
   const [invoiceLoader, setInvoiceLoader] = useState(false);
  
   const handleInvoiceGenerator = async (e) => {
@@ -258,8 +335,10 @@ const POS = () => {
     try {
       const res = await newRequest.post('/zatca/generateZatcaQRCode', {
         invoiceDate: todayDate,
-        totalWithVat: Number(netWithVat),
-        vatTotal: Number(totalVat),
+        // totalWithVat: Number(netWithVat),
+        // totalWithVat: Number(netWithVat) + Number(totalVat),
+        totalWithVat: totalAmountWithVat,
+        vatTotal: Number(totalVat), 
       }
     )
       // console.log('invoice', res?.data);
@@ -337,7 +416,7 @@ const POS = () => {
             }
             .qr-section {
               text-align: center;
-              margin-top: 50px;
+              margin-top: 70px;
             }
             .receipt-footer {
               margin-top: 20px;
@@ -366,33 +445,35 @@ const POS = () => {
             <div><span class="field-label">Customer: </span>${selectedCustomerName?.CUST_NAME}</div>
             <div><span class="field-label">VAT#: </span>${netWithVat}</div>
             <div><span class="field-label">Receipt: </span>2024003612</div>
-            <div><span class="field-label">Date: </span>${todayDate}</div>
+            <div><span class="field-label">Date: </span>${currentTime}</div>
           </div>
 
           <table class="table">
             <thead>
               <tr>
                 <th>Description</th>
-                <th>Qty</th>
+                <th>QTY</th>
                 <th>Price</th>
                 <th>Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="item">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>${totalVat}</td>
-              </tr>
+              ${data.map(item => `
+                <tr>
+                  <td>${item.SKU}</td>
+                  <td>${item.Qty}</td>
+                  <td>${item.ItemPrice.toFixed(2)}</td>
+                  <td>${(item.ItemPrice * item.Qty).toFixed(2)}</td>
+                </tr>
+              `).join('')}
             </tbody>
           </table>
 
           <div class="total-section">
             <div class="left-side">
-              <div><strong>Gross:</strong></div>
-              <div><strong>VAT :</strong> ${netWithVat}</div>
-              <div><strong>Total VAT:</strong> ${totalVat}</div>
+              <div><strong>Gross:</strong> ${netWithVat}</div>
+              <div><strong>VAT :</strong> ${totalVat}</div>
+              <div><strong>Total Amount With VAT:</strong> ${totalAmountWithVat}</div>
               <div><strong>Paid:</strong> </div>
               <div><strong>Change Due:</strong> </div>
             </div>
@@ -629,7 +710,7 @@ const POS = () => {
             <table className="table-auto w-full">
               <thead className="bg-secondary text-white">
                 <tr>
-                  <th className="px-4 py-2">SKU</th>
+                  {/* <th className="px-4 py-2">SKU</th>
                   <th className="px-4 py-2">Barcode</th>
                   <th className="px-4 py-2">Description</th>
                   <th className="px-4 py-2">Item Size</th>
@@ -638,7 +719,15 @@ const POS = () => {
                   <th className="px-4 py-2">Discount</th>
                   <th className="px-4 py-2">VAT (15%)</th>
                   <th className="px-4 py-2">Total</th>
-                  <th className="px-4 py-2">Action</th>
+                  <th className="px-4 py-2">Action</th> */}
+                  <th className="px-4 py-2">SKU</th>
+                  <th className="px-4 py-2">Barcode</th>
+                  <th className="px-4 py-2">Description</th>
+                  <th className="px-4 py-2">Item Size</th>
+                  <th className="px-4 py-2">Qty</th>
+                  <th className="px-4 py-2">Item Price</th>
+                  <th className="px-4 py-2">VAT (15%)</th>
+                  <th className="px-4 py-2">Total</th>
                 </tr>
               </thead>
               {isLoading ? (
@@ -651,7 +740,7 @@ const POS = () => {
                 </tr>
               ) : (
                 <tbody>
-                  {data.map((row, index) => (
+                  {/* {data.map((row, index) => (
                     <tr key={index} className="bg-gray-100">
                       <td className="border px-4 py-2">{row.SKU}</td>
                       <td className="border px-4 py-2">{row.Barcode}</td>
@@ -692,6 +781,18 @@ const POS = () => {
                           <span className="text-red-500 font-bold">X</span>
                         </button>
                       </td>
+                    </tr>
+                  ))} */}
+                  {data.map((row, index) => (
+                    <tr key={index} className="bg-gray-100">
+                      <td className="border px-4 py-2">{row.SKU}</td>
+                      <td className="border px-4 py-2">{row.Barcode}</td>
+                      <td className="border px-4 py-2">{row.Description}</td>
+                      <td className="border px-4 py-2">{row.ItemSize}</td>
+                      <td className="border px-4 py-2">{row.Qty}</td>
+                      <td className="border px-4 py-2">{row.ItemPrice.toFixed(2)}</td>
+                      <td className="border px-4 py-2">{row.VAT.toFixed(2)}</td>
+                      <td className="border px-4 py-2">{row.Total.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -746,7 +847,7 @@ const POS = () => {
             <div>
               <div className="bg-white p-4 rounded shadow-md">
                 <form onSubmit={handleInvoiceGenerator} className="flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
+                  {/* <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
                       Net With VAT:
                     </label>
@@ -775,15 +876,41 @@ const POS = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">
-                      Today Date:
-                    </label>
+                    <label className="block text-gray-700 font-bold">Total Amount With VAT:</label>
                     <input
-                      type="date"
-                      value={todayDate}
-                      onChange={(e) => setTodayDate(e.target.value)}
+                      type="text"
+                      value={Number(netWithVat) + Number(totalVat)}
+                      readOnly
                       className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                      required
+                    />
+                  </div> */}
+                  <div className="flex justify-between items-center">
+                    <label className="block text-gray-700 font-bold">Net With VAT:</label>
+                    <input
+                      type="text"
+                      value={netWithVat}
+                      readOnly
+                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <label className="block text-gray-700 font-bold">Total VAT:</label>
+                    <input
+                      type="text"
+                      value={totalVat}
+                      readOnly
+                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <label className="block text-gray-700 font-bold">Total Amount With VAT:</label>
+                    <input
+                      type="text"
+                      value={totalAmountWithVat}
+                      readOnly
+                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
                     />
                   </div>
 
