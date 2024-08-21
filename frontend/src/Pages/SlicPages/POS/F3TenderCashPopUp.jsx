@@ -15,6 +15,7 @@ const F3TenderCashPopUp = ({
   handleClearData,
   selectedSalesType,
   handleInvoiceGenerator,
+  totalAmountWithVat,
 }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
@@ -148,18 +149,10 @@ const F3TenderCashPopUp = ({
   const [totalAmount, setTotalAmount] = useState('');
   const [changeAmount, setChangeAmount] = useState('');
   const [selectedCard, setSelectedCard] = useState("");
+  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
   const cashInputRef = useRef(null); 
   const creditInputRef = useRef(null); 
-
-  const vatPercentage = 0.15; 
-
-  const calculateGrossAmountWithVAT = () => {
-    const subtotal = storeDatagridData.reduce((acc, item) => acc + item.ItemPrice, 0);
-    const grossAmount = subtotal + subtotal * vatPercentage;
-    return grossAmount;
-  };
-
-  const grossAmount = parseFloat(calculateGrossAmountWithVAT());
+  const grossAmount = totalAmountWithVat;
 
   const handleCashClick = () => {
     setSelectedCard("cash");
@@ -204,6 +197,9 @@ const F3TenderCashPopUp = ({
     const total = cash + credit;
     setTotalAmount(total);
     setChangeAmount(total - grossAmount);
+
+    // Enable the print button if total amount is equal to or greater than the gross amount
+    setIsPrintEnabled(total >= grossAmount);
   };
 
   return (
@@ -310,15 +306,18 @@ const F3TenderCashPopUp = ({
                   {/* Gross Amount Display */}
                   <div className="mt-4">
                     <p className="text-sm font-sans text-red-500">
-                      Gross Amount with 15% VAT: SAR {calculateGrossAmountWithVAT()}
+                      Gross Amount with 15% VAT: SAR {grossAmount}
                     </p>
                   </div>
                     <div className="mt-10">
                       <Button
                         variant="contained"
-                        style={{ backgroundColor: "#021F69", color: "#ffffff" }}
+                        style={{
+                          backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3", // Change color based on enabled/disabled state
+                          color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
+                        }}
                         type="submit"
-                        disabled={loading}
+                        disabled={!isPrintEnabled || loading}
                         className="sm:w-[70%] w-full ml-2"
                         endIcon={
                           loading ? (

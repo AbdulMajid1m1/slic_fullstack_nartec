@@ -285,7 +285,7 @@ const POS = () => {
         <head>
           <title>Sales Invoice</title>
           <style>
-            @page { size: 3in 8in; margin: 0; }
+            @page { size: 3in 10in; margin: 0; }
             body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
             .invoice-header, .invoice-footer {
               text-align: center;
@@ -890,6 +890,7 @@ const POS = () => {
               handleClearData={handleClearData}
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
+              totalAmountWithVat={totalAmountWithVat}
             />
           )}
 
