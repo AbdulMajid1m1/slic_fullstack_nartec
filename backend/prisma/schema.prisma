@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -48,7 +42,7 @@ model TblUsers {
   UserPassword    String?  @db.VarChar(150)
   UserLoginStatus Int?     @default(0)
 
-  @@map("TblUsers") // Maps the model to the SQL table "TblUsers"
+  @@map("TblUsers") 
 }
 
 model tblPOFPOMaster {
@@ -106,20 +100,83 @@ model TrxCodesType {
 }
 
 model TblAppRoles {
-  RoleID   Int     @id @default(autoincrement()) // Primary key, auto-incrementing
-  RoleName String? @db.VarChar(255)              // Nullable varchar(255)
+  RoleID   Int     @id @default(autoincrement()) 
+  RoleName String? @db.VarChar(255)              
 
-  userRoles TblUserRoles[] // Relation to user roles
+  userRoles TblUserRoles[] 
 
   @@map("TblAppRoles")
 }
 
 model TblUserRoles {
-  id          Int    @id @default(autoincrement()) // Primary key, auto-incrementing
-  UserLoginID String @db.VarChar(255)              // Nullable varchar(255)
+  id          Int    @id @default(autoincrement()) 
+  UserLoginID String @db.VarChar(255)              
   RoleID      Int
 
   role        TblAppRoles @relation(fields: [RoleID], references: [RoleID])
 
   @@map("TblUserRoles")
+}
+
+model tblPOSInvoiceDetails {
+  id                    String    @id @default(cuid())
+  Rec_Num                Float?   @map("Rec ##")
+  TblSysNoID             Float?
+  SNo                    Float?
+  DeliveryLocationCode   String?  @db.NVarChar(255)
+  ItemSysID              String?  @db.NVarChar(255)
+  InvoiceNo              String?  @db.NVarChar(255)
+  Head_SYS_ID            String?  @db.NVarChar(255)
+  TransactionCode        String?  @db.NVarChar(255)
+  CustomerCode           String?  @db.NVarChar(255)
+  SalesLocationCode      String?  @db.NVarChar(255)
+  Remarks                String?  @db.NVarChar(255)
+  TransactionType        String?  @db.NVarChar(255)
+  UserID                 String?  @db.NVarChar(255)
+  ItemSKU                String?  @db.NVarChar(255)
+  ItemUnit               String?  @db.NVarChar(255)
+  ItemSize               String?  @db.NVarChar(255)
+  ITEMRATE               Float?
+  ItemPrice              Float?
+  ItemQry                Float?
+  TransactionDate        DateTime?
+}
+
+model tblPOSInvoiceMaster {
+  id                    String    @id @default(cuid())
+  Rec_Num                Float?   @map("Rec ##")
+  TblSysNoID             Float?
+  SNo                    Float?
+  DeliveryLocationCode   String?  @db.NVarChar(255)
+  ItemSysID              String?  @db.NVarChar(255)
+  InvoiceNo              String?  @db.NVarChar(255)
+  Head_SYS_ID            String?  @db.NVarChar(255)
+  TransactionCode        String?  @db.NVarChar(255)
+  CustomerCode           String?  @db.NVarChar(255)
+  SalesLocationCode      String?  @db.NVarChar(255)
+  Remarks                String?  @db.NVarChar(255)
+  TransactionType        String?  @db.NVarChar(255)
+  UserID                 String?  @db.NVarChar(255)
+  ItemSKU                String?  @db.NVarChar(255)
+  ItemUnit               String?  @db.NVarChar(255)
+  ItemSize               String?  @db.NVarChar(255)
+  ITEMRATE               Float?
+  ItemPrice              Float?
+  ItemQry                Float?
+  TransactionDate        DateTime?
+}
+
+model TblSalesReturnInvoicetmp {
+  id                    String    @id @default(cuid())
+  TblSysNoID             BigInt   
+  SNo                    Int?     
+  ItemCode               String?  @db.VarChar(10)
+  Description            String?  @db.VarChar(150)
+  ReturnQty              Int?     
+  InvoiceQty             Int?     
+  UnitCode               String?  @db.VarChar(50)
+  HeadSysId              String?  @db.VarChar(50)
+  ItemSysID              String?  @db.VarChar(50)
+  DeliveryLocationCode   String?  @db.VarChar(50)
+  ItemSize               String   @db.VarChar(10)
 }

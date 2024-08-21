@@ -1,0 +1,79 @@
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+class POSInvoiceDetails {
+  static async getInvoiceDetailsById(id) {
+    try {
+      const details = await prisma.tblPOSInvoiceDetails.findUnique({
+        where: { id },
+      });
+      return details;
+    } catch (error) {
+      console.error("Error fetching invoice details by ID:", error);
+      throw new Error("Error fetching invoice details by ID");
+    }
+  }
+
+  static async createInvoiceDetails(data) {
+    try {
+      const newDetails = await prisma.tblPOSInvoiceDetails.create({
+        data,
+      });
+      return newDetails;
+    } catch (error) {
+      console.error("Error creating invoice details:", error);
+      throw new Error("Error creating invoice details");
+    }
+  }
+
+  static async updateInvoiceDetails(id, data) {
+    try {
+      const updatedDetails = await prisma.tblPOSInvoiceDetails.update({
+        where: { id },
+        data,
+      });
+      return updatedDetails;
+    } catch (error) {
+      console.error("Error updating invoice details:", error);
+      throw new Error("Error updating invoice details");
+    }
+  }
+
+  static async deleteInvoiceDetails(id) {
+    try {
+      const deletedDetails = await prisma.tblPOSInvoiceDetails.delete({
+        where: { id },
+      });
+      return deletedDetails;
+    } catch (error) {
+      console.error("Error deleting invoice details:", error);
+      throw new Error("Error deleting invoice details");
+    }
+  }
+
+  static async getAllInvoiceDetails() {
+    try {
+      const details = await prisma.tblPOSInvoiceDetails.findMany({});
+      return details;
+    } catch (error) {
+      console.error("Error fetching all invoice details:", error);
+      throw new Error("Error fetching all invoice details");
+    }
+  }
+
+  static async getInvoiceDetailsByField(field, value) {
+    try {
+      const details = await prisma.tblPOSInvoiceDetails.findMany({
+        where: {
+          [field]: value,
+        },
+      });
+      return details;
+    } catch (error) {
+      console.error(`Error fetching invoice details by ${field}:`, error);
+      throw new Error(`Error fetching invoice details by ${field}`);
+    }
+  }
+}
+
+module.exports = POSInvoiceDetails;
