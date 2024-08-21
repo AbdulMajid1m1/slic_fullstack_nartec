@@ -41,11 +41,11 @@ const RemoveRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
       if (response?.data?.success) {
         setSelectedRoles(response?.data?.data); 
       } else {
-        toast.error("Failed to fetch user's assigned roles");
+        toast.info(response?.data?.message || "No roles assigned to this user");
       }
     } catch (error) {
       console.error("Error fetching user's assigned roles:", error);
-      toast.error("Error fetching assigned roles");
+      toast.error(error?.response?.data?.message || "Error fetching user's assigned roles");
     }
   };
 
