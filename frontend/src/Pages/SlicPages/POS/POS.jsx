@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
-import { encode } from "js-base64";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 
@@ -41,112 +40,12 @@ const POS = () => {
     }
   }, []);
 
-
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
 
-  // const handleGetBarcodes = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await newRequest.get(
-  //       `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
-  //     );
-  //     const data = response?.data?.data;
-  //     console.log(data);
-
-  //     if (data) {
-  //       const { ItemCode, ProductSize, GTIN, EnglishName } = data;
-
-  //       const secondApiBody = {
-  //         filter: {
-  //           P_COMP_CODE: "SLIC",
-  //           P_CUST_CODE: "CL100729",
-  //           "P_ITEM_CODE": ItemCode,
-  //           P_ITEM_CODE: "45",
-  //           P_GRADE_CODE_1: ProductSize,
-  //         },
-  //         M_COMP_CODE: "001",
-  //         M_USER_ID: "SYSADMIN",
-  //         APICODE: "ItemRate",
-  //         M_LANG_CODE: "ENG",
-  //       };
-
-  //       try {
-  //         const secondApiResponse = await ErpTeamRequest.post(
-  //           "/slicuat05api/v1/getApi",
-  //           secondApiBody,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${token}`,
-  //             },
-  //           }
-  //         );
-  //         const secondApiData = secondApiResponse?.data;
-
-  //         let storedData = sessionStorage.getItem("secondApiResponses");
-  //         storedData = storedData ? JSON.parse(storedData) : {};
-
-  //         storedData[ItemCode] = secondApiData;
-
-  //         sessionStorage.setItem(
-  //           "secondApiResponses",
-  //           JSON.stringify(storedData)
-  //         );
-
-  //         const itemPrice = secondApiData[0].ItemRate?.RATE;
-  //         const vat = itemPrice * 0.15;
-  //         const total = itemPrice + vat;
-  //         // console.log(itemPrice)
-
-  //         setData((prevData) => {
-  //           const existingRecordIndex = prevData.findIndex(
-  //             (record) => record.Barcode === GTIN
-  //           );
-
-  //           if (existingRecordIndex !== -1) {
-  //             const updatedData = [...prevData];
-  //             updatedData[existingRecordIndex].Qty += 1;
-  //             updatedData[existingRecordIndex].Total =
-  //               updatedData[existingRecordIndex].Qty * itemPrice +
-  //               updatedData[existingRecordIndex].Qty * vat;
-  //             return updatedData;
-  //           } else {
-  //             return [
-  //               ...prevData,
-  //               {
-  //                 SKU: ItemCode,
-  //                 Barcode: GTIN,
-  //                 Description: EnglishName,
-  //                 ItemSize: ProductSize,
-  //                 Qty: 1,
-  //                 // ItemPrice: itemPrice,
-  //                 ItemPrice: 250.00,
-  //                 Discount: 0,
-  //                 VAT: vat,
-  //                 Total: total,
-  //               },
-  //             ];
-  //           }
-  //         });
-  //       } catch (secondApiError) {
-  //         toast.error(
-  //           secondApiError?.response?.data?.message ||
-  //             "An error occurred while calling the second API"
-  //         );
-  //       }
-  //     } else {
-  //       setData([]);
-  //     }
-  //   } catch (error) {
-  //     toast.error(error?.response?.data?.message || "An error occurred");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-
   // Fetch barcode data from API
-  const handleGetBarcodes = async () => {
+  const handleGetBarcodes = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
       const response = await newRequest.get(
@@ -157,18 +56,23 @@ const POS = () => {
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
-        const itemPrice = 250.00; // Hardcoded for now, ideally fetched from the second API.
+        // call the second api later in their
+
+        const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
         const vat = itemPrice * 0.15;
         const total = itemPrice + vat;
 
         setData((prevData) => {
-          const existingItemIndex = prevData.findIndex(item => item.Barcode === GTIN);
-  
+          const existingItemIndex = prevData.findIndex(
+            (item) => item.Barcode === GTIN
+          );
+
           if (existingItemIndex !== -1) {
             // If the item already exists, just update the Qty and Total
             const updatedData = [...prevData];
             updatedData[existingItemIndex].Qty += 1;
-            updatedData[existingItemIndex].Total = updatedData[existingItemIndex].Qty * (itemPrice + vat);
+            updatedData[existingItemIndex].Total =
+              updatedData[existingItemIndex].Qty * (itemPrice + vat);
             return updatedData;
           } else {
             // If the item is new, add it to the data array
@@ -187,7 +91,6 @@ const POS = () => {
             ];
           }
         });
-
       } else {
         setData([]);
       }
@@ -198,32 +101,15 @@ const POS = () => {
     }
   };
 
-  // Calculate totals for Net with VAT, Total VAT, and Total Amount with VAT
-  useEffect(() => {
-    const calculateTotals = () => {
-      let totalNet = 0;
-      let totalVat = 0;
-    
-      data.forEach(item => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
-      });
-
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
-      setTotalAmountWithVat(totalNet + totalVat);
-    };
-
-    calculateTotals();
-  }, [data]);
-
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
     // if (!isCreatePopupVisible) {
     if (!data || data.length === 0) {
-      toast.warning("The datagrid is empty. Please ensure data is available before proceeding.");
+      toast.warning(
+        "The datagrid is empty. Please ensure data is available before proceeding."
+      );
     } else {
       setStoreDatagridData([...data]);
       setCreatePopupVisibility(true);
@@ -273,7 +159,6 @@ const POS = () => {
     }
   };
 
-  
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
   const [selectedCustomerName, setSelectedCustomerName] = useState("");
@@ -302,10 +187,18 @@ const POS = () => {
     // console.log(selectedTransactionCode)
   }, [selectedTransactionCode]);
 
-
-  // picked current date and time 
+  // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
-  const [todayDate, setTodayDate] = useState('');
+  const [todayDate, setTodayDate] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+
+  // Function to generate invoice number based on date and time
+  const generateInvoiceNumber = () => {
+    const now = new Date();
+    const timestamp = Date.now();
+    return `INV-${timestamp}`; // Or simply `timestamp` if you prefer it as a pure numeric value
+  };
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -318,47 +211,73 @@ const POS = () => {
       );
     };
 
+    setInvoiceNumber(generateInvoiceNumber());
     updateTime();
     const intervalId = setInterval(updateTime, 1000);
 
     return () => clearInterval(intervalId);
   }, []);
 
-  // Invoice States
-  const [netWithVat, setNetWithVat] = useState('');
-  const [totalVat, setTotalVat] = useState('');
+  // Invoice generation api 
+  const [netWithVat, setNetWithVat] = useState("");
+  const [totalVat, setTotalVat] = useState("");
   const [invoiceLoader, setInvoiceLoader] = useState(false);
- 
+
   const handleInvoiceGenerator = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
+
+    if (barcode === "" || data.length === 0) {
+      toast.error(
+        "Please ensure barcode and data is available before proceeding."
+      );
+      return;
+    }
     setInvoiceLoader(true);
     try {
-      const res = await newRequest.post('/zatca/generateZatcaQRCode', {
+      const res = await newRequest.post("/zatca/generateZatcaQRCode", {
         invoiceDate: todayDate,
-        // totalWithVat: Number(netWithVat),
-        // totalWithVat: Number(netWithVat) + Number(totalVat),
         totalWithVat: totalAmountWithVat,
-        vatTotal: Number(totalVat), 
-      }
-    )
+        vatTotal: Number(totalVat),
+      });
       // console.log('invoice', res?.data);
-      
+
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       handlePrintSalesInvoice(qrCodeDataFromApi);
 
-      setNetWithVat('');
-      setTotalVat('');
-      toast.success('Invoice generated successfully!');
+      setNetWithVat("");
+      setTotalVat("");
+      toast.success("Invoice generated successfully!");
       setInvoiceLoader(false);
-    } catch(error) {
+    } catch (error) {
       console.log(error);
-      toast.error('Failed to generate invoice. Please try again.');
+      toast.error("Failed to generate invoice. Please try again.");
       setInvoiceLoader(false);
     }
-  }
-  
+  };
+
+  // Calculate totals for Net with VAT, Total VAT, and Total Amount with VAT
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      data.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [data]);
+
   // invoice generate
   const handlePrintSalesInvoice = (qrCodeData) => {
+    const newInvoiceNumber = generateInvoiceNumber();
+    setInvoiceNumber(newInvoiceNumber);
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
     const html = `
@@ -392,31 +311,50 @@ const POS = () => {
               border-collapse: collapse;
               margin: 10px 0;
             }
-            .table th, .table td {
-              text-align: left;
+            .table th,
+            .table td {
+              text-align: center; /* Center align for more symmetry */
               padding: 5px;
               border-bottom: 1px solid black;
               font-size: 15px;
             }
-            .total-section {
-              font-size: 15px;
-              text-align: left;
-              line-height: 1.5;
+
+            .table th div {
               display: flex;
               justify-content: space-between;
+              font-size: 15px;
             }
-            .left-side {
+
+            .table th div span {
+              font-family: 'Arial', sans-serif;
+              text-align: center;
+            }
+            .total-section {
+              font-size: 15px;
+              padding: 10px 0;
+              line-height: 1.5;
               text-align: left;
             }
-            .right-side {
+            .left-side {
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            }
+            .left-side div {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .arabic-label {
               text-align: right;
-              font-family: 'Arial', sans-serif;
               direction: rtl;
-              margin-left: 5px;
+              margin-left: 10px;
+              font-family: 'Arial', sans-serif;
+              width: auto;
             }
             .qr-section {
               text-align: center;
-              margin-top: 70px;
+              margin-top: 80px;
             }
             .receipt-footer {
               margin-top: 20px;
@@ -442,47 +380,86 @@ const POS = () => {
           <div class="sales-invoice-title">Sales Invoice</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${selectedCustomerName?.CUST_NAME}</div>
+            <div><span class="field-label">Customer: </span>${
+              selectedCustomerName?.CUST_NAME
+            }</div>
             <div><span class="field-label">VAT#: </span>${netWithVat}</div>
-            <div><span class="field-label">Receipt: </span>2024003612</div>
+            <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
             <div><span class="field-label">Date: </span>${currentTime}</div>
           </div>
 
           <table class="table">
             <thead>
               <tr>
-                <th>Description</th>
-                <th>QTY</th>
-                <th>Price</th>
-                <th>Total</th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>بيان</span>
+                    <span>Description</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>الكمية</span>
+                    <span>Qty</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>السعر</span>
+                    <span>Price</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>المجموع</span>
+                    <span>Total</span>
+                  </div>
+                </th>
               </tr>
             </thead>
+
             <tbody>
-              ${data.map(item => `
+              ${data
+                .map(
+                  (item) => `
                 <tr>
                   <td>${item.SKU}</td>
                   <td>${item.Qty}</td>
                   <td>${item.ItemPrice.toFixed(2)}</td>
                   <td>${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join("")}
             </tbody>
           </table>
-
           <div class="total-section">
             <div class="left-side">
-              <div><strong>Gross:</strong> ${netWithVat}</div>
-              <div><strong>VAT :</strong> ${totalVat}</div>
-              <div><strong>Total Amount With VAT:</strong> ${totalAmountWithVat}</div>
-              <div><strong>Paid:</strong> </div>
-              <div><strong>Change Due:</strong> </div>
-            </div>
-            <div class="right-side">
-              <div>(ريال) المجموع</div>
-              <div>ضريبة القيمة المضافة</div>
-              <div>المجموع</div>
-              <div>المدفوع</div>
-              <div>المتبقي</div>
+              <div>
+                <strong>Gross:</strong>
+                <div class="arabic-label">(ريال) المجموع</div>
+                ${netWithVat.toFixed(2)}
+              </div>
+              <div>
+                <strong>VAT (15%):</strong>
+                <div class="arabic-label">ضريبة القيمة المضافة</div>
+                ${totalVat.toFixed(2)}
+              </div>
+              <div>
+                <strong>Total Amount With VAT:</strong>
+                <div class="arabic-label">المجموع</div>
+                ${totalAmountWithVat.toFixed(2)}
+              </div>
+              <div>
+                <strong>Paid:</strong>
+                <div class="arabic-label">المدفوع</div>
+                ${totalAmountWithVat.toFixed(2)}
+              </div>
+              <div>
+                <strong>Change Due:</strong>
+                <div class="arabic-label">المتبقي</div>
+                0.00
+              </div>
             </div>
           </div>
 
@@ -504,7 +481,7 @@ const POS = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
       // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
       // Generate the QR code using the `qrcode` library
-      QRCode.toCanvas(qrCodeCanvas, qrCodeData, function (error) {
+      QRCode.toCanvas(qrCodeCanvas, qrCodeData, { width: 380 }, function (error) {
         if (error) console.error(error);
         else {
           // Trigger the print dialog after the QR code is rendered
@@ -585,6 +562,7 @@ const POS = () => {
               <label className="block text-gray-700">Invoice #</label>
               <input
                 type="text"
+                value={invoiceNumber}
                 className="w-full mt-1 p-2 border rounded border-gray-400"
                 placeholder="Invoice"
                 // readOnly
@@ -664,24 +642,25 @@ const POS = () => {
                 placeholder="Mobile"
               />
             </div>
-            <div className="flex items-center">
+            <form onSubmit={handleGetBarcodes} className="flex items-center">
               <div className="w-full">
                 <label className="block text-gray-700">Scan Barcode</label>
                 <input
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
+                  required
                   className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                   placeholder="Search Barcode"
                 />
               </div>
               <button
-                onClick={handleGetBarcodes}
+                type="submit"
                 className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
               >
                 <IoBarcodeSharp size={20} />
               </button>
-            </div>
+            </form>
 
             <div>
               <label className="block text-gray-700">Remarks *</label>
@@ -710,16 +689,6 @@ const POS = () => {
             <table className="table-auto w-full">
               <thead className="bg-secondary text-white">
                 <tr>
-                  {/* <th className="px-4 py-2">SKU</th>
-                  <th className="px-4 py-2">Barcode</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="px-4 py-2">Item Size</th>
-                  <th className="px-4 py-2">Qty</th>
-                  <th className="px-4 py-2">Item Price</th>
-                  <th className="px-4 py-2">Discount</th>
-                  <th className="px-4 py-2">VAT (15%)</th>
-                  <th className="px-4 py-2">Total</th>
-                  <th className="px-4 py-2">Action</th> */}
                   <th className="px-4 py-2">SKU</th>
                   <th className="px-4 py-2">Barcode</th>
                   <th className="px-4 py-2">Description</th>
@@ -728,6 +697,7 @@ const POS = () => {
                   <th className="px-4 py-2">Item Price</th>
                   <th className="px-4 py-2">VAT (15%)</th>
                   <th className="px-4 py-2">Total</th>
+                  <th className="px-4 py-2">Action</th>
                 </tr>
               </thead>
               {isLoading ? (
@@ -740,49 +710,6 @@ const POS = () => {
                 </tr>
               ) : (
                 <tbody>
-                  {/* {data.map((row, index) => (
-                    <tr key={index} className="bg-gray-100">
-                      <td className="border px-4 py-2">{row.SKU}</td>
-                      <td className="border px-4 py-2">{row.Barcode}</td>
-                      <td className="border px-4 py-2">{row.Description}</td>
-                      <td className="border px-4 py-2">{row.ItemSize}</td>
-                      <td className="border px-4 py-2">{row.Qty}</td>
-                      <td className="border px-4 py-2">{row.ItemPrice}</td>
-                      <td className="border px-4 py-2">
-                        <input
-                          type="number"
-                          value={row.Discount}
-                          onChange={(e) => {
-                            const discount = parseFloat(e.target.value) || 0;
-                            const updatedData = [...data];
-                            updatedData[index].Discount = discount;
-                            updatedData[index].Total =
-                              updatedData[index].ItemPrice -
-                              discount +
-                              updatedData[index].VAT;
-                            setData(updatedData);
-                          }}
-                          className="w-full text-center"
-                        />
-                      </td>
-                      <td className="border px-4 py-2">{row.VAT.toFixed(2)}</td>
-                      <td className="border px-4 py-2">
-                        {row.Total.toFixed(2)}
-                      </td>
-                      <td className="border px-4 py-2 text-center">
-                        <button
-                          onClick={() => {
-                            const updatedData = data.filter(
-                              (_, i) => i !== index
-                            );
-                            setData(updatedData);
-                          }}
-                        >
-                          <span className="text-red-500 font-bold">X</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))} */}
                   {data.map((row, index) => (
                     <tr key={index} className="bg-gray-100">
                       <td className="border px-4 py-2">{row.SKU}</td>
@@ -790,9 +717,21 @@ const POS = () => {
                       <td className="border px-4 py-2">{row.Description}</td>
                       <td className="border px-4 py-2">{row.ItemSize}</td>
                       <td className="border px-4 py-2">{row.Qty}</td>
-                      <td className="border px-4 py-2">{row.ItemPrice.toFixed(2)}</td>
+                      <td className="border px-4 py-2">
+                        {row.ItemPrice.toFixed(2)}
+                      </td>
                       <td className="border px-4 py-2">{row.VAT.toFixed(2)}</td>
-                      <td className="border px-4 py-2">{row.Total.toFixed(2)}</td>
+                      <td className="border px-4 py-2">
+                        {row.Total.toFixed(2)}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          onClick={() => handleRemoveItem(index)}
+                          className="text-red-500 font-bold"
+                        >
+                          X
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -846,7 +785,8 @@ const POS = () => {
             </div>
             <div>
               <div className="bg-white p-4 rounded shadow-md">
-                <form onSubmit={handleInvoiceGenerator} className="flex flex-col gap-4">
+                {/* <form onSubmit={handleInvoiceGenerator} className="flex flex-col gap-4"> */}
+                <div className="flex flex-col gap-4">
                   {/* <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
                       Net With VAT:
@@ -885,7 +825,9 @@ const POS = () => {
                     />
                   </div> */}
                   <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">Net With VAT:</label>
+                    <label className="block text-gray-700 font-bold">
+                      Net With VAT:
+                    </label>
                     <input
                       type="text"
                       value={netWithVat}
@@ -895,7 +837,9 @@ const POS = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">Total VAT:</label>
+                    <label className="block text-gray-700 font-bold">
+                      Total VAT:
+                    </label>
                     <input
                       type="text"
                       value={totalVat}
@@ -905,7 +849,9 @@ const POS = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">Total Amount With VAT:</label>
+                    <label className="block text-gray-700 font-bold">
+                      Total Amount With VAT:
+                    </label>
                     <input
                       type="text"
                       value={totalAmountWithVat}
@@ -914,23 +860,23 @@ const POS = () => {
                     />
                   </div>
 
-                  <div className="flex justify-between items-center w-full">
+                  {/* <div className="flex justify-between items-center w-full">
                     <Button
-                        variant="contained"
-                        style={{ backgroundColor: "#021F69", color: "#ffffff" }}
-                        type="submit"
-                        disabled={invoiceLoader}
-                        className="w-full ml-2"
-                        endIcon={
-                          invoiceLoader ? (
-                            <CircularProgress size={24} color="inherit" />
-                          ) : null
-                        }
-                      >
-                        Print Receipt
-                      </Button>
-                  </div>
-                </form>
+                      variant="contained"
+                      style={{ backgroundColor: "#021F69", color: "#ffffff" }}
+                      type="submit"
+                      disabled={invoiceLoader}
+                      className="w-full ml-2"
+                      endIcon={
+                        invoiceLoader ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : null
+                      }
+                    >
+                      Print Receipt
+                    </Button>
+                  </div> */}
+                </div>
               </div>
             </div>
           </div>
@@ -943,6 +889,7 @@ const POS = () => {
               showOtpPopup={handleShowOtpPopup}
               handleClearData={handleClearData}
               selectedSalesType={selectedSalesType}
+              handleInvoiceGenerator={handleInvoiceGenerator}
             />
           )}
 

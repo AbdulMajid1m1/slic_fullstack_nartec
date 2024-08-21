@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import cash from "../../../Images/tendercash/cash.png";
 import creditcard from "../../../Images/tendercash/creditcard.png";
 import stcpay from "../../../Images/tendercash/stcpay.png";
@@ -14,6 +14,7 @@ const F3TenderCashPopUp = ({
   showOtpPopup,
   handleClearData,
   selectedSalesType,
+  handleInvoiceGenerator,
 }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
@@ -130,13 +131,79 @@ const F3TenderCashPopUp = ({
       showOtpPopup(res?.data);
       handleCloseCreatePopup();
       handleClearData();
-      toast.success("Transaction Created Successfully");
+      handleInvoiceGenerator();
+      // toast.success("Transaction Created Successfully");
       setLoading(false);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
+  };
+
+
+  // Cards Calcultaion Logic Code 
+  const [cashAmount, setCashAmount] = useState('');
+  const [creditAmount, setCreditAmount] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');
+  const [changeAmount, setChangeAmount] = useState('');
+  const [selectedCard, setSelectedCard] = useState("");
+  const cashInputRef = useRef(null); 
+  const creditInputRef = useRef(null); 
+
+  const vatPercentage = 0.15; 
+
+  const calculateGrossAmountWithVAT = () => {
+    const subtotal = storeDatagridData.reduce((acc, item) => acc + item.ItemPrice, 0);
+    const grossAmount = subtotal + subtotal * vatPercentage;
+    return grossAmount;
+  };
+
+  const grossAmount = parseFloat(calculateGrossAmountWithVAT());
+
+  const handleCashClick = () => {
+    setSelectedCard("cash");
+    setTimeout(() => {
+      if (cashInputRef.current) {
+        cashInputRef.current.focus();
+      }
+    }, 100);
+  };
+
+  const handleCreditClick = () => {
+    setSelectedCard("credit");
+    setTimeout(() => {
+      if (creditInputRef.current) {
+        creditInputRef.current.focus();
+      }
+    }, 100);
+  };
+
+  const handleStcPayClick = () => {
+    setSelectedCard("stcpay"); // Set the selected card to stcpay
+    setTimeout(() => {
+      if (creditInputRef.current) {
+        creditInputRef.current.focus();
+      }
+    }, 100);
+  };
+
+  const handleCashChange = (e) => {
+    const value = parseFloat(e.target.value) || 0;
+    setCashAmount(value);
+    calculateTotalAndChange(value, creditAmount);
+  };
+
+  const handleCreditChange = (e) => {
+    const value = parseFloat(e.target.value) || 0;
+    setCreditAmount(value);
+    calculateTotalAndChange(cashAmount, value);
+  };
+
+  const calculateTotalAndChange = (cash, credit) => {
+    const total = cash + credit;
+    setTotalAmount(total);
+    setChangeAmount(total - grossAmount);
   };
 
   return (
@@ -216,6 +283,7 @@ const F3TenderCashPopUp = ({
               </div>
               <div className="p-0 w-full">
                 <div className="grid grid-cols-3 gap-4">
+                  {/* Invoice Form */}
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
                   <div className="border border-gray-300 rounded-lg p-2 bg-gray-50 overflow-x-auto">
                     <div className="min-w-[300px] min-h-[100px]">
@@ -238,6 +306,13 @@ const F3TenderCashPopUp = ({
                       ))}
                     </div>
                   </div>
+
+                  {/* Gross Amount Display */}
+                  <div className="mt-4">
+                    <p className="text-sm font-sans text-red-500">
+                      Gross Amount with 15% VAT: SAR {calculateGrossAmountWithVAT()}
+                    </p>
+                  </div>
                     <div className="mt-10">
                       <Button
                         variant="contained"
@@ -255,34 +330,60 @@ const F3TenderCashPopUp = ({
                       </Button>
                     </div>
                   </form>
+
                   <div className="border p-2 w-full">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="mb-4">
+                        <p className="font-semibold text-sm">Cash Amount</p>
+                        <input
+                          ref={cashInputRef}
+                          type="number"
+                          className="w-full border border-gray-300 px-2 py-3 rounded-md"
+                          placeholder="Enter Cash Amount"
+                          onChange={handleCashChange}
+                          value={cashAmount}
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <p className="font-semibold text-sm">Credit Amount</p>
+                        <input
+                          ref={creditInputRef}
+                          type="number"
+                          className="w-full border border-gray-300 px-2 py-3 rounded-md"
+                          placeholder="Enter Credit Amount"
+                          onChange={handleCreditChange}
+                          value={creditAmount}
+                        />
+                      </div>
+                    </div>
                     <div className="mb-4">
-                      <p className="font-semibold">Amount Due</p>
+                      <p className="font-semibold">Total Amount</p>
                       <input
                         type="text"
                         className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
-                        placeholder="Amount Due"
+                        placeholder="Total Amount"
+                        value={totalAmount}
+                        readOnly
                       />
                     </div>
-                    <div className="mb-4">
-                      <p className="font-semibold">Amount Received</p>
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
-                        placeholder="Amount Received"
-                      />
-                    </div>
+
                     <div className="mb-4">
                       <p className="font-semibold">Change</p>
                       <input
                         type="text"
                         className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
                         placeholder="Change"
+                        value={changeAmount}
+                        readOnly
                       />
                     </div>
                   </div>
                   <div className="p-1 w-full">
-                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div
+                      onClick={handleCashClick}  
+                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
+                        selectedCard === "cash" ? "bg-gray-300" : ""
+                      }`}>
                       <img
                         src={cash}
                         className="h-10 w-16 mr-2 ml-3 object-contain"
@@ -291,7 +392,11 @@ const F3TenderCashPopUp = ({
                       <p className="">Cash</p>
                     </div>
 
-                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div
+                      onClick={handleCreditClick}   
+                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
+                        selectedCard === "credit" ? "bg-gray-300" : ""
+                      }`}>
                       <img
                         src={creditcard}
                         className="h-10 w-16 mr-2 ml-3"
@@ -299,7 +404,11 @@ const F3TenderCashPopUp = ({
                       />
                       <p className="">Credit / Debit</p>
                     </div>
-                    <div className="flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5">
+                    <div
+                      onClick={handleStcPayClick}
+                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
+                        selectedCard === "stcpay" ? "bg-gray-300" : ""
+                      }`}>
                       <img
                         src={stcpay}
                         className="h-10 w-16 mr-2 ml-3 object-contain"
