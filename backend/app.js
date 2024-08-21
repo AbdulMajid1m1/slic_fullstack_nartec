@@ -18,6 +18,7 @@ const transactionsRoutes = require("./routes/TrxCodesType");
 const slicuat05apiRoutes = require("./routes/slicuat05api");
 const zatcaRoutes = require("./routes/zatcaRoutes");
 const rolesRoutes = require("./routes/tblAppRoles");
+const invoiceRoutes = require("./routes/invoice");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -38,6 +39,7 @@ app.use("/api/transactions", transactionsRoutes);
 app.use("/api/slicuat05api", slicuat05apiRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/zatca", zatcaRoutes);
+app.use("/api/invoice", invoiceRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {
