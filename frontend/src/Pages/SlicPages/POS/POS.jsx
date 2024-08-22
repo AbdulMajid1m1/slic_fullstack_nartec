@@ -70,9 +70,11 @@ const POS = () => {
           if (existingItemIndex !== -1) {
             // If the item already exists, just update the Qty and Total
             const updatedData = [...prevData];
-            updatedData[existingItemIndex].Qty += 1;
-            updatedData[existingItemIndex].Total =
-              updatedData[existingItemIndex].Qty * (itemPrice + vat);
+            updatedData[existingItemIndex] = {
+              ...updatedData[existingItemIndex],
+              Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+              Total: (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+            };
             return updatedData;
           } else {
             // If the item is new, add it to the data array
@@ -91,7 +93,11 @@ const POS = () => {
             ];
           }
         });
-      } else {
+
+        // barcode state empty once response is true
+        setBarcode('');
+      } 
+      else {
         setData([]);
       }
     } catch (error) {
@@ -226,7 +232,7 @@ const POS = () => {
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
 
-    if (barcode === "" || data.length === 0) {
+    if (data.length === 0) {
       toast.error(
         "Please ensure barcode and data is available before proceeding."
       );
