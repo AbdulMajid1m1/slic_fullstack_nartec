@@ -65,77 +65,79 @@ const F3TenderCashPopUp = ({
       // );
       // console.log(secondApiResponses);
 
-      const items = storeDatagridData.map((item) => {
-        // const itemRateObj = secondApiResponses[item.SKU];
-        // const rate = itemRateObj?.ItemRate?.Rate || "0";
-        const rate = "250";
+      // const items = storeDatagridData.map((item) => {
+      //   const itemRateObj = secondApiResponses[item.SKU];
+      //   const rate = itemRateObj?.ItemRate?.Rate || "0";
 
-        const commonFields = {
-          "Item-Code": item.SKU,
-          Size: item.ProductSize || "40", // Use the correct size if available
-          Qty: `${item.Qty}`,
-          UserId: "SYSADMIN",
-        };
+      //   const commonFields = {
+      //     "Item-Code": item.SKU,
+      //     Size: item.ProductSize || "40", // Use the correct size if available
+      //     Qty: `${item.Qty}`,
+      //     UserId: "SYSADMIN",
+      //   };
 
-        return selectedSalesType === "DIRECT SALES INVOICE"
-          ? { ...commonFields, Rate: rate }
-          : commonFields;
-      });
+      //   return selectedSalesType === "DIRECT SALES INVOICE"
+      //     ? { ...commonFields, Rate: rate }
+      //     : commonFields;
+      // });
 
-      const body =
-        selectedSalesType === "DIRECT SALES INVOICE"
-          ? {
-              _keyword_: "Invoice",
-              "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  Company: "SLIC",
-                  TransactionCode: "DCIN",
-                  CustomerCode: "CF100005",
-                  SalesLocationCode: selectedLocation?.LOCN_CODE,
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
-                  UserId: "SYSADMIN",
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "INVOICE",
-              LANG: "ENG",
-            }
-          : {
-              keyword: "salesreturn",
-              "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  Company: "SLIC",
-                  TransactionCode: "EXSR",
-                  CustomerCode: "CL102511",
-                  SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
-                  UserId: "SYSADMIN",
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "SALESRETURN",
-              LANG: "ENG",
-            };
+      // const body =
+      //   selectedSalesType === "DIRECT SALES INVOICE"
+      //     ? {
+      //         _keyword_: "Invoice",
+      //         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+      //         data: [
+      //           {
+      //             Company: "SLIC",
+      //             TransactionCode: "DCIN",
+      //             CustomerCode: "CF100005",
+      //             SalesLocationCode: selectedLocation?.LOCN_CODE,
+      //             DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+      //             UserId: "SYSADMIN",
+      //             Item: items,
+      //           },
+      //         ],
+      //         COMPANY: "SLIC",
+      //         USERID: "SYSADMIN",
+      //         APICODE: "INVOICE",
+      //         LANG: "ENG",
+      //       }
+      //     : {
+      //         keyword: "salesreturn",
+      //         "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+      //         data: [
+      //           {
+      //             Company: "SLIC",
+      //             TransactionCode: "EXSR",
+      //             CustomerCode: "CL102511",
+      //             SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+      //             DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+      //             UserId: "SYSADMIN",
+      //             Item: items,
+      //           },
+      //         ],
+      //         COMPANY: "SLIC",
+      //         USERID: "SYSADMIN",
+      //         APICODE: "SALESRETURN",
+      //         LANG: "ENG",
+      //       };
 
-      const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
 
-      console.log(res?.data);
-      showOtpPopup(res?.data);
-      handleCloseCreatePopup();
-      handleClearData();
-      handleInvoiceGenerator();
-      // toast.success("Transaction Created Successfully");
-      setLoading(false);
+      // console.log(res?.data);
+      // showOtpPopup(res?.data);
+
+      setTimeout(() => {
+        handleCloseCreatePopup();
+        handleClearData();
+        handleInvoiceGenerator();
+        // toast.success("Transaction Created Successfully");
+        setLoading(false);
+      }, 400);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
