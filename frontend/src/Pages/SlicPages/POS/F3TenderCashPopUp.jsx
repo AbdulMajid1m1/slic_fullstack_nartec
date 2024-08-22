@@ -60,14 +60,15 @@ const F3TenderCashPopUp = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const secondApiResponses = JSON.parse(
-        sessionStorage.getItem("secondApiResponses")
-      );
-      console.log(secondApiResponses);
+      // const secondApiResponses = JSON.parse(
+      //   sessionStorage.getItem("secondApiResponses")
+      // );
+      // console.log(secondApiResponses);
 
       const items = storeDatagridData.map((item) => {
-        const itemRateObj = secondApiResponses[item.SKU];
-        const rate = itemRateObj?.ItemRate?.Rate || "0";
+        // const itemRateObj = secondApiResponses[item.SKU];
+        // const rate = itemRateObj?.ItemRate?.Rate || "0";
+        const rate = "250";
 
         const commonFields = {
           "Item-Code": item.SKU,
