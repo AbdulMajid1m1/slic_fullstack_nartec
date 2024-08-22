@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const Customer = require("../models/TblCustomerNames");
 const CustomError = require("../exceptions/customError");
-const generateResponse = require("../utils/response");
+const response = require("../utils/response");
 
 exports.getCustomerNames = async (req, res, next) => {
   try {
@@ -14,9 +14,7 @@ exports.getCustomerNames = async (req, res, next) => {
     }
     res
       .status(200)
-      .json(
-        generateResponse(200, true, "Records retrieved successfully", customers)
-      );
+      .json(response(200, true, "Records retrieved successfully", customers));
   } catch (error) {
     next(error);
   }
@@ -33,17 +31,16 @@ exports.getSearch = async (req, res, next) => {
       throw error;
     }
 
-    res.json(
-      generateResponse(200, true, "Successfully found customers", customers)
-    );
+    res.json(response(200, true, "Successfully found customers", customers));
   } catch (error) {
     next(error);
   }
 };
 
-exports.sync = async (req, res, next) => {
+exports.syncCustomers = async (req, res, next) => {
   try {
-    const authHeader = req.headers.Authorization || req.headers.authorization;
+    // Extract Bearer token from the Authorization header
+    const authHeader = req.headers.authorization || req.headers.Authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new CustomError("Authorization header is missing or invalid", 401);
     }
@@ -53,12 +50,10 @@ exports.sync = async (req, res, next) => {
     const externalApiUrl =
       "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
     const requestBody = {
-      filter: {
-        P_TXN_TYPE: "CUSTOMER",
-      },
+      filter: {},
       M_COMP_CODE: "SLIC",
       M_USER_ID: "SYSADMIN",
-      APICODE: "ListOfCustomers",
+      APICODE: "ACTIVECUSTLIST",
       M_LANG_CODE: "ENG",
     };
     const headers = {
@@ -71,48 +66,49 @@ exports.sync = async (req, res, next) => {
       headers,
     });
 
+    console.log(externalApiResponse.data);
+
     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
       throw new CustomError("Invalid response from external API", 500);
     }
 
-    // Assuming the external API returns an array of customer names
-    const externalCustomers = externalApiResponse.data;
+    // Map the response data to match your Prisma schema model
+    const externalCustomers = externalApiResponse.data.map((item) => ({
+      CUST_CODE: item.ACTIVECUSTLIST.CUST_CODE,
+      CUST_NAME: item.ACTIVECUSTLIST.CUST_NAME,
+    }));
 
     // Fetch all existing customers from your database
     const existingCustomers = await Customer.fetchAll();
 
-    // Create a map of existing customers for easy lookup
-    const existingCustomersMap = new Map(
+    // Create a map of existing customer codes for easy lookup
+    const existingCodesMap = new Map(
       existingCustomers.map((customer) => [customer.CUST_CODE, customer])
     );
 
-    // Array to store new or updated customers
-    const customersToUpsert = [];
+    // Array to store new customers that need to be added
+    const newCustomers = [];
 
     // Iterate through external customers and check if they exist in your database
     for (const externalCustomer of externalCustomers) {
-      if (
-        !existingCustomersMap.has(externalCustomer.CUST_CODE) ||
-        JSON.stringify(existingCustomersMap.get(externalCustomer.CUST_CODE)) !==
-          JSON.stringify(externalCustomer)
-      ) {
-        customersToUpsert.push(externalCustomer);
+      if (!existingCodesMap.has(externalCustomer.CUST_CODE)) {
+        newCustomers.push(externalCustomer);
       }
     }
 
-    // Upsert the customers (create new or update existing)
-    for (const customer of customersToUpsert) {
-      await Customer.upsert(customer.CUST_CODE, customer);
+    // If there are new customers, add them to your database
+    if (newCustomers.length > 0) {
+      await Customer.bulkCreate(newCustomers);
     }
 
     res
       .status(200)
       .json(
-        generateResponse(
+        response(
           200,
           true,
-          `Sync completed. ${customersToUpsert.length} customers added or updated.`,
-          { upsertedCustomers: customersToUpsert }
+          `Sync completed. ${newCustomers.length} new customers added.`,
+          { addedCustomers: newCustomers }
         )
       );
   } catch (error) {

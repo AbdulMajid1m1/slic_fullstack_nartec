@@ -53,10 +53,10 @@ class CustomerName {
     try {
       const createdCustomers = await prisma.tblCustomerNames.createMany({
         data: customersList,
-        skipDuplicates: true,
       });
       return createdCustomers;
     } catch (error) {
+      console.error(error);
       throw new CustomError("Error creating customers in bulk");
     }
   }
