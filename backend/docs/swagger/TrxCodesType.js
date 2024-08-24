@@ -140,3 +140,102 @@
  *                   type: string
  *                   example: "Server error occurred during sync"
  */
+
+/**
+ * @swagger
+ * /api/transactions/v1/byLocationCode:
+ *   get:
+ *     summary: Retrieve transaction codes by location code
+ *     description: Returns a list of transaction codes filtered by the specified location code.
+ *     tags: [TrxCodesType]
+ *     parameters:
+ *       - in: query
+ *         name: locationCode
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The location code to filter transaction codes by.
+ *         example: "LOC001"
+ *     responses:
+ *       200:
+ *         description: A list of transaction codes filtered by location code.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction codes for location code LOC001 retrieved successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       TXN_CODE:
+ *                         type: string
+ *                         example: "TXN12345"
+ *                       TXN_NAME:
+ *                         type: string
+ *                         example: "Sample Transaction"
+ *                       TXN_TYPE:
+ *                         type: string
+ *                         example: "Type A"
+ *                       TXNLOCATIONCODE:
+ *                         type: string
+ *                         example: "LOC001"
+ *       400:
+ *         description: Location code is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Location code is required!"
+ *       404:
+ *         description: No transaction codes found for the specified location code
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No transaction codes found for location code: LOC001"
+ *       500:
+ *         description: Server error occurred
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Server error occurred"
+ */

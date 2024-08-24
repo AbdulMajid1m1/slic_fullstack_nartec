@@ -191,3 +191,40 @@ exports.sync = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.filterByLocation = async (req, res, next) => {
+  try {
+    const { locationCode } = req.query;
+
+    if (!locationCode) {
+      const error = new CustomError("Location code is required!");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const filteredTrxCodes = await TrxCodesType.filterByLocationCode(
+      locationCode
+    );
+
+    if (!filteredTrxCodes || filteredTrxCodes.length === 0) {
+      const error = new CustomError(
+        `No transaction codes found for location code: ${locationCode}`
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          `Transaction codes for location code ${locationCode} retrieved successfully`,
+          filteredTrxCodes
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};

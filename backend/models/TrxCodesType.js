@@ -73,6 +73,7 @@ class TrxCodesType {
       const trxCodes = await prisma.trxCodesType.findMany();
       return trxCodes;
     } catch (error) {
+      console.log(error);
       throw new CustomError("Error fetching transaction codes");
     }
   }
@@ -123,6 +124,21 @@ class TrxCodesType {
       });
     } catch (error) {
       throw new CustomError(`Error deleting transaction code: ${code}`);
+    }
+  }
+
+  static async filterByLocationCode(locationCode) {
+    try {
+      const trxCodes = await prisma.trxCodesType.findMany({
+        where: {
+          TXNLOCATIONCODE: locationCode,
+        },
+      });
+      return trxCodes;
+    } catch (error) {
+      throw new CustomError(
+        `Error fetching transaction codes for location code: ${locationCode}`
+      );
     }
   }
 }
