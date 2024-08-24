@@ -784,7 +784,7 @@ const POS = () => {
                 <button className="bg-[#037de2] text-white py-4 px-4 rounded">
                   F6 - PLU Inquiry
                 </button>
-                <button onClick={handlePrintSalesInvoice} className="bg-[#2596be] text-white py-4 px-4 rounded">
+                <button className="bg-[#2596be] text-white py-4 px-4 rounded">
                   F7 - Department
                 </button>
                 <button className="bg-[#2596be] text-white py-4 px-4 rounded">
