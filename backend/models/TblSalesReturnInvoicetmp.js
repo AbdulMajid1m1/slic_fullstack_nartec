@@ -29,14 +29,25 @@ class SalesReturnInvoiceTemp {
 
   static async updateSalesReturnInvoice(itemSysId, itemCode, data) {
     try {
-      const updatedInvoices = await prisma.tblSalesReturnInvoicetmp.updateMany({
+      // Find the first matching record
+      const invoice = await prisma.tblSalesReturnInvoicetmp.findFirst({
         where: {
           ItemSysID: itemSysId,
           ItemCode: itemCode,
         },
+      });
+
+      if (!invoice) {
+        throw new Error("Sales return invoice not found");
+      }
+
+      // Update the found record using its unique id
+      const updatedInvoice = await prisma.tblSalesReturnInvoicetmp.update({
+        where: { id: invoice.id },
         data,
       });
-      return updatedInvoices;
+
+      return updatedInvoice;
     } catch (error) {
       console.error("Error updating sales return invoice:", error);
       throw new Error("Error updating sales return invoice");

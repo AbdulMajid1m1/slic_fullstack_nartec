@@ -15,4 +15,6 @@ router.get(
   controller.getInvoiceDetailsByTransactionCode
 );
 
+router.put("/v1/update-invoice-temp", controller.updateInvoiceTemp);
+
 module.exports = router;

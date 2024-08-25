@@ -139,3 +139,32 @@ exports.getInvoiceDetailsByTransactionCode = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateInvoiceTemp = async (req, res, next) => {
+  try {
+    const { ItemSysID, ItemCode, ReturnQty } = req.body;
+
+    const tempItem = await POSInvoiceTemp.getByItemSysIdAndItemCode(
+      ItemSysID,
+      ItemCode
+    );
+
+    if (!tempItem) {
+      const error = new CustomError("Item not found in Invoice Temp");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const updatedItem = await POSInvoiceTemp.updateSalesReturnInvoice(
+      ItemSysID,
+      ItemCode,
+      req.body
+    );
+
+    res
+      .status(200)
+      .json(response(200, true, "Invoice Temp updated", updatedItem));
+  } catch (error) {
+    next(error);
+  }
+};
