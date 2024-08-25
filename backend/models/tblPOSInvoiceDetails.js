@@ -74,6 +74,24 @@ class POSInvoiceDetails {
       throw new Error(`Error fetching invoice details by ${field}`);
     }
   }
+
+  static async getDetailsByInvoiceNoAndTransactionCode(
+    InvoiceNo,
+    TransactionCode
+  ) {
+    try {
+      const details = await prisma.tblPOSInvoiceDetails.findMany({
+        where: {
+          InvoiceNo: InvoiceNo,
+          TransactionCode: TransactionCode,
+        },
+      });
+      return details;
+    } catch (error) {
+      console.error(`Error fetching invoice details:`, error);
+      throw new Error(`Error fetching invoice details`);
+    }
+  }
 }
 
 module.exports = POSInvoiceDetails;

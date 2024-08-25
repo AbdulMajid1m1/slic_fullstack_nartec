@@ -8,7 +8,8 @@ datasource db {
 }
 
 model TblItemCodes1S1Br {
-  GTIN                String  @id @db.VarChar(50) 
+  id                  String    @id @default(cuid())
+  GTIN                String? @db.VarChar(50) 
   ItemCode            String? @db.NVarChar(20)
   EnglishName         String? @db.NVarChar(255)
   ArabicName          String? @db.NVarChar(255)
@@ -71,7 +72,7 @@ model TblCompanyNames {
 model TblPOFPODetails {
   HEAD_SYS_ID   Float     @id
   ITEM_CODE     String
-  ITEM_NAME     String
+  ITEM_NAME     String?
   GRADE         String?
   UOM           String?
   PO_QTY        Float?
@@ -168,16 +169,18 @@ model tblPOSInvoiceMaster {
 }
 
 model TblSalesReturnInvoicetmp {
-  id                    String    @id @default(cuid())
-  TblSysNoID             BigInt   
-  SNo                    Int?     
-  ItemCode               String?  @db.VarChar(10)
-  Description            String?  @db.VarChar(150)
-  ReturnQty              Int?     
-  InvoiceQty             Int?     
-  UnitCode               String?  @db.VarChar(50)
-  HeadSysId              String?  @db.VarChar(50)
-  ItemSysID              String?  @db.VarChar(50)
-  DeliveryLocationCode   String?  @db.VarChar(50)
-  ItemSize               String   @db.VarChar(10)
+  id                    Int    @id @default(autoincrement())
+  SNo                    Int?  
+  ItemCode               String?   @db.VarChar(10)
+  Description            String?   @db.VarChar(150)
+  ReturnQty              Int?  
+  InvoiceQty             Int?  
+  UnitCode               String?   @db.VarChar(50)
+  HeadSysId              String?   @db.VarChar(50)
+  ItemSysID              String?   @db.VarChar(50)
+  DeliveryLocationCode   String?   @db.VarChar(50)
+  ItemSize               String    @db.VarChar(10)
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
 }
+

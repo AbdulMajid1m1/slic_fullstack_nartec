@@ -4,10 +4,9 @@ const prisma = new PrismaClient();
 class SalesReturnInvoiceTemp {
   static async getSalesReturnInvoiceById(id) {
     try {
-      const invoice = await prisma.tblSalesReturnInvoicetmp.findUnique({
-        where: { id },
-      });
-      return invoice;
+      console.log("Creating Invoice with Data:", data);
+      const newInvoice = await prisma.tblSalesReturnInvoicetmp.create({ data });
+      return newInvoice;
     } catch (error) {
       console.error("Error fetching sales return invoice by ID:", error);
       throw new Error("Error fetching sales return invoice by ID");
