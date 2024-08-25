@@ -158,7 +158,9 @@ exports.updateInvoiceTemp = async (req, res, next) => {
     const updatedItem = await POSInvoiceTemp.updateSalesReturnInvoice(
       ItemSysID,
       ItemCode,
-      req.body
+      {
+        ReturnQty: Number(ReturnQty),
+      }
     );
 
     res
