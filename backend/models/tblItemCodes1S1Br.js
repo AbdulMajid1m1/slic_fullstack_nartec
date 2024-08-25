@@ -72,7 +72,7 @@ class ItemCodeModel {
   }
 
   static async findById(gtin) {
-    return await prisma.tblItemCodes1S1Br.findUnique({
+    return await prisma.tblItemCodes1S1Br.findFirst({
       where: { GTIN: gtin.toString() },
     });
   }
