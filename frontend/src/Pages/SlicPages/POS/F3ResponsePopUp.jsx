@@ -14,7 +14,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
       // Check if apiResponse contains validation errors
       if (apiResponse.message) {
         setValidationErrors(apiResponse.message);
-        setMessage("Validation Errors");
+        // setMessage("Validation Errors");
       } else {
         // Reset errors if the response is valid
         setValidationErrors(null);
@@ -44,7 +44,7 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    {validationErrors ? "Validation Error" : "Message"}
+                    Message
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>

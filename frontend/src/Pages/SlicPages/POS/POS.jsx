@@ -57,10 +57,63 @@ const POS = () => {
         const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
         // call the second api later in their
+        const secondApiBody = {
+          // filter: {
+          //   P_COMP_CODE: "SLIC",
+          //   P_CUST_CODE: "CL100729",
+          //   "P_ITEM_CODE": ItemCode,
+          //   P_ITEM_CODE: "45",
+          //   P_GRADE_CODE_1: ProductSize,
+          // },
+          // M_COMP_CODE: "001",
+          // M_USER_ID: "SYSADMIN",
+          // APICODE: "ItemRate",
+          // M_LANG_CODE: "ENG",
+          "filter": {
+            "P_COMP_CODE": "SLIC",
+            "P_ITEM_CODE": ItemCode,
+            "P_CUST_CODE": "CL100948",
+              "P_GRADE_CODE_1": "42"
+          },
+          "M_COMP_CODE": "SLIC",
+          "M_USER_ID":"SYSADMIN",
+          "APICODE": "PRICELIST",
+          "M_LANG_CODE": "ENG"
 
-        const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+        };
+
+        try {
+          const secondApiResponse = await ErpTeamRequest.post(
+            "/slicuat05api/v1/getApi",
+            secondApiBody,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const secondApiData = secondApiResponse?.data;
+          console.log(secondApiData)
+
+          let storedData = sessionStorage.getItem("secondApiResponses");
+          storedData = storedData ? JSON.parse(storedData) : {};
+
+          const itemRates = secondApiData.map(item => item?.PRICELIST?.PLI_RATE);
+          // Store the array of rates under the respective ItemCode
+          storedData[ItemCode] = itemRates;
+          // storedData[ItemCode] = secondApiData;
+
+          sessionStorage.setItem(
+            "secondApiResponses",
+            JSON.stringify(storedData)
+          );
+
+        // const itemPrice = secondApiData[0].ItemRate?.RATE;
+        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+        // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
         const vat = itemPrice * 0.15;
         const total = itemPrice + vat;
+        console.log(itemPrice);
 
         setData((prevData) => {
           const existingItemIndex = prevData.findIndex(
@@ -93,7 +146,12 @@ const POS = () => {
             ];
           }
         });
-
+        } catch (secondApiError) {
+          toast.error(
+            secondApiError?.response?.data?.message ||
+              "An error occurred while calling the second API"
+          );
+        }
         // barcode state empty once response is true
         setBarcode('');
       } 
@@ -245,9 +303,9 @@ const POS = () => {
       setTotalVat("");
       toast.success("Invoice generated successfully!");
       setInvoiceLoader(false);
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to generate invoice. Please try again.");
+    } catch (err) {
+      // console.log(err);
+      toast.error(err?.response?.data?.errors[0] || "An error occurred while generating the invoice");
       setInvoiceLoader(false);
     }
   };
@@ -422,8 +480,8 @@ const POS = () => {
                 <tr>
                   <td>${item.SKU}</td>
                   <td>${item.Qty}</td>
-                  <td>${item.ItemPrice.toFixed(2)}</td>
-                  <td>${(item.ItemPrice * item.Qty).toFixed(2)}</td>
+                  <td>${item.ItemPrice}</td>
+                  <td>${(item.ItemPrice * item.Qty)}</td>
                 </tr>
               `
                 )
@@ -435,22 +493,22 @@ const POS = () => {
               <div>
                 <strong>Gross:</strong>
                 <div class="arabic-label">(ريال) المجموع</div>
-                ${netWithVat.toFixed(2)}
+                ${netWithVat}
               </div>
               <div>
                 <strong>VAT (15%):</strong>
                 <div class="arabic-label">ضريبة القيمة المضافة</div>
-                ${totalVat.toFixed(2)}
+                ${totalVat}
               </div>
               <div>
                 <strong>Total Amount With VAT:</strong>
                 <div class="arabic-label">المجموع</div>
-                ${totalAmountWithVat.toFixed(2)}
+                ${totalAmountWithVat}
               </div>
               <div>
                 <strong>Paid:</strong>
                 <div class="arabic-label">المدفوع</div>
-                ${totalAmountWithVat.toFixed(2)}
+                ${totalAmountWithVat}
               </div>
               <div>
                 <strong>Change Due:</strong>
@@ -754,11 +812,11 @@ const POS = () => {
                       <td className="border px-4 py-2">{row.ItemSize}</td>
                       <td className="border px-4 py-2">{row.Qty}</td>
                       <td className="border px-4 py-2">
-                        {row.ItemPrice.toFixed(2)}
+                        {row.ItemPrice}
                       </td>
-                      <td className="border px-4 py-2">{row.VAT.toFixed(2)}</td>
+                      <td className="border px-4 py-2">{row.VAT}</td>
                       <td className="border px-4 py-2">
-                        {row.Total.toFixed(2)}
+                        {row.Total}
                       </td>
                       <td className="border px-4 py-2 text-center">
                         <button
