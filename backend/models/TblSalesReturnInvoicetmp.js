@@ -16,6 +16,7 @@ class SalesReturnInvoiceTemp {
 
   static async createSalesReturnInvoice(data) {
     try {
+      console.log("Creating Invoice with Data:", data);
       const newInvoice = await prisma.tblSalesReturnInvoicetmp.create({
         data,
       });
@@ -26,13 +27,16 @@ class SalesReturnInvoiceTemp {
     }
   }
 
-  static async updateSalesReturnInvoice(id, data) {
+  static async updateSalesReturnInvoice(itemSysId, itemCode, data) {
     try {
-      const updatedInvoice = await prisma.tblSalesReturnInvoicetmp.update({
-        where: { id },
+      const updatedInvoices = await prisma.tblSalesReturnInvoicetmp.updateMany({
+        where: {
+          ItemSysID: itemSysId,
+          ItemCode: itemCode,
+        },
         data,
       });
-      return updatedInvoice;
+      return updatedInvoices;
     } catch (error) {
       console.error("Error updating sales return invoice:", error);
       throw new Error("Error updating sales return invoice");
@@ -72,6 +76,26 @@ class SalesReturnInvoiceTemp {
     } catch (error) {
       console.error(`Error fetching sales return invoices by ${field}:`, error);
       throw new Error(`Error fetching sales return invoices by ${field}`);
+    }
+  }
+
+  static async getByItemSysIdAndItemCode(itemSysId, itemCode) {
+    try {
+      const invoices = await prisma.tblSalesReturnInvoicetmp.findMany({
+        where: {
+          ItemSysID: itemSysId,
+          ItemCode: itemCode,
+        },
+      });
+      return invoices;
+    } catch (error) {
+      console.error(
+        "Error fetching sales return invoices by ItemSysID and ItemCode:",
+        error
+      );
+      throw new Error(
+        "Error fetching sales return invoices by ItemSysID and ItemCode"
+      );
     }
   }
 }
