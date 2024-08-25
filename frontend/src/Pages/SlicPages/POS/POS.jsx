@@ -39,7 +39,7 @@ const POS = () => {
       }
     }
   }, []);
-
+  
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
 
@@ -137,33 +137,27 @@ const POS = () => {
   // transaction Codes Api
   const [transactionCodes, setTransactionCodes] = useState([]);
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
-
   const fetchTransactionCodes = async () => {
     try {
-      const response = await ErpTeamRequest.post(
-        "/slicuat05api/v1/getApi",
-        {
-          filter: {
-            P_TXN_TYPE: "LTRFO",
-          },
-          M_COMP_CODE: "SLIC",
-          M_USER_ID: "SYSADMIN",
-          APICODE: "ListOfTransactionCode",
-          M_LANG_CODE: "ENG",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(response.data);
-      setTransactionCodes(response.data);
+      const response = await newRequest.get(`/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`);
+      // console.log(response.data?.data);
+      setTransactionCodes(response.data?.data);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
     }
   };
+
+  const handleTransactionCodes = (event, value) => {
+    // console.log(value);
+    setSelectedTransactionCode(value);
+  };
+
+  useEffect(() => {
+    if (selectedLocation?.LOCN_CODE) {
+      fetchTransactionCodes();
+    }
+  }, [selectedLocation]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -185,13 +179,10 @@ const POS = () => {
   };
 
   useEffect(() => {
-    fetchTransactionCodes();
+    // fetchTransactionCodes();
     fetchCustomerNames();
   }, []);
 
-  useEffect(() => {
-    // console.log(selectedTransactionCode)
-  }, [selectedTransactionCode]);
 
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
@@ -525,10 +516,10 @@ const POS = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="block text-gray-700">
+              <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
               </label>
-              <select
+              {/* <select
                 className="w-full mt-1 p-2 border rounded border-gray-400"
                 value={selectedTransactionCode}
                 onChange={(e) => setSelectedTransactionCode(e.target.value)}
@@ -541,7 +532,46 @@ const POS = () => {
                     {code.ListOfTransactionCod.TXN_CODE}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <Autocomplete
+                id="transactionId"
+                options={transactionCodes}
+                getOptionLabel={(option) => option?.TXN_CODE || ""}
+                onChange={handleTransactionCodes}
+                value={selectedTransactionCode}
+                isOptionEqualToValue={(option, value) =>
+                  option?.TXN_CODE === value?.TXN_CODE
+                }
+                onInputChange={(event, value) => {
+                  if (!value) {
+                    setSelectedTransactionCode(""); // Clear selection
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    InputProps={{
+                      ...params.InputProps,
+                      className: "text-white",
+                    }}
+                    InputLabelProps={{
+                      ...params.InputLabelProps,
+                      style: { color: "white" },
+                    }}
+                    className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                    placeholder={"Search Transaction Codes"}
+                    required
+                  />
+                )}
+                classes={{
+                  endAdornment: "text-white",
+                }}
+                sx={{
+                  "& .MuiAutocomplete-endAdornment": {
+                    color: "white",
+                  },
+                }}
+              />
             </div>
             <div>
               <label className="block text-gray-700">Sale Type *</label>
@@ -754,7 +784,7 @@ const POS = () => {
                 <button className="bg-[#037de2] text-white py-4 px-4 rounded">
                   F6 - PLU Inquiry
                 </button>
-                <button onClick={handlePrintSalesInvoice} className="bg-[#2596be] text-white py-4 px-4 rounded">
+                <button className="bg-[#2596be] text-white py-4 px-4 rounded">
                   F7 - Department
                 </button>
                 <button className="bg-[#2596be] text-white py-4 px-4 rounded">

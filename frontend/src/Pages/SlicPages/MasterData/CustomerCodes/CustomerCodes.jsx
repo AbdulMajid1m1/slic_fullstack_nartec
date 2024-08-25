@@ -7,10 +7,12 @@ import newRequest from "../../../../utils/userRequest";
 import RightDashboardHeader from "../../../../components/RightDashboardHeader/RightDashboardHeader";
 import DataTable from "../../../../components/Datatable/Datatable";
 import { DataTableContext } from "../../../../Contexts/DataTableContext";
+import ErpTeamRequest from "../../../../utils/ErpTeamRequest";
 
 const CustomerCodes = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [headerBtnLoading, setHeaderBtnLoading] = useState(false);
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   
   const {
@@ -40,6 +42,29 @@ const CustomerCodes = () => {
   },[])
 
 
+  const handleProductSync = async () => {
+    setHeaderBtnLoading(true);
+    try {
+      const response = await ErpTeamRequest.post("/customerNames/v1/sync",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(response.data);
+      toast.success(response?.data?.message || "Customer Codes have been synced successfully.");
+      fetchData();
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.error || "Something went wrong while syncing products");
+    } finally {
+      setHeaderBtnLoading(false);
+    }
+  };
+
+
   const handleRowClickInParent = (item) => {
     if (!item || item?.length === 0) {
       return;
@@ -66,6 +91,10 @@ const CustomerCodes = () => {
                 handleRowClickInParent={handleRowClickInParent}
                 checkboxSelection="disabled"
                 actionColumnVisibility={false}
+                headerButtonVisibility={true}
+                buttonTitle={"Sync Customer Codes"}
+                buttonFunction={handleProductSync}
+                headerBtnLoading={headerBtnLoading}
                 dropDownOptions={[
                 //   {
                 //     label: "Delete",
