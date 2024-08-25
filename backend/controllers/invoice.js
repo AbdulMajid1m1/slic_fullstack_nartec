@@ -91,19 +91,45 @@ exports.getInvoiceDetailsByTransactionCode = async (req, res, next) => {
 
     for (const item of data) {
       console.log(item);
-      await POSInvoiceTemp.createSalesReturnInvoice({
-        // Ensure no id field is being passed here
-        SNo: item.SNo != null ? Number(item.SNo) : null,
-        ItemCode: item.ItemSKU?.toString(),
-        Description: item.ItemSKU?.toString(),
-        ReturnQty: item.ItemQry != null ? Number(item.ItemQry) : null,
-        InvoiceQty: item.ItemQry != null ? Number(item.ItemQry) : null,
-        UnitCode: item.ItemUnit?.toString(),
-        HeadSysId: item.Head_SYS_ID?.toString(),
-        ItemSysID: item.ItemSysID?.toString(),
-        DeliveryLocationCode: item.DeliveryLocationCode?.toString(),
-        ItemSize: item.ItemSize?.toString(),
-      });
+      const existing = await POSInvoiceTemp.getByItemSysIdAndItemCode(
+        item.ItemSysID?.toString(),
+        item.ItemSKU?.toString()
+      );
+
+      if (existing) {
+        // update
+        await POSInvoiceTemp.updateSalesReturnInvoice(
+          item.ItemSysID?.toString(),
+          item.ItemSKU?.toString(),
+          {
+            SNo: item.SNo != null ? Number(item.SNo) : null,
+            ItemCode: item.ItemSKU?.toString(),
+            Description: item.ItemSKU?.toString(),
+            ReturnQty: item.ItemQry != null ? Number(item.ItemQry) : null,
+            InvoiceQty: item.ItemQry != null ? Number(item.ItemQry) : null,
+            UnitCode: item.ItemUnit?.toString(),
+            HeadSysId: item.Head_SYS_ID?.toString(),
+            ItemSysID: item.ItemSysID?.toString(),
+            DeliveryLocationCode: item.DeliveryLocationCode?.toString(),
+            ItemSize: item.ItemSize?.toString(),
+          }
+        );
+        console.log("Item already exists, lets update it");
+      } else {
+        await POSInvoiceTemp.createSalesReturnInvoice({
+          // Ensure no id field is being passed here
+          SNo: item.SNo != null ? Number(item.SNo) : null,
+          ItemCode: item.ItemSKU?.toString(),
+          Description: item.ItemSKU?.toString(),
+          ReturnQty: item.ItemQry != null ? Number(item.ItemQry) : null,
+          InvoiceQty: item.ItemQry != null ? Number(item.ItemQry) : null,
+          UnitCode: item.ItemUnit?.toString(),
+          HeadSysId: item.Head_SYS_ID?.toString(),
+          ItemSysID: item.ItemSysID?.toString(),
+          DeliveryLocationCode: item.DeliveryLocationCode?.toString(),
+          ItemSize: item.ItemSize?.toString(),
+        });
+      }
     }
 
     res
