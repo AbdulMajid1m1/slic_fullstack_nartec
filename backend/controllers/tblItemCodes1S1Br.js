@@ -314,8 +314,8 @@ exports.searchByGTIN = async (req, res, next) => {
 
 exports.findByItemCode = async (req, res, next) => {
   try {
-    const itemSKU = req.query.itemSKU;
-    const item = await ItemCodeModel.findByItemCode(itemSKU);
+    const itemCode = req.query.itemCode;
+    const item = await ItemCodeModel.findByItemCode(itemCode);
     if (!item) {
       const error = new CustomError("No item code found");
       error.statusCode = 404;
