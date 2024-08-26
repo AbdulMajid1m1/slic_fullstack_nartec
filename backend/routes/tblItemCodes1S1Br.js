@@ -32,4 +32,6 @@ router.get("/v1/searchByGTIN", itemCodesController.searchByPartialGTIN);
 
 router.get("/v2/searchByGTIN", itemCodesController.searchByGTIN);
 
+router.get("/v1/findByItemCode", itemCodesController.findByItemCode);
+
 module.exports = router;
