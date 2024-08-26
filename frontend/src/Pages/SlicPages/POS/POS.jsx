@@ -16,6 +16,7 @@ const POS = () => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
@@ -73,7 +74,7 @@ const POS = () => {
             "P_COMP_CODE": "SLIC",
             "P_ITEM_CODE": ItemCode,
             "P_CUST_CODE": "CL100948",
-              "P_GRADE_CODE_1": "42"
+              "P_GRADE_CODE_1": ProductSize
           },
           "M_COMP_CODE": "SLIC",
           "M_USER_ID":"SYSADMIN",
@@ -330,11 +331,13 @@ const POS = () => {
   }, [data]);
 
   // invoice generate
-  const handlePrintSalesInvoice = (qrCodeData) => {
+  const handlePrintSalesInvoice = async (qrCodeData) => {
     const newInvoiceNumber = generateInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
+    // Generate QR code data URL
+    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
     const html = `
       <html>
         <head>
@@ -420,6 +423,17 @@ const POS = () => {
             .customer-info div {
               margin-bottom: 6px; /* Add space between each div */
             }
+              .field-label {
+                font-weight: bold;
+              }
+             .customer-invoiceNumber {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .customer-invocieQrcode {
+              margin-top: -5px;
+            }
           </style>
         </head>
         <body>
@@ -436,11 +450,19 @@ const POS = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>${
-              selectedCustomerName?.CUST_NAME
+              // selectedCustomerName?.CUST_NAME
+              customerName
             }</div>
             <div><span class="field-label">VAT#: </span>${netWithVat}</div>
-            <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
-            <div><span class="field-label">Date: </span>${currentTime}</div>
+            <div class="customer-invoiceNumber">
+              <div>
+                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Date: </span>${currentTime}</div>
+              </div>
+              <div class="customer-invocieQrcode">
+                <img src="${qrCodeDataURL}" alt="QR Code" height="75" width="100" />
+              </div>
+            </div>
           </div>
 
           <table class="table">
@@ -594,7 +616,11 @@ const POS = () => {
               <Autocomplete
                 id="transactionId"
                 options={transactionCodes}
-                getOptionLabel={(option) => option?.TXN_CODE || ""}
+                getOptionLabel={(option) => 
+                  option && option.TXN_CODE && option.TXN_NAME 
+                    ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
+                    : ''
+                }
                 onChange={handleTransactionCodes}
                 value={selectedTransactionCode}
                 isOptionEqualToValue={(option, value) =>
@@ -669,7 +695,12 @@ const POS = () => {
               <Autocomplete
                 id="field1"
                 options={searchCustomerName}
-                getOptionLabel={(option) => option?.CUST_CODE || ""}
+                // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                getOptionLabel={(option) => 
+                  option && option.CUST_CODE && option.CUST_NAME 
+                    ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
+                    : ''
+                }
                 onChange={handleSearchCustomerName}
                 value={
                   searchCustomerName.find(
@@ -723,9 +754,10 @@ const POS = () => {
               <label className="block text-gray-700">Customer Name*</label>
               <input
                 type="text"
+                onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Walk-in customer"
-                value={selectedCustomerName?.CUST_NAME}
+                value={customerName}
               />
             </div>
             <div>
@@ -760,7 +792,7 @@ const POS = () => {
               <label className="block text-gray-700">Remarks *</label>
               <input
                 type="text"
-                className="w-full mt-1 p-2 border rounded border-gray-400"
+                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Remarks"
               />
             </div>

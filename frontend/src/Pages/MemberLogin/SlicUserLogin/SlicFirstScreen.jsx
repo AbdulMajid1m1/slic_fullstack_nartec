@@ -154,7 +154,7 @@ const SlicFirstScreen = () => {
         "selectedLocation",
         JSON.stringify(selectedLocation)
       );
-      // console.log(selectedLocation);
+      console.log(selectedLocation);
     }
   }, [selectedLocation]);
 
@@ -167,7 +167,7 @@ const SlicFirstScreen = () => {
 
   const handleLocationChange = (e) => {
     const selectedLoc = locations.find(
-      (location) => location.LOCN_NAME === e.target.value
+      (location) => `${location.LOCN_CODE} - ${location.LOCN_NAME}` === e.target.value
     );
     setSelectedLocation(selectedLoc);
   };
@@ -258,7 +258,7 @@ const SlicFirstScreen = () => {
                     Select Location
                   </option>
                   {locations.map((location) => (
-                    <option>{location?.LOCN_NAME}</option>
+                    <option>{location?.LOCN_CODE} - {location?.LOCN_NAME}</option>
                   ))}
                 </select>
               </div>
