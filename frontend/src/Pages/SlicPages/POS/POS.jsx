@@ -11,6 +11,7 @@ import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
+import { QRCodeSVG } from "qrcode.react";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -73,7 +74,7 @@ const POS = () => {
             "P_COMP_CODE": "SLIC",
             "P_ITEM_CODE": ItemCode,
             "P_CUST_CODE": "CL100948",
-              "P_GRADE_CODE_1": "42"
+              "P_GRADE_CODE_1": ProductSize
           },
           "M_COMP_CODE": "SLIC",
           "M_USER_ID":"SYSADMIN",
@@ -330,11 +331,13 @@ const POS = () => {
   }, [data]);
 
   // invoice generate
-  const handlePrintSalesInvoice = (qrCodeData) => {
+  const handlePrintSalesInvoice = async (qrCodeData) => {
     const newInvoiceNumber = generateInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
+    // Generate QR code data URL
+    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
     const html = `
       <html>
         <head>
@@ -420,6 +423,17 @@ const POS = () => {
             .customer-info div {
               margin-bottom: 6px; /* Add space between each div */
             }
+              .field-label {
+                font-weight: bold;
+              }
+             .customer-invoiceNumber {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .customer-invocieQrcode {
+              margin-top: -5px;
+            }
           </style>
         </head>
         <body>
@@ -439,8 +453,15 @@ const POS = () => {
               selectedCustomerName?.CUST_NAME
             }</div>
             <div><span class="field-label">VAT#: </span>${netWithVat}</div>
-            <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
-            <div><span class="field-label">Date: </span>${currentTime}</div>
+            <div class="customer-invoiceNumber">
+              <div>
+                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Date: </span>${currentTime}</div>
+              </div>
+              <div class="customer-invocieQrcode">
+                <img src="${qrCodeDataURL}" alt="QR Code" height="75" width="100" />
+              </div>
+            </div>
           </div>
 
           <table class="table">
@@ -594,7 +615,7 @@ const POS = () => {
               <Autocomplete
                 id="transactionId"
                 options={transactionCodes}
-                getOptionLabel={(option) => option?.TXN_CODE || ""}
+                getOptionLabel={(option) => `${option?.TXN_CODE} - ${option?.TXN_NAME}` || ""}
                 onChange={handleTransactionCodes}
                 value={selectedTransactionCode}
                 isOptionEqualToValue={(option, value) =>

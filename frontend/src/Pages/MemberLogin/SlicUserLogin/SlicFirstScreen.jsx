@@ -258,7 +258,7 @@ const SlicFirstScreen = () => {
                     Select Location
                   </option>
                   {locations.map((location) => (
-                    <option>{location?.LOCN_NAME}</option>
+                    <option>{location?.LOCN_CODE} - {location?.LOCN_NAME}</option>
                   ))}
                 </select>
               </div>
