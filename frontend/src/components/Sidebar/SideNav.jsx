@@ -21,9 +21,9 @@ function SideNav({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMangeOpen, setIsMangeOpen] = useState(false);
   const [isMangeSliderOpen, setIsMangeSliderOpen] = useState(false);
-  const memberDataString = sessionStorage.getItem('employeeData');
+  const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
-  // console.log(memberData?.adminUser)
+  // console.log(memberData)
 
   const navigate = useNavigate();
 
@@ -326,7 +326,7 @@ function SideNav({ children }) {
                     <p className='text-secondary font-sans font-bold'>GTIN Management</p>
               </div>
               <div className="flex justify-center items-center gap-3">
-                <p className='text-secondary font-sans'>{memberData?.adminUser?.email}</p>
+                <p className='text-secondary font-sans'>{memberData?.data?.user?.UserLoginID}</p>
                 <img src={sliclogo} className="h-8 w-auto object-contain" alt="" />
               </div>
             </div>
