@@ -16,6 +16,7 @@ const POS = () => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
@@ -449,7 +450,8 @@ const POS = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>${
-              selectedCustomerName?.CUST_NAME
+              // selectedCustomerName?.CUST_NAME
+              customerName
             }</div>
             <div><span class="field-label">VAT#: </span>${netWithVat}</div>
             <div class="customer-invoiceNumber">
@@ -693,7 +695,12 @@ const POS = () => {
               <Autocomplete
                 id="field1"
                 options={searchCustomerName}
-                getOptionLabel={(option) => option?.CUST_CODE || ""}
+                // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                getOptionLabel={(option) => 
+                  option && option.CUST_CODE && option.CUST_NAME 
+                    ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
+                    : ''
+                }
                 onChange={handleSearchCustomerName}
                 value={
                   searchCustomerName.find(
@@ -747,9 +754,10 @@ const POS = () => {
               <label className="block text-gray-700">Customer Name*</label>
               <input
                 type="text"
+                onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Walk-in customer"
-                value={selectedCustomerName?.CUST_NAME}
+                value={customerName}
               />
             </div>
             <div>
@@ -784,7 +792,7 @@ const POS = () => {
               <label className="block text-gray-700">Remarks *</label>
               <input
                 type="text"
-                className="w-full mt-1 p-2 border rounded border-gray-400"
+                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Remarks"
               />
             </div>
