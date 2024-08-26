@@ -11,7 +11,6 @@ import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
-import { QRCodeSVG } from "qrcode.react";
 
 const POS = () => {
   const [data, setData] = useState([]);
