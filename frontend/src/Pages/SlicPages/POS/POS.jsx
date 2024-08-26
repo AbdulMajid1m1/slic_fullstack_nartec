@@ -615,7 +615,11 @@ const POS = () => {
               <Autocomplete
                 id="transactionId"
                 options={transactionCodes}
-                getOptionLabel={(option) => `${option?.TXN_CODE} - ${option?.TXN_NAME}` || ""}
+                getOptionLabel={(option) => 
+                  option && option.TXN_CODE && option.TXN_NAME 
+                    ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
+                    : ''
+                }
                 onChange={handleTransactionCodes}
                 value={selectedTransactionCode}
                 isOptionEqualToValue={(option, value) =>
