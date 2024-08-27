@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import { purchaseOrderDetailsColumn, salesOrderColumn } from "../../../utils/datatablesource";
+import { purchaseOrderDetailsColumn, salesOrderColumn, salesOrderDetailsColumn } from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
@@ -12,12 +12,14 @@ import Swal from "sweetalert2";
 import { Button } from "@mui/material";
 import AddSalesOrderPopUp from "./AddSalesOrderPopUp";
 import UpdateSalesOrderPopUp from "./UpdateSalesOrderPopUp";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const SalesOrder = () => {
   const [data, setData] = useState([]);
   const memberDataString = sessionStorage.getItem("slicUserData");
   const memberData = JSON.parse(memberDataString);
   // console.log(memberData)
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
   const [isLoading, setIsLoading] = useState(true);
   const [secondGridData, setSecondGridData] = useState([]);
@@ -28,16 +30,45 @@ const SalesOrder = () => {
       const fetchData = async () => {
         setIsLoading(true);
         try {
-          const response = await newRequest.get('/salesOrders/v1/all', {
-            headers: {
-              Authorization: `Bearer ${memberData?.data?.token}`,
-            },
-          });
+          // const response = await newRequest.get('/salesOrders/v1/all', {
+          //   headers: {
+          //     Authorization: `Bearer ${memberData?.data?.token}`,
+          //   },
+          // });
           // console.log(response.data);
-          setData(response?.data?.data || []);
+          const res = await ErpTeamRequest.post(
+            '/slicuat05api/v1/getApi',
+            {
+              "filter": {
+                "P_SOH_DEL_LOCN_CODE": "FG102"
+              },
+              "M_COMP_CODE": "SLIC",
+              "M_USER_ID": "SYSADMIN",
+              "APICODE": "ListOfSO",
+              "M_LANG_CODE": "ENG"
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          // console.log(res?.data);
+          
+          // Map the API response to the expected data structure
+          const mappedData = res.data.map(item => ({
+            HEAD_SYS_ID: item.ListOfSO.HEAD_SYS_ID,
+            DEL_LOCN: item.ListOfSO.DEL_LOCN,
+            SO_CUST_NAME: item.ListOfSO.SO_CUST_NAME,
+            SO_LOCN_CODE: item.ListOfSO.SO_LOCN_CODE,
+            SO_NUMBER: item.ListOfSO.SO_NUMBER,
+            STATUS: item.ListOfSO.STATUS,
+          }));
+
+          setData(mappedData);
           setIsLoading(false);
         } catch (err) {
-          // console.log(err);
+          console.log(err);
           setIsLoading(false);
           toast.error(err?.response?.data?.message || "Something Is Wrong");
       };
@@ -46,6 +77,7 @@ const SalesOrder = () => {
     useEffect(() => {
     fetchData(); // Calling the function within useEffect, not inside itself
   }, []);
+
 
   const handleRowClickInParent = async (item) => {
     // console.log(item)
@@ -61,14 +93,45 @@ const SalesOrder = () => {
     setIsSalesOrderDataLoading(true);
     try {
       // const res = await newRequest.get(`/lineItems/v1/699}`, {
-      const res = await newRequest.get(`/lineItems/v1/${item[0]?.SO_NUMBER}`, {
-        headers: {
-          Authorization: `Bearer ${memberData?.data?.token}`,
+      // const res = await newRequest.get(`/lineItems/v1/${item[0]?.SO_NUMBER}`, {
+      //   headers: {
+      //     Authorization: `Bearer ${memberData?.data?.token}`,
+      //   },
+      // });
+      // // console.log(res?.data)
+      // const filteredData = res?.data?.data ?? [];
+      const res = await ErpTeamRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          "filter": {
+            "P_SOI_SOH_SYS_ID": item[0]?.Head_SYS_ID
+            // "P_SOI_SOH_SYS_ID": "1835972"
+          },
+          "M_COMP_CODE": "SLIC",
+          "M_USER_ID": "SYSADMIN",
+          "APICODE": "ListOfSOItem",
+          "M_LANG_CODE": "ENG"
         },
-      });
-      // console.log(res?.data)
-      const filteredData = res?.data?.data ?? [];
-      setFilteredData(filteredData);
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(res?.data);
+
+      // Map the response data to the expected structure for the second grid
+      const mappedData = res?.data.map(item => ({
+        GRADE: item.ListOfSOItem.GRADE,
+        ITEM_CODE: item.ListOfSOItem.ITEM_CODE,
+        ITEM_NAME: item.ListOfSOItem.ITEM_NAME,
+        ITEM_SYS_ID: item.ListOfSOItem.ITEM_SYS_ID,
+        SO_QTY: item.ListOfSOItem.SO_QTY,
+        INV_QTY: item.ListOfSOItem.INV_QTY,
+        UOM: item.ListOfSOItem.UOM,
+      }));
+
+      setFilteredData(mappedData);
     } catch (error) {
       // console.log(error);
       toast.error(error?.response?.data?.message ||"Something went wrong");
@@ -211,9 +274,9 @@ const SalesOrder = () => {
         <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
           <DataTable
             data={filteredData}
-            title={"Sales Order Details"}
+            title={"List Of Sales Order"}
             secondaryColor="secondary"
-            columnsName={purchaseOrderDetailsColumn}
+            columnsName={salesOrderDetailsColumn}
             backButton={true}
             checkboxSelection="disabled"
             actionColumnVisibility={false}

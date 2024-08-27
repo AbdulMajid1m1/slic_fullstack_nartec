@@ -480,7 +480,7 @@ export const purchaseOrderDetailsColumn = [
 
 export const salesOrderColumn = [
   {
-    field: "Head_SYS_ID",
+    field: "HEAD_SYS_ID",
     headerName: "Head System ID",
     width: 180,
   },
@@ -521,6 +521,50 @@ export const salesOrderColumn = [
     },
   },
 ];
+
+
+
+export const salesOrderDetailsColumn = [
+  {
+    field: "ITEM_SYS_ID",
+    headerName: "Item System ID",
+    width: 180,
+  },
+  {
+    field: "ITEM_CODE",
+    headerName: "Item Code",
+    width: 180,
+  },
+  {
+    field: "ITEM_NAME",
+    headerName: "Item Name",
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "PO_QTY",
+    headerName: "PO Quantity",
+    width: 180,
+  },
+  {
+    field: "INV_QTY",
+    headerName: "Received Quantity",
+    width: 180,
+  },
+  {
+    field: "UOM",
+    headerName: "UOM",
+    width: 180,
+  },
+  {
+    field: "GRADE",
+    headerName: "GRADE",
+    width: 180,
+  },
+  
+  
+
+]
 
 
 export const usersColumn = [
