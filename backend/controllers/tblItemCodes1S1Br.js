@@ -311,3 +311,22 @@ exports.searchByGTIN = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.findByItemCode = async (req, res, next) => {
+  try {
+    const itemCode = req.query.itemCode;
+    const item = await ItemCodeModel.findByItemCode(itemCode);
+    if (!item) {
+      const error = new CustomError("No item code found");
+      error.statusCode = 404;
+      throw error;
+    }
+    res
+      .status(200)
+      .json(
+        generateResponse(200, true, "Item code retrieved successfully", item)
+      );
+  } catch (error) {
+    next(error);
+  }
+};
