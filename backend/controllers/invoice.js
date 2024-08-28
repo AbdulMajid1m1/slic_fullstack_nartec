@@ -170,3 +170,68 @@ exports.updateInvoiceTemp = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.invoiceHeadersAndLineItems = async (req, res, next) => {
+  try {
+    const { InvoiceNo } = req.query;
+
+    if (!InvoiceNo) {
+      const error = new CustomError("InvoiceNo is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByField(
+      "InvoiceNo",
+      InvoiceNo
+    );
+
+    if (!invoiceHeader) {
+      const error = new CustomError("Invoice headers not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByField(
+      invoiceHeader.Head_SYS_ID
+    );
+
+    res.status(200).json(
+      response(200, true, "Invoice headers & line items found successfully", {
+        invoiceHeader,
+        invoiceDetails,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getInvoicesByMobileNo = async (req, res, next) => {
+  try {
+    const { MobileNo } = req.query;
+
+    if (!MobileNo) {
+      const error = new CustomError("MobileNo is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const invoices = await POSInvoiceMaster.getInvoiceMasterByField(
+      "MobileNo",
+      MobileNo
+    );
+
+    if (!invoices || invoices.length == 0) {
+      const error = new CustomError("No invoice found with the given number");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(response(200, true, "Invoices found successfully", invoices));
+  } catch (error) {
+    next(error);
+  }
+};

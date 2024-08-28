@@ -74,6 +74,20 @@ class POSInvoiceMaster {
       throw new Error(`Error fetching invoice master by ${field}`);
     }
   }
+
+  static async getSingleInvoiceMasterByField(field, value) {
+    try {
+      const masters = await prisma.tblPOSInvoiceMaster.findFirst({
+        where: {
+          [field]: value,
+        },
+      });
+      return masters;
+    } catch (error) {
+      console.error(`Error fetching invoice master by ${field}:`, error);
+      throw new Error(`Error fetching invoice master by ${field}`);
+    }
+  }
 }
 
 module.exports = POSInvoiceMaster;

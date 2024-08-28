@@ -17,4 +17,10 @@ router.get(
 
 router.put("/v1/update-invoice-temp", controller.updateInvoiceTemp);
 
+// * Pass mobile no as query parameter and user will get all the invoices
+router.get("/v1/invoices", controller.getInvoicesByMobileNo);
+
+// * Pass Invoice no as query and user will get headers (master) & Line items (Details)
+router.get("/v1/headers-and-line-items", controller.invoiceHeadersAndLineItems);
+
 module.exports = router;

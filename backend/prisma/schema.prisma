@@ -146,27 +146,23 @@ model tblPOSInvoiceDetails {
 
 model tblPOSInvoiceMaster {
   id                    String    @id @default(cuid())
-  Rec_Num                Float?   @map("Rec ##")
-  TblSysNoID             Float?
-  SNo                    Float?
-  DeliveryLocationCode   String?  @db.NVarChar(255)
-  ItemSysID              String?  @db.NVarChar(255)
-  InvoiceNo              String?  @db.NVarChar(255)
-  Head_SYS_ID            String?  @db.NVarChar(255)
-  TransactionCode        String?  @db.NVarChar(255)
-  CustomerCode           String?  @db.NVarChar(255)
-  SalesLocationCode      String?  @db.NVarChar(255)
-  Remarks                String?  @db.NVarChar(255)
-  TransactionType        String?  @db.NVarChar(255)
-  UserID                 String?  @db.NVarChar(255)
-  ItemSKU                String?  @db.NVarChar(255)
-  ItemUnit               String?  @db.NVarChar(255)
-  ItemSize               String?  @db.NVarChar(255)
-  ITEMRATE               Float?
-  ItemPrice              Float?
-  ItemQry                Float?
-  TransactionDate        DateTime?
+  Rec_Num               Float?    @map("Rec ##")
+  TblSysNoID            Float?
+  SNo                   Float?
+  DeliveryLocationCode  String?   @db.NVarChar(255)
+  ItemSysID             String?   @db.NVarChar(255)
+  InvoiceNo             String?   @db.NVarChar(255)
+  Head_SYS_ID           String?   @db.NVarChar(255)
+  TransactionCode       String?   @db.NVarChar(255)
+  CustomerCode          String?   @db.NVarChar(255)
+  SalesLocationCode     String?   @db.NVarChar(255)
+  Remarks               String?   @db.NVarChar(255)
+  TransactionType       String?   @db.NVarChar(255)
+  UserID                String?   @db.NVarChar(255)
+  MobileNo              String?   @db.NVarChar(255) // New field added
+  TransactionDate       DateTime?
 }
+
 
 model TblSalesReturnInvoicetmp {
   id                    Int    @id @default(autoincrement())
