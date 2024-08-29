@@ -193,7 +193,7 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
     }
 
     const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByField(
-      invoiceHeader.Head_SYS_ID
+      invoiceHeader.InvoiceNo
     );
 
     res.status(200).json(
