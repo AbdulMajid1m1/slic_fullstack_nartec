@@ -59,17 +59,6 @@ const POS = () => {
 
         // call the second api later in their
         const secondApiBody = {
-          // filter: {
-          //   P_COMP_CODE: "SLIC",
-          //   P_CUST_CODE: "CL100729",
-          //   "P_ITEM_CODE": ItemCode,
-          //   P_ITEM_CODE: "45",
-          //   P_GRADE_CODE_1: ProductSize,
-          // },
-          // M_COMP_CODE: "001",
-          // M_USER_ID: "SYSADMIN",
-          // APICODE: "ItemRate",
-          // M_LANG_CODE: "ENG",
           "filter": {
             "P_COMP_CODE": "SLIC",
             "P_ITEM_CODE": ItemCode,
@@ -167,6 +156,56 @@ const POS = () => {
   };
 
 
+  // // Reset form and data grid when switching sales type
+  // useEffect(() => {
+  //   setData([]); // Clear the data grid
+  //   setBarcode(""); // Clear barcode input
+  //   setSearchInvoiceNumber(""); // Clear invoice input
+  // }, [selectedSalesType]);
+
+
+  const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
+  const [invoiceData, setInvoiceData] = useState([]);
+  const [invoiceDataLoader, setInvoiceDataLoader] = useState('')
+  // Fetch invoice details when searching by invoice number for a sales return
+  const handleGetInvoiceDetails = async (e) => {
+    e.preventDefault();
+    setInvoiceDataLoader(true);
+
+    try {
+      const response = await newRequest.get(
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${searchInvoiceNumber}`
+      );
+      const data = response?.data?.data;
+
+      if (data) {
+        const invoiceDetails = data.invoiceDetails;
+
+        setInvoiceData(invoiceDetails.map(item => {
+          const vat = item.ItemPrice * 0.15;
+          const total = item.ItemPrice + vat;
+          return {
+            SKU: item.ItemSKU,
+            Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
+            Description: item.Remarks || "No description",
+            ItemSize: item.ItemSize,
+            Qty: 1,
+            ItemPrice: item.ItemPrice,
+            VAT: vat,
+            Total: total,
+          };
+        }));
+      } else {
+        setInvoiceData([]);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+    } finally {
+      setInvoiceDataLoader(false);
+    }
+  };
+
+
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
@@ -208,9 +247,8 @@ const POS = () => {
   };
 
   const handleTransactionCodes = (event, value) => {
-    // console.log(value);
-    setSelectedTransactionCode(value);
-  };
+    setSelectedTransactionCode(value ? value : "");
+};
 
   useEffect(() => {
     if (selectedLocation?.LOCN_CODE) {
@@ -599,20 +637,6 @@ const POS = () => {
               <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
               </label>
-              {/* <select
-                className="w-full mt-1 p-2 border rounded border-gray-400"
-                value={selectedTransactionCode}
-                onChange={(e) => setSelectedTransactionCode(e.target.value)}
-              >
-                {transactionCodes.map((code, index) => (
-                  <option
-                    key={index}
-                    value={code.ListOfTransactionCod.TXN_CODE}
-                  >
-                    {code.ListOfTransactionCod.TXN_CODE}
-                  </option>
-                ))}
-              </select> */}
               <Autocomplete
                 id="transactionId"
                 options={transactionCodes}
@@ -622,7 +646,8 @@ const POS = () => {
                     : ''
                 }
                 onChange={handleTransactionCodes}
-                value={selectedTransactionCode}
+                // value={selectedTransactionCode}
+                value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
                 isOptionEqualToValue={(option, value) =>
                   option?.TXN_CODE === value?.TXN_CODE
                 }
@@ -768,25 +793,45 @@ const POS = () => {
                 placeholder="Mobile"
               />
             </div>
-            <form onSubmit={handleGetBarcodes} className="flex items-center">
-              <div className="w-full">
-                <label className="block text-gray-700">Scan Barcode</label>
-                <input
-                  type="text"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  required
-                  className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                  placeholder="Search Barcode"
-                />
-              </div>
-              <button
-                type="submit"
-                className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
-              >
-                <IoBarcodeSharp size={20} />
-              </button>
-            </form>
+            {selectedSalesType === "DIRECT SALES INVOICE" ? (
+              <form onSubmit={handleGetBarcodes} className="flex items-center">
+                <div className="w-full">
+                  <label className="block text-gray-700">Scan Barcode</label>
+                  <input
+                    type="text"
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                    placeholder="Enter Barcode"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleGetInvoiceDetails} className="flex items-center">
+                <div className="w-full">
+                  <label className="block text-gray-700">Scan Invoice</label>
+                  <input
+                    type="text"
+                    value={searchInvoiceNumber}
+                    onChange={(e) => setSearchInvoiceNumber(e.target.value)}
+                    placeholder="Enter Invoice Number"
+                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              </form>
+            )}
 
             <div>
               <label className="block text-gray-700">Remarks *</label>
@@ -811,9 +856,59 @@ const POS = () => {
               />
             </div>
           </div>
+        <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead className="bg-secondary text-white" style={{ position: "sticky" }}>
+              <tr>
+                <th className="px-4 py-2">SKU</th>
+                <th className="px-4 py-2">Barcode</th>
+                <th className="px-4 py-2">Description</th>
+                <th className="px-4 py-2">Item Size</th>
+                <th className="px-4 py-2">Qty</th>
+                <th className="px-4 py-2">Item Price</th>
+                <th className="px-4 py-2">VAT (15%)</th>
+                <th className="px-4 py-2">Total</th>
+                <th className="px-4 py-2">Action</th>
+              </tr>
+            </thead>
+            {isLoading ? (
+                  <tr>
+                    <td colSpan="10" className="text-center py-4">
+                      <div className="flex justify-center items-center w-full h-full">
+                        <CircularProgress size={24} color="inherit" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+            <tbody>
+              {data.map((row, index) => (
+                <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td className="px-4 py-2">{row.SKU}</td>
+                  <td className="px-4 py-2">{row.Barcode}</td>
+                  <td className="px-4 py-2">{row.Description}</td>
+                  <td className="px-4 py-2">{row.ItemSize}</td>
+                  <td className="px-4 py-2">{row.Qty}</td>
+                  <td className="px-4 py-2">{row.ItemPrice}</td>
+                  <td className="px-4 py-2">{row.VAT}</td>
+                  <td className="px-4 py-2">{row.Total}</td>
+                  <td style={{ color: "red", cursor: "pointer" }}>X</td>
+                </tr>
+              ))}
+            </tbody>
+          )}
+          </table>
+        </div>
+        
+        {selectedSalesType === "DIRECT SALES RETURN" && (
           <div className="mt-10">
-            <table className="table-auto w-full">
-              <thead className="bg-secondary text-white">
+            <button className="py-2 px-6 bg-gray-300 rounded-md">Exchange Item</button>
+          </div>
+        )}
+
+        {selectedSalesType === "DIRECT SALES RETURN" && (
+          <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead className="bg-secondary text-white" style={{ position: "sticky" }}>
                 <tr>
                   <th className="px-4 py-2">SKU</th>
                   <th className="px-4 py-2">Barcode</th>
@@ -826,7 +921,7 @@ const POS = () => {
                   <th className="px-4 py-2">Action</th>
                 </tr>
               </thead>
-              {isLoading ? (
+              {invoiceDataLoader ? (
                 <tr>
                   <td colSpan="10" className="text-center py-4">
                     <div className="flex justify-center items-center w-full h-full">
@@ -836,39 +931,60 @@ const POS = () => {
                 </tr>
               ) : (
                 <tbody>
-                  {data.map((row, index) => (
-                    <tr key={index} className="bg-gray-100">
-                      <td className="border px-4 py-2">{row.SKU}</td>
-                      <td className="border px-4 py-2">{row.Barcode}</td>
-                      <td className="border px-4 py-2">{row.Description}</td>
-                      <td className="border px-4 py-2">{row.ItemSize}</td>
-                      <td className="border px-4 py-2">{row.Qty}</td>
-                      <td className="border px-4 py-2">
-                        {row.ItemPrice}
-                      </td>
-                      <td className="border px-4 py-2">{row.VAT}</td>
-                      <td className="border px-4 py-2">
-                        {row.Total}
-                      </td>
-                      <td className="border px-4 py-2 text-center">
-                        <button
-                          onClick={() => handleRemoveItem(index)}
-                          className="text-red-500 font-bold"
-                        >
-                          X
-                        </button>
-                      </td>
+                  {/* Render your data rows here */}
+                  {invoiceData.map((row, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
+                      <td className="px-4 py-2">{row.SKU}</td>
+                      <td className="px-4 py-2">{row.Barcode}</td>
+                      <td className="px-4 py-2">{row.Description}</td>
+                      <td className="px-4 py-2">{row.ItemSize}</td>
+                      <td className="px-4 py-2">{row.Qty}</td>
+                      <td className="px-4 py-2">{row.ItemPrice}</td>
+                      <td className="px-4 py-2">{row.VAT}</td>
+                      <td className="px-4 py-2">{row.Total}</td>
+                      <td style={{ color: "red", cursor: "pointer" }}>X</td>
                     </tr>
                   ))}
                 </tbody>
               )}
             </table>
           </div>
+        )}
+
+      {/* <div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <button
+          onClick={() => handlePageChange("prev")}
+          disabled={currentPage === 1}
+          style={{
+            margin: "5px",
+            padding: "5px 10px",
+            border: "1px solid #ccc",
+            backgroundColor: "#fff",
+            color: "#000"
+          }}
+        >
+          Previous
+        </button>
+        <span style={{ margin: "0 10px" }}>{currentPage}</span>
+        <button
+          onClick={() => handlePageChange("next")}
+          disabled={currentPage === Math.ceil(data.length / itemsPerPage)}
+          style={{
+            margin: "5px",
+            padding: "5px 10px",
+            border: "1px solid #ccc",
+            backgroundColor: "#fff",
+            color: "#000"
+          }}
+        >
+          Next
+        </button>
+      </div> */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <button className="bg-[#2596be] t</div>ext-white py-4 px-4 rounded">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                {/* <button className="bg-[#2596be] t</div>ext-white py-4 px-4 rounded">
                   F10 - Open Drawer
                 </button>
                 <button className="bg-[#037de2] text-white py-4 px-4 rounded">
@@ -891,14 +1007,14 @@ const POS = () => {
                 </button>
                 <button className="bg-blue-500 text-white py-4 px-4 rounded">
                   F4 - Last Receipt
-                </button>
+                </button> */}
                 <button
                   onClick={handleShowCreatePopup}
                   className="bg-red-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
                 >
                   F3 - Tender Cash
                 </button>
-                <button className="bg-black text-white py-4 px-4 rounded">
+                {/* <button className="bg-black text-white py-4 px-4 rounded">
                   F8 - Z Report
                 </button>
                 <button className="bg-red-600 text-white py-4 px-4 rounded">
@@ -906,7 +1022,7 @@ const POS = () => {
                 </button>
                 <button className="bg-blue-500 text-white py-4 px-4 rounded">
                   F4 - Last Receipt
-                </button>
+                </button> */}
               </div>
             </div>
             <div>
@@ -985,23 +1101,6 @@ const POS = () => {
                       className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
                     />
                   </div>
-
-                  {/* <div className="flex justify-between items-center w-full">
-                    <Button
-                      variant="contained"
-                      style={{ backgroundColor: "#021F69", color: "#ffffff" }}
-                      type="submit"
-                      disabled={invoiceLoader}
-                      className="w-full ml-2"
-                      endIcon={
-                        invoiceLoader ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : null
-                      }
-                    >
-                      Print Receipt
-                    </Button>
-                  </div> */}
                 </div>
               </div>
             </div>

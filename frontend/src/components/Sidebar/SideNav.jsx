@@ -190,6 +190,23 @@ function SideNav({ children }) {
                     </Link>
                   </li>
                   <li className="mt-3">
+                    <Link
+                      to="/pos-history"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={posicon}
+                          alt="logo"
+                          className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          POS History
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                  <li className="mt-3">
                     <div
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer"
                       onClick={handleToggleMange}
