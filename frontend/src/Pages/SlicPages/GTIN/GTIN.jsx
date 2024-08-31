@@ -20,6 +20,7 @@ import { useQuery } from "react-query";
 import AddGTINPopUp from "./AddGTINPopUp";
 import UpdateGTINPopUp from "./UpdateGTINPopUp";
 import { QRCodeSVG } from "qrcode.react";
+import ViewGTINPopUp from "./ViewGTINPopUp";
 
 const GTIN = () => {
   const [data, setData] = useState([]);
@@ -58,36 +59,6 @@ const GTIN = () => {
     fetchData();
   },[])
 
-  // const {
-  //   isLoading: queryLoading,
-  //   error,
-  //   data,
-  //   refetch,
-  // } = useQuery(
-  //   "fetchProducts",
-  //   async () => {
-  //     const response = await newRequest.get("/itemCodes/v1/itemCodes/all");
-  //     return response?.data?.data || [];
-  //   },
-  //   {
-  //     onError: (error) => {
-  //       // Display toast message for the error
-  //       console.error("Error fetching members:", error);
-  //       toast.error(
-  //         error?.response?.data?.error || "Something went wrong");
-  //     },
-  //     onSuccess: () => {
-  //       setIsLoading(false); // Set loading state to false on success
-  //     },
-  //   }
-  // );
-
-  // useEffect(() => {
-  //   if (!queryLoading) {
-  //     setIsLoading(false); // Set loading state to false after query loading is finished
-  //   }
-  // }, [queryLoading]);
-
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const handleShowCreatePopup = () => {
@@ -99,6 +70,13 @@ const GTIN = () => {
     setUpdatePopupVisibility(true);
     // console.log(row)
     sessionStorage.setItem("updateListOfEmployeeData", JSON.stringify(row));
+  };
+
+  const [isViewPopupVisible, setViewPopupVisibility] = useState(false);
+  const handleShowViewPopup = (row) => {
+    setViewPopupVisibility(true);
+    // console.log(row)
+    sessionStorage.setItem("viewGtinBarcodesData", JSON.stringify(row));
   };
 
   const handlePrintFGBarcode = () => {
@@ -331,9 +309,21 @@ const GTIN = () => {
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerListId"
+                globalSearch={true}
                 handleRowClickInParent={handleRowClickInParent}
                 // checkboxSelection="disabled"
                 dropDownOptions={[
+                  {
+                    label: "View",
+                    icon: (
+                      <VisibilityIcon
+                        fontSize="small"
+                        color="action"
+                        style={{ color: "rgb(37 99 235)" }}
+                      />
+                    ),
+                    action: handleShowViewPopup,
+                  },
                   {
                     label: "Edit",
                     icon: (
@@ -445,6 +435,14 @@ const GTIN = () => {
               <UpdateGTINPopUp
                 isVisible={isUpdatePopupVisible}
                 setVisibility={setUpdatePopupVisibility}
+                refreshGTINData={fetchData}
+              />
+            )}
+
+            {isViewPopupVisible && (
+              <ViewGTINPopUp
+                isVisible={isViewPopupVisible}
+                setVisibility={setViewPopupVisibility}
                 refreshGTINData={fetchData}
               />
             )}
