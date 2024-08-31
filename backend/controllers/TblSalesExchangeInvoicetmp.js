@@ -29,9 +29,12 @@ exports.createInvoiceDetails = async (req, res, next) => {
   const data = req.body;
 
   try {
-    const newDetails = await TblSalesExchangeInvoicetmp.createInvoiceDetails(
-      data
-    );
+    const newDetails = await TblSalesExchangeInvoicetmp.createInvoiceDetails({
+      Description: data.EnglishName,
+      GTIN: data.GTIN,
+      ItemCode: data.ModelName,
+      ItemSize: data.ProductSize,
+    });
     res
       .status(201)
       .json(

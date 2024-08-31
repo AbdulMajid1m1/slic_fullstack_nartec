@@ -180,3 +180,22 @@ model TblSalesReturnInvoicetmp {
   updated_at             DateTime  @updatedAt
 }
 
+model TblSalesExchangeInvoicetmp {
+  id                  Int       @id @default(autoincrement())
+  SNo                 Int?
+  ItemCode            String?
+  Description         String?
+  ReturnQty           Int?
+  InvoiceQty          Int?
+  UnitCode            String?
+  HeadSysId           String?
+  ItemSysID           String?
+  DeliveryLocationCode String?
+  ItemSize            String?
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @updatedAt
+  GTIN                String?
+
+  @@map("TblSalesExchangeInvoicetmp")
+}
+
