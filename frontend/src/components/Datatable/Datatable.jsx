@@ -554,7 +554,7 @@ const DataTable = ({
           <div className="left-div flex justify-between flex-wrap w-full">
 
             {/* if global search is true than show search bar instead of title */}
-            {globalSearch ? (
+            {/* {globalSearch ? (
               <span>
                 <input
                   type="text"
@@ -565,7 +565,20 @@ const DataTable = ({
                 />
               </span>
             ) : <span>{title}</span>
-            }
+            } */}
+
+            <span>{title}</span>
+            {globalSearch && (
+              <span>
+                <input
+                  type="text"
+                  placeholder={`${t('SEARCH')}`}
+                  name="SHIPMENTID"
+                  className="searchInput"
+                  onChange={handleGlobalSearch}
+                />
+              </span>
+            )}
 
             {headerButtonVisibility && (
                   <Button

@@ -1,6 +1,139 @@
 import React, { useState, useEffect } from "react";
+import newRequest from "../../../utils/userRequest";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import { IoBarcodeSharp } from "react-icons/io5";
+import CircularProgress from "@mui/material/CircularProgress";
+import { toast } from "react-toastify";
 
 const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
+  const [data, setData] = useState([]);
+  const [barcode, setBarcode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+
+  // Fetch barcode data from API
+  const handleGetBarcodes = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await newRequest.get(
+        `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+      );
+      const data = response?.data?.data;
+      
+      if (data) {
+        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName } = data;
+
+        // call the second api later in their
+        const secondApiBody = {
+          "filter": {
+            "P_COMP_CODE": "SLIC",
+            "P_ITEM_CODE": ItemCode,
+            "P_CUST_CODE": "CL100948",
+              "P_GRADE_CODE_1": ProductSize
+          },
+          "M_COMP_CODE": "SLIC",
+          "M_USER_ID":"SYSADMIN",
+          "APICODE": "PRICELIST",
+          "M_LANG_CODE": "ENG"
+
+        };
+
+        try {
+          const secondApiResponse = await ErpTeamRequest.post(
+            "/slicuat05api/v1/getApi",
+            secondApiBody,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const secondApiData = secondApiResponse?.data;
+          console.log(secondApiData)
+
+          const itemRates = secondApiData.map(item => item?.PRICELIST?.PLI_RATE);
+          
+        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+        // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+        const vat = itemPrice * 0.15;
+        const total = itemPrice + vat;
+        console.log(itemPrice);
+
+        setData((prevData) => {
+          const existingItemIndex = prevData.findIndex(
+            (item) => item.Barcode === GTIN
+          );
+
+          if (existingItemIndex !== -1) {
+            // If the item already exists, just update the Qty and Total
+            const updatedData = [...prevData];
+            updatedData[existingItemIndex] = {
+              ...updatedData[existingItemIndex],
+              Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+              Total: (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+            };
+            return updatedData;
+          } else {
+            // If the item is new, add it to the data array
+            return [
+              ...prevData,
+              {
+                SKU: ItemCode,
+                Barcode: GTIN,
+                Description: EnglishName,
+                ItemSize: ProductSize,
+                Qty: 1,
+                ItemPrice: itemPrice,
+                ModelName: ModelName,
+                VAT: vat,
+                Total: total,
+              },
+            ];
+          }
+        });
+        } catch (secondApiError) {
+          toast.error(
+            secondApiError?.response?.data?.message ||
+              "An error occurred while calling the second API"
+          );
+        }
+        // barcode state empty once response is true
+        // setBarcode('');
+      } 
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleExchangeItems = async () => {
+    if (data.length === 0) {
+      toast.error("Please scan a barcode first Because data is empty");
+      return;
+    }
+    // console.log(data)
+    try {
+      const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
+        "EnglishName": data[0]?.Description,
+        "GTIN": data[0]?.Barcode,
+        "ModelName": data[0]?.ModelName,
+        // "ModelName": "Model X200",
+        "ProductSize": data[0]?.ItemSize
+       }
+      )
+      // console.log(res?.data);
+      toast.success(res?.data?.message || "Exchange Invoice created successfully");
+      handleCloseCreatePopup();
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    }
+  };
+
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
@@ -9,7 +142,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
     <div>
       {isVisible && (
         <div className="popup-overlay z-50">
-          <div className="popup-container h-[45%] sm:w-[50%] w-full">
+          <div className="popup-container h-auto sm:w-[50%] w-full">
             <div
               className="popup-form w-full"
               style={{ maxHeight: "90vh", overflowY: "auto" }}
@@ -57,6 +190,72 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
                 </div>
               </div>
               
+
+              {/* Exchange Item in Heading */}
+              <form onSubmit={handleGetBarcodes} className="flex items-center w-full mt-6">
+                <div className="w-full">
+                  <label className="block text-gray-700">Scan Barcode</label>
+                  <input
+                    type="text"
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                    placeholder="Enter Barcode"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={24} />
+                </button>
+              </form>
+
+
+              <div className="mt-6 w-full overflow-x-auto h-32">
+                <table className="table-auto w-full">
+                  <thead className="bg-secondary text-white">
+                    <tr>
+                      <th className="px-4 py-2">Item Size</th>
+                      <th className="px-4 py-2">Qty</th>
+                      <th className="px-4 py-2">Item Price</th>
+                      <th className="px-4 py-2">VAT (15%)</th>
+                    </tr>
+                  </thead>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan="10" className="text-center py-4">
+                        <div className="flex justify-center items-center w-full h-full">
+                          <CircularProgress size={24} color="inherit" />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tbody>
+                      {data.map((row, index) => (
+                        <tr key={index} className="bg-gray-100 text-center">
+                          <td className="border px-4 py-2">{row.ItemSize}</td>
+                          <td className="border px-4 py-2">{row.Qty}</td>
+                          <td className="border px-4 py-2">
+                            {row.ItemPrice}
+                          </td>
+                          <td className="border px-4 py-2">{row.VAT}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  )}
+                </table>
+              </div>
+
+              <div className="flex items-center justify-between w-full">
+                <button
+                  // type="submit"
+                  onClick={handleExchangeItems}
+                  className="p-3 border rounded bg-secondary hover:bg-[#424e9b] text-white flex items-center justify-center"
+                >
+                  Submit and Save
+                </button>
+              </div>
             </div>
           </div>
         </div>

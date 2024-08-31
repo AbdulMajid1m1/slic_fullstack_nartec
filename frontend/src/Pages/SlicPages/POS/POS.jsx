@@ -862,7 +862,7 @@ const POS = () => {
               />
             </div>
           </div>
-        <div className="mt-10">
+        <div className="mt-10 overflow-x-auto">
             <table className="table-auto w-full">
               <thead className="bg-secondary text-white">
                 <tr>
@@ -903,10 +903,10 @@ const POS = () => {
                       </td>
                       <td className="border px-4 py-2 text-center">
                         <button
-                          onClick={() => handleRemoveItem(index)}
-                          className="text-red-500 font-bold"
+                          onClick={handleShowExhangeItemPopup}
+                          className="bg-gray-300 text-green-600 px-2 py-1 text-sm truncate font-bold transform hover:scale-95"
                         >
-                          X
+                          Exchange Item
                         </button>
                       </td>
                     </tr>
@@ -963,14 +963,14 @@ const POS = () => {
                       <td className="border px-4 py-2">
                         {row.Total}
                       </td>
-                      <td className="border px-4 py-2 text-center">
+                      {/* <td className="border px-4 py-2 text-center">
                         <button
                           onClick={handleShowExhangeItemPopup}
                           className="bg-gray-300 text-green-600 px-4 py-1 font-bold transform hover:scale-95"
                         >
                           Exchange Item
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -979,121 +979,20 @@ const POS = () => {
           </div>
         )}
 
-      {/* <div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <button
-          onClick={() => handlePageChange("prev")}
-          disabled={currentPage === 1}
-          style={{
-            margin: "5px",
-            padding: "5px 10px",
-            border: "1px solid #ccc",
-            backgroundColor: "#fff",
-            color: "#000"
-          }}
-        >
-          Previous
-        </button>
-        <span style={{ margin: "0 10px" }}>{currentPage}</span>
-        <button
-          onClick={() => handlePageChange("next")}
-          disabled={currentPage === Math.ceil(data.length / itemsPerPage)}
-          style={{
-            margin: "5px",
-            padding: "5px 10px",
-            border: "1px solid #ccc",
-            backgroundColor: "#fff",
-            color: "#000"
-          }}
-        >
-          Next
-        </button>
-      </div> */}
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                {/* <button className="bg-[#2596be] t</div>ext-white py-4 px-4 rounded">
-                  F10 - Open Drawer
-                </button>
-                <button className="bg-[#037de2] text-white py-4 px-4 rounded">
-                  F6 - PLU Inquiry
-                </button>
-                <button className="bg-[#2596be] text-white py-4 px-4 rounded">
-                  F7 - Department
-                </button>
-                <button className="bg-[#2596be] text-white py-4 px-4 rounded">
-                  F4 - Last Receipt
-                </button>
-                <button className="bg-gray-500 text-white py-4 px-4 rounded">
-                  F1 - Edit Qty
-                </button>
-                <button className="bg-yellow-500 text-white py-4 px-4 rounded">
-                  F9 - Old Invoice
-                </button>
-                <button className="bg-[#0dcaf0] text-white py-4 px-4 rounded">
-                  F2 - Delete Line
-                </button>
-                <button className="bg-blue-500 text-white py-4 px-4 rounded">
-                  F4 - Last Receipt
-                </button> */}
                 <button
                   onClick={handleShowCreatePopup}
                   className="bg-red-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
                 >
                   F3 - Tender Cash
                 </button>
-                {/* <button className="bg-black text-white py-4 px-4 rounded">
-                  F8 - Z Report
-                </button>
-                <button className="bg-red-600 text-white py-4 px-4 rounded">
-                  F5 - Return Items
-                </button>
-                <button className="bg-blue-500 text-white py-4 px-4 rounded">
-                  F4 - Last Receipt
-                </button> */}
               </div>
             </div>
             <div>
               <div className="bg-white p-4 rounded shadow-md">
-                {/* <form onSubmit={handleInvoiceGenerator} className="flex flex-col gap-4"> */}
                 <div className="flex flex-col gap-4">
-                  {/* <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">
-                      Net With VAT:
-                    </label>
-                    <input
-                      type="number"
-                      value={netWithVat}
-                      onChange={(e) => setNetWithVat(e.target.value)}
-                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">
-                      Total VAT:
-                    </label>
-                    <input
-                      type="number"
-                      value={totalVat}
-                      onChange={(e) => setTotalVat(e.target.value)}
-                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <label className="block text-gray-700 font-bold">Total Amount With VAT:</label>
-                    <input
-                      type="text"
-                      value={Number(netWithVat) + Number(totalVat)}
-                      readOnly
-                      className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                    />
-                  </div> */}
                   <div className="flex justify-between items-center">
                     <label className="block text-gray-700 font-bold">
                       Net With VAT:
