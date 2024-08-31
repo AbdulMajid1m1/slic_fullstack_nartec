@@ -11,6 +11,7 @@ import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
+import ExchangeItemPopUp from "./ExchangeItemPopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -226,6 +227,11 @@ const POS = () => {
     setCreatePopupVisibility(false);
     setApiResponse(response);
     setIsOpenOtpPopupVisible(true);
+  };
+
+  const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] = useState(false);
+  const handleShowExhangeItemPopup = () => {
+    setIsExchangeItemPopupVisible(true);
   };
 
   const handleClearData = () => {
@@ -856,48 +862,59 @@ const POS = () => {
               />
             </div>
           </div>
-        <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead className="bg-secondary text-white" style={{ position: "sticky" }}>
-              <tr>
-                <th className="px-4 py-2">SKU</th>
-                <th className="px-4 py-2">Barcode</th>
-                <th className="px-4 py-2">Description</th>
-                <th className="px-4 py-2">Item Size</th>
-                <th className="px-4 py-2">Qty</th>
-                <th className="px-4 py-2">Item Price</th>
-                <th className="px-4 py-2">VAT (15%)</th>
-                <th className="px-4 py-2">Total</th>
-                <th className="px-4 py-2">Action</th>
-              </tr>
-            </thead>
-            {isLoading ? (
-                  <tr>
-                    <td colSpan="10" className="text-center py-4">
-                      <div className="flex justify-center items-center w-full h-full">
-                        <CircularProgress size={24} color="inherit" />
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-            <tbody>
-              {data.map((row, index) => (
-                <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td className="px-4 py-2">{row.SKU}</td>
-                  <td className="px-4 py-2">{row.Barcode}</td>
-                  <td className="px-4 py-2">{row.Description}</td>
-                  <td className="px-4 py-2">{row.ItemSize}</td>
-                  <td className="px-4 py-2">{row.Qty}</td>
-                  <td className="px-4 py-2">{row.ItemPrice}</td>
-                  <td className="px-4 py-2">{row.VAT}</td>
-                  <td className="px-4 py-2">{row.Total}</td>
-                  <td style={{ color: "red", cursor: "pointer" }}>X</td>
+        <div className="mt-10">
+            <table className="table-auto w-full">
+              <thead className="bg-secondary text-white">
+                <tr>
+                  <th className="px-4 py-2">SKU</th>
+                  <th className="px-4 py-2">Barcode</th>
+                  <th className="px-4 py-2">Description</th>
+                  <th className="px-4 py-2">Item Size</th>
+                  <th className="px-4 py-2">Qty</th>
+                  <th className="px-4 py-2">Item Price</th>
+                  <th className="px-4 py-2">VAT (15%)</th>
+                  <th className="px-4 py-2">Total</th>
+                  <th className="px-4 py-2">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          )}
-          </table>
-        </div>
+              </thead>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-4">
+                    <div className="flex justify-center items-center w-full h-full">
+                      <CircularProgress size={24} color="inherit" />
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <tbody>
+                  {data.map((row, index) => (
+                    <tr key={index} className="bg-gray-100">
+                      <td className="border px-4 py-2">{row.SKU}</td>
+                      <td className="border px-4 py-2">{row.Barcode}</td>
+                      <td className="border px-4 py-2">{row.Description}</td>
+                      <td className="border px-4 py-2">{row.ItemSize}</td>
+                      <td className="border px-4 py-2">{row.Qty}</td>
+                      <td className="border px-4 py-2">
+                        {row.ItemPrice}
+                      </td>
+                      <td className="border px-4 py-2">{row.VAT}</td>
+                      <td className="border px-4 py-2">
+                        {row.Total}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          onClick={() => handleRemoveItem(index)}
+                          className="text-red-500 font-bold"
+                        >
+                          X
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
+            </table>
+          </div>
         
         {selectedSalesType === "DIRECT SALES RETURN" && (
           <div className="mt-10">
@@ -906,9 +923,9 @@ const POS = () => {
         )}
 
         {selectedSalesType === "DIRECT SALES RETURN" && (
-          <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead className="bg-secondary text-white" style={{ position: "sticky" }}>
+          <div>
+            <table className="table-auto w-full">
+              <thead className="bg-secondary text-white">
                 <tr>
                   <th className="px-4 py-2">SKU</th>
                   <th className="px-4 py-2">Barcode</th>
@@ -933,16 +950,27 @@ const POS = () => {
                 <tbody>
                   {/* Render your data rows here */}
                   {invoiceData.map((row, index) => (
-                    <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
-                      <td className="px-4 py-2">{row.SKU}</td>
-                      <td className="px-4 py-2">{row.Barcode}</td>
-                      <td className="px-4 py-2">{row.Description}</td>
-                      <td className="px-4 py-2">{row.ItemSize}</td>
-                      <td className="px-4 py-2">{row.Qty}</td>
-                      <td className="px-4 py-2">{row.ItemPrice}</td>
-                      <td className="px-4 py-2">{row.VAT}</td>
-                      <td className="px-4 py-2">{row.Total}</td>
-                      <td style={{ color: "red", cursor: "pointer" }}>X</td>
+                    <tr key={index} className="bg-gray-100">
+                      <td className="border px-4 py-2">{row.SKU}</td>
+                      <td className="border px-4 py-2">{row.Barcode}</td>
+                      <td className="border px-4 py-2">{row.Description}</td>
+                      <td className="border px-4 py-2">{row.ItemSize}</td>
+                      <td className="border px-4 py-2">{row.Qty}</td>
+                      <td className="border px-4 py-2">
+                        {row.ItemPrice}
+                      </td>
+                      <td className="border px-4 py-2">{row.VAT}</td>
+                      <td className="border px-4 py-2">
+                        {row.Total}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          onClick={handleShowExhangeItemPopup}
+                          className="bg-gray-300 text-green-600 px-4 py-1 font-bold transform hover:scale-95"
+                        >
+                          Exchange Item
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1124,6 +1152,13 @@ const POS = () => {
               isVisible={isOpenOtpPopupVisible}
               setVisibility={setIsOpenOtpPopupVisible}
               apiResponse={apiResponse}
+            />
+          )}
+
+          {isExchangeItemPopupVisible && (
+            <ExchangeItemPopUp
+              isVisible={isExchangeItemPopupVisible}
+              setVisibility={setIsExchangeItemPopupVisible}
             />
           )}
         </div>
