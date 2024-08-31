@@ -57,6 +57,11 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
                 </div>
               </div>
               
+
+              {/* Exchange Item in Heading */}
+              <div className="">
+                <h3 className="text-xl">Exchange Item</h3>
+              </div>
             </div>
           </div>
         </div>
