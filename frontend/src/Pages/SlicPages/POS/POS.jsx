@@ -644,23 +644,6 @@ const POS = () => {
     }
   };
 
-  useEffect(() => {
-    const calculateTotals = () => {
-      let totalNet = 0;
-      let totalVat = 0;
-
-      invoiceData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
-      });
-
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
-      setTotalAmountWithVat(totalNet + totalVat);
-    };
-
-    calculateTotals();
-  }, [invoiceData]);
 
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = async (newData) => {
@@ -671,6 +654,7 @@ const POS = () => {
     // Get the corresponding invoice item to extract the Qty
     console.log(invoiceData[0]?.Qty);
     const Qty = invoiceData[0]?.Qty;
+    // const Qty = 1;
 
     const secondApiBody = {
       filter: {
@@ -712,7 +696,7 @@ const POS = () => {
           ItemPrice: itemPrice,
           VAT: vat,
           Total: total,
-          Qty: Qty, // Ensure Qty is included in the new exchange item
+          Qty: Qty, 
         };
 
         setExchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
@@ -724,6 +708,25 @@ const POS = () => {
       toast.error("Error fetching item prices");
     }
   };
+
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      exchangeData.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+      // console.log(exchangeData)
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [exchangeData]);
 
 
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
@@ -1022,7 +1025,8 @@ const POS = () => {
                     ? invoiceData?.VAT || ""
                     : ""
                 }
-                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
+                disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 placeholder="VAT"
               />
             </div>
@@ -1150,7 +1154,7 @@ const POS = () => {
               </button>
               <div className="overflow-x-auto">
                 <table className="table-auto w-full">
-                  <thead className="bg-secondary text-white">
+                  <thead className="bg-secondary text-white truncate">
                     <tr>
                       <th className="px-4 py-2">SKU</th>
                       <th className="px-4 py-2">Barcode</th>
