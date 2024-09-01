@@ -229,11 +229,11 @@ const POS = () => {
     setSelectedTransactionCode(value ? value : "");
   };
 
-  // useEffect(() => {
-  //   if (selectedLocation?.LOCN_CODE) {
-  //     fetchTransactionCodes();
-  //   }
-  // }, [selectedLocation]);
+  useEffect(() => {
+    if (selectedLocation?.LOCN_CODE) {
+      fetchTransactionCodes();
+    }
+  }, [selectedLocation]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
