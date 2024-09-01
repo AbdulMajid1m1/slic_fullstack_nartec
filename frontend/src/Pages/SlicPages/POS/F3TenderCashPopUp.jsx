@@ -209,7 +209,7 @@ const F3TenderCashPopUp = ({
     <div>
       {isVisible && (
         <div className="popup-overlay z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="popup-container bg-white rounded-lg shadow-lg h-auto sm:w-[70%] w-full">
+          <div className="popup-container bg-white rounded-lg shadow-lg h-auto sm:w-[50%] w-full">
             <div
               className="popup-form w-full"
               style={{ maxHeight: "90vh", overflowY: "auto" }}
@@ -281,7 +281,7 @@ const F3TenderCashPopUp = ({
                 </div>
               </div>
               <div className="p-0 w-full">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   {/* Invoice Form */}
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
                   <div className="border border-gray-300 rounded-lg p-2 bg-gray-50 overflow-x-auto">
@@ -380,7 +380,7 @@ const F3TenderCashPopUp = ({
                       />
                     </div>
                   </div>
-                  <div className="p-1 w-full">
+                  {/* <div className="p-1 w-full">
                     <div
                       onClick={handleCashClick}  
                       className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
@@ -418,7 +418,7 @@ const F3TenderCashPopUp = ({
                       />
                       <p className="">STC Pay</p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

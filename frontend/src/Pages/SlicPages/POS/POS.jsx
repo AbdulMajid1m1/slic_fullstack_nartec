@@ -12,6 +12,7 @@ import QRCode from "qrcode";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
+import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -23,6 +24,19 @@ const POS = () => {
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const handleActionClick = (index) => {
+    setOpenDropdown(openDropdown === index ? null : index);
+  };
+
+  const handleItemClick = (action) => {
+    setOpenDropdown(null);
+    if (action === "exchange") {
+      handleShowExhangeItemPopup();
+    } else if (action === "return") {
+    }
+  };
 
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
@@ -41,7 +55,7 @@ const POS = () => {
       }
     }
   }, []);
-  
+
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
 
@@ -60,17 +74,16 @@ const POS = () => {
 
         // call the second api later in their
         const secondApiBody = {
-          "filter": {
-            "P_COMP_CODE": "SLIC",
-            "P_ITEM_CODE": ItemCode,
-            "P_CUST_CODE": "CL100948",
-              "P_GRADE_CODE_1": ProductSize
+          filter: {
+            P_COMP_CODE: "SLIC",
+            P_ITEM_CODE: ItemCode,
+            P_CUST_CODE: "CL100948",
+            P_GRADE_CODE_1: ProductSize,
           },
-          "M_COMP_CODE": "SLIC",
-          "M_USER_ID":"SYSADMIN",
-          "APICODE": "PRICELIST",
-          "M_LANG_CODE": "ENG"
-
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "PRICELIST",
+          M_LANG_CODE: "ENG",
         };
 
         try {
@@ -84,12 +97,14 @@ const POS = () => {
             }
           );
           const secondApiData = secondApiResponse?.data;
-          console.log(secondApiData)
+          console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
 
-          const itemRates = secondApiData.map(item => item?.PRICELIST?.PLI_RATE);
+          const itemRates = secondApiData.map(
+            (item) => item?.PRICELIST?.PLI_RATE
+          );
           // Store the array of rates under the respective ItemCode
           storedData[ItemCode] = itemRates;
           // storedData[ItemCode] = secondApiData;
@@ -99,44 +114,45 @@ const POS = () => {
             JSON.stringify(storedData)
           );
 
-        // const itemPrice = secondApiData[0].ItemRate?.RATE;
-        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-        // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-        const vat = itemPrice * 0.15;
-        const total = itemPrice + vat;
-        console.log(itemPrice);
+          // const itemPrice = secondApiData[0].ItemRate?.RATE;
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+          const vat = itemPrice * 0.15;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
 
-        setData((prevData) => {
-          const existingItemIndex = prevData.findIndex(
-            (item) => item.Barcode === GTIN
-          );
+          setData((prevData) => {
+            const existingItemIndex = prevData.findIndex(
+              (item) => item.Barcode === GTIN
+            );
 
-          if (existingItemIndex !== -1) {
-            // If the item already exists, just update the Qty and Total
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = {
-              ...updatedData[existingItemIndex],
-              Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
-              Total: (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
-            };
-            return updatedData;
-          } else {
-            // If the item is new, add it to the data array
-            return [
-              ...prevData,
-              {
-                SKU: ItemCode,
-                Barcode: GTIN,
-                Description: EnglishName,
-                ItemSize: ProductSize,
-                Qty: 1,
-                ItemPrice: itemPrice,
-                VAT: vat,
-                Total: total,
-              },
-            ];
-          }
-        });
+            if (existingItemIndex !== -1) {
+              // If the item already exists, just update the Qty and Total
+              const updatedData = [...prevData];
+              updatedData[existingItemIndex] = {
+                ...updatedData[existingItemIndex],
+                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Total:
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+              };
+              return updatedData;
+            } else {
+              // If the item is new, add it to the data array
+              return [
+                ...prevData,
+                {
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: vat,
+                  Total: total,
+                },
+              ];
+            }
+          });
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
@@ -144,9 +160,8 @@ const POS = () => {
           );
         }
         // barcode state empty once response is true
-        setBarcode('');
-      } 
-      else {
+        setBarcode("");
+      } else {
         setData([]);
       }
     } catch (error) {
@@ -156,69 +171,18 @@ const POS = () => {
     }
   };
 
-
-  // // Reset form and data grid when switching sales type
-  // useEffect(() => {
-  //   setData([]); // Clear the data grid
-  //   setBarcode(""); // Clear barcode input
-  //   setSearchInvoiceNumber(""); // Clear invoice input
-  // }, [selectedSalesType]);
-
-
-  const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
-  const [invoiceData, setInvoiceData] = useState([]);
-  const [invoiceDataLoader, setInvoiceDataLoader] = useState('')
-  // Fetch invoice details when searching by invoice number for a sales return
-  const handleGetInvoiceDetails = async (e) => {
-    e.preventDefault();
-    setInvoiceDataLoader(true);
-
-    try {
-      const response = await newRequest.get(
-        `/invoice/v1/headers-and-line-items?InvoiceNo=${searchInvoiceNumber}`
-      );
-      const data = response?.data?.data;
-
-      if (data) {
-        const invoiceDetails = data.invoiceDetails;
-
-        setInvoiceData(invoiceDetails.map(item => {
-          const vat = item.ItemPrice * 0.15;
-          const total = item.ItemPrice + vat;
-          return {
-            SKU: item.ItemSKU,
-            Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
-            Description: item.Remarks || "No description",
-            ItemSize: item.ItemSize,
-            Qty: 1,
-            ItemPrice: item.ItemPrice,
-            VAT: vat,
-            Total: total,
-          };
-        }));
-      } else {
-        setInvoiceData([]);
-      }
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "An error occurred");
-    } finally {
-      setInvoiceDataLoader(false);
-    }
-  };
-
-
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
     // if (!isCreatePopupVisible) {
-    if (!data || data.length === 0) {
-      toast.warning(
-        "The datagrid is empty. Please ensure data is available before proceeding."
-      );
-    } else {
+    // if (!data || data.length === 0) {
+    //   toast.warning(
+    //     "The datagrid is empty. Please ensure data is available before proceeding."
+    //   );
+    // } else {
       setStoreDatagridData([...data]);
       setCreatePopupVisibility(true);
-    }
+    // }
   };
 
   const [apiResponse, setApiResponse] = useState(null);
@@ -229,9 +193,16 @@ const POS = () => {
     setIsOpenOtpPopupVisible(true);
   };
 
-  const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] = useState(false);
+  const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] =
+    useState(false);
   const handleShowExhangeItemPopup = () => {
     setIsExchangeItemPopupVisible(true);
+  };
+
+  const [isConfirmTransactionPopupVisible, setIsConfirmTransactionPopupVisible] =
+    useState(false);
+  const handleShowConfirmTransactionPopup = () => {
+    setIsConfirmTransactionPopupVisible(true);
   };
 
   const handleClearData = () => {
@@ -243,7 +214,9 @@ const POS = () => {
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const fetchTransactionCodes = async () => {
     try {
-      const response = await newRequest.get(`/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`);
+      const response = await newRequest.get(
+        `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      );
       // console.log(response.data?.data);
       setTransactionCodes(response.data?.data);
     } catch (err) {
@@ -254,13 +227,13 @@ const POS = () => {
 
   const handleTransactionCodes = (event, value) => {
     setSelectedTransactionCode(value ? value : "");
-};
+  };
 
-  useEffect(() => {
-    if (selectedLocation?.LOCN_CODE) {
-      fetchTransactionCodes();
-    }
-  }, [selectedLocation]);
+  // useEffect(() => {
+  //   if (selectedLocation?.LOCN_CODE) {
+  //     fetchTransactionCodes();
+  //   }
+  // }, [selectedLocation]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -285,7 +258,6 @@ const POS = () => {
     // fetchTransactionCodes();
     fetchCustomerNames();
   }, []);
-
 
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
@@ -318,7 +290,7 @@ const POS = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Invoice generation api 
+  // Invoice generation api
   const [netWithVat, setNetWithVat] = useState("");
   const [totalVat, setTotalVat] = useState("");
   const [invoiceLoader, setInvoiceLoader] = useState(false);
@@ -350,7 +322,10 @@ const POS = () => {
       setInvoiceLoader(false);
     } catch (err) {
       // console.log(err);
-      toast.error(err?.response?.data?.errors[0] || "An error occurred while generating the invoice");
+      toast.error(
+        err?.response?.data?.errors[0] ||
+          "An error occurred while generating the invoice"
+      );
       setInvoiceLoader(false);
     }
   };
@@ -547,7 +522,7 @@ const POS = () => {
                   <td>${item.SKU}</td>
                   <td>${item.Qty}</td>
                   <td>${item.ItemPrice}</td>
-                  <td>${(item.ItemPrice * item.Qty)}</td>
+                  <td>${item.ItemPrice * item.Qty}</td>
                 </tr>
               `
                 )
@@ -602,17 +577,154 @@ const POS = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
       // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
       // Generate the QR code using the `qrcode` library
-      QRCode.toCanvas(qrCodeCanvas, qrCodeData, { width: 380 }, function (error) {
-        if (error) console.error(error);
-        else {
-          // Trigger the print dialog after the QR code is rendered
-          printWindow.print();
-          printWindow.close();
+      QRCode.toCanvas(
+        qrCodeCanvas,
+        qrCodeData,
+        { width: 380 },
+        function (error) {
+          if (error) console.error(error);
+          else {
+            // Trigger the print dialog after the QR code is rendered
+            printWindow.print();
+            printWindow.close();
+          }
         }
-      });
+      );
 
       // console.log(qrCodeData);
     };
+  };
+
+  const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
+  const [invoiceData, setInvoiceData] = useState([]);
+  const [invoiceHeaderData, setInvoiceHeaderData] = useState([]);
+  const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
+  // Fetch invoice details when searching by invoice number for a sales return
+  const handleGetInvoiceDetails = async (e) => {
+    e.preventDefault();
+    setInvoiceDataLoader(true);
+
+    try {
+      const response = await newRequest.get(
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${searchInvoiceNumber}`
+      );
+      const data = response?.data?.data;
+      setInvoiceHeaderData(data);
+      // console.log(data)
+      if (data) {
+        const invoiceDetails = data.invoiceDetails;
+
+        setInvoiceData(
+          invoiceDetails.map((item) => {
+            const vat = item.ItemPrice * 0.15;
+            const total = item.ItemPrice + vat;
+            return {
+              SKU: item.ItemSKU,
+              Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
+              Description: item.Remarks || "No description",
+              ItemSize: item.ItemSize,
+              Qty: item?.ItemQry || 10,
+              ItemPrice: item.ItemPrice,
+              VAT: vat,
+              Total: total,
+            };
+          })
+        );
+      } else {
+        setInvoiceData([]);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+    } finally {
+      setInvoiceDataLoader(false);
+    }
+  };
+
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      invoiceData.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [invoiceData]);
+
+  const [exchangeData, setExchangeData] = useState([]);
+  const addExchangeData = async (newData) => {
+    console.log(exchangeData);
+    // Extract necessary data from newData
+    const { ItemCode, ItemSize } = newData;
+
+    // Get the corresponding invoice item to extract the Qty
+    console.log(invoiceData[0]?.Qty);
+    const Qty = invoiceData[0]?.Qty;
+
+    const secondApiBody = {
+      filter: {
+        P_COMP_CODE: "SLIC",
+        P_ITEM_CODE: ItemCode,
+        P_CUST_CODE: "CL100948",
+        P_GRADE_CODE_1: ItemSize,
+      },
+      M_COMP_CODE: "SLIC",
+      M_USER_ID: "SYSADMIN",
+      APICODE: "PRICELIST",
+      M_LANG_CODE: "ENG",
+    };
+
+    try {
+      const secondApiResponse = await ErpTeamRequest.post(
+        "/slicuat05api/v1/getApi",
+        secondApiBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (secondApiResponse?.data) {
+        const secondApiData = secondApiResponse.data;
+        console.log("second Exhcnage", secondApiData);
+        const itemRates = secondApiData.map(
+          (item) => item?.PRICELIST?.PLI_RATE
+        );
+        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+        const vat = itemPrice * 0.15;
+        const total = itemPrice * Qty + vat; // Multiply by Qty for the total
+
+        // Insert the new item into exchangeData only if the API call is successful
+        const newExchangeItem = {
+          ...newData,
+          ItemPrice: itemPrice,
+          VAT: vat,
+          Total: total,
+          Qty: Qty, // Ensure Qty is included in the new exchange item
+        };
+
+        setExchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
+      } else {
+        throw new Error("Failed to retrieve item prices");
+      }
+    } catch (error) {
+      console.error("Error fetching item prices:", error);
+      toast.error("Error fetching item prices");
+    }
+  };
+
+
+  const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
+  const handleSelectionsSaved = () => {
+    setIsTenderCashEnabled(true); // Enable the Tender Cash button
   };
 
   return (
@@ -646,14 +758,21 @@ const POS = () => {
               <Autocomplete
                 id="transactionId"
                 options={transactionCodes}
-                getOptionLabel={(option) => 
-                  option && option.TXN_CODE && option.TXN_NAME 
-                    ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
-                    : ''
+                getOptionLabel={(option) =>
+                  option && option.TXN_CODE && option.TXN_NAME
+                    ? `${option.TXN_CODE} - ${option.TXN_NAME}`
+                    : ""
                 }
                 onChange={handleTransactionCodes}
                 // value={selectedTransactionCode}
-                value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.TransactionCode || ""
+                    : transactionCodes.find(
+                        (option) =>
+                          option.TXN_CODE === selectedTransactionCode?.TXN_CODE
+                      ) || null
+                }
                 isOptionEqualToValue={(option, value) =>
                   option?.TXN_CODE === value?.TXN_CODE
                 }
@@ -705,7 +824,11 @@ const POS = () => {
               <label className="block text-gray-700">Sales Locations *</label>
               <input
                 className="w-full mt-1 p-2 border rounded border-gray-400"
-                value={selectedLocation?.LOCN_NAME}
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.SalesLocationCode || ""
+                    : selectedLocation?.LOCN_NAME
+                }
                 readOnly
               />
             </div>
@@ -713,10 +836,13 @@ const POS = () => {
               <label className="block text-gray-700">Invoice #</label>
               <input
                 type="text"
-                value={invoiceNumber}
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.InvoiceNo || ""
+                    : invoiceNumber
+                }
                 className="w-full mt-1 p-2 border rounded border-gray-400"
-                placeholder="Invoice"
-                // readOnly
+                readOnly
               />
             </div>
           </div>
@@ -727,10 +853,10 @@ const POS = () => {
                 id="field1"
                 options={searchCustomerName}
                 // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                getOptionLabel={(option) => 
-                  option && option.CUST_CODE && option.CUST_NAME 
-                    ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
-                    : ''
+                getOptionLabel={(option) =>
+                  option && option.CUST_CODE && option.CUST_NAME
+                    ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                    : ""
                 }
                 onChange={handleSearchCustomerName}
                 value={
@@ -777,8 +903,14 @@ const POS = () => {
               <label className="block text-gray-700">Delivery *</label>
               <input
                 type="text"
-                value={selectedLocation?.LOCN_NAME}
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.DeliveryLocationCode ||
+                      ""
+                    : selectedLocation?.LOCN_NAME || ""
+                }
                 className="w-full mt-1 p-2 border rounded border-gray-400"
+                readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
             <div>
@@ -788,7 +920,12 @@ const POS = () => {
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Walk-in customer"
-                value={customerName}
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.CustomerCode || ""
+                    : customerName
+                }
+                readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
             <div>
@@ -819,7 +956,10 @@ const POS = () => {
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleGetInvoiceDetails} className="flex items-center">
+              <form
+                onSubmit={handleGetInvoiceDetails}
+                className="flex items-center"
+              >
                 <div className="w-full">
                   <label className="block text-gray-700">Scan Invoice</label>
                   <input
@@ -843,6 +983,11 @@ const POS = () => {
               <label className="block text-gray-700">Remarks *</label>
               <input
                 type="text"
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
+                    : ""
+                }
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Remarks"
               />
@@ -857,134 +1002,189 @@ const POS = () => {
               <label className="block text-gray-700">VAT #</label>
               <input
                 type="text"
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceData?.VAT || ""
+                    : ""
+                }
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="VAT"
               />
             </div>
           </div>
-        <div className="mt-10 overflow-x-auto">
-            <table className="table-auto w-full">
-              <thead className="bg-secondary text-white">
-                <tr>
-                  <th className="px-4 py-2">SKU</th>
-                  <th className="px-4 py-2">Barcode</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="px-4 py-2">Item Size</th>
-                  <th className="px-4 py-2">Qty</th>
-                  <th className="px-4 py-2">Item Price</th>
-                  <th className="px-4 py-2">VAT (15%)</th>
-                  <th className="px-4 py-2">Total</th>
-                  <th className="px-4 py-2">Action</th>
-                </tr>
-              </thead>
-              {isLoading ? (
-                <tr>
-                  <td colSpan="10" className="text-center py-4">
-                    <div className="flex justify-center items-center w-full h-full">
-                      <CircularProgress size={24} color="inherit" />
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <tbody>
-                  {data.map((row, index) => (
-                    <tr key={index} className="bg-gray-100">
-                      <td className="border px-4 py-2">{row.SKU}</td>
-                      <td className="border px-4 py-2">{row.Barcode}</td>
-                      <td className="border px-4 py-2">{row.Description}</td>
-                      <td className="border px-4 py-2">{row.ItemSize}</td>
-                      <td className="border px-4 py-2">{row.Qty}</td>
-                      <td className="border px-4 py-2">
-                        {row.ItemPrice}
-                      </td>
-                      <td className="border px-4 py-2">{row.VAT}</td>
-                      <td className="border px-4 py-2">
-                        {row.Total}
-                      </td>
-                      <td className="border px-4 py-2 text-center">
-                        <button
-                          onClick={handleShowExhangeItemPopup}
-                          className="bg-gray-300 text-green-600 px-2 py-1 text-sm truncate font-bold transform hover:scale-95"
-                        >
-                          Exchange Item
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-          </div>
-        
-        {selectedSalesType === "DIRECT SALES RETURN" && (
-          <div className="mt-10">
-            <button className="py-2 px-6 bg-gray-300 rounded-md">Exchange Item</button>
-          </div>
-        )}
+          {selectedSalesType === "DIRECT SALES INVOICE" && (
+            <div className="mt-10 overflow-x-auto">
+              <table className="table-auto w-full">
+                <thead className="bg-secondary text-white">
+                  <tr>
+                    <th className="px-4 py-2">SKU</th>
+                    <th className="px-4 py-2">Barcode</th>
+                    <th className="px-4 py-2">Description</th>
+                    <th className="px-4 py-2">Item Size</th>
+                    <th className="px-4 py-2">Qty</th>
+                    <th className="px-4 py-2">Item Price</th>
+                    <th className="px-4 py-2">VAT (15%)</th>
+                    <th className="px-4 py-2">Total</th>
+                    <th className="px-4 py-2">Action</th>
+                  </tr>
+                </thead>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="10" className="text-center py-4">
+                      <div className="flex justify-center items-center w-full h-full">
+                        <CircularProgress size={24} color="inherit" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tbody>
+                    {data.map((row, index) => (
+                      <tr key={index} className="bg-gray-100">
+                        <td className="border px-4 py-2">{row.SKU}</td>
+                        <td className="border px-4 py-2">{row.Barcode}</td>
+                        <td className="border px-4 py-2">{row.Description}</td>
+                        <td className="border px-4 py-2">{row.ItemSize}</td>
+                        <td className="border px-4 py-2">{row.Qty}</td>
+                        <td className="border px-4 py-2">{row.ItemPrice}</td>
+                        <td className="border px-4 py-2">{row.VAT}</td>
+                        <td className="border px-4 py-2">{row.Total}</td>
+                        <td></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
+              </table>
+            </div>
+          )}
 
-        {selectedSalesType === "DIRECT SALES RETURN" && (
-          <div>
-            <table className="table-auto w-full">
-              <thead className="bg-secondary text-white">
-                <tr>
-                  <th className="px-4 py-2">SKU</th>
-                  <th className="px-4 py-2">Barcode</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="px-4 py-2">Item Size</th>
-                  <th className="px-4 py-2">Qty</th>
-                  <th className="px-4 py-2">Item Price</th>
-                  <th className="px-4 py-2">VAT (15%)</th>
-                  <th className="px-4 py-2">Total</th>
-                  <th className="px-4 py-2">Action</th>
-                </tr>
-              </thead>
-              {invoiceDataLoader ? (
-                <tr>
-                  <td colSpan="10" className="text-center py-4">
-                    <div className="flex justify-center items-center w-full h-full">
-                      <CircularProgress size={24} color="inherit" />
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <tbody>
-                  {/* Render your data rows here */}
-                  {invoiceData.map((row, index) => (
-                    <tr key={index} className="bg-gray-100">
-                      <td className="border px-4 py-2">{row.SKU}</td>
-                      <td className="border px-4 py-2">{row.Barcode}</td>
-                      <td className="border px-4 py-2">{row.Description}</td>
-                      <td className="border px-4 py-2">{row.ItemSize}</td>
-                      <td className="border px-4 py-2">{row.Qty}</td>
-                      <td className="border px-4 py-2">
-                        {row.ItemPrice}
-                      </td>
-                      <td className="border px-4 py-2">{row.VAT}</td>
-                      <td className="border px-4 py-2">
-                        {row.Total}
-                      </td>
-                      {/* <td className="border px-4 py-2 text-center">
-                        <button
-                          onClick={handleShowExhangeItemPopup}
-                          className="bg-gray-300 text-green-600 px-4 py-1 font-bold transform hover:scale-95"
-                        >
-                          Exchange Item
-                        </button>
-                      </td> */}
+          {selectedSalesType === "DIRECT SALES RETURN" && (
+            <div>
+              <table className="table-auto w-full text-center">
+                <thead className="bg-secondary text-white">
+                  <tr>
+                    <th className="px-4 py-2">SKU</th>
+                    <th className="px-4 py-2">Invoice No</th>
+                    <th className="px-4 py-2">Description</th>
+                    <th className="px-4 py-2">Item Size</th>
+                    <th className="px-4 py-2">Qty</th>
+                    <th className="px-4 py-2">Item Price</th>
+                    <th className="px-4 py-2">VAT (15%)</th>
+                    <th className="px-4 py-2">Total</th>
+                    <th className="px-4 py-2">Action</th>
+                  </tr>
+                </thead>
+                {invoiceDataLoader ? (
+                  <tr>
+                    <td colSpan="10" className="text-center py-4">
+                      <div className="flex justify-center items-center w-full h-full">
+                        <CircularProgress size={24} color="inherit" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tbody>
+                    {invoiceData.map((row, index) => (
+                      <tr key={index} className="bg-gray-100">
+                        <td className="border px-4 py-2">{row.SKU}</td>
+                        <td className="border px-4 py-2">{row.Barcode}</td>
+                        <td className="border px-4 py-2">{row.Description}</td>
+                        <td className="border px-4 py-2">{row.ItemSize}</td>
+                        <td className="border px-4 py-2">{row.Qty}</td>
+                        <td className="border px-4 py-2">{row.ItemPrice}</td>
+                        <td className="border px-4 py-2">{row.VAT}</td>
+                        <td className="border px-4 py-2">{row.Total}</td>
+                        <td className="border px-4 py-2 text-center relative">
+                          <button
+                            onClick={() => handleActionClick(index)}
+                            className="bg-blue-500 text-white px-4 py-2 font-bold transform hover:scale-95"
+                          >
+                            Actions
+                          </button>
+                          {openDropdown === index && (
+                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
+                              <ul>
+                                <li
+                                  onClick={() => handleItemClick("exchange")}
+                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                                >
+                                  Exchange Item
+                                </li>
+                                <li
+                                  onClick={() => handleItemClick("return")}
+                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                                >
+                                  Return
+                                </li>
+                              </ul>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                )}
+              </table>
+            </div>
+          )}
+
+          {/* exchenage datagrid */}
+          {exchangeData.length > 0 && (
+            <div className="mt-10">
+              <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
+                Exchange Items
+              </button>
+              <div className="overflow-x-auto">
+                <table className="table-auto w-full">
+                  <thead className="bg-secondary text-white">
+                    <tr>
+                      <th className="px-4 py-2">SKU</th>
+                      <th className="px-4 py-2">Barcode</th>
+                      <th className="px-4 py-2">Description</th>
+                      <th className="px-4 py-2">Item Size</th>
+                      <th className="px-4 py-2">Qty</th>
+                      <th className="px-4 py-2">Item Price</th>
+                      <th className="px-4 py-2">VAT (15%)</th>
+                      <th className="px-4 py-2">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-          </div>
-        )}
+                  </thead>
+                  <tbody>
+                    {exchangeData?.map((item, index) => (
+                      <tr key={index} className="bg-gray-100">
+                        <td className="border px-4 py-2">
+                          {item.ItemCode || ""}
+                        </td>
+                        <td className="border px-4 py-2">{item.GTIN}</td>
+                        <td className="border px-4 py-2">{item.Description}</td>
+                        <td className="border px-4 py-2">{item.ItemSize}</td>
+                        <td className="border px-4 py-2">{item?.Qty}</td>
+                        <td className="border px-4 py-2">{item.ItemPrice}</td>
+                        <td className="border px-4 py-2">{item.VAT}</td>
+                        <td className="border px-4 py-2">{item.Total}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
+                <button
+                  onClick={handleShowConfirmTransactionPopup}
+                  className="bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
+                >
+                  Confirm Transactions
+                </button>
                 <button
                   onClick={handleShowCreatePopup}
-                  className="bg-red-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
+                  className={`${
+                    isTenderCashEnabled
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-gray-400 cursor-not-allowed"
+                  } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
+                  disabled={!isTenderCashEnabled}
                 >
                   F3 - Tender Cash
                 </button>
@@ -1058,6 +1258,15 @@ const POS = () => {
             <ExchangeItemPopUp
               isVisible={isExchangeItemPopupVisible}
               setVisibility={setIsExchangeItemPopupVisible}
+              addExchangeData={addExchangeData}
+            />
+          )}
+
+          {isConfirmTransactionPopupVisible && (
+            <ConfirmTransactionPopUp
+              isVisible={isConfirmTransactionPopupVisible}
+              setVisibility={setIsConfirmTransactionPopupVisible}
+              onSelectionsSaved={handleSelectionsSaved}
             />
           )}
         </div>
