@@ -54,15 +54,15 @@ const App = () => {
                   }
                 />
                 {/* <Route path="user-profile" element={<UserProfile />} /> */}
-                {/* <Route
+                <Route
                   path="pos"
                   element={
                     <ProtectedRoute requiredRoles="point_of_sale">
                       <POS />
                     </ProtectedRoute>
                   }
-                /> */}
-                <Route path="pos" element={<POS />} />
+                />
+                {/* <Route path="pos" element={<POS />} /> */}
                 <Route path="pos-history" element={<PosHistory />} />
                 <Route
                   path="purchase-order"
