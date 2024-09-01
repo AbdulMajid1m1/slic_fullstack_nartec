@@ -623,7 +623,7 @@ const POS = () => {
               Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
               Description: item.Remarks || "No description",
               ItemSize: item.ItemSize,
-              Qty: item?.ItemQry || 10,
+              Qty: item?.ItemQry,
               ItemPrice: item.ItemPrice,
               VAT: vat,
               Total: total,
