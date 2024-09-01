@@ -1,62 +1,70 @@
-import { Autocomplete, Button, CircularProgress, TextField } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  CircularProgress,
+  TextField,
+} from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { toast } from "react-toastify";
 
-const ConfirmTransactionPopUp = ({ isVisible, setVisibility, onSelectionsSaved }) => {
-    const [loading, setLoading] = useState(false);
-    const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
-    
-    
+const ConfirmTransactionPopUp = ({
+  isVisible,
+  setVisibility,
+  onSelectionsSaved,
+}) => {
+  const [loading, setLoading] = useState(false);
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
+
   const [locations, setLocations] = useState([]);
   const [selectedPaymentModels, setSelectedPaymentModels] = useState(null);
   const getAllPaymentsModels = async () => {
-      try {
+    try {
       const res = await ErpTeamRequest.post(
         "/slicuat05api/v1/getApi",
         {
-            "filter": {},
-            "M_COMP_CODE": "SLIC",
-            "M_USER_ID": "SYSADMIN",
-            "APICODE": "ZATCAPAYMENTMODE",
-            "M_LANG_CODE": "ENG"
+          filter: {},
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "ZATCAPAYMENTMODE",
+          M_LANG_CODE: "ENG",
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
-    );
+      );
       // Assuming the response structure is similar to what you provided
       const paymentModes = res.data.map((item) => ({
-          code: item.ZATCAPAYMENTMODE.VSSV_CODE,
-          name: item.ZATCAPAYMENTMODE.VSSV_NAME,
-        }));
-  
+        code: item.ZATCAPAYMENTMODE.VSSV_CODE,
+        name: item.ZATCAPAYMENTMODE.VSSV_NAME,
+      }));
+
       setLocations(paymentModes);
     } catch (error) {
       console.log(error);
       toast.error(
-          error?.response?.data?.error ||
+        error?.response?.data?.error ||
           error?.response?.data?.message ||
-        "Something went wrong!"
+          "Something went wrong!"
       );
     }
-};
+  };
 
-const [examptionsTypes, setExamptionsTypes] = useState([]);
-const [selectedExamption, setSelectedExamption] = useState(null);
+  const [examptionsTypes, setExamptionsTypes] = useState([]);
+  const [selectedExamption, setSelectedExamption] = useState(null);
 
-const getAllExamptions = async () => {
+  const getAllExamptions = async () => {
     try {
       const res = await ErpTeamRequest.post(
         "/slicuat05api/v1/getApi",
         {
-          "filter": {},
-          "M_COMP_CODE": "SLIC",
-          "M_USER_ID": "SYSADMIN",
-          "APICODE": "TAXEXEMPTIONREASON",
-          "M_LANG_CODE": "ENG"
+          filter: {},
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "TAXEXEMPTIONREASON",
+          M_LANG_CODE: "ENG",
         },
         {
           headers: {
@@ -75,21 +83,19 @@ const getAllExamptions = async () => {
       console.log(error);
       toast.error(
         error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        "Something went wrong!"
+          error?.response?.data?.message ||
+          "Something went wrong!"
       );
     }
   };
 
-
-useEffect(() => {
+  useEffect(() => {
     getAllPaymentsModels();
     getAllExamptions();
   }, []);
-  
-  
+
   const handlePaymentModelsChange = (e) => {
-      const selectedPaymentMode = locations.find(
+    const selectedPaymentMode = locations.find(
       (location) => `${location.code} - ${location.name}` === e.target.value
     );
     setSelectedPaymentModels(selectedPaymentMode);
@@ -101,33 +107,30 @@ useEffect(() => {
     }
   };
 
-
   const handleExamptionsTypesChange = (event, value) => {
     setSelectedExamption(value);
     if (value) {
-      sessionStorage.setItem(
-        "selectedExamptionReason",
-        JSON.stringify(value)
-      );
+      sessionStorage.setItem("selectedExamptionReason", JSON.stringify(value));
     }
   };
 
-//   useEffect(() => {
-//     if (selectedPaymentModels) {
-//       console.log(selectedPaymentModels);
-//     }
-//   }, [selectedPaymentModels]);
+  //   useEffect(() => {
+  //     if (selectedPaymentModels) {
+  //       console.log(selectedPaymentModels);
+  //     }
+  //   }, [selectedPaymentModels]);
 
-//   useEffect(() => {
-//     if (selectedExamption) {
-//       console.log(selectedExamption);
-//     }
-//   }, [selectedExamption]);
-
+  //   useEffect(() => {
+  //     if (selectedExamption) {
+  //       console.log(selectedExamption);
+  //     }
+  //   }, [selectedExamption]);
 
   const handleConfirm = () => {
     if (!selectedPaymentModels || !selectedExamption) {
-      toast.error("Please select both Payment Mode and Exemption Reason before confirming.");
+      toast.error(
+        "Please select both Payment Mode and Exemption Reason before confirming."
+      );
       return;
     }
     // else close the popup and save the value in sessiotns
@@ -139,11 +142,9 @@ useEffect(() => {
     }, 1000);
   };
 
-
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
-
 
   return (
     <div>
@@ -160,7 +161,10 @@ useEffect(() => {
                     Confirm Transactions
                   </h2>
                   <div className="flex items-center space-x-3">
-                    <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -168,10 +172,18 @@ useEffect(() => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 14H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 14H4"
+                        />
                       </svg>
                     </button>
-                    <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -179,10 +191,18 @@ useEffect(() => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4h16v16H4z"
+                        />
                       </svg>
                     </button>
-                    <button className="text-white hover:text-red-600 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-red-600 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -190,7 +210,12 @@ useEffect(() => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -199,52 +224,54 @@ useEffect(() => {
               <div className="w-full overflow-y-auto">
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-
                     {/* dropdown */}
                     <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
-                          Start Size
-                        </label>
-                        <select
-                          id="locations"
-                          onChange={handlePaymentModelsChange}
-                          className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
-                        >
-                          <option value="" disabled>
-                            Select Payment Mode
+                      <label htmlFor="startsize" className={`text-secondary`}>
+                        Payment Mode
+                      </label>
+                      <select
+                        id="locations"
+                        onChange={handlePaymentModelsChange}
+                        className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
+                      >
+                        <option value="" disabled>
+                          Select Payment Mode
+                        </option>
+                        {locations.map((location) => (
+                          <option key={location.code}>
+                            {location.code} - {location.name}
                           </option>
-                            {locations.map((location) => (
-                            <option key={location.code}>{location.code} - {location.name}</option>
-                            ))}
-                        </select>
-                      </div>
+                        ))}
+                      </select>
+                    </div>
 
+                    <div className="w-full font-body sm:text-base text-sm flex flex-col mt-6">
+                      <label htmlFor="SelectRoles" className={`text-secondary`}>
+                        Tax Exemption Reason
+                      </label>
+                      <Autocomplete
+                        id="SelectRoles"
+                        options={examptionsTypes}
+                        getOptionLabel={(option) =>
+                          option ? `${option.code} - ${option.name}` : ""
+                        }
+                        value={selectedExamption}
+                        onChange={handleExamptionsTypesChange}
+                        filterSelectedOptions
+                        renderInput={(params) => (
+                          <TextField
+                            autoComplete="off"
+                            {...params}
+                            label={"Select Reasons"}
+                            placeholder={"Select Roles"}
+                            variant="outlined"
+                          />
+                        )}
+                        required
+                      />
+                    </div>
 
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col mt-6">
-                        <label htmlFor="SelectRoles" className={`text-secondary`}>
-                          Examptions Reasons
-                        </label>
-                        <Autocomplete
-                            id='SelectRoles'
-                            options={examptionsTypes}
-                            getOptionLabel={(option) => option ? `${option.code} - ${option.name}` : ""}
-                            value={selectedExamption}
-                            onChange={handleExamptionsTypesChange}
-                            filterSelectedOptions
-                            renderInput={(params) => (
-                            <TextField
-                                autoComplete="off"
-                                {...params}
-                                label={'Select Reasons'}
-                                placeholder={'Select Roles'}
-                                variant='outlined'
-                            />
-                            )}
-                            required
-                        />
-                      </div>
-
-                      <div className="mt-5">
+                    <div className="mt-5">
                       <Button
                         variant="contained"
                         style={{ backgroundColor: "#021F69", color: "#ffffff" }}
@@ -254,9 +281,7 @@ useEffect(() => {
                         endIcon={
                           loading ? (
                             <CircularProgress size={24} color="inherit" />
-                          ) : (
-                            null
-                          )
+                          ) : null
                         }
                       >
                         Confirm
