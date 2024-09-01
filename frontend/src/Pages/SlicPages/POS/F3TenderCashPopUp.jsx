@@ -147,63 +147,30 @@ const F3TenderCashPopUp = ({
 
 
   // Cards Calcultaion Logic Code 
-  const [cashAmount, setCashAmount] = useState('');
-  const [creditAmount, setCreditAmount] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');
-  const [changeAmount, setChangeAmount] = useState('');
-  const [selectedCard, setSelectedCard] = useState("");
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
-  const cashInputRef = useRef(null); 
-  const creditInputRef = useRef(null); 
   const grossAmount = totalAmountWithVat;
 
-  const handleCashClick = () => {
-    setSelectedCard("cash");
-    setTimeout(() => {
-      if (cashInputRef.current) {
-        cashInputRef.current.focus();
-      }
-    }, 100);
-  };
 
-  const handleCreditClick = () => {
-    setSelectedCard("credit");
-    setTimeout(() => {
-      if (creditInputRef.current) {
-        creditInputRef.current.focus();
-      }
-    }, 100);
-  };
 
-  const handleStcPayClick = () => {
-    setSelectedCard("stcpay"); // Set the selected card to stcpay
-    setTimeout(() => {
-      if (creditInputRef.current) {
-        creditInputRef.current.focus();
-      }
-    }, 100);
-  };
+  const PaymentModels = sessionStorage.getItem("selectedPaymentModels");
+  const paymentModes = JSON.parse(PaymentModels);
+  const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
+  const examptReason = JSON.parse(ExamptionReason);
 
-  const handleCashChange = (e) => {
-    const value = parseFloat(e.target.value) || 0;
-    setCashAmount(value);
-    calculateTotalAndChange(value, creditAmount);
-  };
+  // console.log("PaymentModels", PaymentModels);
+  // console.log("ExamptionReason", ExamptionReason);
 
-  const handleCreditChange = (e) => {
-    const value = parseFloat(e.target.value) || 0;
-    setCreditAmount(value);
-    calculateTotalAndChange(cashAmount, value);
-  };
+  useEffect(() => {
+    if(PaymentModels) {
+      console.log(paymentModes);
+    }
+  }, [PaymentModels]);
 
-  const calculateTotalAndChange = (cash, credit) => {
-    const total = cash + credit;
-    setTotalAmount(total);
-    setChangeAmount(total - grossAmount);
-
-    // Enable the print button if total amount is equal to or greater than the gross amount
-    setIsPrintEnabled(total >= grossAmount);
-  };
+  useEffect(() => {
+    if(ExamptionReason) {
+      console.log(examptReason);
+    }
+  }, [ExamptionReason]);
 
   return (
     <div>
@@ -316,11 +283,12 @@ const F3TenderCashPopUp = ({
                       <Button
                         variant="contained"
                         style={{
-                          backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3", // Change color based on enabled/disabled state
-                          color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
+                          backgroundColor: "#021F69", // Change color based on enabled/disabled state
+                        //   backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3", // Change color based on enabled/disabled state
+                        //   // color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
                         }}
                         type="submit"
-                        disabled={!isPrintEnabled || loading}
+                        // disabled={!isPrintEnabled || loading}
                         className="sm:w-[70%] w-full ml-2"
                         endIcon={
                           loading ? (
@@ -338,23 +306,19 @@ const F3TenderCashPopUp = ({
                       <div className="mb-4">
                         <p className="font-semibold text-sm">Cash Amount</p>
                         <input
-                          ref={cashInputRef}
-                          type="number"
+                          type="text"
+                          value={`${paymentModes.code} - ${paymentModes.name}`}
                           className="w-full border border-gray-300 px-2 py-3 rounded-md"
                           placeholder="Enter Cash Amount"
-                          onChange={handleCashChange}
-                          value={cashAmount}
                         />
                       </div>
                       <div className="mb-4">
                         <p className="font-semibold text-sm">Credit Amount</p>
                         <input
-                          ref={creditInputRef}
-                          type="number"
+                          type="text"
+                          value={`${examptReason.code} - ${examptReason.name}`} 
                           className="w-full border border-gray-300 px-2 py-3 rounded-md"
                           placeholder="Enter Credit Amount"
-                          onChange={handleCreditChange}
-                          value={creditAmount}
                         />
                       </div>
                     </div>
@@ -364,8 +328,6 @@ const F3TenderCashPopUp = ({
                         type="text"
                         className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
                         placeholder="Total Amount"
-                        value={totalAmount}
-                        readOnly
                       />
                     </div>
 
@@ -375,8 +337,6 @@ const F3TenderCashPopUp = ({
                         type="text"
                         className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
                         placeholder="Change"
-                        value={changeAmount}
-                        readOnly
                       />
                     </div>
                   </div>

@@ -5,10 +5,13 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    console.log("Selected Row Data" , selectedRowData);
+  }, [selectedRowData]);
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
@@ -23,7 +26,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
       const data = response?.data?.data;
       console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName, ItemQty } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -69,7 +72,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
               Barcode: GTIN,
               Description: EnglishName,
               ItemSize: ProductSize,
-              Qty: ItemQty,
+              Qty: selectedRowData.Qty,
               ItemPrice: itemPrice,
               ModelName: ModelName,
               VAT: vat,
@@ -94,36 +97,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
   };
 
 
-  // const handleExchangeItems = async () => {
-  //   if (data.length === 0) {
-  //     toast.error("Please scan a barcode first Because data is empty");
-  //     return;
-  //   }
-  //   // console.log(data)
-  //   try {
-  //     const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
-  //       "EnglishName": data[0]?.Description,
-  //       "GTIN": data[0]?.Barcode,
-  //       "ModelName": data[0]?.ModelName,
-  //       // "ModelName": "Model X200",
-  //       "ProductSize": data[0]?.ItemSize
-  //      }
-  //     )
-  //     console.log(res?.data);
-  //     toast.success(res?.data?.message || "Exchange Invoice created successfully");
-
-
-  //     // Add the exchange data to POS component
-  //     addExchangeData(res?.data?.data);
-      
-  //     handleCloseCreatePopup();
-  //   } catch (err) {
-  //     console.log(err);
-  //     toast.error(err?.response?.data?.message || "Something went wrong");
-  //   }
-  // };
-  
-
   const handleExchangeItems = async () => {
     if (data.length === 0) {
       toast.error("Please scan a barcode first because data is empty");
@@ -131,7 +104,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
     }
   
     const item = data[0]; // Assuming you are dealing with a single item at a time
-    console.log(item);
+    // console.log(item);
     
     // If stock is available, call the STOCK STATUS API
     const stockStatusBody = {
