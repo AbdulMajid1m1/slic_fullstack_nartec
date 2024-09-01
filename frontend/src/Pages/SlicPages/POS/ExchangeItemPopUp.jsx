@@ -5,7 +5,7 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -21,9 +21,9 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      
+      console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName, ItemQty } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -59,39 +59,23 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
         // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
         const vat = itemPrice * 0.15;
         const total = itemPrice + vat;
-        console.log(itemPrice);
+        // console.log(itemPrice);
 
         setData((prevData) => {
-          const existingItemIndex = prevData.findIndex(
-            (item) => item.Barcode === GTIN
-          );
-
-          if (existingItemIndex !== -1) {
-            // If the item already exists, just update the Qty and Total
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = {
-              ...updatedData[existingItemIndex],
-              Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
-              Total: (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
-            };
-            return updatedData;
-          } else {
-            // If the item is new, add it to the data array
-            return [
-              ...prevData,
-              {
-                SKU: ItemCode,
-                Barcode: GTIN,
-                Description: EnglishName,
-                ItemSize: ProductSize,
-                Qty: 1,
-                ItemPrice: itemPrice,
-                ModelName: ModelName,
-                VAT: vat,
-                Total: total,
-              },
-            ];
-          }
+          return [
+            ...prevData,
+            {
+              SKU: ItemCode,
+              Barcode: GTIN,
+              Description: EnglishName,
+              ItemSize: ProductSize,
+              Qty: ItemQty,
+              ItemPrice: itemPrice,
+              ModelName: ModelName,
+              VAT: vat,
+              Total: total,
+            },
+          ];
         });
         } catch (secondApiError) {
           toast.error(
@@ -110,29 +94,100 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
   };
 
 
+  // const handleExchangeItems = async () => {
+  //   if (data.length === 0) {
+  //     toast.error("Please scan a barcode first Because data is empty");
+  //     return;
+  //   }
+  //   // console.log(data)
+  //   try {
+  //     const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
+  //       "EnglishName": data[0]?.Description,
+  //       "GTIN": data[0]?.Barcode,
+  //       "ModelName": data[0]?.ModelName,
+  //       // "ModelName": "Model X200",
+  //       "ProductSize": data[0]?.ItemSize
+  //      }
+  //     )
+  //     console.log(res?.data);
+  //     toast.success(res?.data?.message || "Exchange Invoice created successfully");
+
+
+  //     // Add the exchange data to POS component
+  //     addExchangeData(res?.data?.data);
+      
+  //     handleCloseCreatePopup();
+  //   } catch (err) {
+  //     console.log(err);
+  //     toast.error(err?.response?.data?.message || "Something went wrong");
+  //   }
+  // };
+  
+
   const handleExchangeItems = async () => {
     if (data.length === 0) {
-      toast.error("Please scan a barcode first Because data is empty");
+      toast.error("Please scan a barcode first because data is empty");
       return;
     }
-    // console.log(data)
+  
+    const item = data[0]; // Assuming you are dealing with a single item at a time
+    console.log(item);
+    
+    // If stock is available, call the STOCK STATUS API
+    const stockStatusBody = {
+      "filter": {
+        "M_COMP_CODE": "SLIC",
+        "P_LOCN_CODE": "FG104",
+        "P_ITEM_CODE": item?.SKU,
+        "P_GRADE_1": "43",
+        "P_GRADE_2": "NA",
+        },
+        "M_COMP_CODE": "SLIC",
+        "M_USER_ID": "SYSADMIN",
+        "APICODE": "STOCKSTATUS",
+        "M_LANG_CODE": "ENG"
+    };
+  
     try {
-      const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
-        "EnglishName": data[0]?.Description,
-        "GTIN": data[0]?.Barcode,
-        "ModelName": data[0]?.ModelName,
-        // "ModelName": "Model X200",
-        "ProductSize": data[0]?.ItemSize
-       }
-      )
-      // console.log(res?.data);
-      toast.success(res?.data?.message || "Exchange Invoice created successfully");
-      handleCloseCreatePopup();
+      const stockStatusResponse = await ErpTeamRequest.post(
+        "/slicuat05api/v1/getApi",
+        stockStatusBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const stockData = stockStatusResponse?.data;
+      console.log(stockData);
+      // You should check here whether the stockData indicates sufficient stock before proceeding
+      const availableStock = stockData?.FreeStock || 0;
+  
+      if (availableStock >= item.Qty) {
+        // Proceed to create the exchange invoice
+        const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
+          EnglishName: item.Description,
+          GTIN: item.Barcode,
+          ModelName: item.SKU,
+          ProductSize: item.ItemSize,
+        });
+  
+        // console.log(res?.data);
+        toast.success(res?.data?.message || "Exchange Invoice created successfully");
+  
+        addExchangeData(res?.data?.data);
+        handleCloseCreatePopup();
+      } else {
+        // If stock is not available, show an error message
+        toast.error("Stock not Available");
+      }
     } catch (err) {
       console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
     }
-  };
+  };  
+  
 
   const handleCloseCreatePopup = () => {
     setVisibility(false);
@@ -216,6 +271,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white">
                     <tr>
+                      <th className="px-4 py-2">Item Code</th>
                       <th className="px-4 py-2">Item Size</th>
                       <th className="px-4 py-2">Qty</th>
                       <th className="px-4 py-2">Item Price</th>
@@ -234,6 +290,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility }) => {
                     <tbody>
                       {data.map((row, index) => (
                         <tr key={index} className="bg-gray-100 text-center">
+                          <td className="border px-4 py-2">{row.SKU}</td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
                           <td className="border px-4 py-2">{row.Qty}</td>
                           <td className="border px-4 py-2">
