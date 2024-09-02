@@ -153,122 +153,150 @@ const F3TenderCashPopUp = ({
   //   }
   // };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-        const secondApiResponses = JSON.parse(
-            sessionStorage.getItem("secondApiResponses")
-        );
-        console.log(secondApiResponses);
+      const secondApiResponses = JSON.parse(
+        sessionStorage.getItem("secondApiResponses")
+      );
+      console.log(secondApiResponses);
 
-        const items = storeDatagridData.map((item) => {
-            const itemRateObj = secondApiResponses[item.SKU];
-            const rate = itemRateObj?.ItemRate?.Rate || "0";
+      const items = storeDatagridData.map((item) => {
+        const itemRateObj = secondApiResponses[item.SKU];
+        const rate = itemRateObj?.ItemRate?.Rate || "0";
 
-            const commonFields = {
-                "Item-Code": item.SKU,
-                Size: item.ProductSize || "40",
-                Qty: `${item.Qty}`,
-                UserId: "SYSADMIN",
-            };
-
-            return selectedSalesType === "DIRECT SALES INVOICE"
-                ? { ...commonFields, Rate: rate }
-                : commonFields;
-        });
-
-        const salesReturnBody = {
-            keyword: "salesreturn",
-            "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-            data: [
-                {
-                    Company: "SLIC",
-                    TransactionCode: invoiceHeaderData?.TransactionCode,
-                    CustomerCode: invoiceHeaderData?.CustomerCode,
-                    SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101",
-                    DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101",
-                    UserId: "SYSADMIN",
-                    "CustomerName": invoiceHeaderData?.CustomerCode,
-                    "MobileNo": invoiceHeaderData?.MobileNo,
-                    "Remarks": invoiceHeaderData?.Remarks,
-                    "PosRefNo": 12,
-                    "ZATCAPaymentMode": paymentModes.code,
-                    "TaxExemptionReason": "1",
-                    Item: items,
-                },
-            ],
-            COMPANY: "SLIC",
-            USERID: "SYSADMIN",
-            APICODE: "SALESRETURN",
-            LANG: "ENG",
+        const commonFields = {
+          "Item-Code": item.SKU,
+          Size: item.ProductSize || "40",
+          Qty: `${item.Qty}`,
+          UserId: "SYSADMIN",
         };
 
-        // Call the sales return API first
-        const salesReturnRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        return selectedSalesType === "DIRECT SALES INVOICE"
+          ? { ...commonFields, Rate: rate }
+          : commonFields;
+      });
 
-        console.log(salesReturnRes?.data);
-        showOtpPopup(salesReturnRes?.data);
-
-        // If payment type is 4 or 5, call the bank receipt API after the sales return succeeds
-        if (paymentModes.code === "4" || paymentModes.code === "5") {
-            const bankReceiptBody = {
-                "_keyword_": "BANKRCPTEX",
-                "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-                "data": [
-                    {
-                        "Company": "SLIC",
-                        "UserId": "SYSADMIN",
-                        "Department": "011",
-                        "TransactionCode": "BRV",
-                        "Division": "100",
-                        "BankApproverCode": "CIUB0000266",
-                        "CashCardFlag": "CARD",
-                        "ReceiptAmt": 115, 
-                        "CustomerId": "CL102726",
-                        "MatchingTransactions": [
-                            {
-                                "DocNo": salesReturnRes?.data?.DocumentNo,
-                                "TransactionCode": "EXSR",
-                                "PendingAmount": "575",
-                                "AdjAmount": "575"
-                            }
-                        ]
-                    }
-                ],
-                "COMPANY": "SLIC",
-                "USERID": "SYSADMIN",
-                "APICODE": "BANKRECEIPTVOUCHER",
-                "LANG": "ENG"
+      // Constructing the body based on the selectedSalesType
+      const body =
+        selectedSalesType === "DIRECT SALES INVOICE"
+          ? {
+              _keyword_: "Invoice",
+              "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+              data: [
+                {
+                  Company: "SLIC",
+                  TransactionCode: "DCIN",
+                  CustomerCode: "CF100005",
+                  SalesLocationCode: selectedLocation?.LOCN_CODE,
+                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+                  UserId: "SYSADMIN",
+                  Item: items,
+                },
+              ],
+              COMPANY: "SLIC",
+              USERID: "SYSADMIN",
+              APICODE: "INVOICE",
+              LANG: "ENG",
+            }
+          : {
+              keyword: "salesreturn",
+              "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+              data: [
+                {
+                  Company: "SLIC",
+                  TransactionCode: invoiceHeaderData?.TransactionCode,
+                  CustomerCode: invoiceHeaderData?.CustomerCode,
+                  SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101",
+                  DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101",
+                  UserId: "SYSADMIN",
+                  CustomerName: invoiceHeaderData?.CustomerCode,
+                  MobileNo: invoiceHeaderData?.MobileNo,
+                  Remarks: invoiceHeaderData?.Remarks,
+                  PosRefNo: 12,
+                  ZATCAPaymentMode: paymentModes.code,
+                  TaxExemptionReason: "1",
+                  Item: items,
+                },
+              ],
+              COMPANY: "SLIC",
+              USERID: "SYSADMIN",
+              APICODE: "SALESRETURN",
+              LANG: "ENG",
             };
 
-            const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
+      // API call based on the constructed body
+      const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(res?.data);
+      showOtpPopup(res?.data);
+
+      // Additional API call for Bank Receipt if payment type is 4 or 5
+      if (
+        selectedSalesType !== "DIRECT SALES INVOICE" &&
+        (paymentModes.code === "4" || paymentModes.code === "5")
+      ) {
+        const bankReceiptBody = {
+          _keyword_: "BANKRCPTEX",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
+            {
+              Company: "SLIC",
+              UserId: "SYSADMIN",
+              Department: "011",
+              TransactionCode: "BRV",
+              Division: "100",
+              BankApproverCode: "CIUB0000266",
+              CashCardFlag: "CARD",
+              ReceiptAmt: 115,
+              CustomerId: invoiceHeaderData?.CustomerCode,
+              MatchingTransactions: [
+                {
+                  DocNo: res?.data?.DocumentNo,
+                  TransactionCode: "EXSR",
+                  PendingAmount: "575",
+                  AdjAmount: "575",
                 },
-            });
+              ],
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "BANKRECEIPTVOUCHER",
+          LANG: "ENG",
+        };
 
-            console.log(bankRes?.data);
-        }
+        const bankRes = await ErpTeamRequest.post(
+          "/slicuat05api/v1/postData",
+          bankReceiptBody,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        handleCloseCreatePopup();
-        handleClearData();
-        handleInvoiceGenerator();
-        setLoading(false);
+        console.log(bankRes?.data);
+      }
+
+      handleCloseCreatePopup();
+      handleClearData();
+      handleInvoiceGenerator();
+      setLoading(false);
     } catch (err) {
-        toast.error(err?.response?.data?.message || "Something went wrong");
-        setLoading(false);
+      toast.error(err?.response?.data?.message || "Something went wrong");
+      setLoading(false);
     }
-};
+  };
 
-
-  // Cards Calcultaion Logic Code 
+  // Cards Calcultaion Logic Code
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
+  const [cashAmount, setCashAmount] = useState('');
   const grossAmount = totalAmountWithVat;
 
   // useEffect(() => {
@@ -368,41 +396,41 @@ const F3TenderCashPopUp = ({
                 <div className="grid grid-cols-2 gap-4">
                   {/* Invoice Form */}
                   <form onSubmit={handleSubmit} className="border p-4 w-full">
-                  <div className="border border-gray-300 rounded-lg p-2 bg-gray-50 overflow-x-auto">
-                    <div className="min-w-[300px] min-h-[100px]">
-                      {/* Header */}
-                      <div className="grid grid-cols-3 gap-2 bg-gray-200 p-2 rounded-t-lg">
-                        <p className="text-sm">Item Code</p>
-                        <p className="text-sm">Size</p>
-                        <p className="text-sm">Item Price</p>
-                      </div>
-
-                      {storeDatagridData.map((item, index) => (
-                        <div
-                          key={index}
-                          className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
-                        >
-                          <p className="text-sm">{item.SKU}</p>
-                          <p className="text-sm">{item.ItemSize}</p>
-                          <p className="text-sm">{item.ItemPrice}</p>
+                    <div className="border border-gray-300 rounded-lg p-2 bg-gray-50 overflow-x-auto">
+                      <div className="min-w-[300px] min-h-[100px]">
+                        {/* Header */}
+                        <div className="grid grid-cols-3 gap-2 bg-gray-200 p-2 rounded-t-lg">
+                          <p className="text-sm">Item Code</p>
+                          <p className="text-sm">Size</p>
+                          <p className="text-sm">Item Price</p>
                         </div>
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Gross Amount Display */}
-                  <div className="mt-4">
-                    <p className="text-sm font-sans text-red-500">
-                      Gross Amount with 15% VAT: SAR {grossAmount}
-                    </p>
-                  </div>
+                        {storeDatagridData.map((item, index) => (
+                          <div
+                            key={index}
+                            className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                          >
+                            <p className="text-sm">{item.SKU}</p>
+                            <p className="text-sm">{item.ItemSize}</p>
+                            <p className="text-sm">{item.ItemPrice}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Gross Amount Display */}
+                    <div className="mt-4">
+                      <p className="text-sm font-sans text-red-500">
+                        Gross Amount with 15% VAT: SAR {grossAmount}
+                      </p>
+                    </div>
                     <div className="mt-10">
                       <Button
                         variant="contained"
                         style={{
                           backgroundColor: "#021F69", // Change color based on enabled/disabled state
-                        //   backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3", // Change color based on enabled/disabled state
-                        //   // color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
+                          //   backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3", // Change color based on enabled/disabled state
+                          //   // color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
                         }}
                         type="submit"
                         // disabled={!isPrintEnabled || loading}
@@ -419,25 +447,28 @@ const F3TenderCashPopUp = ({
                   </form>
 
                   <div className="border p-2 w-full">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3">
                       <div className="mb-4">
-                        <p className="font-semibold text-sm">Cash Amount</p>
+                        <p className="font-semibold text-sm">
+                          {paymentModes.code === "1" ? "Cash Amount" : "Credit Amount"}
+                        </p>
                         <input
                           type="text"
-                          value={`${paymentModes.code} - ${paymentModes.name}`}
+                          value={cashAmount}
+                          onChange={(e) => setCashAmount(e.target.value)}
                           className="w-full border border-gray-300 px-2 py-3 rounded-md"
-                          placeholder="Enter Cash Amount"
+                          placeholder={paymentModes.code === "1" ? "Enter Cash Amount" : "Enter Credit Amount"}
                         />
                       </div>
-                      <div className="mb-4">
+                      {/* <div className="mb-4">
                         <p className="font-semibold text-sm">Credit Amount</p>
                         <input
                           type="text"
-                          value={`${examptReason.code} - ${examptReason.name}`} 
+                          value={`${examptReason.code} - ${examptReason.name}`}
                           className="w-full border border-gray-300 px-2 py-3 rounded-md"
                           placeholder="Enter Credit Amount"
                         />
-                      </div>
+                      </div> */}
                     </div>
                     <div className="mb-4">
                       <p className="font-semibold">Total Amount</p>

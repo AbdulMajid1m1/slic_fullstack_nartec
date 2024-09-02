@@ -774,13 +774,14 @@ const POS = () => {
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
-                  getOptionLabel={(option) => option.TXN_CODE || ""}
-                  onChange={handleTransactionCodes}
-                  value={
-                    transactionCodes.find(
-                      (option) => option.TXN_CODE === selectedTransactionCode?.TXN_CODE
-                    ) || null
+                  getOptionLabel={(option) => 
+                    option && option.TXN_CODE && option.TXN_NAME 
+                      ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
+                      : ''
                   }
+                  onChange={handleTransactionCodes}
+                  // value={selectedTransactionCode}
+                  value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
                   isOptionEqualToValue={(option, value) =>
                     option?.TXN_CODE === value?.TXN_CODE
                   }
@@ -870,7 +871,12 @@ const POS = () => {
                   <Autocomplete
                     id="field1"
                     options={searchCustomerName}
-                    getOptionLabel={(option) => option?.CUST_CODE || ""}
+                    // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                    getOptionLabel={(option) => 
+                      option && option.CUST_CODE && option.CUST_NAME 
+                        ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
+                        : ''
+                    }
                     onChange={handleSearchCustomerName}
                     value={
                       searchCustomerName.find(
@@ -994,18 +1000,19 @@ const POS = () => {
             )}
 
             <div>
-              <label className="block text-gray-700">Remarks *</label>
-              <input
-                type="text"
-                value={
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
-                    : ""
-                }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                placeholder="Remarks"
-                disabled={selectedSalesType === "DIRECT SALES RETURN"}
-              />
+                <label className="block text-gray-700">Remarks *</label>
+                <input
+                    type="text"
+                    value={
+                        selectedSalesType === "DIRECT SALES RETURN"
+                            ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
+                            : undefined
+                    }
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
+                    placeholder="Remarks"
+                    disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                    onChange={() => {}}
+                />
             </div>
             <div>
               <label className="block text-gray-700">Type *</label>
@@ -1019,17 +1026,17 @@ const POS = () => {
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
-                type="text"
-                value={
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? invoiceData?.VAT || ""
-                    : ""
-                }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                placeholder="VAT"
+                  type="text"
+                  value={
+                      selectedSalesType === "DIRECT SALES RETURN"
+                          ? invoiceData?.VAT || ""
+                          : undefined
+                  }
+                  className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
+                  disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                  placeholder="VAT"
               />
-            </div>
+          </div>
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
             <div className="mt-10 overflow-x-auto">
