@@ -730,9 +730,16 @@ const POS = () => {
 
 
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
+  const [isConfirmDisabled, setIsConfirmDisabled] = useState(false);
   const handleSelectionsSaved = () => {
+    setIsConfirmDisabled(true);
     setIsTenderCashEnabled(true); // Enable the Tender Cash button
   };
+
+  useEffect(() => {
+    setIsConfirmDisabled(false);
+    setIsTenderCashEnabled(false);
+  }, [selectedSalesType]);
 
   return (
     <SideNav>
@@ -1197,9 +1204,18 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
-                <button
+                {/* <button
                   onClick={handleShowConfirmTransactionPopup}
                   className="bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
+                >
+                  Confirm Transactions
+                </button> */}
+                <button
+                  onClick={handleShowConfirmTransactionPopup}
+                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
+                    isConfirmDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"
+                  }`}
+                  disabled={isConfirmDisabled}
                 >
                   Confirm Transactions
                 </button>

@@ -127,13 +127,11 @@ const ConfirmTransactionPopUp = ({
   //   }, [selectedExamption]);
 
   const handleConfirm = () => {
-    if (!selectedPaymentModels || !selectedExamption) {
-      toast.error(
-        "Please select both Payment Mode and Exemption Reason before confirming."
-      );
+    if (!selectedPaymentModels) {
+      toast.error("Please select a Payment Mode before confirming.");
       return;
     }
-    // else close the popup and save the value in sessiotns
+    
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
