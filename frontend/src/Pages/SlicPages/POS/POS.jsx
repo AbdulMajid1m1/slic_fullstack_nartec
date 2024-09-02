@@ -233,11 +233,11 @@ const POS = () => {
     setSelectedTransactionCode(value ? value : "");
   };
 
-  // useEffect(() => {
-  //   if (selectedLocation?.LOCN_CODE) {
-  //     fetchTransactionCodes();
-  //   }
-  // }, [selectedLocation]);
+  useEffect(() => {
+    if (selectedLocation?.LOCN_CODE) {
+      fetchTransactionCodes();
+    }
+  }, [selectedLocation]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -1077,9 +1077,9 @@ const POS = () => {
           )}
 
           {selectedSalesType === "DIRECT SALES RETURN" && (
-            <div>
+            <div className="overflow-x-auto">
               <table className="table-auto w-full text-center">
-                <thead className="bg-secondary text-white">
+                <thead className="bg-secondary text-white truncate">
                   <tr>
                     <th className="px-4 py-2">SKU</th>
                     <th className="px-4 py-2">Invoice No</th>
