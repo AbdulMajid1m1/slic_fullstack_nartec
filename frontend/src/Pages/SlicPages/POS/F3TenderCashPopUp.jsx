@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import cash from "../../../Images/tendercash/cash.png";
-import creditcard from "../../../Images/tendercash/creditcard.png";
-import stcpay from "../../../Images/tendercash/stcpay.png";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
@@ -16,6 +13,7 @@ const F3TenderCashPopUp = ({
   selectedSalesType,
   handleInvoiceGenerator,
   totalAmountWithVat,
+  invoiceHeaderData,
 }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
@@ -25,6 +23,10 @@ const F3TenderCashPopUp = ({
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [token, setToken] = useState(null);
+  const PaymentModels = sessionStorage.getItem("selectedPaymentModels");
+  const paymentModes = JSON.parse(PaymentModels);
+  const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
+  const examptReason = JSON.parse(ExamptionReason);
 
   useEffect(() => {
     // slic login api token get
@@ -56,121 +58,236 @@ const F3TenderCashPopUp = ({
     }
   }, [isVisible, storeDatagridData]);
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     const secondApiResponses = JSON.parse(
+  //       sessionStorage.getItem("secondApiResponses")
+  //     );
+  //     console.log(secondApiResponses);
+
+  //     const items = storeDatagridData.map((item) => {
+  //       const itemRateObj = secondApiResponses[item.SKU];
+  //       const rate = itemRateObj?.ItemRate?.Rate || "0";
+
+  //       const commonFields = {
+  //         "Item-Code": item.SKU,
+  //         Size: item.ProductSize || "40",
+  //         Qty: `${item.Qty}`,
+  //         UserId: "SYSADMIN",
+  //       };
+
+  //       return selectedSalesType === "DIRECT SALES INVOICE"
+  //         ? { ...commonFields, Rate: rate }
+  //         : commonFields;
+  //     });
+
+  //     const body =
+  //       selectedSalesType === "DIRECT SALES INVOICE"
+  //         ? {
+  //             _keyword_: "Invoice",
+  //             "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //             data: [
+  //               {
+  //                 Company: "SLIC",
+  //                 TransactionCode: "DCIN",
+  //                 CustomerCode: "CF100005",
+  //                 SalesLocationCode: selectedLocation?.LOCN_CODE,
+  //                 DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+  //                 UserId: "SYSADMIN",
+  //                 Item: items,
+  //               },
+  //             ],
+  //             COMPANY: "SLIC",
+  //             USERID: "SYSADMIN",
+  //             APICODE: "INVOICE",
+  //             LANG: "ENG",
+  //           }
+  //         : {
+  //             keyword: "salesreturn",
+  //             "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //             data: [
+  //               {
+  //                 Company: "SLIC",
+  //                 TransactionCode: "EXSR",
+  //                 CustomerCode: "CL102511",
+  //                 SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+  //                 DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
+  //                 UserId: "SYSADMIN",
+  //                 "CustomerName": "ABC",
+  //                 "MobileNo": 805630,
+  //                 "Remarks": "good",
+  //                 "PosRefNo":12,
+  //                 "ZATCAPaymentMode":"1",
+  //                 "TaxExemptionReason":"1",
+  //                 Item: items,
+  //               },
+  //             ],
+  //             COMPANY: "SLIC",
+  //             USERID: "SYSADMIN",
+  //             APICODE: "SALESRETURN",
+  //             LANG: "ENG",
+  //           };
+
+  //     const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+
+  //     console.log(res?.data);
+  //     showOtpPopup(res?.data);
+
+  //     // setTimeout(() => {
+  //       handleCloseCreatePopup();
+  //       handleClearData();
+  //       handleInvoiceGenerator();
+  //       // toast.success("Transaction Created Successfully");
+  //       setLoading(false);
+  //     // }, 400);
+  //   } catch (err) {
+  //     // console.log(err);
+  //     toast.error(err?.response?.data?.message || "Something went wrong");
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const secondApiResponses = JSON.parse(
-        sessionStorage.getItem("secondApiResponses")
-      );
-      console.log(secondApiResponses);
+        const secondApiResponses = JSON.parse(
+            sessionStorage.getItem("secondApiResponses")
+        );
+        console.log(secondApiResponses);
 
-      const items = storeDatagridData.map((item) => {
-        const itemRateObj = secondApiResponses[item.SKU];
-        const rate = itemRateObj?.ItemRate?.Rate || "0";
+        const items = storeDatagridData.map((item) => {
+            const itemRateObj = secondApiResponses[item.SKU];
+            const rate = itemRateObj?.ItemRate?.Rate || "0";
 
-        const commonFields = {
-          "Item-Code": item.SKU,
-          Size: item.ProductSize || "40", // Use the correct size if available
-          Qty: `${item.Qty}`,
-          UserId: "SYSADMIN",
-        };
-
-        return selectedSalesType === "DIRECT SALES INVOICE"
-          ? { ...commonFields, Rate: rate }
-          : commonFields;
-      });
-
-      const body =
-        selectedSalesType === "DIRECT SALES INVOICE"
-          ? {
-              _keyword_: "Invoice",
-              "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  Company: "SLIC",
-                  TransactionCode: "DCIN",
-                  CustomerCode: "CF100005",
-                  SalesLocationCode: selectedLocation?.LOCN_CODE,
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
-                  UserId: "SYSADMIN",
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "INVOICE",
-              LANG: "ENG",
-            }
-          : {
-              keyword: "salesreturn",
-              "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  Company: "SLIC",
-                  TransactionCode: "EXSR",
-                  CustomerCode: "CL102511",
-                  SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101", // Use selectedLocation code or default
-                  UserId: "SYSADMIN",
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "SALESRETURN",
-              LANG: "ENG",
+            const commonFields = {
+                "Item-Code": item.SKU,
+                Size: item.ProductSize || "40",
+                Qty: `${item.Qty}`,
+                UserId: "SYSADMIN",
             };
 
-      const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+            return selectedSalesType === "DIRECT SALES INVOICE"
+                ? { ...commonFields, Rate: rate }
+                : commonFields;
+        });
 
-      console.log(res?.data);
-      showOtpPopup(res?.data);
+        const salesReturnBody = {
+            keyword: "salesreturn",
+            "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+            data: [
+                {
+                    Company: "SLIC",
+                    TransactionCode: invoiceHeaderData?.TransactionCode,
+                    CustomerCode: invoiceHeaderData?.CustomerCode,
+                    SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101",
+                    DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101",
+                    UserId: "SYSADMIN",
+                    "CustomerName": invoiceHeaderData?.CustomerCode,
+                    "MobileNo": invoiceHeaderData?.MobileNo,
+                    "Remarks": invoiceHeaderData?.Remarks,
+                    "PosRefNo": 12,
+                    "ZATCAPaymentMode": paymentModes.code,
+                    "TaxExemptionReason": "1",
+                    Item: items,
+                },
+            ],
+            COMPANY: "SLIC",
+            USERID: "SYSADMIN",
+            APICODE: "SALESRETURN",
+            LANG: "ENG",
+        };
 
-      // setTimeout(() => {
+        // Call the sales return API first
+        const salesReturnRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        console.log(salesReturnRes?.data);
+        showOtpPopup(salesReturnRes?.data);
+
+        // If payment type is 4 or 5, call the bank receipt API after the sales return succeeds
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
+            const bankReceiptBody = {
+                "_keyword_": "BANKRCPTEX",
+                "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+                "data": [
+                    {
+                        "Company": "SLIC",
+                        "UserId": "SYSADMIN",
+                        "Department": "011",
+                        "TransactionCode": "BRV",
+                        "Division": "100",
+                        "BankApproverCode": "CIUB0000266",
+                        "CashCardFlag": "CARD",
+                        "ReceiptAmt": 115, 
+                        "CustomerId": "CL102726",
+                        "MatchingTransactions": [
+                            {
+                                "DocNo": salesReturnRes?.data?.DocumentNo,
+                                "TransactionCode": "EXSR",
+                                "PendingAmount": "575",
+                                "AdjAmount": "575"
+                            }
+                        ]
+                    }
+                ],
+                "COMPANY": "SLIC",
+                "USERID": "SYSADMIN",
+                "APICODE": "BANKRECEIPTVOUCHER",
+                "LANG": "ENG"
+            };
+
+            const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            console.log(bankRes?.data);
+        }
+
         handleCloseCreatePopup();
         handleClearData();
         handleInvoiceGenerator();
-        // toast.success("Transaction Created Successfully");
         setLoading(false);
-      // }, 400);
     } catch (err) {
-      // console.log(err);
-      toast.error(err?.response?.data?.message || "Something went wrong");
-      setLoading(false);
+        toast.error(err?.response?.data?.message || "Something went wrong");
+        setLoading(false);
     }
-  };
+};
 
 
   // Cards Calcultaion Logic Code 
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
   const grossAmount = totalAmountWithVat;
 
+  // useEffect(() => {
+  //   if(PaymentModels) {
+  //     console.log(paymentModes);
+  //   }
+  // }, [PaymentModels]);
 
+  // useEffect(() => {
+  //   if(ExamptionReason) {
+  //     console.log(examptReason);
+  //   }
+  // }, [ExamptionReason]);
 
-  const PaymentModels = sessionStorage.getItem("selectedPaymentModels");
-  const paymentModes = JSON.parse(PaymentModels);
-  const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
-  const examptReason = JSON.parse(ExamptionReason);
-
-  // console.log("PaymentModels", PaymentModels);
-  // console.log("ExamptionReason", ExamptionReason);
-
-  useEffect(() => {
-    if(PaymentModels) {
-      console.log(paymentModes);
-    }
-  }, [PaymentModels]);
-
-  useEffect(() => {
-    if(ExamptionReason) {
-      console.log(examptReason);
-    }
-  }, [ExamptionReason]);
+  // useEffect(() => {
+  //   if (invoiceHeaderData) {
+  //     console.log(invoiceHeaderData)
+  //   }
+  // }, [invoiceHeaderData]);
 
   return (
     <div>
@@ -340,45 +457,6 @@ const F3TenderCashPopUp = ({
                       />
                     </div>
                   </div>
-                  {/* <div className="p-1 w-full">
-                    <div
-                      onClick={handleCashClick}  
-                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
-                        selectedCard === "cash" ? "bg-gray-300" : ""
-                      }`}>
-                      <img
-                        src={cash}
-                        className="h-10 w-16 mr-2 ml-3 object-contain"
-                        alt="cash"
-                      />
-                      <p className="">Cash</p>
-                    </div>
-
-                    <div
-                      onClick={handleCreditClick}   
-                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
-                        selectedCard === "credit" ? "bg-gray-300" : ""
-                      }`}>
-                      <img
-                        src={creditcard}
-                        className="h-10 w-16 mr-2 ml-3"
-                        alt="creditcard"
-                      />
-                      <p className="">Credit / Debit</p>
-                    </div>
-                    <div
-                      onClick={handleStcPayClick}
-                      className={`flex justify-start items-center w-full h-16 transform hover:scale-90 hover:cursor-pointer p-2 shadow-md border border-gray-200 rounded-lg bg-white mt-5 ${
-                        selectedCard === "stcpay" ? "bg-gray-300" : ""
-                      }`}>
-                      <img
-                        src={stcpay}
-                        className="h-10 w-16 mr-2 ml-3 object-contain"
-                        alt="stcpay"
-                      />
-                      <p className="">STC Pay</p>
-                    </div>
-                  </div> */}
                 </div>
               </div>
             </div>

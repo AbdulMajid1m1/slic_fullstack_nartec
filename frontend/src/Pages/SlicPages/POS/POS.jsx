@@ -1077,7 +1077,7 @@ const POS = () => {
           )}
 
           {selectedSalesType === "DIRECT SALES RETURN" && (
-            <div className="overflow-x-auto">
+            <div>
               <table className="table-auto w-full text-center">
                 <thead className="bg-secondary text-white truncate">
                   <tr>
@@ -1262,6 +1262,7 @@ const POS = () => {
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
               totalAmountWithVat={totalAmountWithVat}
+              invoiceHeaderData={invoiceHeaderData?.invoiceHeader}
             />
           )}
 
