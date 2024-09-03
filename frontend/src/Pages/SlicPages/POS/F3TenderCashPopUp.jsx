@@ -398,8 +398,6 @@ const F3TenderCashPopUp = ({
                           placeholder={paymentModes.name || "Payment Mode"}
                         />
                       </div>
-                      {(paymentModes.code === "4" || paymentModes.code === "5") && (
-                        <>
                           <div className="mb-3">
                             <p className="font-semibold">Total Amount</p>
                             <input
@@ -420,6 +418,8 @@ const F3TenderCashPopUp = ({
                               placeholder="Change"
                             />
                           </div>
+                      {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                        <>
                           <div className="mb-3">
                             <p className="font-semibold">Bank Approval Code</p>
                             <input

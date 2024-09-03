@@ -236,3 +236,75 @@ exports.getInvoicesByMobileNo = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.saveInvoice = async (req, res, next) => {
+  try {
+    const { master, details } = req.body;
+
+    // Validate that master is an object and details is an array
+    if (!master || !details || !Array.isArray(details)) {
+      const error = new CustomError(
+        "Invalid data format. 'master' should be an object and 'details' should be an array."
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Start a transaction
+    const prisma = new PrismaClient();
+    const transaction = await prisma.$transaction();
+
+    try {
+      // Check if the master invoice with the given InvoiceNo already exists
+      let existingMaster = await POSInvoiceMaster.getSingleInvoiceMasterByField(
+        "InvoiceNo",
+        master.InvoiceNo
+      );
+
+      let newMaster;
+      if (existingMaster) {
+        // Update the existing master invoice
+        newMaster = await POSInvoiceMaster.updateInvoiceMaster(
+          existingMaster.id,
+          master
+        );
+      } else {
+        // Create a new master invoice
+        newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
+      }
+
+      // Create or update each detail item associated with the master invoice
+      const detailPromises = details.map(async (detail) => {
+        const detailData = { ...detail, Head_SYS_ID: newMaster.Head_SYS_ID };
+
+        if (detail.id) {
+          return await POSInvoiceDetails.updateInvoiceDetails(
+            detail.id,
+            detailData
+          );
+        } else {
+          return await POSInvoiceDetails.createInvoiceDetails(detailData);
+        }
+      });
+
+      const newDetails = await Promise.all(detailPromises);
+
+      await transaction.commit();
+
+      res.status(201).json(
+        response(201, true, "Invoice saved successfully", {
+          invoiceMaster: newMaster,
+          invoiceDetails: newDetails,
+        })
+      );
+    } catch (error) {
+      await transaction.rollback();
+      console.error("Error saving invoice:", error);
+      next(new CustomError("Error saving invoice"));
+    } finally {
+      await prisma.$disconnect();
+    }
+  } catch (error) {
+    next(error);
+  }
+};
