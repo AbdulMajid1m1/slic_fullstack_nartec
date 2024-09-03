@@ -14,6 +14,7 @@ const F3TenderCashPopUp = ({
   handleInvoiceGenerator,
   totalAmountWithVat,
   invoiceHeaderData,
+  handleClearInvoiceData,
 }) => {
   const [loading, setLoading] = useState(false);
   const handleCloseCreatePopup = () => {
@@ -249,7 +250,7 @@ const F3TenderCashPopUp = ({
               Company: "SLIC",
               UserId: "SYSADMIN",
               Department: "011",
-              TransactionCode: "BRV",
+              TransactionCode: invoiceHeaderData?.TransactionCode,
               Division: "100",
               BankApproverCode: "CIUB0000266",
               CashCardFlag: "CARD",
@@ -286,6 +287,7 @@ const F3TenderCashPopUp = ({
 
       handleCloseCreatePopup();
       handleClearData();
+      handleClearInvoiceData();
       handleInvoiceGenerator();
       setLoading(false);
     } catch (err) {
@@ -448,16 +450,16 @@ const F3TenderCashPopUp = ({
 
                   <div className="border p-2 w-full">
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="mb-4">
+                      <div className="mb-4 mt-3">
                         <p className="font-semibold text-sm">
-                          {paymentModes.code === "1" ? "Cash Amount" : "Credit Amount"}
+                          {paymentModes.name || "Payment Mode"}
                         </p>
                         <input
                           type="text"
                           value={cashAmount}
                           onChange={(e) => setCashAmount(e.target.value)}
                           className="w-full border border-gray-300 px-2 py-3 rounded-md"
-                          placeholder={paymentModes.code === "1" ? "Enter Cash Amount" : "Enter Credit Amount"}
+                          placeholder={paymentModes.name || "Payment Mode"}
                         />
                       </div>
                       {/* <div className="mb-4">
@@ -470,7 +472,7 @@ const F3TenderCashPopUp = ({
                         />
                       </div> */}
                     </div>
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                       <p className="font-semibold">Total Amount</p>
                       <input
                         type="text"
@@ -486,7 +488,7 @@ const F3TenderCashPopUp = ({
                         className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
                         placeholder="Change"
                       />
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

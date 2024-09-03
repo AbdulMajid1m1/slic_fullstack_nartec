@@ -114,11 +114,11 @@ const ConfirmTransactionPopUp = ({
     }
   };
 
-  //   useEffect(() => {
-  //     if (selectedPaymentModels) {
-  //       console.log(selectedPaymentModels);
-  //     }
-  //   }, [selectedPaymentModels]);
+    useEffect(() => {
+      if (selectedPaymentModels) {
+        console.log(selectedPaymentModels);
+      }
+    }, [selectedPaymentModels]);
 
   //   useEffect(() => {
   //     if (selectedExamption) {

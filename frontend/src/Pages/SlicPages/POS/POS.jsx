@@ -302,11 +302,18 @@ const POS = () => {
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
 
-    if (data.length === 0) {
+    if (selectedSalesType === "DIRECT SALES INVOICE" && data.length === 0) {
       toast.error(
-        "Please ensure barcode and data is available before proceeding."
+          "Please ensure barcode and data is available before proceeding."
       );
       return;
+    }
+
+    if (selectedSalesType === "DIRECT SALES RETURN" && exchangeData.length === 0) {
+        toast.error(
+            "Please ensure that exchange data is available before proceeding."
+        );
+        return;
     }
     setInvoiceLoader(true);
     try {
@@ -518,19 +525,32 @@ const POS = () => {
               </tr>
             </thead>
 
-            <tbody>
-              ${data
-                .map(
-                  (item) => `
-                <tr>
-                  <td>${item.SKU}</td>
-                  <td>${item.Qty}</td>
-                  <td>${item.ItemPrice}</td>
-                  <td>${item.ItemPrice * item.Qty}</td>
-                </tr>
-              `
-                )
-                .join("")}
+           <tbody>
+            ${selectedSalesType === "DIRECT SALES RETURN"
+              ? exchangeData
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td>${item.ItemCode}</td>
+                        <td>${item.Qty}</td>
+                        <td>${item.ItemPrice}</td>
+                        <td>${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                    `
+                  )
+                  .join("")
+              : data
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td>${item.SKU}</td>
+                        <td>${item.Qty}</td>
+                        <td>${item.ItemPrice}</td>
+                        <td>${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                    `
+                  )
+                  .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -644,6 +664,11 @@ const POS = () => {
     }
   };
 
+
+  const handleClearInvoiceData = () => {
+    setInvoiceData([]);
+    setExchangeData([]);
+  }
 
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = async (newData) => {
@@ -1282,6 +1307,7 @@ const POS = () => {
               storeDatagridData={storeDatagridData}
               showOtpPopup={handleShowOtpPopup}
               handleClearData={handleClearData}
+              handleClearInvoiceData={handleClearInvoiceData}
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
               totalAmountWithVat={totalAmountWithVat}
