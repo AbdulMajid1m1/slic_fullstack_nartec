@@ -15,8 +15,19 @@ const F3TenderCashPopUp = ({
   totalAmountWithVat,
   invoiceHeaderData,
   handleClearInvoiceData,
+  mobileNo,
+  customerName,
+  remarks,
+  selectedCustomerCode,
+  selectedTransactionCode,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
+  const [cashAmount, setCashAmount] = useState('');
+  const [changeAmount, setChangeAmount] = useState('');
+  const [bankApprovedCode, setBankApprovedCode] = useState('');
+  const grossAmount = totalAmountWithVat;
+
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
@@ -55,10 +66,63 @@ const F3TenderCashPopUp = ({
 
   useEffect(() => {
     if (isVisible) {
-      // console.log("Popup Data:", storeDatagridData);
+      console.log("Popup Data:", storeDatagridData);
+      // console.log(selectedCustomerCode)
+      // console.log(selectedTransactionCode)
     }
   }, [isVisible, storeDatagridData]);
 
+  useEffect(() => {
+    // Calculate change whenever cashAmount or grossAmount changes
+    const calculatedChange = cashAmount - grossAmount;
+    setChangeAmount(calculatedChange > 0 ? calculatedChange : 0);
+  }, [cashAmount, grossAmount]);
+
+
+  // I call bank Api For Both Reasons 
+  const callBankReceiptAPI = async (documentNo, transactionCode, customerCode) => {
+    const bankReceiptBody = {
+      _keyword_: "BANKRCPTEX",
+      "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+      data: [
+        {
+          Company: "SLIC",
+          UserId: "SYSADMIN",
+          Department: "011",
+          TransactionCode: "BRV",
+          Division: "100",
+          BankApproverCode: bankApprovedCode,
+          CashCardFlag: "CARD",
+          ReceiptAmt: grossAmount,
+          CustomerId: customerCode,
+          MatchingTransactions: [
+            {
+              DocNo: documentNo,
+              TransactionCode: transactionCode,
+              PendingAmount: changeAmount,
+              AdjAmount: "",     
+            },
+          ],
+        },
+      ],
+      COMPANY: "SLIC",
+      USERID: "SYSADMIN",
+      APICODE: "BANKRECEIPTVOUCHER",
+      LANG: "ENG",
+    };
+
+    const bankRes = await ErpTeamRequest.post(
+      "/slicuat05api/v1/postData",
+      bankReceiptBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log(bankRes?.data);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,18 +133,12 @@ const F3TenderCashPopUp = ({
 
     setLoading(true);
     try {
-      const secondApiResponses = JSON.parse(
-        sessionStorage.getItem("secondApiResponses")
-      );
-      console.log(secondApiResponses);
-
       const items = storeDatagridData.map((item) => {
-        const itemRateObj = secondApiResponses[item.SKU];
-        const rate = itemRateObj?.ItemRate?.Rate || "0";
+        const rate = `${item?.ItemPrice}`;
 
         const commonFields = {
           "Item-Code": item.SKU,
-          Size: item.ProductSize || "40",
+          Size: item.ItemSize,
           Qty: `${item.Qty}`,
           UserId: "SYSADMIN",
         };
@@ -98,12 +156,18 @@ const F3TenderCashPopUp = ({
               "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
               data: [
                 {
-                  Company: "SLIC",
-                  TransactionCode: "DCIN",
-                  CustomerCode: "CF100005",
-                  SalesLocationCode: selectedLocation?.LOCN_CODE,
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
-                  UserId: "SYSADMIN",
+                  "Company": "SLIC",
+                  "TransactionCode": selectedTransactionCode?.TXN_CODE,
+                  "CustomerCode": selectedCustomerCode?.CUST_CODE,
+                  "SalesLocationCode": selectedLocation?.LOCN_CODE,
+                  "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+                  "UserId": "SYSADMIN",
+                  "CustomerName": customerName,
+                  "MobileNo": mobileNo,
+                  "Remarks": remarks,
+                  "PosRefNo": 12, 
+                  "ZATCAPaymentMode": paymentModes.code,  
+                  "TaxExemptionReason":"",       
                   Item: items,
                 },
               ],
@@ -148,52 +212,17 @@ const F3TenderCashPopUp = ({
       console.log(res?.data);
       showOtpPopup(res?.data);
 
-      // Additional API call for Bank Receipt if payment type is 4 or 5
-      if (
-        selectedSalesType !== "DIRECT SALES INVOICE" &&
-        (paymentModes.code === "4" || paymentModes.code === "5")
-      ) {
-        const bankReceiptBody = {
-          _keyword_: "BANKRCPTEX",
-          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-          data: [
-            {
-              Company: "SLIC",
-              UserId: "SYSADMIN",
-              Department: "011",
-              TransactionCode: invoiceHeaderData?.TransactionCode,
-              Division: "100",
-              BankApproverCode: "CIUB0000266",
-              CashCardFlag: "CARD",
-              ReceiptAmt: 115,
-              CustomerId: invoiceHeaderData?.CustomerCode,
-              MatchingTransactions: [
-                {
-                  DocNo: res?.data?.DocumentNo,
-                  TransactionCode: "EXSR",
-                  PendingAmount: "575",
-                  AdjAmount: "575",
-                },
-              ],
-            },
-          ],
-          COMPANY: "SLIC",
-          USERID: "SYSADMIN",
-          APICODE: "BANKRECEIPTVOUCHER",
-          LANG: "ENG",
-        };
+      // Call the bank receipt API if the payment type is 4 or 5
+      if (paymentModes.code === "4" || paymentModes.code === "5") {
+        const documentNo = res?.data?.DocumentNo;
+        const transactionCode = selectedSalesType === "DIRECT SALES INVOICE"
+          ? selectedTransactionCode?.TXN_CODE
+          : invoiceHeaderData?.TransactionCode;
+        const customerCode = selectedSalesType === "DIRECT SALES INVOICE"
+          ? selectedCustomerCode?.CUST_CODE
+          : invoiceHeaderData?.CustomerCode;
 
-        const bankRes = await ErpTeamRequest.post(
-          "/slicuat05api/v1/postData",
-          bankReceiptBody,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log(bankRes?.data);
+        await callBankReceiptAPI(documentNo, transactionCode, customerCode);
       }
 
       handleCloseCreatePopup();
@@ -206,11 +235,6 @@ const F3TenderCashPopUp = ({
       setLoading(false);
     }
   };
-
-  // Cards Calcultaion Logic Code
-  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
-  const [cashAmount, setCashAmount] = useState('');
-  const grossAmount = totalAmountWithVat;
 
   // useEffect(() => {
   //   if(PaymentModels) {
@@ -361,7 +385,7 @@ const F3TenderCashPopUp = ({
 
                   <div className="border p-2 w-full">
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="mb-4 mt-3">
+                      <div className="mt-3">
                         <p className="font-semibold text-sm">
                           {paymentModes.name || "Payment Mode"}
                         </p>
@@ -369,37 +393,45 @@ const F3TenderCashPopUp = ({
                           type="text"
                           value={cashAmount}
                           onChange={(e) => setCashAmount(e.target.value)}
-                          className="w-full border border-gray-300 px-2 py-3 rounded-md"
+                          className="w-full border border-gray-300 px-2 py-2 rounded-md"
                           placeholder={paymentModes.name || "Payment Mode"}
                         />
                       </div>
-                      {/* <div className="mb-4">
-                        <p className="font-semibold text-sm">Credit Amount</p>
-                        <input
-                          type="text"
-                          value={`${examptReason.code} - ${examptReason.name}`}
-                          className="w-full border border-gray-300 px-2 py-3 rounded-md"
-                          placeholder="Enter Credit Amount"
-                        />
-                      </div> */}
+                      {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                        <>
+                          <div className="mb-3">
+                            <p className="font-semibold">Total Amount</p>
+                            <input
+                              type="text"
+                              value={grossAmount}
+                              readOnly
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                              placeholder="Total Amount"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <p className="font-semibold">Change</p>
+                            <input
+                              type="text"
+                              value={changeAmount}
+                              readOnly
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                              placeholder="Change"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <p className="font-semibold">Bank Approval Code</p>
+                            <input
+                              type="text"
+                              value={bankApprovedCode}
+                              onChange={(e) => setBankApprovedCode(e.target.value)}
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                              placeholder="Enter Bank Approval Code"
+                            />
+                          </div>
+                        </>
+                      )}
                     </div>
-                    {/* <div className="mb-4">
-                      <p className="font-semibold">Total Amount</p>
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
-                        placeholder="Total Amount"
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <p className="font-semibold">Change</p>
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 px-2 py-3 rounded-md bg-[#E3EDEF]"
-                        placeholder="Change"
-                      />
-                    </div> */}
                   </div>
                 </div>
               </div>
