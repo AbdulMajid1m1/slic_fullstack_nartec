@@ -245,8 +245,15 @@ const POS = () => {
   const fetchCustomerNames = async () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
-      // console.log(response.data);
-      setSearchCustomerName(response?.data?.data);
+      const allCustomers = response?.data?.data;
+    
+      // Filter customers whose CUST_CODE starts with "CL"
+      const filteredCustomers = allCustomers.filter(customer =>
+        customer.CUST_CODE.startsWith("CL")
+      );
+      // console.log(filteredCustomers);
+      setSearchCustomerName(filteredCustomers);
+
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
