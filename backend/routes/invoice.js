@@ -4,12 +4,7 @@ const controller = require("../controllers/invoice");
 
 const router = express.Router();
 
-// Define your routes here, for example:
-// router.get(
-//   "/v1/invoice-details/:transactionCode",
-//   controller.getInvoiceDetailsByTransactionCode
-// );
-
+// Existing routes
 router.get(
   "/v1/invoice-details",
   controller.getInvoiceDetailsByTransactionCode
@@ -24,6 +19,12 @@ router.get("/v1/invoices", controller.getInvoicesByMobileNo);
 router.get("/v1/headers-and-line-items", controller.invoiceHeadersAndLineItems);
 
 // * Save Invoice header and list of invoice details
-router.post("/v1/createInvoice", controller.saveInvoice);
+router.post("/v1/saveInvoice", controller.saveInvoice);
+
+// * Get all invoice details
+router.get("/v1/masters", controller.getAllMaters);
+
+// * Get invoice master by invoice number
+router.get("/v1/detailsByInvoiceNo", controller.getInvoiceDetailsByInvoiceNo);
 
 module.exports = router;

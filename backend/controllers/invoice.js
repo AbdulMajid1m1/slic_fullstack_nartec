@@ -250,60 +250,109 @@ exports.saveInvoice = async (req, res, next) => {
       throw error;
     }
 
-    // Start a transaction
-    const prisma = new PrismaClient();
-    const transaction = await prisma.$transaction();
+    // Check if the master invoice with the given InvoiceNo already exists
+    let existingMaster = await POSInvoiceMaster.getSingleInvoiceMasterByField(
+      "InvoiceNo",
+      master.InvoiceNo
+    );
 
-    try {
-      // Check if the master invoice with the given InvoiceNo already exists
-      let existingMaster = await POSInvoiceMaster.getSingleInvoiceMasterByField(
-        "InvoiceNo",
-        master.InvoiceNo
+    let newMaster;
+    if (existingMaster) {
+      // Update the existing master invoice
+      newMaster = await POSInvoiceMaster.updateInvoiceMaster(
+        existingMaster.id,
+        master
       );
+    } else {
+      // Create a new master invoice
+      newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
+    }
 
-      let newMaster;
-      if (existingMaster) {
-        // Update the existing master invoice
-        newMaster = await POSInvoiceMaster.updateInvoiceMaster(
-          existingMaster.id,
-          master
+    // Create or update each detail item associated with the master invoice
+    const detailPromises = details.map(async (detail) => {
+      const detailData = { ...detail, Head_SYS_ID: newMaster.Head_SYS_ID };
+
+      if (detail.id) {
+        return await POSInvoiceDetails.updateInvoiceDetails(
+          detail.id,
+          detailData
         );
       } else {
-        // Create a new master invoice
-        newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
+        return await POSInvoiceDetails.createInvoiceDetails(detailData);
       }
+    });
 
-      // Create or update each detail item associated with the master invoice
-      const detailPromises = details.map(async (detail) => {
-        const detailData = { ...detail, Head_SYS_ID: newMaster.Head_SYS_ID };
+    const newDetails = await Promise.all(detailPromises);
 
-        if (detail.id) {
-          return await POSInvoiceDetails.updateInvoiceDetails(
-            detail.id,
-            detailData
-          );
-        } else {
-          return await POSInvoiceDetails.createInvoiceDetails(detailData);
-        }
-      });
+    res.status(201).json(
+      response(201, true, "Invoice saved successfully", {
+        invoiceMaster: newMaster,
+        invoiceDetails: newDetails,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};
 
-      const newDetails = await Promise.all(detailPromises);
+exports.getAllMaters = async (req, res, next) => {
+  try {
+    const allInvoices = await POSInvoiceMaster.getAllInvoiceDetails();
 
-      await transaction.commit();
-
-      res.status(201).json(
-        response(201, true, "Invoice saved successfully", {
-          invoiceMaster: newMaster,
-          invoiceDetails: newDetails,
-        })
-      );
-    } catch (error) {
-      await transaction.rollback();
-      console.error("Error saving invoice:", error);
-      next(new CustomError("Error saving invoice"));
-    } finally {
-      await prisma.$disconnect();
+    if (!allInvoices || allInvoices.length === 0) {
+      const error = new CustomError("No invoices found");
+      error.statusCode = 404;
+      throw error;
     }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          "All invoice details retrieved successfully",
+          allInvoices
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
+  const { InvoiceNo } = req.query;
+
+  try {
+    if (!InvoiceNo) {
+      const error = new CustomError("InvoiceNo is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const invoiceMaster = await POSInvoiceDetails.getInvoiceDetailsByField(
+      "InvoiceNo",
+      InvoiceNo
+    );
+
+    if (!invoiceMaster) {
+      const error = new CustomError(
+        `Invoice with number ${InvoiceNo} not found.`
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          "Invoice master retrieved successfully",
+          invoiceMaster
+        )
+      );
   } catch (error) {
     next(error);
   }
