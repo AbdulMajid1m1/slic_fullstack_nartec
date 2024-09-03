@@ -92,6 +92,16 @@ class POSInvoiceDetails {
       throw new Error(`Error fetching invoice details`);
     }
   }
+
+  static async getAllInvoiceDetails() {
+    try {
+      const allInvoices = await prisma.tblPOSInvoiceDetails.findMany();
+      return allInvoices;
+    } catch (error) {
+      console.error("Error retrieving all invoice details:", error);
+      throw new Error("Could not retrieve invoice details.");
+    }
+  }
 }
 
 module.exports = POSInvoiceDetails;

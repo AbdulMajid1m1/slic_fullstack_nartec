@@ -121,7 +121,7 @@ model TblUserRoles {
 }
 
 model tblPOSInvoiceDetails {
-  id                    String    @id @default(cuid())
+  id                    String    @id @default(uuid())
   Rec_Num                Float?   @map("Rec ##")
   TblSysNoID             Float?
   SNo                    Float?
@@ -145,7 +145,7 @@ model tblPOSInvoiceDetails {
 }
 
 model tblPOSInvoiceMaster {
-  id                    String    @id @default(cuid())
+  id                    String    @id @default(uuid())
   Rec_Num               Float?    @map("Rec ##")
   TblSysNoID            Float?
   SNo                   Float?

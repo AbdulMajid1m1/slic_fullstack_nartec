@@ -88,6 +88,25 @@ class POSInvoiceMaster {
       throw new Error(`Error fetching invoice master by ${field}`);
     }
   }
+  static async getInvoiceMasterByInvoiceNo(invoiceNo) {
+    try {
+      const invoiceMaster = await prisma.tblPOSInvoiceMaster.findUnique({
+        where: {
+          InvoiceNo: invoiceNo,
+        },
+      });
+      if (!invoiceMaster) {
+        throw new Error(`Invoice with number ${invoiceNo} not found.`);
+      }
+      return invoiceMaster;
+    } catch (error) {
+      console.error(
+        `Error retrieving invoice master for InvoiceNo ${invoiceNo}:`,
+        error
+      );
+      throw new Error("Could not retrieve invoice master.");
+    }
+  }
 }
 
 module.exports = POSInvoiceMaster;
