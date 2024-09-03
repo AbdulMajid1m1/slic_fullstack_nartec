@@ -19,6 +19,9 @@ const POS = () => {
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const [mobileNo, setMobileNo] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [vat, setVat] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
@@ -218,11 +221,24 @@ const POS = () => {
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const fetchTransactionCodes = async () => {
     try {
+      // const response = await newRequest.get(
+      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      // );
+      // console.log(response.data?.data);
+      // setTransactionCodes(response.data?.data);
       const response = await newRequest.get(
         `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      );
-      // console.log(response.data?.data);
-      setTransactionCodes(response.data?.data);
+      );  
+      let codes = response.data?.data || [];
+
+      // Apply filtering based on selectedOption
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
+      } else if (selectedSalesType === "DIRECT SALES RETURN") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
+      }
+      // console.log(codes)
+      setTransactionCodes(codes);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -230,6 +246,7 @@ const POS = () => {
   };
 
   const handleTransactionCodes = (event, value) => {
+    console.log(value)
     setSelectedTransactionCode(value ? value : "");
   };
 
@@ -335,7 +352,6 @@ const POS = () => {
       handlePrintSalesInvoice(qrCodeDataFromApi);
 
       setNetWithVat("");
-      setTotalVat("");
       toast.success("Invoice generated successfully!");
       setInvoiceLoader(false);
     } catch (err) {
@@ -490,7 +506,7 @@ const POS = () => {
               // selectedCustomerName?.CUST_NAME
               customerName
             }</div>
-            <div><span class="field-label">VAT#: </span>${netWithVat}</div>
+            <div><span class="field-label">VAT#: </span>${vat}</div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
@@ -990,9 +1006,10 @@ const POS = () => {
             <div>
               <label className="block text-gray-700">Mobile *</label>
               <input
-                type="text"
+                type="number"
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Mobile"
+                onChange={(e) => setMobileNo(e.target.value)}
               />
             </div>
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
@@ -1050,10 +1067,10 @@ const POS = () => {
                     className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
                     placeholder="Remarks"
                     disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                    onChange={() => {}}
+                    onChange={(e) => setRemarks(e.target.value)}
                 />
             </div>
-            <div>
+            {/* <div>
               <label className="block text-gray-700">Type *</label>
               <select
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
@@ -1061,7 +1078,7 @@ const POS = () => {
               >
                 <option>Cash</option>
               </select>
-            </div>
+            </div> */}
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
@@ -1074,6 +1091,7 @@ const POS = () => {
                   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
                   disabled={selectedSalesType === "DIRECT SALES RETURN"}
                   placeholder="VAT"
+                  onChange={(e) => setVat(e.target.value)}
               />
           </div>
           </div>
@@ -1236,12 +1254,6 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
-                {/* <button
-                  onClick={handleShowConfirmTransactionPopup}
-                  className="bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
-                >
-                  Confirm Transactions
-                </button> */}
                 <button
                   onClick={handleShowConfirmTransactionPopup}
                   className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
@@ -1319,6 +1331,12 @@ const POS = () => {
               handleInvoiceGenerator={handleInvoiceGenerator}
               totalAmountWithVat={totalAmountWithVat}
               invoiceHeaderData={invoiceHeaderData?.invoiceHeader}
+              mobileNo={mobileNo}
+              customerName={customerName}
+              remarks={remarks}
+              selectedCustomerCode={selectedCustomerName}
+              selectedTransactionCode={selectedTransactionCode}
+              invoiceNumber={invoiceNumber}
             />
           )}
 
