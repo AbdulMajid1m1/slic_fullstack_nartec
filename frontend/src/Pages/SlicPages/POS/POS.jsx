@@ -1070,7 +1070,7 @@ const POS = () => {
                     onChange={(e) => setRemarks(e.target.value)}
                 />
             </div>
-            <div>
+            {/* <div>
               <label className="block text-gray-700">Type *</label>
               <select
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
@@ -1078,7 +1078,7 @@ const POS = () => {
               >
                 <option>Cash</option>
               </select>
-            </div>
+            </div> */}
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
