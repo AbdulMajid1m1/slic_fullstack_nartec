@@ -23,4 +23,7 @@ router.get("/v1/invoices", controller.getInvoicesByMobileNo);
 // * Pass Invoice no as query and user will get headers (master) & Line items (Details)
 router.get("/v1/headers-and-line-items", controller.invoiceHeadersAndLineItems);
 
+// * Save Invoice header and list of invoice details
+router.post("/v1/createInvoice", controller.saveInvoice);
+
 module.exports = router;
