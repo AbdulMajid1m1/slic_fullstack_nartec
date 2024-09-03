@@ -245,8 +245,15 @@ const POS = () => {
   const fetchCustomerNames = async () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
-      // console.log(response.data);
-      setSearchCustomerName(response?.data?.data);
+      const allCustomers = response?.data?.data;
+    
+      // Filter customers whose CUST_CODE starts with "CL"
+      const filteredCustomers = allCustomers.filter(customer =>
+        customer.CUST_CODE.startsWith("CL")
+      );
+      // console.log(filteredCustomers);
+      setSearchCustomerName(filteredCustomers);
+
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -302,11 +309,18 @@ const POS = () => {
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
 
-    if (data.length === 0) {
+    if (selectedSalesType === "DIRECT SALES INVOICE" && data.length === 0) {
       toast.error(
-        "Please ensure barcode and data is available before proceeding."
+          "Please ensure barcode and data is available before proceeding."
       );
       return;
+    }
+
+    if (selectedSalesType === "DIRECT SALES RETURN" && exchangeData.length === 0) {
+        toast.error(
+            "Please ensure that exchange data is available before proceeding."
+        );
+        return;
     }
     setInvoiceLoader(true);
     try {
@@ -518,19 +532,32 @@ const POS = () => {
               </tr>
             </thead>
 
-            <tbody>
-              ${data
-                .map(
-                  (item) => `
-                <tr>
-                  <td>${item.SKU}</td>
-                  <td>${item.Qty}</td>
-                  <td>${item.ItemPrice}</td>
-                  <td>${item.ItemPrice * item.Qty}</td>
-                </tr>
-              `
-                )
-                .join("")}
+           <tbody>
+            ${selectedSalesType === "DIRECT SALES RETURN"
+              ? exchangeData
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td>${item.ItemCode}</td>
+                        <td>${item.Qty}</td>
+                        <td>${item.ItemPrice}</td>
+                        <td>${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                    `
+                  )
+                  .join("")
+              : data
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td>${item.SKU}</td>
+                        <td>${item.Qty}</td>
+                        <td>${item.ItemPrice}</td>
+                        <td>${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                    `
+                  )
+                  .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -645,6 +672,11 @@ const POS = () => {
   };
 
 
+  const handleClearInvoiceData = () => {
+    setInvoiceData([]);
+    setExchangeData([]);
+  }
+
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = async (newData) => {
     console.log(exchangeData);
@@ -730,9 +762,16 @@ const POS = () => {
 
 
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
+  const [isConfirmDisabled, setIsConfirmDisabled] = useState(false);
   const handleSelectionsSaved = () => {
+    setIsConfirmDisabled(true);
     setIsTenderCashEnabled(true); // Enable the Tender Cash button
   };
+
+  useEffect(() => {
+    setIsConfirmDisabled(false);
+    setIsTenderCashEnabled(false);
+  }, [selectedSalesType]);
 
   return (
     <SideNav>
@@ -774,13 +813,14 @@ const POS = () => {
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
-                  getOptionLabel={(option) => option.TXN_CODE || ""}
-                  onChange={handleTransactionCodes}
-                  value={
-                    transactionCodes.find(
-                      (option) => option.TXN_CODE === selectedTransactionCode?.TXN_CODE
-                    ) || null
+                  getOptionLabel={(option) => 
+                    option && option.TXN_CODE && option.TXN_NAME 
+                      ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
+                      : ''
                   }
+                  onChange={handleTransactionCodes}
+                  // value={selectedTransactionCode}
+                  value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
                   isOptionEqualToValue={(option, value) =>
                     option?.TXN_CODE === value?.TXN_CODE
                   }
@@ -870,7 +910,12 @@ const POS = () => {
                   <Autocomplete
                     id="field1"
                     options={searchCustomerName}
-                    getOptionLabel={(option) => option?.CUST_CODE || ""}
+                    // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                    getOptionLabel={(option) => 
+                      option && option.CUST_CODE && option.CUST_NAME 
+                        ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
+                        : ''
+                    }
                     onChange={handleSearchCustomerName}
                     value={
                       searchCustomerName.find(
@@ -994,18 +1039,19 @@ const POS = () => {
             )}
 
             <div>
-              <label className="block text-gray-700">Remarks *</label>
-              <input
-                type="text"
-                value={
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
-                    : ""
-                }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                placeholder="Remarks"
-                disabled={selectedSalesType === "DIRECT SALES RETURN"}
-              />
+                <label className="block text-gray-700">Remarks *</label>
+                <input
+                    type="text"
+                    value={
+                        selectedSalesType === "DIRECT SALES RETURN"
+                            ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
+                            : undefined
+                    }
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
+                    placeholder="Remarks"
+                    disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                    onChange={() => {}}
+                />
             </div>
             <div>
               <label className="block text-gray-700">Type *</label>
@@ -1019,17 +1065,17 @@ const POS = () => {
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
-                type="text"
-                value={
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? invoiceData?.VAT || ""
-                    : ""
-                }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                placeholder="VAT"
+                  type="text"
+                  value={
+                      selectedSalesType === "DIRECT SALES RETURN"
+                          ? invoiceData?.VAT || ""
+                          : undefined
+                  }
+                  className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
+                  disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                  placeholder="VAT"
               />
-            </div>
+          </div>
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
             <div className="mt-10 overflow-x-auto">
@@ -1190,9 +1236,18 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
-                <button
+                {/* <button
                   onClick={handleShowConfirmTransactionPopup}
                   className="bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer"
+                >
+                  Confirm Transactions
+                </button> */}
+                <button
+                  onClick={handleShowConfirmTransactionPopup}
+                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
+                    isConfirmDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"
+                  }`}
+                  disabled={isConfirmDisabled}
                 >
                   Confirm Transactions
                 </button>
@@ -1259,6 +1314,7 @@ const POS = () => {
               storeDatagridData={storeDatagridData}
               showOtpPopup={handleShowOtpPopup}
               handleClearData={handleClearData}
+              handleClearInvoiceData={handleClearInvoiceData}
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
               totalAmountWithVat={totalAmountWithVat}
