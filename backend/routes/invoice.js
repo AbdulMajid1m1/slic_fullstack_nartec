@@ -22,9 +22,9 @@ router.get("/v1/headers-and-line-items", controller.invoiceHeadersAndLineItems);
 router.post("/v1/saveInvoice", controller.saveInvoice);
 
 // * Get all invoice details
-router.get("/v1/all-invoices", controller.getAllInvoiceDetails);
+router.get("/v1/masters", controller.getAllMaters);
 
 // * Get invoice master by invoice number
-router.get("/v1/invoice-master", controller.getInvoiceMasterByInvoiceNo);
+router.get("/v1/detailsByInvoiceNo", controller.getInvoiceDetailsByInvoiceNo);
 
 module.exports = router;

@@ -295,9 +295,9 @@ exports.saveInvoice = async (req, res, next) => {
   }
 };
 
-exports.getAllInvoiceDetails = async (req, res, next) => {
+exports.getAllMaters = async (req, res, next) => {
   try {
-    const allInvoices = await POSInvoiceDetails.getAllInvoiceDetails();
+    const allInvoices = await POSInvoiceMaster.getAllInvoiceDetails();
 
     if (!allInvoices || allInvoices.length === 0) {
       const error = new CustomError("No invoices found");
@@ -320,7 +320,7 @@ exports.getAllInvoiceDetails = async (req, res, next) => {
   }
 };
 
-exports.getInvoiceMasterByInvoiceNo = async (req, res, next) => {
+exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
   const { InvoiceNo } = req.query;
 
   try {
@@ -330,7 +330,7 @@ exports.getInvoiceMasterByInvoiceNo = async (req, res, next) => {
       throw error;
     }
 
-    const invoiceMaster = await POSInvoiceMaster.getInvoiceMasterByField(
+    const invoiceMaster = await POSInvoiceDetails.getInvoiceDetailsByField(
       "InvoiceNo",
       InvoiceNo
     );
