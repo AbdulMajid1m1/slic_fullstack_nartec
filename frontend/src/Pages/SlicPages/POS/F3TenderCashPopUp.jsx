@@ -20,6 +20,7 @@ const F3TenderCashPopUp = ({
   remarks,
   selectedCustomerCode,
   selectedTransactionCode,
+  invoiceNumber,
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -165,7 +166,7 @@ const F3TenderCashPopUp = ({
                   "CustomerName": customerName,
                   "MobileNo": mobileNo,
                   "Remarks": remarks,
-                  "PosRefNo": 12, 
+                  "PosRefNo": invoiceNumber, 
                   "ZATCAPaymentMode": paymentModes.code,  
                   "TaxExemptionReason":"",       
                   Item: items,
@@ -184,13 +185,13 @@ const F3TenderCashPopUp = ({
                   Company: "SLIC",
                   TransactionCode: invoiceHeaderData?.TransactionCode,
                   CustomerCode: invoiceHeaderData?.CustomerCode,
-                  SalesLocationCode: selectedLocation?.LOCN_CODE || "FG101",
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE || "FG101",
+                  SalesLocationCode: selectedLocation?.LOCN_CODE,
+                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
                   UserId: "SYSADMIN",
                   CustomerName: invoiceHeaderData?.CustomerCode,
                   MobileNo: invoiceHeaderData?.MobileNo,
                   Remarks: invoiceHeaderData?.Remarks,
-                  PosRefNo: 12,
+                  PosRefNo: invoiceHeaderData?.InvoiceNo,
                   ZATCAPaymentMode: paymentModes.code,
                   TaxExemptionReason: "1",
                   Item: items,
