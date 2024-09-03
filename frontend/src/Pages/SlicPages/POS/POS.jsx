@@ -221,11 +221,24 @@ const POS = () => {
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const fetchTransactionCodes = async () => {
     try {
+      // const response = await newRequest.get(
+      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      // );
+      // console.log(response.data?.data);
+      // setTransactionCodes(response.data?.data);
       const response = await newRequest.get(
         `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      );
-      // console.log(response.data?.data);
-      setTransactionCodes(response.data?.data);
+      );  
+      let codes = response.data?.data || [];
+
+      // Apply filtering based on selectedOption
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
+      } else if (selectedSalesType === "DIRECT SALES RETURN") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
+      }
+      // console.log(codes)
+      setTransactionCodes(codes);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -1323,6 +1336,7 @@ const POS = () => {
               remarks={remarks}
               selectedCustomerCode={selectedCustomerName}
               selectedTransactionCode={selectedTransactionCode}
+              invoiceNumber={invoiceNumber}
             />
           )}
 
