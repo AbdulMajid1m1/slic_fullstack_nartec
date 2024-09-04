@@ -5,7 +5,7 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -110,7 +110,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     const stockStatusBody = {
       "filter": {
         "M_COMP_CODE": "SLIC",
-        "P_LOCN_CODE": "FG104",
+        "P_LOCN_CODE": invoiceHeaderData,
         "P_ITEM_CODE": item?.SKU,
         "P_GRADE_1": "43",
         "P_GRADE_2": "NA",

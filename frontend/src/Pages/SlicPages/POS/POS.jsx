@@ -1479,6 +1479,7 @@ const POS = () => {
               setVisibility={setIsExchangeItemPopupVisible}
               addExchangeData={addExchangeData}
               selectedRowData={selectedRowData}
+              invoiceHeaderData={invoiceHeaderData?.invoiceHeader?.SalesLocationCode}
             />
           )}
 
