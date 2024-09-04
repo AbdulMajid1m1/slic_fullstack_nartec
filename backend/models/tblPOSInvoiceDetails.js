@@ -67,6 +67,9 @@ class POSInvoiceDetails {
         where: {
           [field]: value,
         },
+        orderBy: {
+          TransactionDate: "desc", // Sort by TransactionDate in descending order
+        },
       });
       return details;
     } catch (error) {

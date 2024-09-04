@@ -109,7 +109,11 @@ class POSInvoiceMaster {
   }
   static async getAllInvoiceDetails() {
     try {
-      const details = await prisma.tblPOSInvoiceMaster.findMany({});
+      const details = await prisma.tblPOSInvoiceMaster.findMany({
+        orderBy: {
+          TransactionDate: "desc",
+        },
+      });
       return details;
     } catch (error) {
       console.error("Error fetching all invoice details:", error);
