@@ -160,6 +160,7 @@ model tblPOSInvoiceMaster {
   TransactionType       String?   @db.NVarChar(255)
   UserID                String?   @db.NVarChar(255)
   MobileNo              String?   @db.NVarChar(255) // New field added
+  VatNumber             String? 
   TransactionDate       DateTime?
 }
 
