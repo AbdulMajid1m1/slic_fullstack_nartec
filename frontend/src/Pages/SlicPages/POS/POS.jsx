@@ -13,6 +13,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
+import axios from "axios";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -296,7 +297,7 @@ const POS = () => {
   const generateInvoiceNumber = () => {
     const now = new Date();
     const timestamp = Date.now();
-    return `INV-${timestamp}`; // Or simply `timestamp` if you prefer it as a pure numeric value
+    return `${timestamp}`;
   };
 
   useEffect(() => {
@@ -317,6 +318,131 @@ const POS = () => {
 
     return () => clearInterval(intervalId);
   }, []);
+
+
+  const resetState = () => {
+    setData([]);
+    setBarcode("");
+    setCustomerName("");
+    setMobileNo("");
+    setRemarks("");
+    setVat("");
+    setSelectedCustomerName(null);
+    setSelectedTransactionCode("");
+    setInvoiceNumber(generateInvoiceNumber());
+    setTotalAmountWithVat(0);
+    setNetWithVat(0);
+    setTotalVat(0);
+    setExchangeData([]);
+  };  
+
+  const insertInvoiceRecord = async () => {
+    try {
+      let invoiceData;
+      
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        // Construct the master and details data for Sales Invoice
+        const master = {
+          InvoiceNo: invoiceNumber,
+          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          ItemSysID: data[0]?.SKU,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          Remarks: remarks,
+          TransactionType: "SALE",
+          UserID: "SYSADMIN",
+          MobileNo: mobileNo,
+          TransactionDate: todayDate,
+        };
+  
+        const details = data.map((item, index) => ({
+          Rec_Num: index + 1,
+          TblSysNoID: 1000 + index,
+          SNo: index + 1,
+          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          ItemSysID: item.SKU,
+          InvoiceNo: invoiceNumber,
+          Head_SYS_ID: "",
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          Remarks: item.Description,
+          TransactionType: "SALE",
+          UserID: "SYSADMIN",
+          ItemSKU: item.SKU,
+          ItemUnit: "PCS",
+          ItemSize: item.ItemSize,
+          ITEMRATE: item.ItemPrice,
+          ItemPrice: item.ItemPrice,
+          ItemQry: item.Qty,
+          TransactionDate: todayDate,
+        }));
+  
+        invoiceData = {
+          master,
+          details,
+        };
+      } else if (selectedSalesType === "DIRECT SALES RETURN") {
+        // Construct the master and details data for Sales Return
+        const master = {
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          ItemSysID: exchangeData[0]?.SKU,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          Remarks: remarks,
+          TransactionType: "RETURN",
+          UserID: "SYSADMIN",
+          MobileNo: mobileNo,
+          TransactionDate: todayDate,
+        };
+  
+        const details = exchangeData.map((item, index) => ({
+          Rec_Num: index + 1,
+          TblSysNoID: 1000 + index,
+          SNo: index + 1,
+          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          ItemSysID: item.SKU,
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          Head_SYS_ID: "",
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          Remarks: item.Description,
+          TransactionType: "RETURN",
+          UserID: "SYSADMIN",
+          ItemSKU: item.SKU,
+          ItemUnit: "PCS",
+          ItemSize: item.ItemSize,
+          ITEMRATE: item.ItemPrice,
+          ItemPrice: item.ItemPrice,
+          ItemQry: item.Qty,
+          TransactionDate: todayDate,
+        }));
+  
+        invoiceData = {
+          master,
+          details,
+        };
+      }
+  
+      // Call the API to save the invoice or return record
+      const saveInvoiceResponse = await newRequest.post(
+        "/invoice/v1/saveInvoice",
+        invoiceData
+      );
+      console.log("invoice body", invoiceData)
+      console.log("Record saved successfully:", saveInvoiceResponse.data);
+      resetState();
+      toast.success(saveInvoiceResponse?.data?.message || "Invoice saved successfully");
+    } catch (error) {
+      console.error("Error saving record:", error);
+      toast.error("Error saving record");
+    }
+  };
+  
 
   // Invoice generation api
   const [netWithVat, setNetWithVat] = useState("");
@@ -351,6 +477,8 @@ const POS = () => {
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       handlePrintSalesInvoice(qrCodeDataFromApi);
 
+      setIsConfirmDisabled(false);
+      setIsTenderCashEnabled(false);
       setNetWithVat("");
       toast.success("Invoice generated successfully!");
       setInvoiceLoader(false);
@@ -385,6 +513,8 @@ const POS = () => {
 
   // invoice generate
   const handlePrintSalesInvoice = async (qrCodeData) => {
+    await insertInvoiceRecord();
+
     const newInvoiceNumber = generateInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
     const printWindow = window.open("", "Print Window", "height=800,width=800");
@@ -1009,6 +1139,10 @@ const POS = () => {
                 type="number"
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Mobile"
+                value={selectedSalesType === "DIRECT SALES RETURN"
+                  ? invoiceHeaderData?.invoiceHeader?.MobileNo || ""
+                  : mobileNo
+                }
                 onChange={(e) => setMobileNo(e.target.value)}
               />
             </div>
@@ -1062,7 +1196,7 @@ const POS = () => {
                     value={
                         selectedSalesType === "DIRECT SALES RETURN"
                             ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
-                            : undefined
+                            : remarks
                     }
                     className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
                     placeholder="Remarks"
@@ -1070,15 +1204,6 @@ const POS = () => {
                     onChange={(e) => setRemarks(e.target.value)}
                 />
             </div>
-            {/* <div>
-              <label className="block text-gray-700">Type *</label>
-              <select
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                disabled={selectedSalesType === "DIRECT SALES RETURN"}
-              >
-                <option>Cash</option>
-              </select>
-            </div> */}
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
@@ -1086,7 +1211,7 @@ const POS = () => {
                   value={
                       selectedSalesType === "DIRECT SALES RETURN"
                           ? invoiceData?.VAT || ""
-                          : undefined
+                          : vat
                   }
                   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
                   disabled={selectedSalesType === "DIRECT SALES RETURN"}
