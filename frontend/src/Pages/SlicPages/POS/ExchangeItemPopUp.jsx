@@ -112,6 +112,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         "M_COMP_CODE": "SLIC",
         "P_LOCN_CODE": invoiceHeaderData,
         "P_ITEM_CODE": item?.SKU,
+        // "P_ITEM_CODE": "55782",
         "P_GRADE_1": "43",
         "P_GRADE_2": "NA",
         },
@@ -135,10 +136,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
       const stockData = stockStatusResponse?.data;
       console.log(stockData);
       // You should check here whether the stockData indicates sufficient stock before proceeding
-      const availableStock = stockData?.FreeStock || 0;
-  
+      const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
+      // console.log(availableStock)
       if (availableStock >= item.Qty) {
-        // Proceed to create the exchange invoice
+        // console.log(item.Qty)
         const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
           EnglishName: item.Description,
           GTIN: item.Barcode,
