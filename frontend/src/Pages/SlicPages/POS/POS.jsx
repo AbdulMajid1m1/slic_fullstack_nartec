@@ -13,7 +13,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
-import axios from "axios";
+import { FaTrash } from 'react-icons/fa';
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -37,10 +37,12 @@ const POS = () => {
   };
 
 
+  const [isExchangeClick, setIsExchangeClick] = useState(false);
   const handleItemClick = (action) => {
     setOpenDropdown(null);
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
+      setIsExchangeClick(true);
     } else if (action === "return") {
     }
   };
@@ -178,6 +180,11 @@ const POS = () => {
     }
   };
 
+  // handleDelete
+  const handleDelete = (index) => {
+    setData((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
@@ -241,7 +248,7 @@ const POS = () => {
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
         codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
       }
-      console.log(codes)
+      // console.log(codes)
       setTransactionCodes(codes);
     } catch (err) {
       // console.log(err);
@@ -454,20 +461,6 @@ const POS = () => {
 
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
-
-    if (selectedSalesType === "DIRECT SALES INVOICE" && data.length === 0) {
-      toast.error(
-          "Please ensure barcode and data is available before proceeding."
-      );
-      return;
-    }
-
-    if (selectedSalesType === "DIRECT SALES RETURN" && exchangeData.length === 0) {
-        toast.error(
-            "Please ensure that exchange data is available before proceeding."
-        );
-        return;
-    }
     setInvoiceLoader(true);
     try {
       const res = await newRequest.post("/zatca/generateZatcaQRCode", {
@@ -683,11 +676,11 @@ const POS = () => {
 
            <tbody>
             ${selectedSalesType === "DIRECT SALES RETURN"
-              ? exchangeData
+              ? invoiceData
                   .map(
                     (item) => `
                       <tr>
-                        <td>${item.ItemCode}</td>
+                        <td>${item.SKU}</td>
                         <td>${item.Qty}</td>
                         <td>${item.ItemPrice}</td>
                         <td>${item.ItemPrice * item.Qty}</td>
@@ -843,6 +836,7 @@ const POS = () => {
   const handleClearInvoiceData = () => {
     setInvoiceData([]);
     setExchangeData([]);
+    setInvoiceHeaderData([]);
   }
 
   const [exchangeData, setExchangeData] = useState([]);
@@ -940,6 +934,7 @@ const POS = () => {
   useEffect(() => {
     setIsConfirmDisabled(false);
     setIsTenderCashEnabled(false);
+    handleClearInvoiceData();
   }, [selectedSalesType]);
 
   return (
@@ -970,15 +965,6 @@ const POS = () => {
               <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
               </label>
-              {/* {selectedSalesType === "DIRECT SALES RETURN" ? (
-                <input
-                  id="transactionId"
-                  className="w-full mt-1 p-2 border rounded bg-gray-200 border-gray-400"
-                  value={invoiceHeaderData?.invoiceHeader?.TransactionCode || ""}
-                  readOnly
-                  required
-                />
-              ) : ( */}
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
@@ -1023,7 +1009,6 @@ const POS = () => {
                     },
                   }}
                 />
-              {/* )} */}
             </div>
             <div>
               <label className="block text-gray-700">Sale Type *</label>
@@ -1162,10 +1147,7 @@ const POS = () => {
                 type="number"
                 className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                 placeholder="Mobile"
-                value={selectedSalesType === "DIRECT SALES RETURN"
-                  ? invoiceHeaderData?.invoiceHeader?.MobileNo || ""
-                  : mobileNo
-                }
+                value={mobileNo}
                 onChange={(e) => setMobileNo(e.target.value)}
               />
             </div>
@@ -1256,7 +1238,7 @@ const POS = () => {
                     <th className="px-4 py-2">Item Price</th>
                     <th className="px-4 py-2">VAT (15%)</th>
                     <th className="px-4 py-2">Total</th>
-                    {/* <th className="px-4 py-2">Action</th> */}
+                    <th className="px-4 py-2">Action</th>
                   </tr>
                 </thead>
                 {isLoading ? (
@@ -1279,7 +1261,11 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.ItemPrice}</td>
                         <td className="border px-4 py-2">{row.VAT}</td>
                         <td className="border px-4 py-2">{row.Total}</td>
-                        <td></td>
+                        <td className="border px-4 py-2 text-center">
+                          <button onClick={() => handleDelete(index)}>
+                            <FaTrash className="text-secondary hover:text-red-500" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1467,7 +1453,6 @@ const POS = () => {
               setVisibility={setCreatePopupVisibility}
               storeDatagridData={storeDatagridData}
               storeInvoiceDatagridData={storeInvoiceDatagridData}
-              // exchangeData={exchangeData}
               showOtpPopup={handleShowOtpPopup}
               handleClearData={handleClearData}
               handleClearInvoiceData={handleClearInvoiceData}
@@ -1481,6 +1466,7 @@ const POS = () => {
               selectedCustomerCode={selectedCustomerName}
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
+              isExchangeClicked={isExchangeClick}
             />
           )}
 
