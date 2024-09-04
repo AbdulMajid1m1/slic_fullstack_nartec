@@ -14,11 +14,11 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "http://gs1ksa.org:8080",
+      url: "http://gs1ksa.org:1100",
       description: "Production server",
     },
     {
-      url: "http://localhost:8080",
+      url: "http://localhost:1100",
       description: "Development server",
     },
 
