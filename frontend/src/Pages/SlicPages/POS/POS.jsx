@@ -241,7 +241,7 @@ const POS = () => {
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
         codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
       }
-      // console.log(codes)
+      console.log(codes)
       setTransactionCodes(codes);
     } catch (err) {
       // console.log(err);
@@ -258,7 +258,7 @@ const POS = () => {
     if (selectedLocation?.LOCN_CODE) {
       fetchTransactionCodes();
     }
-  }, [selectedLocation]);
+  }, [selectedLocation, selectedSalesType]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -970,7 +970,7 @@ const POS = () => {
               <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
               </label>
-              {selectedSalesType === "DIRECT SALES RETURN" ? (
+              {/* {selectedSalesType === "DIRECT SALES RETURN" ? (
                 <input
                   id="transactionId"
                   className="w-full mt-1 p-2 border rounded bg-gray-200 border-gray-400"
@@ -978,7 +978,7 @@ const POS = () => {
                   readOnly
                   required
                 />
-              ) : (
+              ) : ( */}
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
@@ -1023,7 +1023,7 @@ const POS = () => {
                     },
                   }}
                 />
-              )}
+              {/* )} */}
             </div>
             <div>
               <label className="block text-gray-700">Sale Type *</label>
