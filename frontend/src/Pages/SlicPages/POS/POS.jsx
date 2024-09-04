@@ -180,6 +180,7 @@ const POS = () => {
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
+  const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
     // if (!isCreatePopupVisible) {
     // if (!data || data.length === 0) {
@@ -188,6 +189,8 @@ const POS = () => {
     //   );
     // } else {
       setStoreDatagridData([...data]);
+      setStoreInvoiceDatagridData([...invoiceData]);
+
       setCreatePopupVisibility(true);
     // }
   };
@@ -817,6 +820,25 @@ const POS = () => {
     }
   };
 
+  // Sales return Calculation
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      invoiceData.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+      // console.log(exchangeData)
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [invoiceData]);
 
   const handleClearInvoiceData = () => {
     setInvoiceData([]);
@@ -887,6 +909,7 @@ const POS = () => {
     }
   };
 
+  // exchange calculation
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
@@ -1317,12 +1340,6 @@ const POS = () => {
                                 >
                                   Exchange Item
                                 </li>
-                                <li
-                                  onClick={() => handleItemClick("return")}
-                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
-                                >
-                                  Return
-                                </li>
                               </ul>
                             </div>
                           )}
@@ -1449,6 +1466,8 @@ const POS = () => {
               isVisible={isCreatePopupVisible}
               setVisibility={setCreatePopupVisibility}
               storeDatagridData={storeDatagridData}
+              storeInvoiceDatagridData={storeInvoiceDatagridData}
+              // exchangeData={exchangeData}
               showOtpPopup={handleShowOtpPopup}
               handleClearData={handleClearData}
               handleClearInvoiceData={handleClearInvoiceData}

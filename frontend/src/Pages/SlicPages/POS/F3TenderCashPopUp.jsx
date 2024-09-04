@@ -21,6 +21,8 @@ const F3TenderCashPopUp = ({
   selectedCustomerCode,
   selectedTransactionCode,
   invoiceNumber,
+  storeInvoiceDatagridData,
+  exchangeData,
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -68,6 +70,7 @@ const F3TenderCashPopUp = ({
   useEffect(() => {
     if (isVisible) {
       console.log("Popup Data:", storeDatagridData);
+      console.log("Invoice Data:", storeInvoiceDatagridData);
       // console.log(selectedCustomerCode)
       // console.log(selectedTransactionCode)
     }
@@ -134,16 +137,35 @@ const F3TenderCashPopUp = ({
 
     setLoading(true);
     try {
-      const items = storeDatagridData.map((item) => {
-        const rate = `${item?.ItemPrice}`;
+      // const items = storeDatagridData.map((item) => {
+      //   const rate = `${item?.ItemPrice}`;
 
+      //   const commonFields = {
+      //     "Item-Code": item.SKU,
+      //     Size: item.ItemSize,
+      //     Qty: `${item.Qty}`,
+      //     UserId: "SYSADMIN",
+      //   };
+
+      //   return selectedSalesType === "DIRECT SALES INVOICE"
+      //     ? { ...commonFields, Rate: rate }
+      //     : commonFields;
+      // });
+
+      const dataSource = selectedSalesType === "DIRECT SALES INVOICE" 
+        ? storeDatagridData 
+        : storeInvoiceDatagridData;
+        
+      const items = dataSource.map((item) => {
+        const rate = `${item?.ItemPrice}`;
+  
         const commonFields = {
           "Item-Code": item.SKU,
           Size: item.ItemSize,
           Qty: `${item.Qty}`,
           UserId: "SYSADMIN",
         };
-
+  
         return selectedSalesType === "DIRECT SALES INVOICE"
           ? { ...commonFields, Rate: rate }
           : commonFields;
@@ -343,16 +365,29 @@ const F3TenderCashPopUp = ({
                           <p className="text-sm">Item Price</p>
                         </div>
 
-                        {storeDatagridData.map((item, index) => (
-                          <div
-                            key={index}
-                            className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
-                          >
-                            <p className="text-sm">{item.SKU}</p>
-                            <p className="text-sm">{item.ItemSize}</p>
-                            <p className="text-sm">{item.ItemPrice}</p>
-                          </div>
-                        ))}
+                        {selectedSalesType === "DIRECT SALES RETURN" ? (
+                          storeInvoiceDatagridData?.map((item, index) => (
+                            <div
+                              key={index}
+                              className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                            >
+                              <p className="text-sm">{item.SKU}</p>
+                              <p className="text-sm">{item.ItemSize}</p>
+                              <p className="text-sm">{item.ItemPrice}</p>
+                            </div>
+                          ))
+                        ) : (
+                          storeDatagridData?.map((item, index) => (
+                            <div
+                              key={index}
+                              className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                            >
+                              <p className="text-sm">{item.SKU}</p>
+                              <p className="text-sm">{item.ItemSize}</p>
+                              <p className="text-sm">{item.ItemPrice}</p>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
 
