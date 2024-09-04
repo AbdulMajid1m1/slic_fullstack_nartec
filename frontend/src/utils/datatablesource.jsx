@@ -685,3 +685,83 @@ export const customerCodesColumn = [
     width: 320,
   },
 ]
+
+
+
+export const posHistoryInvoiceColumns = [
+  {
+    field: "Rec_Num",
+    headerName: "Record Number",
+    width: 150,
+  },
+  {
+    field: "TblSysNoID",
+    headerName: "Table System ID",
+    width: 150,
+  },
+  {
+    field: "SNo",
+    headerName: "Serial Number",
+    width: 150,
+  },
+  {
+    field: "DeliveryLocationCode",
+    headerName: "Delivery Location Code",
+    width: 180,
+  },
+  {
+    field: "ItemSysID",
+    headerName: "Item System ID",
+    width: 150,
+  },
+  {
+    field: "InvoiceNo",
+    headerName: "Invoice No",
+    width: 300,
+  },
+  {
+    field: "Head_SYS_ID",
+    headerName: "Head System ID",
+    width: 180,
+  },
+  {
+    field: "TransactionCode",
+    headerName: "Transaction Code",
+    width: 150,
+  },
+  {
+    field: "CustomerCode",
+    headerName: "Customer Code",
+    width: 180,
+  },
+  {
+    field: "SalesLocationCode",
+    headerName: "Sales Location Code",
+    width: 180,
+  },
+  {
+    field: "Remarks",
+    headerName: "Remarks",
+    width: 250,
+  },
+  {
+    field: "TransactionType",
+    headerName: "Transaction Type",
+    width: 150,
+  },
+  {
+    field: "UserID",
+    headerName: "User ID",
+    width: 150,
+  },
+  {
+    field: "MobileNo",
+    headerName: "Mobile No",
+    width: 150,
+  },
+  {
+    field: "TransactionDate",
+    headerName: "Transaction Date",
+    width: 200,
+  },
+];
