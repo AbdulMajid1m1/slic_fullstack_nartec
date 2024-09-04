@@ -24,7 +24,7 @@ router.post("/v1/saveInvoice", controller.saveInvoice);
 // * Get all invoice details
 router.get("/v1/masters", controller.getAllMaters);
 
-// * Get invoice master by invoice number
+// * Get invoice details by invoice number
 router.get("/v1/detailsByInvoiceNo", controller.getInvoiceDetailsByInvoiceNo);
 
 module.exports = router;
