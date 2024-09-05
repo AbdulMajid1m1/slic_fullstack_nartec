@@ -73,7 +73,7 @@ const F3TenderCashPopUp = ({
       // console.log("Invoice Data:", storeInvoiceDatagridData);
       console.log("exhc", isExchangeClicked)
       console.log(selectedCustomerCode?.CUST_CODE)
-      console.log(selectedTransactionCode?.stockLocation)
+      console.log(selectedTransactionCode?.TXN_CODE)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -91,7 +91,7 @@ const F3TenderCashPopUp = ({
       toast.error(`Please type the ${paymentModes.name} Amount`);
       return;
     }
-    if (!selectedTransactionCode?.stockLocation) {
+    if (!selectedTransactionCode?.TXN_CODE) {
       toast.error(`Please select the Transaction Code`);
       return;
     }
@@ -117,7 +117,7 @@ const F3TenderCashPopUp = ({
           }));
   
       // Extract user-selected transaction code
-      const selectTransactionCode = selectedTransactionCode?.stockLocation;
+      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       console.log(selectTransactionCode);
   
       // Function to generate Sales Invoice API body dynamically

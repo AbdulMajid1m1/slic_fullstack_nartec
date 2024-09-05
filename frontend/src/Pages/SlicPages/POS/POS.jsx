@@ -5,7 +5,6 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import F3TenderCashPopUp from "./F3TenderCashPopUp";
 import F3ResponsePopUp from "./F3ResponsePopUp";
-import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import sliclogo from "../../../Images/sliclogo.png";
 import QRCode from "qrcode";
@@ -26,8 +25,6 @@ const POS = () => {
   const [vat, setVat] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [transactionCodes, setTransactionCodes] = useState([]);
-  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
@@ -64,16 +61,11 @@ const POS = () => {
       const locationData = JSON.parse(storedLocationData);
       if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
         setSelectedLocation(locationData);
-        setTransactionCodes([locationData]);
       }
       // console.log(locationData)
     }
   }, []);
 
-  const handleTransactionCodes = (event, value) => {
-    console.log(value)
-    setSelectedTransactionCode(value ? value : "");
-  };
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
@@ -247,45 +239,45 @@ const POS = () => {
   };
 
   // transaction Codes Api
-  // const [transactionCodes, setTransactionCodes] = useState([]);
-  // const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
-  // const fetchTransactionCodes = async () => {
-  //   try {
-  //     // const response = await newRequest.get(
-  //     //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-  //     // );
-  //     // console.log(response.data?.data);
-  //     // setTransactionCodes(response.data?.data);
+  const [transactionCodes, setTransactionCodes] = useState([]);
+  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
+  const fetchTransactionCodes = async () => {
+    try {
+      // const response = await newRequest.get(
+      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      // );
+      // console.log(response.data?.data);
+      // setTransactionCodes(response.data?.data);
      
-  //     const response = await newRequest.get(
-  //       `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-  //     );  
-  //     let codes = response.data?.data || [];
+      const response = await newRequest.get(
+        `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
+      );  
+      let codes = response.data?.data || [];
 
-  //     // Apply filtering based on selectedOption
-  //     if (selectedSalesType === "DIRECT SALES INVOICE") {
-  //       codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
-  //     } else if (selectedSalesType === "DIRECT SALES RETURN") {
-  //       codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
-  //     }
-  //     // console.log(codes)
-  //     setTransactionCodes(codes);
-  //   } catch (err) {
-  //     // console.log(err);
-  //     toast.error(err?.response?.data?.message || "Something went Wrong");
-  //   }
-  // };
+      // Apply filtering based on selectedOption
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
+      } else if (selectedSalesType === "DIRECT SALES RETURN") {
+        codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
+      }
+      // console.log(codes)
+      setTransactionCodes(codes);
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
 
-  // const handleTransactionCodes = (event, value) => {
-  //   console.log(value)
-  //   setSelectedTransactionCode(value ? value : "");
-  // };
+  const handleTransactionCodes = (event, value) => {
+    // console.log(value)
+    setSelectedTransactionCode(value ? value : "");
+  };
 
-  // useEffect(() => {
-  //   if (selectedLocation?.LOCN_CODE) {
-  //     fetchTransactionCodes();
-  //   }
-  // }, [selectedLocation, selectedSalesType]);
+  useEffect(() => {
+    if (selectedLocation?.stockLocation) {
+      fetchTransactionCodes();
+    }
+  }, [selectedLocation, selectedSalesType]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -376,7 +368,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.stockLocation,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedCustomerName?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -395,7 +387,7 @@ const POS = () => {
           ItemSysID: item.SKU,
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.stockLocation,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedCustomerName?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -420,7 +412,7 @@ const POS = () => {
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.stockLocation,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedCustomerName?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -438,7 +430,7 @@ const POS = () => {
           ItemSysID: item.SKU,
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.stockLocation,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedCustomerName?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -1006,20 +998,17 @@ const POS = () => {
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
-                  getOptionLabel={(option) =>
-                    option && option.stockLocation && option.showroom
-                      ? `${option.stockLocation} - ${option.showroom}`
-                      : ""
+                  getOptionLabel={(option) => 
+                    option && option.TXN_CODE && option.TXN_NAME 
+                      ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
+                      : ''
                   }
                   onChange={handleTransactionCodes}
                   // value={selectedTransactionCode}
-                  value={transactionCodes.find(
-                      (option) => option.stockLocation === selectedTransactionCode?.stockLocation
-                    ) || null
-                  }
+                  value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
                   isOptionEqualToValue={(option, value) =>
-                    option?.stockLocation === value?.stockLocation
-                  }          
+                    option?.TXN_CODE === value?.TXN_CODE
+                  }
                   onInputChange={(event, value) => {
                     if (!value) {
                       setSelectedTransactionCode(""); // Clear selection
