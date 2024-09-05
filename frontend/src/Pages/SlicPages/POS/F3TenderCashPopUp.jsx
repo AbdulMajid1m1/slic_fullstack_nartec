@@ -158,7 +158,7 @@ const F3TenderCashPopUp = ({
               Company: "SLIC",
               UserId: "SYSADMIN",
               Department: "011",
-              TransactionCode: transactionCode, // EXIN, EXSR, etc.
+              TransactionCode: "BRV",
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
