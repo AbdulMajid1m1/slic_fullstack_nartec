@@ -128,8 +128,8 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            // "CustomerCode": selectedCustomerCode?.CUST_CODE,
-            "CustomerCode": "EX100003",
+            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            // "CustomerCode": "EX100003",
             "SalesLocationCode": selectedLocation?.LOCN_CODE,
             "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
             "UserId": "SYSADMIN",
