@@ -73,7 +73,7 @@ const F3TenderCashPopUp = ({
       // console.log("Invoice Data:", storeInvoiceDatagridData);
       console.log("exhc", isExchangeClicked)
       console.log(selectedCustomerCode?.CUST_CODE)
-      // console.log(selectedTransactionCode?.TXN_CODE)
+      console.log(selectedTransactionCode?.stockLocation)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -91,7 +91,7 @@ const F3TenderCashPopUp = ({
       toast.error(`Please type the ${paymentModes.name} Amount`);
       return;
     }
-    if (!selectedTransactionCode?.TXN_CODE) {
+    if (!selectedTransactionCode?.stockLocation) {
       toast.error(`Please select the Transaction Code`);
       return;
     }
@@ -117,7 +117,7 @@ const F3TenderCashPopUp = ({
           }));
   
       // Extract user-selected transaction code
-      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+      const selectTransactionCode = selectedTransactionCode?.stockLocation;
       console.log(selectTransactionCode);
   
       // Function to generate Sales Invoice API body dynamically
@@ -130,8 +130,8 @@ const F3TenderCashPopUp = ({
             "TransactionCode": `${selectTransactionCode}`,
             "CustomerCode": selectedCustomerCode?.CUST_CODE,
             // "CustomerCode": "EX100003",
-            "SalesLocationCode": selectedLocation?.LOCN_CODE,
-            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
             "CustomerName": customerName,
             "MobileNo": mobileNo,
@@ -229,8 +229,8 @@ const F3TenderCashPopUp = ({
             "Company": "SLIC",
             "TransactionCode": selectTransactionCode,
             "CustomerCode": invoiceHeaderData?.CustomerCode,
-            "SalesLocationCode": selectedLocation?.LOCN_CODE,
-            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
             "CustomerName": invoiceHeaderData?.CustomerCode,
             "MobileNo": invoiceHeaderData?.MobileNo,

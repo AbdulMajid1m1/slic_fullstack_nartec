@@ -147,17 +147,7 @@ const SlicFirstScreen = () => {
       // console.log(selectedCompany);
     }
   }, [selectedCompany]);
-
-  useEffect(() => {
-    if (selectedLocation) {
-      sessionStorage.setItem(
-        "selectedLocation",
-        JSON.stringify(selectedLocation)
-      );
-      console.log(selectedLocation);
-    }
-  }, [selectedLocation]);
-
+  
   const handleCompanyChange = (e) => {
     const selectedComp = companies.find(
       (company) => company.COMP_NAME === e.target.value
@@ -165,13 +155,64 @@ const SlicFirstScreen = () => {
     setSelectedCompany(selectedComp);
   };
 
-  const handleLocationChange = (e) => {
-    const selectedLoc = locations.find(
-      (location) => `${location.LOCN_CODE} - ${location.LOCN_NAME}` === e.target.value
-    );
-    setSelectedLocation(selectedLoc);
+
+  // useEffect(() => {
+  //   if (selectedLocation) {
+  //     sessionStorage.setItem(
+  //       "selectedLocation",
+  //       JSON.stringify(selectedLocation)
+  //     );
+  //     console.log(selectedLocation);
+  //   }
+  // }, [selectedLocation]);
+
+
+  // const handleLocationChange = (e) => {
+  //   const selectedLoc = locations.find(
+  //     (location) => `${location.LOCN_CODE} - ${location.LOCN_NAME}` === e.target.value
+  //   );
+  //   setSelectedLocation(selectedLoc);
+  // };
+
+  const [selectedShowroom, setSelectedShowroom] = useState("");
+  const [selectedStockLocation, setSelectedStockLocation] = useState("");
+  const [stockLocations, setStockLocations] = useState([]);
+
+  const handleShowroomChange = (e) => {
+    const showroom = e.target.value;
+    setSelectedShowroom(showroom);
+
+    // Update stock locations based on showroom selection
+    let locations = [];
+    if (showroom === "Factory Showroom") {
+      locations = ["FG101", "FG501", "FG502"];
+    } else if (showroom === "Khobar Showroom") {
+      locations = ["FG201", "FG504"];
+    } else if (showroom === "Jubail Showroom") {
+      locations = ["FG202", "FG505"];
+    }
+
+    setStockLocations(locations);
+    setSelectedStockLocation("");
   };
 
+  const handleStockLocationChange = (e) => {
+    const stockLocation = e.target.value;
+    setSelectedStockLocation(stockLocation);
+
+    // Save the selected stock location and showroom in selectedLocation state
+    setSelectedLocation({ stockLocation, showroom: selectedShowroom });
+  };
+
+  useEffect(() => {
+    if (selectedLocation) {
+      sessionStorage.setItem(
+        "selectedLocation",
+        JSON.stringify(selectedLocation)
+      );
+      // console.log("Selected Location saved to session:", selectedLocation);
+    }
+  }, [selectedLocation]);
 
   // login states
   const [email, setEmail] = useState("");
@@ -247,19 +288,23 @@ const SlicFirstScreen = () => {
                   className="block text-gray-700 text-sm font-bold mb-2"
                   htmlFor="locations"
                 >
-                  Select Locations
+                  Select Showroom
                 </label>
                 <select
                   id="locations"
-                  onChange={handleLocationChange}
+                  value={selectedShowroom}
+                  onChange={handleShowroomChange}
                   className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="" disabled>
-                    Select Location
+                    Select Showroom
                   </option>
-                  {locations.map((location) => (
+                  <option value="Factory Showroom">Factory Showroom</option>
+                  <option value="Khobar Showroom">Khobar Showroom</option>
+                  <option value="Jubail Showroom">Jubail Showroom</option>
+                  {/* {locations.map((location) => (
                     <option>{location?.LOCN_CODE} - {location?.LOCN_NAME}</option>
-                  ))}
+                  ))} */}
                 </select>
               </div>
             </div>
@@ -267,7 +312,7 @@ const SlicFirstScreen = () => {
               <img
                 src={warehouse}
                 alt="Warehouse"
-                className="h-auto w-full mb-6 object-contain"
+                className="h-auto w-full sm:mb-20 object-contain"
               />
             </div>
 
@@ -276,15 +321,13 @@ const SlicFirstScreen = () => {
               <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3">
                 SLIC User Log in
               </h2>
-              {/* username */}
+
+              {/* Email */}
               <div className="w-full sm:px-0 px-4 mb-6">
-                <label
-                  htmlFor="email"
-                  className="sm:text-2xl text-secondary text-lg font-sans"
-                >
+                <label htmlFor="email" className="sm:text-2xl text-secondary text-lg font-sans">
                   Email
                 </label>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2">
                   <input
                     id="email"
                     type="text"
@@ -295,56 +338,87 @@ const SlicFirstScreen = () => {
                     className="p-2 border rounded-md border-secondary text-lg"
                   />
                 </div>
+              </div>
 
-                <div className="mt-6">
-                  <label
-                    htmlFor="password"
-                    className="sm:text-2xl text-secondary text-lg font-sans"
-                  >
-                    Password
-                  </label>
-                  <div className="flex flex-col gap-6">
-                    <input
-                      id="password"
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="p-2 border border-secondary rounded-md text-lg"
-                    />
-                    <Button
-                      variant="contained"
-                      type="submit"
-                      style={{
-                        backgroundColor: "#1D2F90",
-                        color: "#ffffff",
-                        padding: "10px",
-                      }}
-                      disabled={loading}
-                      className="w-full bg-[#B6BAD6] border-b-2 border-[#350F9F] hover:bg-[#9699b1] mb-6 text-white font-medium font-body text-xl rounded-md px-5 py-2"
-                      endIcon={
-                        loading ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : (
-                          <SendIcon />
-                        )
-                      }
-                    >
-                      Log in
-                    </Button>
-                  </div>
-                  <div className="text-secondary text-lg font-sans mt-2">
-                    <span 
-                      onClick={handleShowResetPasswordPopup}
-                      className="hover:text-primary hover:cursor-pointer transition-colors duration-300 ease-in-out"
-                    >
-                      Create your Account
-                    </span>
-                  </div>
+              {/* Password */}
+              <div className="w-full sm:px-0 px-4 mb-6">
+                <label htmlFor="password" className="sm:text-2xl text-secondary text-lg font-sans">
+                  Password
+                </label>
+                <div className="flex flex-col gap-2">
+                  <input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="p-2 border rounded-md border-secondary text-lg"
+                  />
                 </div>
               </div>
+
+              {/* Stock Location */}
+              <div className="w-full sm:px-0 px-4 mb-6">
+                <label htmlFor="stocklocation" className="sm:text-2xl text-secondary text-lg font-sans">
+                  Stock Location
+                </label>
+                <div className="flex flex-col gap-2">
+                  <select
+                    id="stocklocation"
+                    required
+                    value={selectedStockLocation}
+                    onChange={handleStockLocationChange}
+                    className="p-2 border rounded-md border-secondary text-lg"
+                    disabled={!selectedShowroom}
+                  >
+                    <option value="" disabled selected>
+                      {selectedShowroom ? "Select Stock Location" : "Select Showroom First"}
+                    </option>
+                    {stockLocations.map((location, index) => (
+                      <option key={index} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="w-full sm:px-0 px-4 mb-6">
+                <Button
+                  variant="contained"
+                  type="submit"
+                  style={{
+                    backgroundColor: "#1D2F90",
+                    color: "#ffffff",
+                    padding: "10px",
+                  }}
+                  disabled={loading}
+                  className="w-full bg-[#B6BAD6] border-b-2 border-[#350F9F] hover:bg-[#9699b1] mb-6 text-white font-medium font-body text-xl rounded-md px-5 py-2"
+                  endIcon={
+                    loading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      <SendIcon />
+                    )
+                  }
+                >
+                  Log in
+                </Button>
+              </div>
+
+              {/* Create Account Link */}
+              <div className="w-full sm:px-0 px-4 text-secondary text-lg font-sans">
+                <span
+                  onClick={handleShowResetPasswordPopup}
+                  className="hover:text-primary hover:cursor-pointer transition-colors duration-300 ease-in-out"
+                >
+                  Create your Account
+                </span>
+              </div>
             </form>
+
           </div>
 
           {/* Last Cards */}
