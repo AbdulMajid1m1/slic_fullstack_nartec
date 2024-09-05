@@ -22,7 +22,7 @@ const F3TenderCashPopUp = ({
   selectedTransactionCode,
   invoiceNumber,
   storeInvoiceDatagridData,
-  exchangeData,
+  isExchangeClicked,
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -70,9 +70,10 @@ const F3TenderCashPopUp = ({
   useEffect(() => {
     if (isVisible) {
       console.log("Popup Data:", storeDatagridData);
-      console.log("Invoice Data:", storeInvoiceDatagridData);
+      // console.log("Invoice Data:", storeInvoiceDatagridData);
+      console.log("exhc", isExchangeClicked)
       // console.log(selectedCustomerCode)
-      // console.log(selectedTransactionCode)
+      // console.log(selectedTransactionCode?.TXN_CODE)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -83,182 +84,259 @@ const F3TenderCashPopUp = ({
   }, [cashAmount, grossAmount]);
 
 
-  // I call bank Api For Both Reasons 
-  const callBankReceiptAPI = async (documentNo, transactionCode, customerCode) => {
-    const bankReceiptBody = {
-      _keyword_: "BANKRCPTEX",
-      "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-      data: [
-        {
-          Company: "SLIC",
-          UserId: "SYSADMIN",
-          Department: "011",
-          TransactionCode: "BRV",
-          Division: "100",
-          BankApproverCode: bankApprovedCode,
-          CashCardFlag: "CARD",
-          ReceiptAmt: grossAmount,
-          CustomerId: customerCode,
-          MatchingTransactions: [
-            {
-              DocNo: documentNo,
-              TransactionCode: transactionCode,
-              PendingAmount: changeAmount,
-              AdjAmount: "",     
-            },
-          ],
-        },
-      ],
-      COMPANY: "SLIC",
-      USERID: "SYSADMIN",
-      APICODE: "BANKRECEIPTVOUCHER",
-      LANG: "ENG",
-    };
-
-    const bankRes = await ErpTeamRequest.post(
-      "/slicuat05api/v1/postData",
-      bankReceiptBody,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    console.log(bankRes?.data);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!cashAmount) {
       toast.error(`Please type the ${paymentModes.name} Amount`);
       return;
     }
-
-    setLoading(true);
-    try {
-      // const items = storeDatagridData.map((item) => {
-      //   const rate = `${item?.ItemPrice}`;
-
-      //   const commonFields = {
-      //     "Item-Code": item.SKU,
-      //     Size: item.ItemSize,
-      //     Qty: `${item.Qty}`,
-      //     UserId: "SYSADMIN",
-      //   };
-
-      //   return selectedSalesType === "DIRECT SALES INVOICE"
-      //     ? { ...commonFields, Rate: rate }
-      //     : commonFields;
-      // });
-
-      const dataSource = selectedSalesType === "DIRECT SALES INVOICE" 
-        ? storeDatagridData 
-        : storeInvoiceDatagridData;
-        
-      const items = dataSource.map((item) => {
-        const rate = `${item?.ItemPrice}`;
+    if (!selectedTransactionCode?.TXN_CODE) {
+      toast.error(`Please select the Transaction Code`);
+      return;
+    }
   
-        const commonFields = {
-          "Item-Code": item.SKU,
-          Size: item.ItemSize,
-          Qty: `${item.Qty}`,
-          UserId: "SYSADMIN",
+    setLoading(true);
+  
+    try {
+      // Prepare the items array based on selectedSalesType
+      const items = selectedSalesType === "DIRECT SALES INVOICE"
+        ? storeDatagridData.map((item) => ({
+            "Item-Code": item.SKU,
+            Size: item.ItemSize,
+            Qty: `${item.Qty}`,
+            Rate: `${item?.ItemPrice}`,
+            UserId: "SYSADMIN",
+          }))
+        : storeInvoiceDatagridData.map((item) => ({
+            "Item-Code": item.SKU,
+            Size: item.ItemSize,
+            Qty: `${item.Qty}`,
+            Rate: `${item?.ItemPrice}`,
+            UserId: "SYSADMIN",
+          }));
+  
+      // Extract user-selected transaction code
+      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+      console.log(selectTransactionCode);
+  
+      // Function to generate Sales Invoice API body dynamically
+      const salesInvoiceBody = {
+        "_keyword_": "Invoice",
+        "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+        data: [
+          {
+            "Company": "SLIC",
+            "TransactionCode": `${selectTransactionCode}`,
+            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            "SalesLocationCode": selectedLocation?.LOCN_CODE,
+            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "UserId": "SYSADMIN",
+            "CustomerName": customerName,
+            "MobileNo": mobileNo,
+            "Remarks": remarks,
+            "PosRefNo": invoiceNumber,
+            "ZATCAPaymentMode": paymentModes.code,
+            "TaxExemptionReason": "",
+            Item: items,
+          },
+        ],
+        COMPANY: "SLIC",
+        USERID: "SYSADMIN",
+        APICODE: "INVOICE",
+        LANG: "ENG",
+      };
+  
+      // Function to call Bank API
+      const callBankReceiptAPI = async (documentNo, transactionCode) => {
+        const bankReceiptBody = {
+          _keyword_: "BANKRCPTDI",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
+            {
+              Company: "SLIC",
+              UserId: "SYSADMIN",
+              Department: "011",
+              TransactionCode: transactionCode, // EXIN, EXSR, etc.
+              Division: "100",
+              BankApproverCode: bankApprovedCode,
+              CashCardFlag: "CARD",
+              ReceiptAmt: grossAmount,
+              CustomerId: invoiceHeaderData?.CustomerCode,
+              MatchingTransactions: [
+                {
+                  DocNo: documentNo,
+                  TransactionCode: transactionCode,
+                  PendingAmount: changeAmount,
+                  AdjAmount: changeAmount,
+                },
+              ],
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "BANKRECEIPTVOUCHER",
+          LANG: "ENG",
         };
   
-        return selectedSalesType === "DIRECT SALES INVOICE"
-          ? { ...commonFields, Rate: rate }
-          : commonFields;
-      });
-
-      // Constructing the body based on the selectedSalesType
-      const body =
-        selectedSalesType === "DIRECT SALES INVOICE"
-          ? {
-              _keyword_: "Invoice",
-              "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  "Company": "SLIC",
-                  "TransactionCode": selectedTransactionCode?.TXN_CODE,
-                  "CustomerCode": selectedCustomerCode?.CUST_CODE,
-                  "SalesLocationCode": selectedLocation?.LOCN_CODE,
-                  "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
-                  "UserId": "SYSADMIN",
-                  "CustomerName": customerName,
-                  "MobileNo": mobileNo,
-                  "Remarks": remarks,
-                  "PosRefNo": invoiceNumber, 
-                  "ZATCAPaymentMode": paymentModes.code,  
-                  "TaxExemptionReason":"",       
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "INVOICE",
-              LANG: "ENG",
-            }
-          : {
-              keyword: "salesreturn",
-              "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-              data: [
-                {
-                  Company: "SLIC",
-                  TransactionCode: invoiceHeaderData?.TransactionCode,
-                  CustomerCode: invoiceHeaderData?.CustomerCode,
-                  SalesLocationCode: selectedLocation?.LOCN_CODE,
-                  DeliveryLocationCode: selectedLocation?.LOCN_CODE,
-                  UserId: "SYSADMIN",
-                  CustomerName: invoiceHeaderData?.CustomerCode,
-                  MobileNo: invoiceHeaderData?.MobileNo,
-                  Remarks: invoiceHeaderData?.Remarks,
-                  PosRefNo: invoiceHeaderData?.InvoiceNo,
-                  ZATCAPaymentMode: paymentModes.code,
-                  TaxExemptionReason: "1",
-                  Item: items,
-                },
-              ],
-              COMPANY: "SLIC",
-              USERID: "SYSADMIN",
-              APICODE: "SALESRETURN",
-              LANG: "ENG",
-            };
-
-      // API call based on the constructed body
-      const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", body, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log(res?.data);
-      showOtpPopup(res?.data);
-
-      // Call the bank receipt API if the payment type is 4 or 5
-      if (paymentModes.code === "4" || paymentModes.code === "5") {
-        const documentNo = res?.data?.DocumentNo;
-        const transactionCode = selectedSalesType === "DIRECT SALES INVOICE"
-          ? selectedTransactionCode?.TXN_CODE
-          : invoiceHeaderData?.TransactionCode;
-        const customerCode = selectedSalesType === "DIRECT SALES INVOICE"
-          ? selectedCustomerCode?.CUST_CODE
-          : invoiceHeaderData?.CustomerCode;
-
-        await callBankReceiptAPI(documentNo, transactionCode, customerCode);
+        const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+  
+        console.log("Bank Receipt Response:", bankRes?.data);
+      };
+  
+      // SALES INVOICE HANDLING
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        // Call the Sales Invoice API
+        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        console.log("Sales Invoice Response:", res?.data);
+  
+        // Call the Bank API if the paymentModes.code is 4 or 5
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
+          const documentNo = res?.data?.['Document No'];
+          await callBankReceiptAPI(documentNo, selectTransactionCode);
+        }
+  
+        // Complete the process
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+        return; // Exit since no further action is needed
+      }
+  
+      // SALES RETURN HANDLING
+      const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+      const salesReturnBody = {
+        "_keyword_": "salesreturn",
+        "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+        "data": [
+          {
+            "Company": "SLIC",
+            "TransactionCode": selectTransactionCode,
+            "CustomerCode": invoiceHeaderData?.CustomerCode,
+            "SalesLocationCode": selectedLocation?.LOCN_CODE,
+            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "UserId": "SYSADMIN",
+            "CustomerName": invoiceHeaderData?.CustomerCode,
+            "MobileNo": invoiceHeaderData?.MobileNo,
+            "Remarks": invoiceHeaderData?.Remarks,
+            "PosRefNo": invoiceHeaderData?.InvoiceNo,
+            "ZATCAPaymentMode": paymentModes.code,
+            "TaxExemptionReason": "1",
+            "Item": items,
+          },
+        ],
+        COMPANY: "SLIC",
+        USERID: "SYSADMIN",
+        APICODE: "SALESRETURN",
+        LANG: "ENG",
+      };
+  
+      if (paymentModes.code === "1") {
+        // Call the Sales Return API
+        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        console.log("Sales Return Response:", res?.data);
+  
+        // Complete the process
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+        return; // Exit since no further action is needed
       }
 
-      handleCloseCreatePopup();
-      handleClearData();
-      handleClearInvoiceData();
-      handleInvoiceGenerator();
-      setLoading(false);
+
+      // Handle Sales Return with Payment Mode Code 4 or 5 (without exchange)
+      if (!isExchangeClicked && (paymentModes.code === "4" || paymentModes.code === "5")) {
+        // Call Sales Return API only once
+        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("Sales Return Response (No Exchange):", res?.data);
+
+        // Call the Bank API for the Sales Return
+        const documentNo = res?.data?.['Document No'];
+        await callBankReceiptAPI(documentNo, selectTransactionCode);
+
+        // Complete the process
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+        return; // Exit since no further action is needed
+      }
+  
+      // Call Sales Return API with both EXSR and EXIN transaction codes if paymentModes.code is 4 or 5
+      if (isExchangeClicked && (paymentModes.code === "4" || paymentModes.code === "5")) {
+        const exsrRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Sales Return Response (EXSR):", exsrRes?.data);
+  
+        const exinRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", {
+          ...salesReturnBody,
+          "data": [
+            {
+              ...salesReturnBody.data[0],
+              "TransactionCode": modifiedTransactionCode,
+            },
+          ],
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        console.log("Sales Return Response (EXIN):", exinRes?.data);
+  
+        // Call Bank API for both document numbers
+        const exsrDocumentNo = exsrRes?.data?.['Document No'];
+        const exinDocumentNo = exinRes?.data?.['Document No'];
+  
+        await callBankReceiptAPI(exinDocumentNo, modifiedTransactionCode);
+        await callBankReceiptAPI(exsrDocumentNo, selectTransactionCode);
+  
+        // Complete the process
+        showOtpPopup(exsrRes?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+      }
+  
     } catch (err) {
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
   };
+  
+  
 
+  
   // useEffect(() => {
   //   if(PaymentModels) {
   //     console.log(paymentModes);

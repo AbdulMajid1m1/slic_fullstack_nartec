@@ -137,7 +137,7 @@ const ConfirmTransactionPopUp = ({
       setLoading(false);
       onSelectionsSaved();
       setVisibility(false);
-    }, 1000);
+    }, 500);
   };
 
   const handleCloseCreatePopup = () => {
