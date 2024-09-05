@@ -151,7 +151,7 @@ const F3TenderCashPopUp = ({
       // Function to call Bank API
       const callBankReceiptAPI = async (documentNo, transactionCode) => {
         const bankReceiptBody = {
-          _keyword_: "BANKRCPTDI",
+          "_keyword_": "BANKRCPTDI",
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
           data: [
             {
@@ -163,7 +163,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: grossAmount,
-              CustomerId: invoiceHeaderData?.CustomerCode,
+              CustomerId: selectedCustomerCode?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -178,6 +178,36 @@ const F3TenderCashPopUp = ({
           USERID: "SYSADMIN",
           APICODE: "BANKRECEIPTVOUCHER",
           LANG: "ENG",
+          //   "_keyword_": "BANKRCPTDI",
+          //   "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          //  "data": [
+          //     {
+          //       "Company": "SLIC",
+          //       "UserId": "SYSADMIN",
+          //       "Department": "011",
+          //       "TransactionCode": "BRV",
+          //       "Division": "100",
+          //       "BankApproverCode":"CIUB0000266",
+          //       "CashCardFlag":"CARD",
+          //       "ReceiptAmt": 1150,
+          //       "CustomerId":"CL102726",
+          
+          //       "MatchingTransactions":[
+          //     {
+              
+          // "DocNo":"3500009652",
+          // "TransactionCode":"JCIN",
+          // "PendingAmount":"1150",
+          // "AdjAmount":"1150"
+          //     }
+          // ]
+               
+          //     }
+          //   ],
+          //   "COMPANY": "SLIC",
+          //   "USERID": "SYSADMIN",
+          //   "APICODE": "BANKRECEIPTVOUCHER",
+          //   "LANG": "ENG"          
         };
   
         const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
