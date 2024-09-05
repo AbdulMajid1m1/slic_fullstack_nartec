@@ -341,6 +341,17 @@ const F3TenderCashPopUp = ({
   };
   
   
+  const validateForm = () => {
+    if ((paymentModes.code === "4" || paymentModes.code === "5") && !bankApprovedCode) {
+      setIsPrintEnabled(false);
+    } else {
+      setIsPrintEnabled(true);
+    }
+  };
+  
+  useEffect(() => {
+    validateForm();
+  }, [bankApprovedCode, paymentModes]);
 
   
   // useEffect(() => {
@@ -482,7 +493,7 @@ const F3TenderCashPopUp = ({
                       </p>
                     </div>
                     <div className="mt-10">
-                      <Button
+                      {/* <Button
                         variant="contained"
                         style={{
                           backgroundColor: "#021F69", // Change color based on enabled/disabled state
@@ -497,6 +508,23 @@ const F3TenderCashPopUp = ({
                             <CircularProgress size={24} color="inherit" />
                           ) : null
                         }
+                      >
+                        Print
+                      </Button> */}
+                      <Button
+                        variant="contained"
+                        style={{
+                          backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3",
+                          color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
+                        }}
+                        type="submit"
+                        disabled={!isPrintEnabled || loading}
+                        className="sm:w-[70%] w-full ml-2"
+                        endIcon={
+                          loading ? 
+                            <CircularProgress size={24} color="inherit" /> 
+                            : null
+                          }
                       >
                         Print
                       </Button>

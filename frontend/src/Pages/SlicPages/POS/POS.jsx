@@ -14,6 +14,7 @@ import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
 import { FaTrash } from 'react-icons/fa';
+import MobileNumberPopUp from "./MobileNumberPopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -223,6 +224,15 @@ const POS = () => {
     setIsConfirmTransactionPopupVisible(true);
   };
 
+  const [isMobileNumberPopupVisible, setIsMobileNumberPopupVisible] = useState(false);
+  const handleShowMobileNumberPopup = () => {
+    if (mobileNo) {
+      setIsMobileNumberPopupVisible(true);
+    } else {
+      toast.info("Please enter a mobile number");
+    }
+  };
+
   const handleClearData = () => {
     setData([]);
   };
@@ -364,6 +374,7 @@ const POS = () => {
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
+          VatNumber: vat,
         };
   
         const details = data.map((item, index) => ({
@@ -773,17 +784,18 @@ const POS = () => {
   const [invoiceHeaderData, setInvoiceHeaderData] = useState([]);
   const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
   // Fetch invoice details when searching by invoice number for a sales return
-  const handleGetInvoiceDetails = async (e) => {
-    e.preventDefault();
+  const handleGetInvoiceDetails = async (invoiceNo) => {
+    // e.preventDefault();
     setInvoiceDataLoader(true);
 
     try {
       const response = await newRequest.get(
-        `/invoice/v1/headers-and-line-items?InvoiceNo=${searchInvoiceNumber}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
       );
       const data = response?.data?.data;
       setInvoiceHeaderData(data);
       console.log(data)
+      setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
 
@@ -811,6 +823,16 @@ const POS = () => {
     } finally {
       setInvoiceDataLoader(false);
     }
+  };
+
+  // handleDelete
+  const handleDeleteInvoiceData = (index) => {
+    setInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
+  const handleSearchInvoice = (e) => {
+    e.preventDefault();
+    handleGetInvoiceDetails(searchInvoiceNumber);
   };
 
   // Sales return Calculation
@@ -922,6 +944,12 @@ const POS = () => {
 
     calculateTotals();
   }, [exchangeData]);
+
+
+  // handleDelete
+  const handleDeleteExchangeData = (index) => {
+    setExchangeData((prevData) => prevData.filter((_, i) => i !== index));
+  };
 
 
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
@@ -1141,15 +1169,25 @@ const POS = () => {
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
-            <div>
-              <label className="block text-gray-700">Mobile *</label>
-              <input
-                type="number"
-                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                placeholder="Mobile"
-                value={mobileNo}
-                onChange={(e) => setMobileNo(e.target.value)}
-              />
+            <div className="flex items-center">
+              <div className={selectedSalesType === "DIRECT SALES RETURN" ? "w-full" : "w-full -mt-3"}>
+                <label className="block text-gray-700">Mobile *</label>
+                <input
+                  type="number"
+                  className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  placeholder="Mobile"
+                  value={mobileNo}
+                  onChange={(e) => setMobileNo(e.target.value)}
+                />
+              </div>
+              {selectedSalesType === "DIRECT SALES RETURN" && (
+                <button
+                  onClick={handleShowMobileNumberPopup}
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              )}
             </div>
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
               <form onSubmit={handleGetBarcodes} className="flex items-center">
@@ -1172,7 +1210,7 @@ const POS = () => {
               </form>
             ) : (
               <form
-                onSubmit={handleGetInvoiceDetails}
+                onSubmit={handleSearchInvoice}
                 className="flex items-center"
               >
                 <div className="w-full">
@@ -1215,7 +1253,7 @@ const POS = () => {
                   type="text"
                   value={
                       selectedSalesType === "DIRECT SALES RETURN"
-                          ? invoiceData?.VAT || ""
+                          ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
                           : vat
                   }
                   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
@@ -1326,6 +1364,11 @@ const POS = () => {
                                 >
                                   Exchange Item
                                 </li>
+                                <li>
+                                  <button onClick={() => handleDeleteExchangeData(index)}>
+                                    <FaTrash className="text-secondary hover:text-red-500" />
+                                  </button>
+                                </li>
                               </ul>
                             </div>
                           )}
@@ -1356,6 +1399,7 @@ const POS = () => {
                       <th className="px-4 py-2">Item Price</th>
                       <th className="px-4 py-2">VAT (15%)</th>
                       <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1371,6 +1415,11 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.ItemPrice}</td>
                         <td className="border px-4 py-2">{item.VAT}</td>
                         <td className="border px-4 py-2">{item.Total}</td>
+                        <td className="border px-4 py-2 text-center">
+                          <button onClick={() => handleDelete(index)}>
+                            <FaTrash className="text-secondary hover:text-red-500" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1493,6 +1542,15 @@ const POS = () => {
               isVisible={isConfirmTransactionPopupVisible}
               setVisibility={setIsConfirmTransactionPopupVisible}
               onSelectionsSaved={handleSelectionsSaved}
+            />
+          )}
+
+          {isMobileNumberPopupVisible && (
+            <MobileNumberPopUp
+              isVisible={isMobileNumberPopupVisible}
+              setVisibility={setIsMobileNumberPopupVisible}
+              mobileNo={mobileNo}
+              onSelectInvoice={handleGetInvoiceDetails}
             />
           )}
         </div>
