@@ -148,6 +148,11 @@ const F3TenderCashPopUp = ({
         LANG: "ENG",
       };
   
+
+      const CustomerId = selectedSalesType === "DIRECT SALES RETURN"
+        ? invoiceHeaderData?.CustomerCode
+        : selectedCustomerCode?.CUST_CODE;
+
       // Function to call Bank API
       const callBankReceiptAPI = async (documentNo, transactionCode) => {
         const bankReceiptBody = {
@@ -163,7 +168,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: grossAmount,
-              CustomerId: selectedCustomerCode?.CUST_CODE,
+              CustomerId: CustomerId,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -177,37 +182,7 @@ const F3TenderCashPopUp = ({
           COMPANY: "SLIC",
           USERID: "SYSADMIN",
           APICODE: "BANKRECEIPTVOUCHER",
-          LANG: "ENG",
-          //   "_keyword_": "BANKRCPTDI",
-          //   "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-          //  "data": [
-          //     {
-          //       "Company": "SLIC",
-          //       "UserId": "SYSADMIN",
-          //       "Department": "011",
-          //       "TransactionCode": "BRV",
-          //       "Division": "100",
-          //       "BankApproverCode":"CIUB0000266",
-          //       "CashCardFlag":"CARD",
-          //       "ReceiptAmt": 1150,
-          //       "CustomerId":"CL102726",
-          
-          //       "MatchingTransactions":[
-          //     {
-              
-          // "DocNo":"3500009652",
-          // "TransactionCode":"JCIN",
-          // "PendingAmount":"1150",
-          // "AdjAmount":"1150"
-          //     }
-          // ]
-               
-          //     }
-          //   ],
-          //   "COMPANY": "SLIC",
-          //   "USERID": "SYSADMIN",
-          //   "APICODE": "BANKRECEIPTVOUCHER",
-          //   "LANG": "ENG"          
+          LANG: "ENG",          
         };
   
         const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
