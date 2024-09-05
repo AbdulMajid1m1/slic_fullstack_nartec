@@ -72,7 +72,7 @@ const F3TenderCashPopUp = ({
       console.log("Popup Data:", storeDatagridData);
       // console.log("Invoice Data:", storeInvoiceDatagridData);
       console.log("exhc", isExchangeClicked)
-      // console.log(selectedCustomerCode)
+      console.log(selectedCustomerCode?.CUST_CODE)
       // console.log(selectedTransactionCode?.TXN_CODE)
     }
   }, [isVisible, storeDatagridData]);
@@ -128,7 +128,8 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            // "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            "CustomerCode": "EX100003",
             "SalesLocationCode": selectedLocation?.LOCN_CODE,
             "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
             "UserId": "SYSADMIN",
@@ -199,7 +200,7 @@ const F3TenderCashPopUp = ({
   
         // Call the Bank API if the paymentModes.code is 4 or 5
         if (paymentModes.code === "4" || paymentModes.code === "5") {
-          const documentNo = res?.data?.['Document No'];
+          const documentNo = res?.data?.message?.['Document No'];
           await callBankReceiptAPI(documentNo, selectTransactionCode);
         }
   
