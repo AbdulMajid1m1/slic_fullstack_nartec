@@ -73,7 +73,7 @@ const F3TenderCashPopUp = ({
       // console.log("Invoice Data:", storeInvoiceDatagridData);
       console.log("exhc", isExchangeClicked)
       console.log(selectedCustomerCode?.CUST_CODE)
-      // console.log(selectedTransactionCode?.TXN_CODE)
+      console.log(selectedTransactionCode?.stockLocation)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -91,7 +91,7 @@ const F3TenderCashPopUp = ({
       toast.error(`Please type the ${paymentModes.name} Amount`);
       return;
     }
-    if (!selectedTransactionCode?.TXN_CODE) {
+    if (!selectedTransactionCode?.stockLocation) {
       toast.error(`Please select the Transaction Code`);
       return;
     }
@@ -117,7 +117,7 @@ const F3TenderCashPopUp = ({
           }));
   
       // Extract user-selected transaction code
-      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+      const selectTransactionCode = selectedTransactionCode?.stockLocation;
       console.log(selectTransactionCode);
   
       // Function to generate Sales Invoice API body dynamically
@@ -130,8 +130,8 @@ const F3TenderCashPopUp = ({
             "TransactionCode": `${selectTransactionCode}`,
             "CustomerCode": selectedCustomerCode?.CUST_CODE,
             // "CustomerCode": "EX100003",
-            "SalesLocationCode": selectedLocation?.LOCN_CODE,
-            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
             "CustomerName": customerName,
             "MobileNo": mobileNo,
@@ -229,8 +229,8 @@ const F3TenderCashPopUp = ({
             "Company": "SLIC",
             "TransactionCode": selectTransactionCode,
             "CustomerCode": invoiceHeaderData?.CustomerCode,
-            "SalesLocationCode": selectedLocation?.LOCN_CODE,
-            "DeliveryLocationCode": selectedLocation?.LOCN_CODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
             "CustomerName": invoiceHeaderData?.CustomerCode,
             "MobileNo": invoiceHeaderData?.MobileNo,
@@ -341,6 +341,17 @@ const F3TenderCashPopUp = ({
   };
   
   
+  const validateForm = () => {
+    if ((paymentModes.code === "4" || paymentModes.code === "5") && !bankApprovedCode) {
+      setIsPrintEnabled(false);
+    } else {
+      setIsPrintEnabled(true);
+    }
+  };
+  
+  useEffect(() => {
+    validateForm();
+  }, [bankApprovedCode, paymentModes]);
 
   
   // useEffect(() => {
@@ -482,7 +493,7 @@ const F3TenderCashPopUp = ({
                       </p>
                     </div>
                     <div className="mt-10">
-                      <Button
+                      {/* <Button
                         variant="contained"
                         style={{
                           backgroundColor: "#021F69", // Change color based on enabled/disabled state
@@ -497,6 +508,23 @@ const F3TenderCashPopUp = ({
                             <CircularProgress size={24} color="inherit" />
                           ) : null
                         }
+                      >
+                        Print
+                      </Button> */}
+                      <Button
+                        variant="contained"
+                        style={{
+                          backgroundColor: isPrintEnabled ? "#021F69" : "#d3d3d3",
+                          color: isPrintEnabled ? "#ffffff" : "#a9a9a9",
+                        }}
+                        type="submit"
+                        disabled={!isPrintEnabled || loading}
+                        className="sm:w-[70%] w-full ml-2"
+                        endIcon={
+                          loading ? 
+                            <CircularProgress size={24} color="inherit" /> 
+                            : null
+                          }
                       >
                         Print
                       </Button>

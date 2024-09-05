@@ -14,6 +14,7 @@ import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
 import { FaTrash } from 'react-icons/fa';
+import MobileNumberPopUp from "./MobileNumberPopUp";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -25,6 +26,8 @@ const POS = () => {
   const [vat, setVat] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [transactionCodes, setTransactionCodes] = useState([]);
+  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
@@ -61,9 +64,16 @@ const POS = () => {
       const locationData = JSON.parse(storedLocationData);
       if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
         setSelectedLocation(locationData);
+        setTransactionCodes([locationData]);
       }
+      // console.log(locationData)
     }
   }, []);
+
+  const handleTransactionCodes = (event, value) => {
+    console.log(value)
+    setSelectedTransactionCode(value ? value : "");
+  };
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
@@ -223,49 +233,59 @@ const POS = () => {
     setIsConfirmTransactionPopupVisible(true);
   };
 
+  const [isMobileNumberPopupVisible, setIsMobileNumberPopupVisible] = useState(false);
+  const handleShowMobileNumberPopup = () => {
+    if (mobileNo) {
+      setIsMobileNumberPopupVisible(true);
+    } else {
+      toast.info("Please enter a mobile number");
+    }
+  };
+
   const handleClearData = () => {
     setData([]);
   };
 
   // transaction Codes Api
-  const [transactionCodes, setTransactionCodes] = useState([]);
-  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
-  const fetchTransactionCodes = async () => {
-    try {
-      // const response = await newRequest.get(
-      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      // );
-      // console.log(response.data?.data);
-      // setTransactionCodes(response.data?.data);
-      const response = await newRequest.get(
-        `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      );  
-      let codes = response.data?.data || [];
+  // const [transactionCodes, setTransactionCodes] = useState([]);
+  // const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
+  // const fetchTransactionCodes = async () => {
+  //   try {
+  //     // const response = await newRequest.get(
+  //     //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+  //     // );
+  //     // console.log(response.data?.data);
+  //     // setTransactionCodes(response.data?.data);
+     
+  //     const response = await newRequest.get(
+  //       `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+  //     );  
+  //     let codes = response.data?.data || [];
 
-      // Apply filtering based on selectedOption
-      if (selectedSalesType === "DIRECT SALES INVOICE") {
-        codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
-      } else if (selectedSalesType === "DIRECT SALES RETURN") {
-        codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
-      }
-      // console.log(codes)
-      setTransactionCodes(codes);
-    } catch (err) {
-      // console.log(err);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
+  //     // Apply filtering based on selectedOption
+  //     if (selectedSalesType === "DIRECT SALES INVOICE") {
+  //       codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
+  //     } else if (selectedSalesType === "DIRECT SALES RETURN") {
+  //       codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
+  //     }
+  //     // console.log(codes)
+  //     setTransactionCodes(codes);
+  //   } catch (err) {
+  //     // console.log(err);
+  //     toast.error(err?.response?.data?.message || "Something went Wrong");
+  //   }
+  // };
 
-  const handleTransactionCodes = (event, value) => {
-    console.log(value)
-    setSelectedTransactionCode(value ? value : "");
-  };
+  // const handleTransactionCodes = (event, value) => {
+  //   console.log(value)
+  //   setSelectedTransactionCode(value ? value : "");
+  // };
 
-  useEffect(() => {
-    if (selectedLocation?.LOCN_CODE) {
-      fetchTransactionCodes();
-    }
-  }, [selectedLocation, selectedSalesType]);
+  // useEffect(() => {
+  //   if (selectedLocation?.LOCN_CODE) {
+  //     fetchTransactionCodes();
+  //   }
+  // }, [selectedLocation, selectedSalesType]);
 
   // fetch All Customer Names api
   const [searchCustomerName, setSearchCustomerName] = useState([]);
@@ -354,29 +374,30 @@ const POS = () => {
         // Construct the master and details data for Sales Invoice
         const master = {
           InvoiceNo: invoiceNumber,
-          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: selectedTransactionCode?.stockLocation,
           CustomerCode: selectedCustomerName?.CUST_CODE,
-          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE",
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
+          VatNumber: vat,
         };
   
         const details = data.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
-          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU,
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: selectedTransactionCode?.stockLocation,
           CustomerCode: selectedCustomerName?.CUST_CODE,
-          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE",
           UserID: "SYSADMIN",
@@ -397,11 +418,11 @@ const POS = () => {
         // Construct the master and details data for Sales Return
         const master = {
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: selectedTransactionCode?.stockLocation,
           CustomerCode: selectedCustomerName?.CUST_CODE,
-          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
@@ -413,13 +434,13 @@ const POS = () => {
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
-          DeliveryLocationCode: selectedLocation?.LOCN_CODE,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU,
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: selectedTransactionCode?.stockLocation,
           CustomerCode: selectedCustomerName?.CUST_CODE,
-          SalesLocationCode: selectedLocation?.LOCN_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
@@ -773,17 +794,18 @@ const POS = () => {
   const [invoiceHeaderData, setInvoiceHeaderData] = useState([]);
   const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
   // Fetch invoice details when searching by invoice number for a sales return
-  const handleGetInvoiceDetails = async (e) => {
-    e.preventDefault();
+  const handleGetInvoiceDetails = async (invoiceNo) => {
+    // e.preventDefault();
     setInvoiceDataLoader(true);
 
     try {
       const response = await newRequest.get(
-        `/invoice/v1/headers-and-line-items?InvoiceNo=${searchInvoiceNumber}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
       );
       const data = response?.data?.data;
       setInvoiceHeaderData(data);
       console.log(data)
+      setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
 
@@ -811,6 +833,16 @@ const POS = () => {
     } finally {
       setInvoiceDataLoader(false);
     }
+  };
+
+  // handleDelete
+  const handleDeleteInvoiceData = (index) => {
+    setInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
+  const handleSearchInvoice = (e) => {
+    e.preventDefault();
+    handleGetInvoiceDetails(searchInvoiceNumber);
   };
 
   // Sales return Calculation
@@ -924,6 +956,12 @@ const POS = () => {
   }, [exchangeData]);
 
 
+  // handleDelete
+  const handleDeleteExchangeData = (index) => {
+    setExchangeData((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
+
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
   const [isConfirmDisabled, setIsConfirmDisabled] = useState(false);
   const handleSelectionsSaved = () => {
@@ -957,7 +995,7 @@ const POS = () => {
                 : "SALES RETURN"}
             </h2>
             <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
-              Cashier : {selectedLocation?.LOCN_NAME}
+              Cashier : {`${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -968,17 +1006,20 @@ const POS = () => {
                 <Autocomplete
                   id="transactionId"
                   options={transactionCodes}
-                  getOptionLabel={(option) => 
-                    option && option.TXN_CODE && option.TXN_NAME 
-                      ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
-                      : ''
+                  getOptionLabel={(option) =>
+                    option && option.stockLocation && option.showroom
+                      ? `${option.stockLocation} - ${option.showroom}`
+                      : ""
                   }
                   onChange={handleTransactionCodes}
                   // value={selectedTransactionCode}
-                  value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
-                  isOptionEqualToValue={(option, value) =>
-                    option?.TXN_CODE === value?.TXN_CODE
+                  value={transactionCodes.find(
+                      (option) => option.stockLocation === selectedTransactionCode?.stockLocation
+                    ) || null
                   }
+                  isOptionEqualToValue={(option, value) =>
+                    option?.stockLocation === value?.stockLocation
+                  }          
                   onInputChange={(event, value) => {
                     if (!value) {
                       setSelectedTransactionCode(""); // Clear selection
@@ -1030,7 +1071,7 @@ const POS = () => {
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.SalesLocationCode || ""
-                    : selectedLocation?.LOCN_NAME
+                    : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
                 readOnly
               />
@@ -1120,7 +1161,7 @@ const POS = () => {
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.DeliveryLocationCode ||
                       ""
-                    : selectedLocation?.LOCN_NAME || ""
+                    : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
                 className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
@@ -1141,15 +1182,25 @@ const POS = () => {
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
-            <div>
-              <label className="block text-gray-700">Mobile *</label>
-              <input
-                type="number"
-                className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                placeholder="Mobile"
-                value={mobileNo}
-                onChange={(e) => setMobileNo(e.target.value)}
-              />
+            <div className="flex items-center">
+              <div className={selectedSalesType === "DIRECT SALES RETURN" ? "w-full" : "w-full -mt-3"}>
+                <label className="block text-gray-700">Mobile *</label>
+                <input
+                  type="number"
+                  className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  placeholder="Mobile"
+                  value={mobileNo}
+                  onChange={(e) => setMobileNo(e.target.value)}
+                />
+              </div>
+              {selectedSalesType === "DIRECT SALES RETURN" && (
+                <button
+                  onClick={handleShowMobileNumberPopup}
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              )}
             </div>
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
               <form onSubmit={handleGetBarcodes} className="flex items-center">
@@ -1172,7 +1223,7 @@ const POS = () => {
               </form>
             ) : (
               <form
-                onSubmit={handleGetInvoiceDetails}
+                onSubmit={handleSearchInvoice}
                 className="flex items-center"
               >
                 <div className="w-full">
@@ -1215,7 +1266,7 @@ const POS = () => {
                   type="text"
                   value={
                       selectedSalesType === "DIRECT SALES RETURN"
-                          ? invoiceData?.VAT || ""
+                          ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
                           : vat
                   }
                   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
@@ -1326,6 +1377,11 @@ const POS = () => {
                                 >
                                   Exchange Item
                                 </li>
+                                <li>
+                                  <button onClick={() => handleDeleteExchangeData(index)}>
+                                    <FaTrash className="text-secondary hover:text-red-500" />
+                                  </button>
+                                </li>
                               </ul>
                             </div>
                           )}
@@ -1356,6 +1412,7 @@ const POS = () => {
                       <th className="px-4 py-2">Item Price</th>
                       <th className="px-4 py-2">VAT (15%)</th>
                       <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1371,6 +1428,11 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.ItemPrice}</td>
                         <td className="border px-4 py-2">{item.VAT}</td>
                         <td className="border px-4 py-2">{item.Total}</td>
+                        <td className="border px-4 py-2 text-center">
+                          <button onClick={() => handleDelete(index)}>
+                            <FaTrash className="text-secondary hover:text-red-500" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1493,6 +1555,15 @@ const POS = () => {
               isVisible={isConfirmTransactionPopupVisible}
               setVisibility={setIsConfirmTransactionPopupVisible}
               onSelectionsSaved={handleSelectionsSaved}
+            />
+          )}
+
+          {isMobileNumberPopupVisible && (
+            <MobileNumberPopUp
+              isVisible={isMobileNumberPopupVisible}
+              setVisibility={setIsMobileNumberPopupVisible}
+              mobileNo={mobileNo}
+              onSelectInvoice={handleGetInvoiceDetails}
             />
           )}
         </div>
