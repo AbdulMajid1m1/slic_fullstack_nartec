@@ -259,7 +259,7 @@ const SlicFirstScreen = () => {
         SLIC - Saudi Leather Industries Company
       </div>
       <div className="flex justify-center items-center h-auto mt-6 mb-6">
-        <div className="3xl:h-[725px] 2xl:h-[725px] lg:h-[725px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl">
+        <div className="3xl:h-[775px] 2xl:h-[775px] lg:h-[775px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full sm:p-10 p-3">
             <div className="flex flex-col items-start space-y-4 w-full">
               <img src={sliclogo} alt="SLIC Logo" className="h-32 mb-4" />
