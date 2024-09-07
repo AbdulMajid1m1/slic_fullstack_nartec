@@ -154,9 +154,9 @@ const F3TenderCashPopUp = ({
         : selectedCustomerCode?.CUST_CODE;
 
       // Function to call Bank API
-      const callBankReceiptAPI = async (documentNo, transactionCode) => {
+      const callBankReceiptAPI = async (documentNo, transactionCode, keyword = "BANKRCPTDI") => {
         const bankReceiptBody = {
-          "_keyword_": "BANKRCPTDI",
+          "_keyword_": keyword,
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
           data: [
             {
@@ -322,8 +322,8 @@ const F3TenderCashPopUp = ({
         const exsrDocumentNo = exsrRes?.data?.['Document No'];
         const exinDocumentNo = exinRes?.data?.['Document No'];
   
-        await callBankReceiptAPI(exinDocumentNo, modifiedTransactionCode);
-        await callBankReceiptAPI(exsrDocumentNo, selectTransactionCode);
+        await callBankReceiptAPI(exinDocumentNo, modifiedTransactionCode, "BANKRCPTEX");
+        await callBankReceiptAPI(exsrDocumentNo, selectTransactionCode, "BANKRCPTDI");
   
         // Complete the process
         showOtpPopup(exsrRes?.data);
