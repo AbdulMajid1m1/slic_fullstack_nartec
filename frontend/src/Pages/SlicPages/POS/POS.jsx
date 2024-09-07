@@ -33,9 +33,15 @@ const POS = () => {
 
   const handleActionClick = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
-    setSelectedRowData(invoiceData[index]); // Save the selected row data
+  
+    // Select the correct row data based on the sales type
+    if (selectedSalesType === "DIRECT SALES RETURN") {
+      setSelectedRowData(invoiceData[index]); // Save the row data from invoiceData
+    } else if (selectedSalesType === "DSALES NO INVOICE") {
+      setSelectedRowData(data[index]); // Save the row data from data (for sales invoices)
+    }
   };
-
+  
 
   const [isExchangeClick, setIsExchangeClick] = useState(false);
   const handleItemClick = (action) => {
@@ -861,6 +867,8 @@ const POS = () => {
     setInvoiceData([]);
     setExchangeData([]);
     setInvoiceHeaderData([]);
+    setData([]);
+    setDSalesNoInvoiceexchangeData([]);
   }
 
   const [exchangeData, setExchangeData] = useState([]);
@@ -946,6 +954,93 @@ const POS = () => {
 
     calculateTotals();
   }, [exchangeData]);
+
+
+
+  // DSALES no Invoice Exchange 
+  const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] = useState([]);
+  const addDSalesExchangeData = async (newData) => {
+    console.log(dSalesNoInvoiceexchangeData);
+    // Extract necessary data from newData
+    const { ItemCode, ItemSize } = newData;
+
+    // Get the corresponding invoice item to extract the Qty
+    console.log(data[0]?.Qty);
+    const Qty = data[0]?.Qty;
+    // const Qty = 1;
+
+    const secondApiBody = {
+      filter: {
+        P_COMP_CODE: "SLIC",
+        P_ITEM_CODE: ItemCode,
+        P_CUST_CODE: "CL100948",
+        P_GRADE_CODE_1: ItemSize,
+      },
+      M_COMP_CODE: "SLIC",
+      M_USER_ID: "SYSADMIN",
+      APICODE: "PRICELIST",
+      M_LANG_CODE: "ENG",
+    };
+
+    try {
+      const secondApiResponse = await ErpTeamRequest.post(
+        "/slicuat05api/v1/getApi",
+        secondApiBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (secondApiResponse?.data) {
+        const secondApiData = secondApiResponse.data;
+        console.log("second Exhcnage", secondApiData);
+        const itemRates = secondApiData.map(
+          (item) => item?.PRICELIST?.PLI_RATE
+        );
+        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+        const vat = itemPrice * 0.15;
+        const total = itemPrice * Qty + vat; // Multiply by Qty for the total
+
+        // Insert the new item into exchangeData only if the API call is successful
+        const newExchangeItem = {
+          ...newData,
+          ItemPrice: itemPrice,
+          VAT: vat,
+          Total: total,
+          Qty: Qty, 
+        };
+
+        setDSalesNoInvoiceexchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
+      } else {
+        throw new Error("Failed to retrieve item prices");
+      }
+    } catch (error) {
+      console.error("Error fetching item prices:", error);
+      toast.error("Error fetching item prices");
+    }
+  };
+
+  // DSALES No Invocie Exchange calculation
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      dSalesNoInvoiceexchangeData.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+      // console.log(exchangeData)
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [dSalesNoInvoiceexchangeData]);
 
 
   // handleDelete
@@ -1051,6 +1146,7 @@ const POS = () => {
                   DIRECT SALES INVOICE
                 </option>
                 <option value="DIRECT SALES RETURN">DIRECT SALES RETURN</option>
+                <option value="DSALES NO INVOICE">DSALES NO INVOICE</option>
               </select>
             </div>
             <div>
@@ -1191,7 +1287,7 @@ const POS = () => {
                 </button>
               )}
             </div>
-            {selectedSalesType === "DIRECT SALES INVOICE" ? (
+            {selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE" ? (
               <form onSubmit={handleGetBarcodes} className="flex items-center">
                 <div className="w-full">
                   <label className="block text-gray-700">Scan Barcode</label>
@@ -1211,10 +1307,7 @@ const POS = () => {
                 </button>
               </form>
             ) : (
-              <form
-                onSubmit={handleSearchInvoice}
-                className="flex items-center"
-              >
+              <form onSubmit={handleSearchInvoice} className="flex items-center">
                 <div className="w-full">
                   <label className="block text-gray-700">Scan Invoice</label>
                   <input
@@ -1367,7 +1460,7 @@ const POS = () => {
                                   Exchange Item
                                 </li>
                                 <li>
-                                  <button onClick={() => handleDeleteExchangeData(index)}>
+                                  <button onClick={() => handleDeleteInvoiceData(index)}>
                                     <FaTrash className="text-secondary hover:text-red-500" />
                                   </button>
                                 </li>
@@ -1418,7 +1511,7 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.VAT}</td>
                         <td className="border px-4 py-2">{item.Total}</td>
                         <td className="border px-4 py-2 text-center">
-                          <button onClick={() => handleDelete(index)}>
+                          <button onClick={() => handleDeleteExchangeData(index)}>
                             <FaTrash className="text-secondary hover:text-red-500" />
                           </button>
                         </td>
@@ -1428,6 +1521,123 @@ const POS = () => {
                 </table>
               </div>
             </div>
+          )}
+
+
+          {/* DSALES NO INVOICE */}
+          {selectedSalesType === "DSALES NO INVOICE" && (
+            <>
+              <div className="mt-10">
+                <table className="table-auto w-full">
+                  <thead className="bg-secondary text-white truncate">
+                    <tr>
+                      <th className="px-4 py-2">SKU</th>
+                      <th className="px-4 py-2">Barcode</th>
+                      <th className="px-4 py-2">Description</th>
+                      <th className="px-4 py-2">Item Size</th>
+                      <th className="px-4 py-2">Qty</th>
+                      <th className="px-4 py-2">Item Price</th>
+                      <th className="px-4 py-2">VAT (15%)</th>
+                      <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2">Action</th>
+                    </tr>
+                  </thead>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan="10" className="text-center py-4">
+                        <div className="flex justify-center items-center w-full h-full">
+                          <CircularProgress size={24} color="inherit" />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tbody>
+                      {data.map((row, index) => (
+                        <tr key={index} className="bg-gray-100">
+                          <td className="border px-4 py-2">{row.SKU}</td>
+                          <td className="border px-4 py-2">{row.Barcode}</td>
+                          <td className="border px-4 py-2">{row.Description}</td>
+                          <td className="border px-4 py-2">{row.ItemSize}</td>
+                          <td className="border px-4 py-2">{row.Qty}</td>
+                          <td className="border px-4 py-2">{row.ItemPrice}</td>
+                          <td className="border px-4 py-2">{row.VAT}</td>
+                          <td className="border px-4 py-2">{row.Total}</td>
+                          <td className="border px-4 py-2 text-center relative">
+                          <button
+                            onClick={() => handleActionClick(index)}
+                            className="bg-blue-500 text-white px-4 py-2 font-bold transform hover:scale-95"
+                          >
+                            Actions
+                          </button>
+                          {openDropdown === index && (
+                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
+                              <ul>
+                                <li
+                                  onClick={() => handleItemClick("exchange")}
+                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                                >
+                                  Exchange Item
+                                </li>
+                                <li>
+                                  <button onClick={() => handleDelete(index)}>
+                                    <FaTrash className="text-secondary hover:text-red-500" />
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          )}
+                        </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  )}
+                </table>
+              </div>
+              {/* DSALES Exchange data grid */}
+              {dSalesNoInvoiceexchangeData.length > 0 && (
+                <div className="mt-10">
+                  <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
+                    Exchange Ite
+                  </button>
+                  <div className="overflow-x-auto">
+                    <table className="table-auto w-full">
+                      <thead className="bg-secondary text-white truncate">
+                        <tr>
+                          <th className="px-4 py-2">SKU</th>
+                          <th className="px-4 py-2">Barcode</th>
+                          <th className="px-4 py-2">Description</th>
+                          <th className="px-4 py-2">Item Size</th>
+                          <th className="px-4 py-2">Qty</th>
+                          <th className="px-4 py-2">Item Price</th>
+                          <th className="px-4 py-2">VAT (15%)</th>
+                          <th className="px-4 py-2">Total</th>
+                          <th className="px-4 py-2 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dSalesNoInvoiceexchangeData?.map((item, index) => (
+                          <tr key={index} className="bg-gray-100">
+                            <td className="border px-4 py-2">{item.ItemCode || ""}</td>
+                            <td className="border px-4 py-2">{item.GTIN}</td>
+                            <td className="border px-4 py-2">{item.Description}</td>
+                            <td className="border px-4 py-2">{item.ItemSize}</td>
+                            <td className="border px-4 py-2">{item?.Qty}</td>
+                            <td className="border px-4 py-2">{item.ItemPrice}</td>
+                            <td className="border px-4 py-2">{item.VAT}</td>
+                            <td className="border px-4 py-2">{item.Total}</td>
+                            <td className="border px-4 py-2 text-center">
+                              <button>
+                                <FaTrash className="text-secondary hover:text-red-500" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1536,6 +1746,9 @@ const POS = () => {
               addExchangeData={addExchangeData}
               selectedRowData={selectedRowData}
               invoiceHeaderData={invoiceHeaderData?.invoiceHeader?.SalesLocationCode}
+              dsalesLocationCode={selectedLocation?.stockLocation}
+              selectedSalesType={selectedSalesType}
+              addDSalesExchangeData={addDSalesExchangeData}
             />
           )}
 

@@ -5,7 +5,7 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -106,11 +106,16 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     const item = data[0]; // Assuming you are dealing with a single item at a time
     // console.log(item);
     
+    const locationCode = selectedSalesType === "DSALES NO INVOICE" 
+    ? dsalesLocationCode
+    : invoiceHeaderData;
+  
+
     // If stock is available, call the STOCK STATUS API
     const stockStatusBody = {
       "filter": {
         "M_COMP_CODE": "SLIC",
-        "P_LOCN_CODE": invoiceHeaderData,
+        "P_LOCN_CODE": locationCode,
         "P_ITEM_CODE": item?.SKU,
         // "P_ITEM_CODE": "55782",
         "P_GRADE_1": "43",
@@ -150,7 +155,15 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         // console.log(res?.data);
         toast.success(res?.data?.message || "Exchange Invoice created successfully");
   
-        addExchangeData(res?.data?.data);
+        // addExchangeData(res?.data?.data);
+
+        // i show the data based on user selection datagrid
+        if (selectedSalesType === "DSALES NO INVOICE") {
+          addDSalesExchangeData(res?.data?.data);
+        } else {
+          addExchangeData(res?.data?.data);
+        }
+
         handleCloseCreatePopup();
       } else {
         // If stock is not available, show an error message
