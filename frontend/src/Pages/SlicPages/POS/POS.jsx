@@ -38,19 +38,24 @@ const POS = () => {
     if (selectedSalesType === "DIRECT SALES RETURN") {
       setSelectedRowData(invoiceData[index]); // Save the row data from invoiceData
     } else if (selectedSalesType === "DSALES NO INVOICE") {
-      setSelectedRowData(data[index]); // Save the row data from data (for sales invoices)
+      setSelectedRowData(DSalesNoInvoiceData[index]); // Save the row data from data (for sales invoices)
     }
   };
   
 
   const [isExchangeClick, setIsExchangeClick] = useState(false);
+  const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
   const handleItemClick = (action) => {
     setOpenDropdown(null);
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
-    } else if (action === "return") {
+    } else if (action === "exchange Dsales") {
+      handleShowExhangeItemPopup(selectedRowData);
+      setIsExchangeDSalesClick(true);
     }
+    // console.log(action);
+    // console.log("isButtonClick", isExchangeClick);
   };
 
   useEffect(() => {
@@ -192,6 +197,122 @@ const POS = () => {
   const handleDelete = (index) => {
     setData((prevData) => prevData.filter((_, i) => i !== index));
   };
+
+
+  // Direct Sales No Invoice
+  const [DSalesNoInvoiceData, setDSalesNoInvoiceData] = useState([]);
+  const handleGetNoInvoiceBarcodes = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await newRequest.get(
+        `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+      );
+      const data = response?.data?.data;
+
+      if (data) {
+        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+
+        // call the second api later in their
+        const secondApiBody = {
+          filter: {
+            P_COMP_CODE: "SLIC",
+            P_ITEM_CODE: ItemCode,
+            P_CUST_CODE: "CL100948",
+            P_GRADE_CODE_1: ProductSize,
+          },
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "PRICELIST",
+          M_LANG_CODE: "ENG",
+        };
+
+        try {
+          const secondApiResponse = await ErpTeamRequest.post(
+            "/slicuat05api/v1/getApi",
+            secondApiBody,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const secondApiData = secondApiResponse?.data;
+          console.log(secondApiData);
+
+          let storedData = sessionStorage.getItem("secondApiResponses");
+          storedData = storedData ? JSON.parse(storedData) : {};
+
+          const itemRates = secondApiData.map(
+            (item) => item?.PRICELIST?.PLI_RATE
+          );
+          // Store the array of rates under the respective ItemCode
+          storedData[ItemCode] = itemRates;
+          // storedData[ItemCode] = secondApiData;
+
+          sessionStorage.setItem(
+            "secondApiResponses",
+            JSON.stringify(storedData)
+          );
+
+          // const itemPrice = secondApiData[0].ItemRate?.RATE;
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+          const vat = itemPrice * 0.15;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
+
+          setDSalesNoInvoiceData((prevData) => {
+            const existingItemIndex = prevData.findIndex(
+              (item) => item.Barcode === GTIN
+            );
+
+            if (existingItemIndex !== -1) {
+              // If the item already exists, just update the Qty and Total
+              const updatedData = [...prevData];
+              updatedData[existingItemIndex] = {
+                ...updatedData[existingItemIndex],
+                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Total:
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+              };
+              return updatedData;
+            } else {
+              // If the item is new, add it to the data array
+              return [
+                ...prevData,
+                {
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: vat,
+                  Total: total,
+                },
+              ];
+            }
+          });
+        } catch (secondApiError) {
+          toast.error(
+            secondApiError?.response?.data?.message ||
+              "An error occurred while calling the second API"
+          );
+        }
+        // barcode state empty once response is true
+        setBarcode("");
+      } else {
+        setDSalesNoInvoiceData([]);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
@@ -383,6 +504,7 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
+          // CustomerName: customerName,
         };
   
         const details = data.map((item, index) => ({
@@ -426,6 +548,7 @@ const POS = () => {
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
+          // CustomerName: customerName,
         };
   
         const details = exchangeData.map((item, index) => ({
@@ -451,6 +574,50 @@ const POS = () => {
           TransactionDate: todayDate,
         }));
   
+        invoiceData = {
+          master,
+          details,
+        };
+      } else if (selectedSalesType === "DSALES NO INVOICE") {
+        // Construct the master and details data for DSALES NO INVOICE
+        const master = {
+          InvoiceNo: invoiceNumber,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
+          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
+          Remarks: remarks,
+          TransactionType: "DSALES NO INVOICE",
+          UserID: "SYSADMIN",
+          MobileNo: mobileNo,
+          TransactionDate: todayDate,
+          VatNumber: vat,
+          // CustomerName: customerName,
+        };
+        const details = DSalesNoInvoiceData.map((item, index) => ({
+          Rec_Num: index + 1,
+          TblSysNoID: 1000 + index,
+          SNo: index + 1,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
+          ItemSysID: item.SKU,
+          InvoiceNo: invoiceNumber,
+          Head_SYS_ID: "",
+          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          CustomerCode: selectedCustomerName?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
+          Remarks: item.Description,
+          TransactionType: "DSALES NO INVOICE",
+          UserID: "SYSADMIN",
+          ItemSKU: item.SKU,
+          ItemUnit: "PCS",
+          ItemSize: item.ItemSize,
+          ITEMRATE: item.ItemPrice,
+          ItemPrice: item.ItemPrice,
+          ItemQry: item.Qty,
+          TransactionDate: todayDate,
+        }));
+
         invoiceData = {
           master,
           details,
@@ -644,7 +811,9 @@ const POS = () => {
             <div>Tel. Number: 013 8121066</div>
           </div>
 
-          <div class="sales-invoice-title">Sales Invoice</div>
+          <div class="sales-invoice-title">
+            ${selectedSalesType === "DIRECT SALES RETURN" ? "Sales Invoice" : "Return Slip Invoice"}
+          </div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>${
@@ -694,31 +863,44 @@ const POS = () => {
             </thead>
 
            <tbody>
-            ${selectedSalesType === "DIRECT SALES RETURN"
-              ? invoiceData
-                  .map(
-                    (item) => `
-                      <tr>
-                        <td>${item.SKU}</td>
-                        <td>${item.Qty}</td>
-                        <td>${item.ItemPrice}</td>
-                        <td>${item.ItemPrice * item.Qty}</td>
-                      </tr>
-                    `
-                  )
-                  .join("")
-              : data
-                  .map(
-                    (item) => `
-                      <tr>
-                        <td>${item.SKU}</td>
-                        <td>${item.Qty}</td>
-                        <td>${item.ItemPrice}</td>
-                        <td>${item.ItemPrice * item.Qty}</td>
-                      </tr>
-                    `
-                  )
-                  .join("")}
+           ${selectedSalesType === "DIRECT SALES RETURN"
+            ? invoiceData
+                .map(
+                  (item) => `
+                    <tr>
+                      <td>${item.SKU}</td>
+                      <td>${item.Qty}</td>
+                      <td>${item.ItemPrice}</td>
+                      <td>${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                  `
+                )
+                .join("")
+            : selectedSalesType === "DSALES NO INVOICE"
+            ? DSalesNoInvoiceData
+                .map(
+                  (item) => `
+                    <tr>
+                      <td>${item.SKU}</td>
+                      <td>${item.Qty}</td>
+                      <td>${item.ItemPrice}</td>
+                      <td>${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                  `
+                )
+                .join("")
+            : data
+                .map(
+                  (item) => `
+                    <tr>
+                      <td>${item.SKU}</td>
+                      <td>${item.Qty}</td>
+                      <td>${item.ItemPrice}</td>
+                      <td>${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                  `
+                )
+                .join("")}          
             </tbody>
           </table>
           <div class="total-section">
@@ -868,6 +1050,7 @@ const POS = () => {
     setExchangeData([]);
     setInvoiceHeaderData([]);
     setData([]);
+    setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
   }
 
@@ -965,8 +1148,8 @@ const POS = () => {
     const { ItemCode, ItemSize } = newData;
 
     // Get the corresponding invoice item to extract the Qty
-    console.log(data[0]?.Qty);
-    const Qty = data[0]?.Qty;
+    console.log(DSalesNoInvoiceData[0]?.Qty);
+    const Qty = DSalesNoInvoiceData[0]?.Qty;
     // const Qty = 1;
 
     const secondApiBody = {
@@ -1022,6 +1205,27 @@ const POS = () => {
     }
   };
 
+
+  // DSales No Invoice Calculation
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalNet = 0;
+      let totalVat = 0;
+
+      DSalesNoInvoiceData.forEach((item) => {
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
+      });
+      // console.log(exchangeData)
+
+      setNetWithVat(totalNet);
+      setTotalVat(totalVat);
+      setTotalAmountWithVat(totalNet + totalVat);
+    };
+
+    calculateTotals();
+  }, [DSalesNoInvoiceData]);
+
   // DSALES No Invocie Exchange calculation
   useEffect(() => {
     const calculateTotals = () => {
@@ -1032,7 +1236,7 @@ const POS = () => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
-      // console.log(exchangeData)
+      // console.log(dSalesNoInvoiceexchangeData)
 
       setNetWithVat(totalNet);
       setTotalVat(totalVat);
@@ -1287,7 +1491,7 @@ const POS = () => {
                 </button>
               )}
             </div>
-            {selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE" ? (
+            {selectedSalesType === "DIRECT SALES INVOICE" ? (
               <form onSubmit={handleGetBarcodes} className="flex items-center">
                 <div className="w-full">
                   <label className="block text-gray-700">Scan Barcode</label>
@@ -1297,6 +1501,25 @@ const POS = () => {
                     onChange={(e) => setBarcode(e.target.value)}
                     className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                     placeholder="Enter Barcode"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              </form>
+            ) : selectedSalesType === "DSALES NO INVOICE" ? (
+              <form onSubmit={handleGetNoInvoiceBarcodes} className="flex items-center">
+                <div className="w-full">
+                  <label className="block text-gray-700">Scan Barcode (No Invoice)</label>
+                  <input
+                    type="text"
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                    placeholder="Enter Barcode (No Invoice)"
                   />
                 </div>
                 <button
@@ -1552,7 +1775,7 @@ const POS = () => {
                     </tr>
                   ) : (
                     <tbody>
-                      {data.map((row, index) => (
+                      {DSalesNoInvoiceData.map((row, index) => (
                         <tr key={index} className="bg-gray-100">
                           <td className="border px-4 py-2">{row.SKU}</td>
                           <td className="border px-4 py-2">{row.Barcode}</td>
@@ -1565,7 +1788,7 @@ const POS = () => {
                           <td className="border px-4 py-2 text-center relative">
                           <button
                             onClick={() => handleActionClick(index)}
-                            className="bg-blue-500 text-white px-4 py-2 font-bold transform hover:scale-95"
+                            className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
                           >
                             Actions
                           </button>
@@ -1573,10 +1796,10 @@ const POS = () => {
                             <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
                               <ul>
                                 <li
-                                  onClick={() => handleItemClick("exchange")}
+                                  onClick={() => handleItemClick("exchange Dsales")}
                                   className="hover:bg-gray-100 cursor-pointer px-4 py-2"
                                 >
-                                  Exchange Item
+                                  Exchange DSales
                                 </li>
                                 <li>
                                   <button onClick={() => handleDelete(index)}>
@@ -1597,7 +1820,7 @@ const POS = () => {
               {dSalesNoInvoiceexchangeData.length > 0 && (
                 <div className="mt-10">
                   <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
-                    Exchange Ite
+                    Exchange Item DSales No Invoice
                   </button>
                   <div className="overflow-x-auto">
                     <table className="table-auto w-full">
@@ -1727,7 +1950,12 @@ const POS = () => {
               selectedCustomerCode={selectedCustomerName}
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
-              isExchangeClicked={isExchangeClick}
+              isExchangeClick={isExchangeClick}
+              selectedRowData={selectedRowData}
+              exchangeData={exchangeData}
+              isExchangeDSalesClick={isExchangeDSalesClick}
+              DSalesNoInvoiceData={DSalesNoInvoiceData}
+              dSalesNoInvoiceexchangeData={dSalesNoInvoiceexchangeData}
             />
           )}
 

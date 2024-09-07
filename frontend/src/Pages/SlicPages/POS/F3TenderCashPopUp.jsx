@@ -22,7 +22,12 @@ const F3TenderCashPopUp = ({
   selectedTransactionCode,
   invoiceNumber,
   storeInvoiceDatagridData,
-  isExchangeClicked,
+  isExchangeClick,
+  selectedRowData,
+  exchangeData,
+  isExchangeDSalesClick,
+  dSalesNoInvoiceexchangeData,
+  DSalesNoInvoiceData,
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -69,11 +74,17 @@ const F3TenderCashPopUp = ({
 
   useEffect(() => {
     if (isVisible) {
-      console.log("Popup Data:", storeDatagridData);
+      // console.log("Popup Data:", storeDatagridData);
       // console.log("Invoice Data:", storeInvoiceDatagridData);
-      console.log("exhc", isExchangeClicked)
-      console.log(selectedCustomerCode?.CUST_CODE)
-      console.log(selectedTransactionCode?.TXN_CODE)
+      console.log("exchange Button", isExchangeClick)
+      console.log("Exchange DSales Button", isExchangeDSalesClick)
+      // console.log(selectedCustomerCode?.CUST_CODE)
+      // console.log(selectedTransactionCode?.TXN_CODE)
+      console.log(selectedRowData)
+      console.log(exchangeData)
+
+      console.log(DSalesNoInvoiceData)
+      console.log(dSalesNoInvoiceexchangeData)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -84,43 +95,20 @@ const F3TenderCashPopUp = ({
   }, [cashAmount, grossAmount]);
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    if (!cashAmount) {
-      toast.error(`Please type the ${paymentModes.name} Amount`);
-      return;
-    }
-    if (!selectedTransactionCode?.TXN_CODE) {
-      toast.error(`Please select the Transaction Code`);
-      return;
-    }
-  
+  const handleSubmitDirectSalesInvoice = async () => {
     setLoading(true);
   
     try {
-      // Prepare the items array based on selectedSalesType
-      const items = selectedSalesType === "DIRECT SALES INVOICE"
-        ? storeDatagridData.map((item) => ({
-            "Item-Code": item.SKU,
-            Size: item.ItemSize,
-            Qty: `${item.Qty}`,
-            Rate: `${item?.ItemPrice}`,
-            UserId: "SYSADMIN",
-          }))
-        : storeInvoiceDatagridData.map((item) => ({
-            "Item-Code": item.SKU,
-            Size: item.ItemSize,
-            Qty: `${item.Qty}`,
-            Rate: `${item?.ItemPrice}`,
-            UserId: "SYSADMIN",
-          }));
+      const items = storeDatagridData.map((item) => ({
+        "Item-Code": item.SKU,
+        Size: item.ItemSize,
+        Qty: `${item.Qty}`,
+        Rate: `${item?.ItemPrice}`,
+        UserId: "SYSADMIN",
+      }));
   
-      // Extract user-selected transaction code
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
-      console.log(selectTransactionCode);
   
-      // Function to generate Sales Invoice API body dynamically
       const salesInvoiceBody = {
         "_keyword_": "Invoice",
         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
@@ -129,7 +117,6 @@ const F3TenderCashPopUp = ({
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
             "CustomerCode": selectedCustomerCode?.CUST_CODE,
-            // "CustomerCode": "EX100003",
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
@@ -148,15 +135,19 @@ const F3TenderCashPopUp = ({
         LANG: "ENG",
       };
   
-
-      const CustomerId = selectedSalesType === "DIRECT SALES RETURN"
-        ? invoiceHeaderData?.CustomerCode
-        : selectedCustomerCode?.CUST_CODE;
-
-      // Function to call Bank API
-      const callBankReceiptAPI = async (documentNo, transactionCode, keyword = "BANKRCPTDI") => {
+      const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      console.log("Sales Invoice Response:", res?.data);
+  
+      // Call the Bank API after successful sales invoice
+      if (paymentModes.code === "4" || paymentModes.code === "5") {
+        const documentNo = res?.data?.message?.['Document No'];
         const bankReceiptBody = {
-          "_keyword_": keyword,
+          "_keyword_": "BANKRCPTDI",
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
           data: [
             {
@@ -168,11 +159,11 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: grossAmount,
-              CustomerId: CustomerId,
+              CustomerId: selectedCustomerCode?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
-                  TransactionCode: transactionCode,
+                  TransactionCode: selectTransactionCode,
                   PendingAmount: changeAmount,
                   AdjAmount: changeAmount,
                 },
@@ -184,47 +175,52 @@ const F3TenderCashPopUp = ({
           APICODE: "BANKRECEIPTVOUCHER",
           LANG: "ENG",          
         };
-  
-        const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
-          headers: { Authorization: `Bearer ${token}` }
+        await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-  
-        console.log("Bank Receipt Response:", bankRes?.data);
-      };
-  
-      // SALES INVOICE HANDLING
-      if (selectedSalesType === "DIRECT SALES INVOICE") {
-        // Call the Sales Invoice API
-        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        console.log("Sales Invoice Response:", res?.data);
-  
-        // Call the Bank API if the paymentModes.code is 4 or 5
-        if (paymentModes.code === "4" || paymentModes.code === "5") {
-          const documentNo = res?.data?.message?.['Document No'];
-          await callBankReceiptAPI(documentNo, selectTransactionCode);
-        }
-  
-        // Complete the process
-        showOtpPopup(res?.data);
-        handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
-        handleInvoiceGenerator();
-        setLoading(false);
-        return; // Exit since no further action is needed
+        console.log("Bank Receipt for Sales Invoice processed");
       }
   
-      // SALES RETURN HANDLING
+      showOtpPopup(res?.data);
+      handleCloseCreatePopup();
+      handleClearData();
+      handleClearInvoiceData();
+      handleInvoiceGenerator();
+      setLoading(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Something went wrong");
+      setLoading(false);
+    }
+  };
+  
+  const handleSubmitDirectSalesReturn = async () => {
+    setLoading(true);
+  
+    try {
+      const firstDataGridItem = exchangeData.map((item) => ({
+        "Item-Code": item.ItemCode,
+        Size: item.ItemSize,
+        Qty: `${item.Qty}`,
+        Rate: `${item?.ItemPrice}`,
+        UserId: "SYSADMIN",
+      }));
+  
+      const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
+        "Item-Code": item.SKU,
+        Size: item.ItemSize,
+        Qty: `${item.Qty}`,
+        Rate: `${item?.ItemPrice}`,
+        UserId: "SYSADMIN",
+      }));
+  
+      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+  
+      // Body for the sales return (EXSR)
       const salesReturnBody = {
         "_keyword_": "salesreturn",
         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-        "data": [
+        data: [
           {
             "Company": "SLIC",
             "TransactionCode": selectTransactionCode,
@@ -238,7 +234,7 @@ const F3TenderCashPopUp = ({
             "PosRefNo": invoiceHeaderData?.InvoiceNo,
             "ZATCAPaymentMode": paymentModes.code,
             "TaxExemptionReason": "1",
-            "Item": items,
+            Item: SecondDataGridItem,
           },
         ],
         COMPANY: "SLIC",
@@ -247,86 +243,360 @@ const F3TenderCashPopUp = ({
         LANG: "ENG",
       };
   
-      if (paymentModes.code === "1") {
-        // Call the Sales Return API
-        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        console.log("Sales Return Response:", res?.data);
-  
-        // Complete the process
-        showOtpPopup(res?.data);
-        handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
-        handleInvoiceGenerator();
-        setLoading(false);
-        return; // Exit since no further action is needed
-      }
-
-
-      // Handle Sales Return with Payment Mode Code 4 or 5 (without exchange)
-      if (!isExchangeClicked && (paymentModes.code === "4" || paymentModes.code === "5")) {
-        // Call Sales Return API only once
-        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log("Sales Return Response (No Exchange):", res?.data);
-
-        // Call the Bank API for the Sales Return
-        const documentNo = res?.data?.['Document No'];
-        await callBankReceiptAPI(documentNo, selectTransactionCode);
-
-        // Complete the process
-        showOtpPopup(res?.data);
-        handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
-        handleInvoiceGenerator();
-        setLoading(false);
-        return; // Exit since no further action is needed
-      }
-  
-      // Call Sales Return API with both EXSR and EXIN transaction codes if paymentModes.code is 4 or 5
-      if (isExchangeClicked && (paymentModes.code === "4" || paymentModes.code === "5")) {
+      if (isExchangeClick) {
+        // Exchange scenario: Call both Sales Return and Invoice APIs
         const exsrRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Sales Return Response (EXSR):", exsrRes?.data);
   
-        const exinRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", {
-          ...salesReturnBody,
-          "data": [
+        // Body for the invoice (EXIN)
+        const salesInvoiceBody = {
+          "_keyword_": "Invoice",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
             {
-              ...salesReturnBody.data[0],
+              "Company": "SLIC",
               "TransactionCode": modifiedTransactionCode,
+              "CustomerCode": invoiceHeaderData?.CustomerCode,
+              "SalesLocationCode": selectedLocation?.stockLocation,
+              "DeliveryLocationCode": selectedLocation?.stockLocation,
+              "UserId": "SYSADMIN",
+              "CustomerName": invoiceHeaderData?.CustomerCode,
+              "MobileNo": invoiceHeaderData?.MobileNo,
+              "Remarks": invoiceHeaderData?.Remarks,
+              "PosRefNo": invoiceHeaderData?.InvoiceNo,
+              "ZATCAPaymentMode": paymentModes.code,
+              "TaxExemptionReason": "0",  // Invoice specific field
+              Item: firstDataGridItem,
             },
           ],
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "INVOICE",
+          LANG: "ENG",
+        };
+  
+        // Call the Invoice API (EXIN)
+        const exinRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Invoice Response (EXIN):", exinRes?.data);
+  
+        // Get document numbers for both EXSR and EXIN
+        const exsrDocumentNo = exsrRes?.data?.message["Document No"];
+        const exinDocumentNo = exinRes?.data?.message["Document No"];
+  
+        // Call Bank API for Exchange (EXSR + EXIN)
+        const bankReceiptBody = {
+          "_keyword_": "BANKRCPTEX",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
+            {
+              Company: "SLIC",
+              UserId: "SYSADMIN",
+              Department: "011",
+              TransactionCode: "BRV",
+              Division: "100",
+              BankApproverCode: bankApprovedCode,
+              CashCardFlag: "CARD",
+              ReceiptAmt: selectedRowData?.ItemPrice - exchangeData[0]?.ItemPrice,
+              CustomerId: invoiceHeaderData?.CustomerCode,
+              MatchingTransactions: [
+                {
+                  DocNo: exinDocumentNo,
+                  TransactionCode: modifiedTransactionCode,
+                  PendingAmount: exchangeData[0]?.ItemPrice,
+                  AdjAmount: exchangeData[0]?.ItemPrice,
+                },
+                {
+                  DocNo: exsrDocumentNo,
+                  TransactionCode: selectTransactionCode,
+                  PendingAmount: selectedRowData?.ItemPrice,
+                  AdjAmount: selectedRowData?.ItemPrice,
+                },
+              ],
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "BANKRECEIPTVOUCHER",
+          LANG: "ENG",
+        };
+  
+        await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+          headers: { Authorization: `Bearer ${token}` },
         });
   
-        console.log("Sales Return Response (EXIN):", exinRes?.data);
-  
-        // Call Bank API for both document numbers
-        const exsrDocumentNo = exsrRes?.data?.['Document No'];
-        const exinDocumentNo = exinRes?.data?.['Document No'];
-  
-        await callBankReceiptAPI(exinDocumentNo, modifiedTransactionCode, "BANKRCPTEX");
-        await callBankReceiptAPI(exsrDocumentNo, selectTransactionCode, "BANKRCPTDI");
-  
-        // Complete the process
+        console.log("Bank Receipt processed for Exchange");
         showOtpPopup(exsrRes?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+
+      } else {
+        // Non-exchange scenario: Only call Sales Return API
+        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Sales Return Response:", res?.data);
+  
+        // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
+          const documentNo = res?.data?.message["Document No"];
+          const bankReceiptDI = {
+            "_keyword_": "BANKRCPTDI",
+            "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+            data: [
+              {
+                Company: "SLIC",
+                UserId: "SYSADMIN",
+                Department: "011",
+                TransactionCode: "BRV",
+                Division: "100",
+                BankApproverCode: bankApprovedCode,
+                CashCardFlag: "CARD",
+                ReceiptAmt: grossAmount,
+                CustomerId: invoiceHeaderData?.CustomerCode,
+                MatchingTransactions: [
+                  {
+                    DocNo: documentNo,
+                    TransactionCode: selectTransactionCode,
+                    PendingAmount: changeAmount,
+                    AdjAmount: changeAmount,
+                  },
+                ],
+              },
+            ],
+            COMPANY: "SLIC",
+            USERID: "SYSADMIN",
+            APICODE: "BANKRECEIPTVOUCHER",
+            LANG: "ENG",
+          };
+  
+          await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptDI, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+          console.log("Bank Receipt processed for Direct Sales Return Debit/Credit");
+        } else {
+          console.log("Direct Sales Return - Cash (No Bank API Call)");
+        }
+      }
+  
+      // Complete the process
+      showOtpPopup(exsrRes?.data);
+      handleCloseCreatePopup();
+      handleClearData();
+      handleClearInvoiceData();
+      handleInvoiceGenerator();
+      setLoading(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Something went wrong");
+      setLoading(false);
+    }
+  };
+
+  
+
+  // DSALES no Invoice
+  const handleSubmitDSalesInvoice = async () => {
+    setLoading(true);
+  
+    try {
+      const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
+        "Item-Code": item.ItemCode,
+        Size: item.ItemSize,
+        Qty: `${item.Qty}`,
+        Rate: `${item?.ItemPrice}`,
+        UserId: "SYSADMIN",
+      }));
+  
+      const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
+        "Item-Code": item.SKU,
+        Size: item.ItemSize,
+        Qty: `${item.Qty}`,
+        Rate: `${item?.ItemPrice}`,
+        UserId: "SYSADMIN",
+      }));
+  
+      const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+      const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+  
+      // Body for the sales return (EXSR)
+      const salesReturnBody = {
+        "_keyword_": "salesreturn",
+        "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+        data: [
+          {
+            "Company": "SLIC",
+            "TransactionCode": `${selectTransactionCode}`,
+            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
+            "UserId": "SYSADMIN",
+            "CustomerName": customerName,
+            "MobileNo": mobileNo,
+            "Remarks": remarks,
+            "PosRefNo": invoiceNumber,
+            "ZATCAPaymentMode": paymentModes.code,
+            "TaxExemptionReason": "1",
+            Item: SecondDataGridItem,
+          },
+        ],
+        COMPANY: "SLIC",
+        USERID: "SYSADMIN",
+        APICODE: "SALESRETURN",
+        LANG: "ENG",
+      };
+  
+      if (isExchangeDSalesClick) {
+        // Exchange scenario: Call both Sales Return and Invoice APIs
+        const exsrRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Sales Return Response (EXSR):", exsrRes?.data);
+  
+        // Body for the invoice (EXIN)
+        const salesInvoiceBody = {
+          "_keyword_": "Invoice",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
+            {
+              "Company": "SLIC",
+              "TransactionCode": `${modifiedTransactionCode}`,
+              "CustomerCode": selectedCustomerCode?.CUST_CODE,
+              "SalesLocationCode": selectedLocation?.stockLocation,
+              "DeliveryLocationCode": selectedLocation?.stockLocation,
+              "UserId": "SYSADMIN",
+              "CustomerName": customerName,
+              "MobileNo": mobileNo,
+              "Remarks": remarks,
+              "PosRefNo": invoiceNumber,
+              "ZATCAPaymentMode": paymentModes.code,
+              "TaxExemptionReason": "0",  // Invoice specific field
+              Item: firstDataGridItem,
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "INVOICE",
+          LANG: "ENG",
+        };
+  
+        // Call the Invoice API (EXIN)
+        const exinRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Invoice Response (EXIN):", exinRes?.data);
+  
+        // Get document numbers for both EXSR and EXIN
+        const exsrDocumentNo = exsrRes?.data?.message["Document No"];
+        const exinDocumentNo = exinRes?.data?.message["Document No"];
+  
+        // Call Bank API for Exchange (EXSR + EXIN)
+        const bankReceiptBody = {
+          "_keyword_": "BANKRCPTEX",
+          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+          data: [
+            {
+              Company: "SLIC",
+              UserId: "SYSADMIN",
+              Department: "011",
+              TransactionCode: "BRV",
+              Division: "100",
+              BankApproverCode: bankApprovedCode,
+              CashCardFlag: "CARD",
+              ReceiptAmt: selectedRowData?.ItemPrice - dSalesNoInvoiceexchangeData[0]?.ItemPrice,
+              CustomerId: selectedCustomerCode?.CUST_CODE,
+              MatchingTransactions: [
+                {
+                  DocNo: exinDocumentNo,
+                  TransactionCode: modifiedTransactionCode,
+                  PendingAmount: dSalesNoInvoiceexchangeData[0]?.ItemPrice,
+                  AdjAmount: dSalesNoInvoiceexchangeData[0]?.ItemPrice,
+                },
+                {
+                  DocNo: exsrDocumentNo,
+                  TransactionCode: selectTransactionCode,
+                  PendingAmount: selectedRowData?.ItemPrice,
+                  AdjAmount: selectedRowData?.ItemPrice,
+                },
+              ],
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "BANKRECEIPTVOUCHER",
+          LANG: "ENG",
+        };
+  
+        await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        console.log("Bank Receipt processed for Exchange");
+        showOtpPopup(exsrRes?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+
+      } 
+      
+      else {
+        // Non-exchange scenario: Only call Sales Return API
+        const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Sales Return Response:", res?.data);
+      
+        // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
+          const documentNo = res?.data?.message["Document No"];
+          const bankReceiptDI = {
+            "_keyword_": "BANKRCPTDI",
+            "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+            data: [
+              {
+                Company: "SLIC",
+                UserId: "SYSADMIN",
+                Department: "011",
+                TransactionCode: "BRV",
+                Division: "100",
+                BankApproverCode: bankApprovedCode,
+                CashCardFlag: "CARD",
+                ReceiptAmt: grossAmount,
+                CustomerId: selectedCustomerCode?.CUST_CODE,
+                MatchingTransactions: [
+                  {
+                    DocNo: documentNo,
+                    TransactionCode: selectTransactionCode,
+                    PendingAmount: changeAmount,
+                    AdjAmount: changeAmount,
+                  },
+                ],
+              },
+            ],
+            COMPANY: "SLIC",
+            USERID: "SYSADMIN",
+            APICODE: "BANKRECEIPTVOUCHER",
+            LANG: "ENG",
+          };
+  
+          await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptDI, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+          console.log("Bank Receipt processed for Direct Sales Return Debit/Credit");
+        } else {
+          console.log("Direct Sales Return - Cash (No Bank API Call)");
+        }
+        // Complete the process
+        showOtpPopup(res?.data);
         handleCloseCreatePopup();
         handleClearData();
         handleClearInvoiceData();
@@ -335,10 +605,35 @@ const F3TenderCashPopUp = ({
       }
   
     } catch (err) {
+      console.log(err)
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
   };
+
+ 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    // if (!cashAmount) {
+    //   toast.error(`Please type the ${paymentModes.name} Amount`);
+    //   return;
+    // }
+  
+    if (!selectedTransactionCode?.TXN_CODE) {
+      toast.error(`Please select the Transaction Code`);
+      return;
+    }
+  
+    if (selectedSalesType === "DIRECT SALES INVOICE") {
+      await handleSubmitDirectSalesInvoice();
+    } else if (selectedSalesType === "DIRECT SALES RETURN") {
+      await handleSubmitDirectSalesReturn();
+    } else if (selectedSalesType === "DSALES NO INVOICE") {
+      await handleSubmitDSalesInvoice();
+    }
+  };
+  
   
   
   const validateForm = () => {
@@ -471,6 +766,17 @@ const F3TenderCashPopUp = ({
                               <p className="text-sm">{item.ItemPrice}</p>
                             </div>
                           ))
+                        ) : selectedSalesType === "DSALES NO INVOICE" ? (
+                          DSalesNoInvoiceData?.map((item, index) => (
+                            <div
+                              key={index}
+                              className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                            >
+                              <p className="text-sm">{item.SKU}</p>
+                              <p className="text-sm">{item.ItemSize}</p>
+                              <p className="text-sm">{item.ItemPrice}</p>
+                            </div>
+                          ))
                         ) : (
                           storeDatagridData?.map((item, index) => (
                             <div
@@ -539,8 +845,10 @@ const F3TenderCashPopUp = ({
                         </p>
                         <input
                           type="text"
-                          value={cashAmount}
-                          onChange={(e) => setCashAmount(e.target.value)}
+                          value={grossAmount}
+                          readOnly
+                          // value={cashAmount}
+                          // onChange={(e) => setCashAmount(e.target.value)}
                           className="w-full border border-gray-300 px-2 py-2 rounded-md"
                           placeholder={paymentModes.name || "Payment Mode"}
                         />
