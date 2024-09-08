@@ -11,6 +11,8 @@ import salesorders from "../../Images/salesorders.png"
 import directinvoice from "../../Images/directinvoice.png"
 import transactioncodes from "../../Images/transactioncodes.png"
 import customercodes from "../../Images/customercodes.png"
+import POShistory from "../../Images/POShistory.png"
+import POSArchive from "../../Images/POSArchive.png"
 import { FaChevronDown, FaChevronUp, FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -196,12 +198,29 @@ function SideNav({ children }) {
                     >
                       <div className="flex justify-center items-center gap-3">
                         <img
-                          src={posicon}
+                          src={POShistory}
                           alt="logo"
                           className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                         />
                         <span className="text-secondary font-medium text-lg">
                           POS History
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                  <li className="mt-3">
+                    <Link
+                      // to="/pos-history"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={POSArchive}
+                          alt="logo"
+                          className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          POS Archive
                         </span>
                       </div>
                     </Link>

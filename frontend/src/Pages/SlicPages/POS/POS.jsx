@@ -411,15 +411,11 @@ const POS = () => {
   const [selectedCustomerName, setSelectedCustomerName] = useState("");
   const fetchCustomerNames = async () => {
     try {
-      const response = await newRequest.get("/customerNames/v1/all");
+      const response = await newRequest.get(`/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`);
       const allCustomers = response?.data?.data;
-    
-      // Filter customers whose CUST_CODE starts with "CL"
-      const filteredCustomers = allCustomers.filter(customer =>
-        customer.CUST_CODE.startsWith("CL")
-      );
-      // console.log(filteredCustomers);
-      setSearchCustomerName(filteredCustomers);
+      // console.log(allCustomers)
+     
+      setSearchCustomerName(allCustomers);
 
     } catch (err) {
       // console.log(err);
@@ -433,9 +429,10 @@ const POS = () => {
   };
 
   useEffect(() => {
-    // fetchTransactionCodes();
-    fetchCustomerNames();
-  }, []);
+    if(selectedTransactionCode?.TXN_CODE) {
+      fetchCustomerNames();
+    }
+  }, [selectedTransactionCode?.TXN_CODE]);
 
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
@@ -476,7 +473,7 @@ const POS = () => {
     setMobileNo("");
     setRemarks("");
     setVat("");
-    setSelectedCustomerName(null);
+    // setSelectedCustomerName(null);
     setSelectedTransactionCode("");
     setInvoiceNumber(generateInvoiceNumber());
     setTotalAmountWithVat(0);
@@ -496,7 +493,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE",
@@ -504,7 +501,7 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
   
         const details = data.map((item, index) => ({
@@ -516,7 +513,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE",
@@ -539,16 +536,16 @@ const POS = () => {
         const master = {
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: exchangeData[0]?.SKU,
+          ItemSysID: exchangeData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
   
         const details = exchangeData.map((item, index) => ({
@@ -560,12 +557,12 @@ const POS = () => {
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
-          ItemSKU: item.SKU,
+          ItemSKU: item?.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -578,14 +575,15 @@ const POS = () => {
           master,
           details,
         };
+
       } else if (selectedSalesType === "DSALES NO INVOICE") {
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -593,7 +591,7 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
         const details = DSalesNoInvoiceData.map((item, index) => ({
           Rec_Num: index + 1,
@@ -604,12 +602,12 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
           UserID: "SYSADMIN",
-          ItemSKU: item.SKU,
+          ItemSKU: item.ItemCode,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -812,7 +810,7 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${selectedSalesType === "DIRECT SALES RETURN" ? "Sales Invoice" : "Return Slip Invoice"}
+            ${selectedSalesType === "DIRECT SALES INVOICE" ? "Sales Invoice" : "Return Slip Invoice"}
           </div>
           
           <div class="customer-info">
@@ -1394,25 +1392,20 @@ const POS = () => {
                   <Autocomplete
                     id="field1"
                     options={searchCustomerName}
-                    // getOptionLabel={(option) => option?.CUST_CODE || ""}
                     getOptionLabel={(option) => 
-                      option && option.CUST_CODE && option.CUST_NAME 
-                        ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
+                      option && option.CUSTOMERCODE && option.TXN_NAME 
+                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}` 
                         : ''
                     }
                     onChange={handleSearchCustomerName}
-                    value={
-                      searchCustomerName.find(
-                        (option) =>
-                          option?.CUST_CODE === selectedCustomerName?.CUST_CODE
-                      ) || null
-                    }
+                    // Ensure correct value is being set for selectedCustomerName
+                    value={selectedCustomerName || null}
                     isOptionEqualToValue={(option, value) =>
-                      option?.CUST_CODE === value?.CUST_CODE
+                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
                     }
                     onInputChange={(event, value) => {
                       if (!value) {
-                        setSelectedCustomerName(""); // Clear selection
+                        setSelectedCustomerName(""); // Clear selection when input is cleared
                       }
                     }}
                     renderInput={(params) => (
@@ -1669,7 +1662,7 @@ const POS = () => {
                         <td className="border px-4 py-2 text-center relative">
                           <button
                             onClick={() => handleActionClick(index)}
-                            className="bg-blue-500 text-white px-4 py-2 font-bold transform hover:scale-95"
+                            className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
                           >
                             Actions
                           </button>
