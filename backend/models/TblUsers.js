@@ -14,7 +14,7 @@ async function getUserByLoginId(loginId) {
     });
     return user;
   } catch (error) {
-    console.error("Error fetching user by login ID:", error);
+    console.error("Error fetching user by login ID:", error.message || error);
     throw new CustomError("Error fetching user by login ID");
   }
 }
