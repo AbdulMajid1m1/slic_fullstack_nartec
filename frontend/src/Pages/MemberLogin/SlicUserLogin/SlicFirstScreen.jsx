@@ -17,6 +17,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
   const [locations, setLocations] = useState([]);
+ 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
