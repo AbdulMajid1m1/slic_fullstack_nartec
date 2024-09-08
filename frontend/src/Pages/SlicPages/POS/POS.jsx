@@ -480,11 +480,12 @@ const POS = () => {
     setNetWithVat(0);
     setTotalVat(0);
     setExchangeData([]);
+    setIsExchangeClick(false);
   };  
 
   const insertInvoiceRecord = async () => {
     try {
-      let invoiceData;
+      let invoiceAllData;
       
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
@@ -527,11 +528,15 @@ const POS = () => {
           TransactionDate: todayDate,
         }));
   
-        invoiceData = {
+        invoiceAllData = {
           master,
           details,
         };
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
+
+        // Check if isExchangeClick is true, if so use exchangeData, otherwise use invoiceData
+        const dataToUse = isExchangeClick ? exchangeData : invoiceData;
+
         // Construct the master and details data for Sales Return
         const master = {
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
@@ -548,21 +553,21 @@ const POS = () => {
           CustomerName: customerName,
         };
   
-        const details = exchangeData.map((item, index) => ({
+        const details = dataToUse.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: item.SKU,
+          ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE || invoiceHeaderData?.invoiceHeader?.CustomerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
-          ItemSKU: item?.SKU,
+          ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -571,12 +576,16 @@ const POS = () => {
           TransactionDate: todayDate,
         }));
   
-        invoiceData = {
+        console.log(details)
+
+        invoiceAllData = {
           master,
           details,
         };
 
       } else if (selectedSalesType === "DSALES NO INVOICE") {
+
+        const dataToUseDSales = isExchangeDSalesClick ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
@@ -593,12 +602,12 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
         };
-        const details = DSalesNoInvoiceData.map((item, index) => ({
+        const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: item.SKU,
+          ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -607,7 +616,7 @@ const POS = () => {
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
           UserID: "SYSADMIN",
-          ItemSKU: item.ItemCode,
+          ItemSKU: isExchangeDSalesClick ? item.ItemCode : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -616,7 +625,7 @@ const POS = () => {
           TransactionDate: todayDate,
         }));
 
-        invoiceData = {
+        invoiceAllData = {
           master,
           details,
         };
@@ -625,9 +634,9 @@ const POS = () => {
       // Call the API to save the invoice or return record
       const saveInvoiceResponse = await newRequest.post(
         "/invoice/v1/saveInvoice",
-        invoiceData
+        invoiceAllData
       );
-      console.log("invoice body", invoiceData)
+      console.log("invoice body", invoiceAllData)
       console.log("Record saved successfully:", saveInvoiceResponse.data);
       resetState();
       toast.success(saveInvoiceResponse?.data?.message || "Invoice saved successfully");
