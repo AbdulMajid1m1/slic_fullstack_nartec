@@ -120,6 +120,32 @@ class POSInvoiceMaster {
       throw new Error("Error fetching all invoice details");
     }
   }
+  static async getAllInvoiceDetails(sortFields = {}) {
+    try {
+      // Construct orderBy object based on the sortFields
+      const orderBy = [];
+
+      // Loop over the passed fields to set up the orderBy array
+      for (const [field, order] of Object.entries(sortFields)) {
+        orderBy.push({ [field]: order });
+      }
+
+      // If no sorting fields are provided, default to sorting by TransactionDate descending
+      if (orderBy.length === 0) {
+        orderBy.push({ TransactionDate: "desc" });
+      }
+
+      // Fetch the invoice details with the appropriate sorting
+      const details = await prisma.tblPOSInvoiceMaster.findMany({
+        orderBy,
+      });
+
+      return details;
+    } catch (error) {
+      console.error("Error fetching all invoice details:", error);
+      throw new Error("Error fetching all invoice details");
+    }
+  }
 }
 
 module.exports = POSInvoiceMaster;
