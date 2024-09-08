@@ -78,6 +78,29 @@ class TrxCodesType {
     }
   }
 
+  static async fetchFiltered(filters) {
+    try {
+      // Build the where clause dynamically based on the filters
+      const whereClause = {};
+
+      if (filters.TXN_CODE) whereClause.TXN_CODE = filters.TXN_CODE;
+      if (filters.TXN_NAME) whereClause.TXN_NAME = filters.TXN_NAME;
+      if (filters.TXN_TYPE) whereClause.TXN_TYPE = filters.TXN_TYPE;
+      if (filters.TXNLOCATIONCODE)
+        whereClause.TXNLOCATIONCODE = filters.TXNLOCATIONCODE;
+      if (filters.CUSTOMERCODE) whereClause.CUSTOMERCODE = filters.CUSTOMERCODE;
+
+      const trxCodes = await prisma.trxCodesType.findMany({
+        where: whereClause,
+      });
+
+      return trxCodes;
+    } catch (error) {
+      console.log(error);
+      throw new CustomError("Error fetching filtered transaction codes");
+    }
+  }
+
   static async findByCode(code) {
     try {
       const trxCode = await prisma.trxCodesType.findUnique({

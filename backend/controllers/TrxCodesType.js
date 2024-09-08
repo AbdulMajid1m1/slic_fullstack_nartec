@@ -6,7 +6,9 @@ const response = require("../utils/response");
 
 exports.getAll = async (req, res, next) => {
   try {
-    const trxCodes = await TrxCodesType.fetchAll();
+    const filters = req.query; // Extract query parameters from the request
+    const trxCodes = await TrxCodesType.fetchFiltered(filters);
+
     if (!trxCodes || trxCodes.length === 0) {
       const error = new CustomError("No transaction codes found!");
       error.statusCode = 404;
