@@ -20,3 +20,5 @@
 [0908/164314.859:INFO:CONSOLE(342)] "WAWebLoggerWorker initialized", source: https://static.whatsapp.net/rsrc.php/v3/yw/r/4Nb4oyv3XvH.js?_nc_x=Ij3Wp8lg5Kz (342)
 [0908/164314.860:INFO:CONSOLE(342)] "[storage] start setSchemaVersions from fts worker interface", source: https://static.whatsapp.net/rsrc.php/v3/yw/r/4Nb4oyv3XvH.js?_nc_x=Ij3Wp8lg5Kz (342)
 [0908/164314.860:INFO:CONSOLE(342)] "[storage] set schema versions: [model-storage,158,fts-storage,8,jobs-storage,1,lru-media-storage-idb,2,offd-storage,4,qpl-storage,0,signal-storage,6,worker-storage,1,sw,2,wawc,14,wawc_db_enc,2]. is worker? true", source: https://static.whatsapp.net/rsrc.php/v3/yw/r/4Nb4oyv3XvH.js?_nc_x=Ij3Wp8lg5Kz (342)
+[0908/164557.742:INFO:CONSOLE(4)] "Uncaught (in promise) Error: window is not defined", source: https://web.whatsapp.com/ (4)
+[0908/164559.259:INFO:CONSOLE(150)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v3/yL/r/Z0TPhS0RCj5.js?_nc_x=Ij3Wp8lg5Kz (150)
