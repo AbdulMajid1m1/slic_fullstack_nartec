@@ -102,6 +102,7 @@ model TrxCodesType {
   TXN_TYPE        String? @db.NVarChar(50)
   TXNLOCATIONCODE String? @db.NVarChar(50)
   id              String  @id(map: "PK_TrxCodesType_id") @db.NVarChar(36)
+  CUSTOMERCODE    String? @db.NVarChar(50)
 }
 
 model TblAppRoles {
