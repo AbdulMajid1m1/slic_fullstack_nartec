@@ -1,10 +1,11 @@
-# .gitignore
+# .gitignore (inside the backend folder)
 
 # Environment variables
 .env
 
 # Node modules
 node_modules/
+.wwebjs_auth/
 
 # Prisma Client
 node_modules/.prisma
@@ -15,5 +16,12 @@ prisma/migrations/
 # User-uploaded images
 images/
 
-# vs code settings
+# VS Code settings
 .vscode/
+
+# wwebjs session and cache files
+.wwebjs_auth/session-client-one/Default/Cache/
+.wwebjs_auth/session-client-one/Default/Service Worker/
+.wwebjs_auth/session-client-one/Default/Code Cache/
+.wwebjs_auth/session-client-one/Default/Local Storage/
+.wwebjs_auth/session-client-one/Default/Session Storage/
