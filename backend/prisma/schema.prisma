@@ -56,22 +56,20 @@ model tblPOFPOMaster {
   updatedAt        DateTime? @updatedAt @db.DateTime
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TblLocationNames {
   TblSysNoID   Decimal @db.Decimal(19, 0)
   LocationCode String? @db.VarChar(50)
   LocationName String? @db.VarChar(150)
-
-  @@ignore
+  id           String  @unique(map: "UQ_TblLocationNames_id") @db.UniqueIdentifier
 }
 
 model TblCompanyNames {
   TblSysNoID  Int     @id @default(autoincrement())
   CompanyCode String? @db.VarChar(50)
   CompanyName String? @db.VarChar(150)
+  id          String  @unique(map: "UQ_TblCompanyNames_id") @db.UniqueIdentifier
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TblPOFPODetails {
   HEAD_SYS_ID  Float?
   ITEM_CODE    String? @db.NVarChar(255)
@@ -81,8 +79,7 @@ model TblPOFPODetails {
   PO_QTY       Float?
   RECEIVED_QTY String? @db.NVarChar(255)
   ITEM_SYS_ID  Float?
-
-  @@ignore
+  id           String  @id(map: "PK_TblPOFPODetails_id") @db.NVarChar(36)
 }
 
 model TblCustomerNames {
@@ -99,14 +96,13 @@ model tblFSOMaster {
   HEAD_SYS_ID  Float?
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TrxCodesType {
   TXN_CODE        String? @db.NVarChar(50)
   TXN_NAME        String? @db.NVarChar(255)
   TXN_TYPE        String? @db.NVarChar(50)
   TXNLOCATIONCODE String? @db.NVarChar(50)
-
-  @@ignore
+  id              String  @id(map: "PK_TrxCodesType_id") @db.NVarChar(36)
+  CUSTOMERCODE    String? @db.NVarChar(50)
 }
 
 model TblAppRoles {
@@ -124,7 +120,6 @@ model TblUserRoles {
   @@map("TblUserRoles")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model tblPOSInvoiceDetails {
   Rec_Num              Float?    @map("Rec ##")
   TblSysNoID           Float?
@@ -146,12 +141,9 @@ model tblPOSInvoiceDetails {
   ItemPrice            Float?
   ItemQry              Float?
   TransactionDate      DateTime? @db.DateTime
-  id                   String?   @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
-
-  @@ignore
+  id                   String    @unique(map: "UQ_tblPOSInvoiceDetails_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model tblPOSInvoiceMaster {
   Rec_Num              Float?    @map("Rec ##")
   TblSysNoID           Float?
@@ -168,11 +160,9 @@ model tblPOSInvoiceMaster {
   UserID               String?   @db.NVarChar(255)
   MobileNo             String?   @db.NVarChar(255)
   TransactionDate      DateTime? @db.DateTime
-  id                   String?   @default(uuid()) @db.UniqueIdentifier
+  id                   String    @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
   VatNumber            String?   @db.VarChar(50)
   CustomerName         String?   @db.NVarChar(255)
-
-  @@ignore
 }
 
 model TblSalesReturnInvoicetmp {
