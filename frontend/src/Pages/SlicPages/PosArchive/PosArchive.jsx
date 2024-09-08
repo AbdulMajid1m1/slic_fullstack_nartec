@@ -11,6 +11,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 const PosArchive = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [secondGridData, setSecondGridData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // for the map markers
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [isPurchaseOrderDataLoading, setIsPurchaseOrderDataLoading] =
+    useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -31,10 +37,31 @@ const PosArchive = () => {
 
   const handleRowClickInParent = async (item) => {
     // console.log(item)
-    if (item.length === 0) {
+    // if (item.length === 0) {
     //   setFilteredData(secondGridData);
-      return;
-    } 
+    //   return;
+    // }
+
+    // // call api
+    // setIsPurchaseOrderDataLoading(true);
+    // try {
+    //   const res = await newRequest.get(
+    //     `/Invoice/v1/detailsByInvoiceNo?InvoiceNo=${item[0].InvoiceNo}`
+    //   );
+    //   // console.log(res?.data?.data);
+
+    //   setFilteredData(res?.data?.data || []);
+    // } catch (err) {
+    //   console.log(err);
+    //   toast.error(
+    //     err?.response?.data?.error ||
+    //       err?.response?.data?.message ||
+    //       "Something went wrong"
+    //   );
+    //   setFilteredData([]);
+    // } finally {
+    //   setIsPurchaseOrderDataLoading(false);
+    // }
   };
 
   return (
@@ -85,6 +112,28 @@ const PosArchive = () => {
               uniqueId="posHistoryId"
             />
           </div>
+        </div>
+
+        <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
+          <DataTable
+            data={filteredData}
+            title={"POS Archive Details"}
+            secondaryColor="secondary"
+            columnsName={posHistoryInvoiceColumns}
+            backButton={true}
+            checkboxSelection="disabled"
+            actionColumnVisibility={false}
+            // dropDownOptions={[
+            //   {
+            //     label: "Delete",
+            //     icon: <DeleteIcon fontSize="small" style={{ color: '#FF0032' }} />
+            //     ,
+            //     action: handleShipmentDelete,
+            //   },
+            // ]}
+            uniqueId={"posHistoryDetailsId"}
+            loading={isPurchaseOrderDataLoading}
+          />
         </div>
       </div>
     </SideNav>
