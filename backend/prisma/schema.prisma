@@ -8,85 +8,90 @@ datasource db {
 }
 
 model TblItemCodes1S1Br {
-  id                  String    @id @default(cuid())
-  GTIN                String? @db.VarChar(50) 
-  ItemCode            String? @db.NVarChar(20)
-  EnglishName         String? @db.NVarChar(255)
-  ArabicName          String? @db.NVarChar(255)
-  LotNo               String? @db.VarChar(50)
+  ItemCode            String?   @db.NVarChar(20)
+  EnglishName         String?   @db.NVarChar(255)
+  ArabicName          String?   @db.NVarChar(255)
+  GTIN                String?   @db.VarChar(50)
+  LotNo               String?   @db.VarChar(50)
   ExpiryDate          DateTime?
-  sERIALnUMBER        String? @db.VarChar(150)
+  sERIALnUMBER        String?   @db.VarChar(150)
   ItemQty             Int?
-  WHLocation          String? @db.VarChar(150)
-  BinLocation         String? @db.VarChar(50)
-  QRCodeInternational String? @db.VarChar(255)
-  ModelName           String? @db.VarChar(100)
+  WHLocation          String?   @db.VarChar(150)
+  BinLocation         String?   @db.VarChar(50)
+  QRCodeInternational String?   @db.VarChar(255)
+  ModelName           String?   @db.VarChar(100)
   ProductionDate      DateTime?
-  ProductType         String? @db.VarChar(50)
-  BrandName           String? @db.VarChar(100)
-  PackagingType       String? @db.VarChar(100)
-  ProductUnit         String? @db.VarChar(50)
-  ProductSize         String? @db.VarChar(50)
-  Created_at           DateTime? @default(now()) @db.DateTime
-  Updated_at           DateTime? @default(now()) @db.DateTime
+  ProductType         String?   @db.VarChar(50)
+  BrandName           String?   @db.VarChar(100)
+  PackagingType       String?   @db.VarChar(100)
+  ProductUnit         String?   @db.VarChar(50)
+  ProductSize         String?   @db.VarChar(50)
+  id                  String    @id @default(cuid())
+  Created_at          DateTime? @default(now()) @db.DateTime
+  Updated_at          DateTime? @default(now()) @db.DateTime
 }
 
-
 model TblBarSeriesNo {
-  TblSysNoID Int    @id @default(autoincrement())
+  TblSysNoID  Int     @id @default(autoincrement())
   BarSeriesNo String? @db.VarChar(10)
 }
 
 model TblUsers {
-  TblSysNoID      Int   @id @default(autoincrement())
-  UserLoginID     String?  @db.VarChar(50)
-  UserPassword    String?  @db.VarChar(150)
-  UserLoginStatus Int?     @default(0)
+  TblSysNoID      Int     @id @default(autoincrement())
+  UserLoginID     String? @db.VarChar(50)
+  UserPassword    String? @db.VarChar(150)
+  UserLoginStatus Int?    @default(0)
 
-  @@map("TblUsers") 
+  @@map("TblUsers")
 }
 
 model tblPOFPOMaster {
-  tblPOFPOMasterID Int      @id @default(autoincrement())
-  PONumber          String?  @db.VarChar(50)
-  PODate            String?  @db.VarChar(50)
-  SupplierName      String?  @db.VarChar(50)
-  POStatus          String?  @db.VarChar(50)
-  Head_SYS_ID       String?  @db.VarChar(50)
-  createdAt         DateTime? @default(now()) @db.DateTime
-  updatedAt         DateTime? @updatedAt @db.DateTime
+  tblPOFPOMasterID Decimal   @id(map: "PK__tblPOFPO__DEE1D6F7FE784D1E") @db.Decimal(19, 0)
+  PONumber         String?   @default("", map: "DF__tblPOFPOM__PONum__6EC0713C") @db.VarChar(50)
+  PODate           String?   @default("", map: "DF__tblPOFPOM__PODat__6FB49575") @db.VarChar(50)
+  SupplierName     String?   @default("", map: "DF__tblPOFPOM__Suppl__70A8B9AE") @db.VarChar(50)
+  POStatus         String?   @default("", map: "DF__tblPOFPOM__POSta__719CDDE7") @db.VarChar(50)
+  Head_SYS_ID      String?   @default("", map: "DF__tblPOFPOM__Head___72910220") @db.VarChar(50)
+  createdAt        DateTime? @db.DateTime
+  updatedAt        DateTime? @updatedAt @db.DateTime
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TblLocationNames {
-    TblSysNoID        Int      @id @default(autoincrement())
-    LocationCode          String?  @db.VarChar(50)
-    LocationName            String?  @db.VarChar(150)
+  TblSysNoID   Decimal @db.Decimal(19, 0)
+  LocationCode String? @db.VarChar(50)
+  LocationName String? @db.VarChar(150)
+
+  @@ignore
 }
 
 model TblCompanyNames {
-    TblSysNoID        Int      @id @default(autoincrement())
-    CompanyCode          String?  @db.VarChar(50)
-    CompanyName            String?  @db.VarChar(150)
+  TblSysNoID  Int     @id @default(autoincrement())
+  CompanyCode String? @db.VarChar(50)
+  CompanyName String? @db.VarChar(150)
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TblPOFPODetails {
-  HEAD_SYS_ID   Float     @id
-  ITEM_CODE     String
-  ITEM_NAME     String?
-  GRADE         String?
-  UOM           String?
-  PO_QTY        Float?
-  RECEIVED_QTY  String?
-  ITEM_SYS_ID   Float?
+  HEAD_SYS_ID  Float?
+  ITEM_CODE    String? @db.NVarChar(255)
+  ITEM_NAME    String? @db.NVarChar(255)
+  GRADE        String? @db.NVarChar(255)
+  UOM          String? @db.NVarChar(255)
+  PO_QTY       Float?
+  RECEIVED_QTY String? @db.NVarChar(255)
+  ITEM_SYS_ID  Float?
+
+  @@ignore
 }
 
 model TblCustomerNames {
-  CUST_CODE  String  @id
-  CUST_NAME  String?
+  CUST_CODE String  @id
+  CUST_NAME String?
 }
 
 model tblFSOMaster {
-  SO_NUMBER   String   @id
+  SO_NUMBER    String  @id
   SO_CUST_NAME String?
   SO_LOCN_CODE String?
   DEL_LOCN     String?
@@ -94,110 +99,359 @@ model tblFSOMaster {
   HEAD_SYS_ID  Float?
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TrxCodesType {
-  TXN_CODE        String  @id @db.NVarChar(255)
+  TXN_CODE        String? @db.NVarChar(50)
   TXN_NAME        String? @db.NVarChar(255)
-  TXN_TYPE        String? @db.NVarChar(255)
-  TXNLOCATIONCODE String?  @db.NVarChar(50)
+  TXN_TYPE        String? @db.NVarChar(50)
+  TXNLOCATIONCODE String? @db.NVarChar(50)
+
+  @@ignore
 }
 
 model TblAppRoles {
-  RoleID   Int     @id @default(autoincrement()) 
-  RoleName String? @db.VarChar(255)              
-
-  userRoles TblUserRoles[] 
+  RoleID   Int     @id @default(autoincrement())
+  RoleName String? @db.VarChar(255)
 
   @@map("TblAppRoles")
 }
 
 model TblUserRoles {
-  id          Int    @id @default(autoincrement()) 
-  UserLoginID String @db.VarChar(255)              
-  RoleID      Int
-
-  role        TblAppRoles @relation(fields: [RoleID], references: [RoleID])
+  id          Int     @id(map: "PK__TblUserR__3213E83FCDBDAD5C") @default(autoincrement())
+  UserLoginID String? @db.VarChar(255)
+  RoleID      Int?
 
   @@map("TblUserRoles")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model tblPOSInvoiceDetails {
-  id                    String    @id @default(uuid())
-  Rec_Num                Float?   @map("Rec ##")
-  TblSysNoID             Float?
-  SNo                    Float?
-  DeliveryLocationCode   String?  @db.NVarChar(255)
-  ItemSysID              String?  @db.NVarChar(255)
-  InvoiceNo              String?  @db.NVarChar(255)
-  Head_SYS_ID            String?  @db.NVarChar(255)
-  TransactionCode        String?  @db.NVarChar(255)
-  CustomerCode           String?  @db.NVarChar(255)
-  SalesLocationCode      String?  @db.NVarChar(255)
-  Remarks                String?  @db.NVarChar(255)
-  TransactionType        String?  @db.NVarChar(255)
-  UserID                 String?  @db.NVarChar(255)
-  ItemSKU                String?  @db.NVarChar(255)
-  ItemUnit               String?  @db.NVarChar(255)
-  ItemSize               String?  @db.NVarChar(255)
-  ITEMRATE               Float?
-  ItemPrice              Float?
-  ItemQry                Float?
-  TransactionDate        DateTime?
+  Rec_Num              Float?    @map("Rec ##")
+  TblSysNoID           Float?
+  SNo                  Float?
+  DeliveryLocationCode String?   @db.NVarChar(255)
+  ItemSysID            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @db.NVarChar(255)
+  Head_SYS_ID          String?   @db.NVarChar(255)
+  TransactionCode      String?   @db.NVarChar(255)
+  CustomerCode         String?   @db.NVarChar(255)
+  SalesLocationCode    String?   @db.NVarChar(255)
+  Remarks              String?   @db.NVarChar(255)
+  TransactionType      String?   @db.NVarChar(255)
+  UserID               String?   @db.NVarChar(255)
+  ItemSKU              String?   @db.NVarChar(255)
+  ItemUnit             String?   @db.NVarChar(255)
+  ItemSize             String?   @db.NVarChar(255)
+  ITEMRATE             Float?
+  ItemPrice            Float?
+  ItemQry              Float?
+  TransactionDate      DateTime? @db.DateTime
+  id                   String?   @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
+
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model tblPOSInvoiceMaster {
-  id                    String    @id @default(uuid())
-  Rec_Num               Float?    @map("Rec ##")
-  TblSysNoID            Float?
-  SNo                   Float?
-  DeliveryLocationCode  String?   @db.NVarChar(255)
-  ItemSysID             String?   @db.NVarChar(255)
-  InvoiceNo             String?   @db.NVarChar(255)
-  Head_SYS_ID           String?   @db.NVarChar(255)
-  TransactionCode       String?   @db.NVarChar(255)
-  CustomerCode          String?   @db.NVarChar(255)
-  SalesLocationCode     String?   @db.NVarChar(255)
-  Remarks               String?   @db.NVarChar(255)
-  TransactionType       String?   @db.NVarChar(255)
-  UserID                String?   @db.NVarChar(255)
-  MobileNo              String?   @db.NVarChar(255) // New field added
-  VatNumber             String?
-  CustomerName          String? 
-  TransactionDate       DateTime?
-}
+  Rec_Num              Float?    @map("Rec ##")
+  TblSysNoID           Float?
+  SNo                  Float?
+  DeliveryLocationCode String?   @db.NVarChar(255)
+  ItemSysID            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @db.NVarChar(255)
+  Head_SYS_ID          String?   @db.NVarChar(255)
+  TransactionCode      String?   @db.NVarChar(255)
+  CustomerCode         String?   @db.NVarChar(255)
+  SalesLocationCode    String?   @db.NVarChar(255)
+  Remarks              String?   @db.NVarChar(255)
+  TransactionType      String?   @db.NVarChar(255)
+  UserID               String?   @db.NVarChar(255)
+  MobileNo             String?   @db.NVarChar(255)
+  TransactionDate      DateTime? @db.DateTime
+  id                   String?   @default(uuid()) @db.UniqueIdentifier
+  VatNumber            String?   @db.VarChar(50)
+  CustomerName         String?   @db.NVarChar(255)
 
+  @@ignore
+}
 
 model TblSalesReturnInvoicetmp {
-  id                    Int    @id @default(autoincrement())
-  SNo                    Int?  
-  ItemCode               String?   @db.VarChar(10)
-  Description            String?   @db.VarChar(150)
-  ReturnQty              Int?  
-  InvoiceQty             Int?  
-  UnitCode               String?   @db.VarChar(50)
-  HeadSysId              String?   @db.VarChar(50)
-  ItemSysID              String?   @db.VarChar(50)
-  DeliveryLocationCode   String?   @db.VarChar(50)
-  ItemSize               String    @db.VarChar(10)
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
+  id                   Int      @id(map: "PK__TblSales__3213E83F2A90C4AC") @default(autoincrement())
+  SNo                  Int?
+  ItemCode             String?  @db.VarChar(10)
+  Description          String?  @db.VarChar(150)
+  ReturnQty            Int?
+  InvoiceQty           Int?
+  UnitCode             String?  @db.VarChar(50)
+  HeadSysId            String?  @db.VarChar(50)
+  ItemSysID            String?  @db.VarChar(50)
+  DeliveryLocationCode String?  @db.VarChar(50)
+  ItemSize             String   @db.VarChar(10)
+  created_at           DateTime @default(now(), map: "DF__TblSalesR__creat__29AC2CE0") @db.DateTime
+  updated_at           DateTime @default(now(), map: "DF__TblSalesR__updat__2AA05119") @updatedAt @db.DateTime
+  GTIN                 String?  @db.VarChar(15)
 }
 
 model TblSalesExchangeInvoicetmp {
-  id                  Int       @id @default(autoincrement())
-  SNo                 Int?
-  ItemCode            String?
-  Description         String?
-  ReturnQty           Int?
-  InvoiceQty          Int?
-  UnitCode            String?
-  HeadSysId           String?
-  ItemSysID           String?
-  DeliveryLocationCode String?
-  ItemSize            String?
-  created_at          DateTime? @default(now())
-  updated_at          DateTime? @updatedAt
-  GTIN                String?
+  id                   Int      @id(map: "PK__TblSales__3213E83F298223A1") @default(autoincrement())
+  SNo                  Int?
+  ItemCode             String?  @db.VarChar(10)
+  Description          String?  @db.VarChar(150)
+  ReturnQty            Int?
+  InvoiceQty           Int?
+  UnitCode             String?  @db.VarChar(50)
+  HeadSysId            String?  @db.VarChar(50)
+  ItemSysID            String?  @db.VarChar(50)
+  DeliveryLocationCode String?  @db.VarChar(50)
+  ItemSize             String   @db.VarChar(10)
+  created_at           DateTime @default(now(), map: "DF__TblSalesE__creat__2F650636") @db.DateTime
+  updated_at           DateTime @default(now(), map: "DF__TblSalesE__updat__30592A6F") @updatedAt @db.DateTime
+  GTIN                 String?  @db.VarChar(15)
 
   @@map("TblSalesExchangeInvoicetmp")
 }
 
+model tblCustCodes {
+  TblSysNoID Decimal @id(map: "PK__tblCustC__1AAA6A36D77DA269") @unique(map: "WDIDX172070276570") @db.Decimal(19, 0)
+  CUST_CODE  String? @default("0", map: "DF__tblCustCo__CUST___55BFB948") @db.VarChar(50)
+  CUST_NAME  String? @default("", map: "DF__tblCustCo__CUST___56B3DD81") @db.VarChar(150)
+
+  @@index([CUST_CODE], map: "WDIDX172070276571")
+  @@index([CUST_NAME], map: "WDIDX172070276572")
+}
+
+model TblCustomerCode {
+  TblSysNoID   Decimal @id(map: "PK__TblCusto__1AAA6A364F3E3321") @unique(map: "WDIDX172070276263") @db.Decimal(19, 0)
+  CustomerCode String? @default("0", map: "DF__TblCustom__Custo__42ACE4D4") @db.VarChar(50)
+  CustomerName String? @default("", map: "DF__TblCustom__Custo__43A1090D") @db.VarChar(250)
+
+  @@index([CustomerCode], map: "WDIDX172070276264")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model TblFPoLineItems {
+  HEAD_SYS_ID  Float?
+  ITEM_CODE    String? @db.NVarChar(255)
+  ITEM_NAME    String? @db.NVarChar(255)
+  GRADE        String? @db.NVarChar(255)
+  UOM          String? @db.NVarChar(255)
+  PO_QTY       Float?
+  RECEIVED_QTY String? @db.NVarChar(255)
+  ITEM_SYS_ID  Float?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tblFSOItemDetails {
+  HEAD_SYS_ID Float?
+  ITEM_SYS_ID Float?
+  ITEM_CODE   String? @db.NVarChar(255)
+  ITEM_NAME   String? @db.NVarChar(255)
+  UOM         String? @db.NVarChar(255)
+  GRADE       String? @db.NVarChar(255)
+  SO_QTY      Float?
+  INV_QTY     String? @db.NVarChar(255)
+
+  @@ignore
+}
+
+model tblItemRate {
+  TblSysNoID   Decimal @id(map: "PK__tblItemR__1AAA6A368B249F54") @unique(map: "WDIDX172070276876") @db.Decimal(19, 0)
+  CUST_NAME    String? @default("", map: "DF__tblItemRa__CUST___5D60DB10") @db.VarChar(150)
+  COMP_CODE    String? @default("0", map: "DF__tblItemRa__COMP___5E54FF49") @db.VarChar(50)
+  TXN_CODE     String? @default("", map: "DF__tblItemRa__TXN_C__5F492382") @db.VarChar(50)
+  GRADE_CODE_1 String? @default("", map: "DF__tblItemRa__GRADE__603D47BB") @db.VarChar(50)
+  ITEM_CODE    String? @default("", map: "DF__tblItemRa__ITEM___61316BF4") @db.VarChar(50)
+  ITEMRATE     Float?  @default(dbgenerated("CONVERT([real],(0))"), map: "DF__tblItemRa__ITEMR__6225902D") @db.Real
+}
+
+model tblListOfInvoice {
+  TblSysNoID Decimal @id(map: "PK__tblListO__1AAA6A36BE414E9C") @unique(map: "WDIDX172070276468") @db.Decimal(19, 0)
+  TxnCode    String? @default("0", map: "DF__tblListOf__TxnCo__51EF2864") @db.VarChar(50)
+  TxNNo      String? @default("", map: "DF__tblListOf__TxNNo__52E34C9D") @db.VarChar(100)
+
+  @@index([TxnCode], map: "WDIDX172070276469")
+}
+
+model tblPOFPOMastertmp {
+  tblPOFPOMasterID Decimal @id(map: "PK__tblPOFPO__DEE1D6F79E4A7395") @unique(map: "WDIDX17207027469") @db.Decimal(19, 0)
+  PONumber         String? @default("", map: "DF__tblPOFPOM__PONum__756D6ECB") @db.VarChar(50)
+  PODate           String? @default("", map: "DF__tblPOFPOM__PODat__76619304") @db.VarChar(50)
+  SupplierName     String? @default("", map: "DF__tblPOFPOM__Suppl__7755B73D") @db.VarChar(50)
+  POStatus         String? @default("", map: "DF__tblPOFPOM__POSta__7849DB76") @db.VarChar(50)
+  POSelected       Int?    @default(0, map: "DF__tblPOFPOM__POSel__793DFFAF") @db.TinyInt
+  Head_SYS_ID      String? @default("", map: "DF__tblPOFPOM__Head___7A3223E8") @db.VarChar(50)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070274710")
+  @@index([PODate], map: "WDIDX172070274711")
+  @@index([SupplierName], map: "WDIDX172070274712")
+  @@index([POStatus], map: "WDIDX172070274713")
+  @@index([POSelected], map: "WDIDX172070274714")
+  @@index([Head_SYS_ID], map: "WDIDX172070274715")
+}
+
+model tblPOFPOMastertmpTemp {
+  tblPOFPOMasterID Decimal @id(map: "PK__tblPOFPO__DEE1D6F749BDC461") @unique(map: "WDIDX172070274816") @db.Decimal(19, 0)
+  PONumber         String? @default("", map: "DF__tblPOFPOM__PONum__7D0E9093") @db.VarChar(50)
+  PODate           String? @default("", map: "DF__tblPOFPOM__PODat__7E02B4CC") @db.VarChar(50)
+  SupplierName     String? @default("", map: "DF__tblPOFPOM__Suppl__7EF6D905") @db.VarChar(50)
+  POStatus         String? @default("", map: "DF__tblPOFPOM__POSta__7FEAFD3E") @db.VarChar(50)
+  POSelected       Int?    @default(0, map: "DF__tblPOFPOM__POSel__00DF2177") @db.TinyInt
+  Head_SYS_ID      String? @default("", map: "DF__tblPOFPOM__Head___01D345B0") @db.VarChar(50)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070274817")
+  @@index([PODate], map: "WDIDX172070274818")
+  @@index([SupplierName], map: "WDIDX172070274919")
+  @@index([POStatus], map: "WDIDX172070274920")
+  @@index([Head_SYS_ID], map: "WDIDX172070274921")
+}
+
+model tblPOFPOMastertmpTempLineItems {
+  tblPOFPOMasterID Decimal  @id(map: "PK__tblPOFPO__DEE1D6F78F6AF4FF") @unique(map: "WDIDX172070275022") @db.Decimal(19, 0)
+  PONumber         String?  @default("", map: "DF__tblPOFPOM__PONum__04AFB25B") @db.VarChar(50)
+  PODate           String?  @default("", map: "DF__tblPOFPOM__PODat__05A3D694") @db.VarChar(50)
+  SupplierName     String?  @default("", map: "DF__tblPOFPOM__Suppl__0697FACD") @db.VarChar(50)
+  POStatus         String?  @default("", map: "DF__tblPOFPOM__POSta__078C1F06") @db.VarChar(50)
+  POSelected       Int?     @default(0, map: "DF__tblPOFPOM__POSel__0880433F") @db.TinyInt
+  ItemBarCode      String?  @default("", map: "DF__tblPOFPOM__ItemB__09746778") @db.VarChar(50)
+  ItemDescription  String?  @default("", map: "DF__tblPOFPOM__ItemD__0A688BB1") @db.VarChar(150)
+  ItemSize         String?  @default("", map: "DF__tblPOFPOM__ItemS__0B5CAFEA") @db.VarChar(50)
+  ItemQtyOrder     Decimal? @default(0, map: "DF__tblPOFPOM__ItemQ__0C50D423") @db.Decimal(10, 0)
+  ItemQtyRecvd     Decimal? @default(0, map: "DF__tblPOFPOM__ItemQ__0D44F85C") @db.Decimal(10, 0)
+  ItemLineStatus   String?  @default("", map: "DF__tblPOFPOM__ItemL__0E391C95") @db.VarChar(50)
+  Head_SYS_ID      String?  @default("", map: "DF__tblPOFPOM__Head___0F2D40CE") @db.VarChar(50)
+  ItemSysID        String?  @default("", map: "DF__tblPOFPOM__ItemS__10216507") @db.VarChar(50)
+  ItemUOM          String?  @default("", map: "DF__tblPOFPOM__ItemU__11158940") @db.VarChar(50)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070275023")
+  @@index([PODate], map: "WDIDX172070275024")
+  @@index([SupplierName], map: "WDIDX172070275125")
+  @@index([POStatus], map: "WDIDX172070275126")
+  @@index([ItemBarCode], map: "WDIDX172070275127")
+  @@index([ItemSize], map: "WDIDX172070275128")
+  @@index([ItemLineStatus], map: "WDIDX172070275129")
+  @@index([Head_SYS_ID], map: "WDIDX172070275130")
+  @@index([ItemSysID], map: "WDIDX172070275131")
+  @@index([ItemUOM], map: "WDIDX172070275232")
+}
+
+model TblPOFPOPMaster {
+  tblPOFPOPMasterID Int       @id @default(autoincrement())
+  PONumber          String?   @db.VarChar(50)
+  PODate            String?   @db.VarChar(50)
+  SupplierName      String?   @db.VarChar(50)
+  POStatus          String?   @db.VarChar(50)
+  Head_SYS_ID       String?   @db.VarChar(50)
+  createdAt         DateTime? @default(now()) @db.DateTime
+  updatedAt         DateTime? @db.DateTime
+}
+
+model tblSOFMaster {
+  tblPOFPOMasterID Decimal @id(map: "PK__tblSOFMa__DEE1D6F7157646D9") @unique(map: "WDIDX172070275434") @db.Decimal(19, 0)
+  PONumber         String? @default("", map: "DF__tblSOFMas__PONum__16CE6296") @db.VarChar(50)
+  PODate           String? @default("", map: "DF__tblSOFMas__PODat__17C286CF") @db.VarChar(50)
+  SupplierName     String? @default("", map: "DF__tblSOFMas__Suppl__18B6AB08") @db.VarChar(50)
+  POStatus         String? @default("", map: "DF__tblSOFMas__POSta__19AACF41") @db.VarChar(50)
+  Head_SYS_ID      String? @default("", map: "DF__tblSOFMas__Head___1A9EF37A") @db.VarChar(50)
+
+  @@index([PONumber], map: "WDIDX172070275435")
+  @@index([PODate], map: "WDIDX172070275436")
+  @@index([Head_SYS_ID], map: "WDIDX172070275437")
+}
+
+model tblSOFMastertmpTempLineItems {
+  tblPOFPOMasterID Decimal  @id(map: "PK__tblSOFMa__DEE1D6F7CA4BEBD3") @unique(map: "WDIDX172070275538") @db.Decimal(19, 0)
+  PONumber         String?  @default("", map: "DF__tblSOFMas__PONum__1D7B6025") @db.VarChar(50)
+  PODate           String?  @default("", map: "DF__tblSOFMas__PODat__1E6F845E") @db.VarChar(50)
+  SupplierName     String?  @default("", map: "DF__tblSOFMas__Suppl__1F63A897") @db.VarChar(50)
+  POStatus         String?  @default("", map: "DF__tblSOFMas__POSta__2057CCD0") @db.VarChar(50)
+  POSelected       Int?     @default(0, map: "DF__tblSOFMas__POSel__214BF109") @db.TinyInt
+  ItemBarCode      String?  @default("", map: "DF__tblSOFMas__ItemB__22401542") @db.VarChar(50)
+  ItemDescription  String?  @default("", map: "DF__tblSOFMas__ItemD__2334397B") @db.VarChar(150)
+  ItemSize         String?  @default("", map: "DF__tblSOFMas__ItemS__24285DB4") @db.VarChar(50)
+  ItemQtyOrder     Decimal? @default(0, map: "DF__tblSOFMas__ItemQ__251C81ED") @db.Decimal(10, 0)
+  ItemQtyRecvd     Decimal? @default(0, map: "DF__tblSOFMas__ItemQ__2610A626") @db.Decimal(10, 0)
+  ItemLineStatus   String?  @default("", map: "DF__tblSOFMas__ItemL__2704CA5F") @db.VarChar(50)
+  Head_SYS_ID      String?  @default("", map: "DF__tblSOFMas__Head___27F8EE98") @db.VarChar(50)
+  ItemSysID        String?  @default("", map: "DF__tblSOFMas__ItemS__28ED12D1") @db.VarChar(50)
+  ItemUOM          String?  @default("", map: "DF__tblSOFMas__ItemU__29E1370A") @db.VarChar(50)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070275539")
+  @@index([PODate], map: "WDIDX172070275540")
+  @@index([SupplierName], map: "WDIDX172070275541")
+  @@index([POStatus], map: "WDIDX172070275642")
+  @@index([ItemBarCode], map: "WDIDX172070275643")
+  @@index([ItemSize], map: "WDIDX172070275644")
+  @@index([ItemLineStatus], map: "WDIDX172070275645")
+  @@index([Head_SYS_ID], map: "WDIDX172070275646")
+  @@index([ItemSysID], map: "WDIDX172070275647")
+  @@index([ItemUOM], map: "WDIDX172070275648")
+}
+
+model tblSOFPOMastertmp {
+  tblPOFPOMasterID Decimal @id(map: "PK__tblSOFPO__DEE1D6F7AA60FF7C") @unique(map: "WDIDX172070275850") @db.Decimal(19, 0)
+  PONumber         String? @default("", map: "DF__tblSOFPOM__PONum__2F9A1060") @db.VarChar(50)
+  PODate           String? @default("", map: "DF__tblSOFPOM__PODat__308E3499") @db.VarChar(50)
+  SupplierName     String? @default("", map: "DF__tblSOFPOM__Suppl__318258D2") @db.VarChar(50)
+  POStatus         String? @default("", map: "DF__tblSOFPOM__POSta__32767D0B") @db.VarChar(50)
+  POSelected       Int?    @default(0, map: "DF__tblSOFPOM__POSel__336AA144") @db.TinyInt
+  Head_SYS_ID      String? @default("", map: "DF__tblSOFPOM__Head___345EC57D") @db.VarChar(50)
+  LocationCode     String? @default("", map: "DF__tblSOFPOM__Locat__3552E9B6") @db.VarChar(100)
+  DeliveryLocation String? @default("", map: "DF__tblSOFPOM__Deliv__36470DEF") @db.VarChar(100)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070275851")
+  @@index([PODate], map: "WDIDX172070275852")
+  @@index([SupplierName], map: "WDIDX172070275953")
+  @@index([POStatus], map: "WDIDX172070275954")
+  @@index([POSelected], map: "WDIDX172070275955")
+  @@index([Head_SYS_ID], map: "WDIDX172070275956")
+}
+
+model tblSOFPOMastertmpTemp {
+  tblPOFPOMasterID Decimal @id(map: "PK__tblSOFPO__DEE1D6F7314EAF8A") @unique(map: "WDIDX172070276057") @db.Decimal(19, 0)
+  PONumber         String? @default("", map: "DF__tblSOFPOM__PONum__39237A9A") @db.VarChar(50)
+  PODate           String? @default("", map: "DF__tblSOFPOM__PODat__3A179ED3") @db.VarChar(50)
+  SupplierName     String? @default("", map: "DF__tblSOFPOM__Suppl__3B0BC30C") @db.VarChar(50)
+  POStatus         String? @default("", map: "DF__tblSOFPOM__POSta__3BFFE745") @db.VarChar(50)
+  POSelected       Int?    @default(0, map: "DF__tblSOFPOM__POSel__3CF40B7E") @db.TinyInt
+  Head_SYS_ID      String? @default("", map: "DF__tblSOFPOM__Head___3DE82FB7") @db.VarChar(50)
+  LocationCode     String? @default("", map: "DF__tblSOFPOM__Locat__3EDC53F0") @db.VarChar(100)
+  DeliveryLocation String? @default("", map: "DF__tblSOFPOM__Deliv__3FD07829") @db.VarChar(100)
+
+  @@index([PONumber, SupplierName], map: "PONumberSupplierName")
+  @@index([PONumber], map: "WDIDX172070276058")
+  @@index([PODate], map: "WDIDX172070276059")
+  @@index([SupplierName], map: "WDIDX172070276060")
+  @@index([POStatus], map: "WDIDX172070276061")
+  @@index([Head_SYS_ID], map: "WDIDX172070276162")
+}
+
+model TblSysNo {
+  TblSysNoID  Decimal  @id(map: "PK__TblSysNo__1AAA6A36C656A135") @unique(map: "WDIDX172070275333") @db.Decimal(19, 0)
+  TrxPONumber Decimal? @default(0, map: "DF__TblSysNo__TrxPON__13F1F5EB") @db.Decimal(10, 0)
+}
+
+model TblSysNo2 {
+  TblSysNoID  Decimal  @id(map: "PK__TblSysNo__1AAA6A36FF174598") @unique(map: "WDIDX172070275749") @db.Decimal(19, 0)
+  TrxPONumber Decimal? @default(0, map: "DF__TblSysNo2__TrxPO__2CBDA3B5") @db.Decimal(10, 0)
+}
+
+model TblSysRate {
+  TblSysNoID Decimal @id(map: "PK__TblSysRa__1AAA6A36A038A9CE") @unique(map: "WDIDX172070276977") @db.Decimal(19, 0)
+  ITEMRATE   Float?  @default(dbgenerated("CONVERT([real],(0))"), map: "DF__TblSysRat__ITEMR__6501FCD8") @db.Real
+}
+
+model TblTrxCodes {
+  TblSysNoID Decimal @id(map: "PK__TblTrxCo__1AAA6A3676866942") @unique(map: "WDIDX172070276673") @db.Decimal(19, 0)
+  TxNCode    String? @default("0", map: "DF__TblTrxCod__TxNCo__59904A2C") @db.VarChar(50)
+  TXName     String? @default("", map: "DF__TblTrxCod__TXNam__5A846E65") @db.VarChar(150)
+
+  @@index([TxNCode], map: "WDIDX172070276674")
+  @@index([TXName], map: "WDIDX172070276675")
+}

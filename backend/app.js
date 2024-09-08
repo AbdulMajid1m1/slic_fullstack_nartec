@@ -20,6 +20,7 @@ const zatcaRoutes = require("./routes/zatcaRoutes");
 const rolesRoutes = require("./routes/tblAppRoles");
 const invoiceRoutes = require("./routes/invoice");
 const exchangeInvoiceRoutes = require("./routes/TblSalesExchangeInvoicetmp");
+const whatsappRoutes = require("./routes/whatsappRoutes.js");
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -42,6 +43,7 @@ app.use("/api/roles", rolesRoutes);
 app.use("/api/zatca", zatcaRoutes);
 app.use("/api/invoice", invoiceRoutes);
 app.use("/api/exchangeInvoice", exchangeInvoiceRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res, next) => {
