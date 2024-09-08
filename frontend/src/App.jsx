@@ -19,6 +19,7 @@ import RolesProvider from "./Contexts/FetchRolesContext.jsx";
 import TransactionCodes from "./Pages/SlicPages/MasterData/TransactionCodes/TransactionCodes.jsx";
 import CustomerCodes from "./Pages/SlicPages/MasterData/CustomerCodes/CustomerCodes.jsx";
 import PosHistory from "./Pages/SlicPages/PosHistory/PosHistory.jsx";
+import PosArchive from "./Pages/SlicPages/PosArchive/PosArchive.jsx";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => {
                 />
                 {/* <Route path="pos" element={<POS />} /> */}
                 <Route path="pos-history" element={<PosHistory />} />
+                <Route path="pos-archive" element={<PosArchive />} />
                 <Route
                   path="purchase-order"
                   element={

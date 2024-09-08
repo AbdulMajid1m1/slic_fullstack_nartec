@@ -210,7 +210,7 @@ function SideNav({ children }) {
                   </li>
                   <li className="mt-3">
                     <Link
-                      // to="/pos-history"
+                      to="/pos-archive"
                       className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
                     >
                       <div className="flex justify-center items-center gap-3">
