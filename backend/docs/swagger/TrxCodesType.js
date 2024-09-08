@@ -2,9 +2,45 @@
  * @swagger
  * /api/transactions/v1/all:
  *   get:
- *     summary: Retrieve all transaction codes
- *     description: Returns a list of all transaction codes from the database.
+ *     summary: Retrieve transaction codes with optional filters
+ *     description: Returns a list of transaction codes from the database, filtered by optional query parameters. If no parameters are provided, returns all transaction codes.
  *     tags: [TrxCodesType]
+ *     parameters:
+ *       - name: TXN_CODE
+ *         in: query
+ *         description: Filter by transaction code.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "TXN12345"
+ *       - name: TXN_NAME
+ *         in: query
+ *         description: Filter by transaction name.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "Sample Transaction"
+ *       - name: TXN_TYPE
+ *         in: query
+ *         description: Filter by transaction type.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "Type A"
+ *       - name: TXNLOCATIONCODE
+ *         in: query
+ *         description: Filter by transaction location code.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "LOC1"
+ *       - name: CUSTOMERCODE
+ *         in: query
+ *         description: Filter by customer code.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "CUST1"
  *     responses:
  *       200:
  *         description: A list of transaction codes.
@@ -36,6 +72,12 @@
  *                       TXN_TYPE:
  *                         type: string
  *                         example: "Type A"
+ *                       TXNLOCATIONCODE:
+ *                         type: string
+ *                         example: "LOC1"
+ *                       CUSTOMERCODE:
+ *                         type: string
+ *                         example: "CUST1"
  *       404:
  *         description: No transaction codes found.
  *         content:

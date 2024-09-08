@@ -437,15 +437,12 @@ const POS = () => {
   const [selectedCustomerName, setSelectedCustomerName] = useState("");
   const fetchCustomerNames = async () => {
     try {
-      const response = await newRequest.get("/customerNames/v1/all");
+      const response = await newRequest.get(`/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`);
       const allCustomers = response?.data?.data;
+      // console.log(allCustomers)
+     
+      setSearchCustomerName(allCustomers);
 
-      // Filter customers whose CUST_CODE starts with "CL"
-      const filteredCustomers = allCustomers.filter((customer) =>
-        customer.CUST_CODE.startsWith("CL")
-      );
-      // console.log(filteredCustomers);
-      setSearchCustomerName(filteredCustomers);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -458,9 +455,10 @@ const POS = () => {
   };
 
   useEffect(() => {
-    // fetchTransactionCodes();
-    fetchCustomerNames();
-  }, []);
+    if(selectedTransactionCode?.TXN_CODE) {
+      fetchCustomerNames();
+    }
+  }, [selectedTransactionCode?.TXN_CODE]);
 
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
@@ -500,19 +498,20 @@ const POS = () => {
     setMobileNo("");
     setRemarks("");
     setVat("");
-    setSelectedCustomerName(null);
+    // setSelectedCustomerName(null);
     setSelectedTransactionCode("");
     setInvoiceNumber(generateInvoiceNumber());
     setTotalAmountWithVat(0);
     setNetWithVat(0);
     setTotalVat(0);
     setExchangeData([]);
-  };
+    setIsExchangeClick(false);
+  };  
 
   const insertInvoiceRecord = async () => {
     try {
-      let invoiceData;
-
+      let invoiceAllData;
+      
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -520,7 +519,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE",
@@ -528,7 +527,7 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
 
         const details = data.map((item, index) => ({
@@ -540,7 +539,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE",
@@ -553,45 +552,48 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
-
-        invoiceData = {
+  
+        invoiceAllData = {
           master,
           details,
         };
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
+
+        // Check if isExchangeClick is true, if so use exchangeData, otherwise use invoiceData
+        const dataToUse = isExchangeClick ? exchangeData : invoiceData;
+
         // Construct the master and details data for Sales Return
         const master = {
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: exchangeData[0]?.SKU,
+          ItemSysID: exchangeData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
-
-        const details = exchangeData.map((item, index) => ({
+  
+        const details = dataToUse.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: item.SKU,
-          InvoiceNo:
-            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          ItemSysID: item.SKU || item.ItemCode,
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE || invoiceHeaderData?.invoiceHeader?.CustomerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
-          ItemSKU: item.SKU,
+          ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -599,19 +601,24 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
+  
+        console.log(details)
 
-        invoiceData = {
+        invoiceAllData = {
           master,
           details,
         };
+
       } else if (selectedSalesType === "DSALES NO INVOICE") {
+
+        const dataToUseDSales = isExchangeDSalesClick ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -619,23 +626,23 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
-          // CustomerName: customerName,
+          CustomerName: customerName,
         };
-        const details = DSalesNoInvoiceData.map((item, index) => ({
+        const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: item.SKU,
+          ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUST_CODE,
+          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
           UserID: "SYSADMIN",
-          ItemSKU: item.SKU,
+          ItemSKU: isExchangeDSalesClick ? item.ItemCode : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -644,7 +651,7 @@ const POS = () => {
           TransactionDate: todayDate,
         }));
 
-        invoiceData = {
+        invoiceAllData = {
           master,
           details,
         };
@@ -653,9 +660,9 @@ const POS = () => {
       // Call the API to save the invoice or return record
       const saveInvoiceResponse = await newRequest.post(
         "/invoice/v1/saveInvoice",
-        invoiceData
+        invoiceAllData
       );
-      console.log("invoice body", invoiceData);
+      console.log("invoice body", invoiceAllData)
       console.log("Record saved successfully:", saveInvoiceResponse.data);
       resetState();
       toast.success(
@@ -839,11 +846,7 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${
-              selectedSalesType === "DIRECT SALES RETURN"
-                ? "Sales Invoice"
-                : "Return Slip Invoice"
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE" ? "Sales Invoice" : "Return Slip Invoice"}
           </div>
           
           <div class="customer-info">
@@ -1426,69 +1429,60 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-gray-700">Search Customer</label>
-              {selectedSalesType === "DIRECT SALES RETURN" ? (
-                <input
-                  id="field1"
-                  className={
-                    selectedSalesType === "DIRECT SALES RETURN"
-                      ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                      : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
-                  }
-                  value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
-                  readOnly
-                  required
-                />
-              ) : (
-                <Autocomplete
-                  id="field1"
-                  options={searchCustomerName}
-                  // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                  getOptionLabel={(option) =>
-                    option && option.CUST_CODE && option.CUST_NAME
-                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                      : ""
-                  }
-                  onChange={handleSearchCustomerName}
-                  value={
-                    searchCustomerName.find(
-                      (option) =>
-                        option?.CUST_CODE === selectedCustomerName?.CUST_CODE
-                    ) || null
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.CUST_CODE === value?.CUST_CODE
-                  }
-                  onInputChange={(event, value) => {
-                    if (!value) {
-                      setSelectedCustomerName(""); // Clear selection
+                {selectedSalesType === "DIRECT SALES RETURN" ? (
+                  <input
+                    id="field1"
+                    className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
+                    value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
+                    readOnly
+                    required
+                  />
+                ) : (
+                  <Autocomplete
+                    id="field1"
+                    options={searchCustomerName}
+                    getOptionLabel={(option) => 
+                      option && option.CUSTOMERCODE && option.TXN_NAME 
+                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}` 
+                        : ''
                     }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      InputProps={{
-                        ...params.InputProps,
-                        className: "text-white",
-                      }}
-                      InputLabelProps={{
-                        ...params.InputLabelProps,
-                        style: { color: "white" },
-                      }}
-                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={"Search Customer ID"}
-                      required
-                    />
-                  )}
-                  classes={{
-                    endAdornment: "text-white",
-                  }}
-                  sx={{
-                    "& .MuiAutocomplete-endAdornment": {
-                      color: "white",
-                    },
-                  }}
-                />
-              )}
+                    onChange={handleSearchCustomerName}
+                    // Ensure correct value is being set for selectedCustomerName
+                    value={selectedCustomerName || null}
+                    isOptionEqualToValue={(option, value) =>
+                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
+                    }
+                    onInputChange={(event, value) => {
+                      if (!value) {
+                        setSelectedCustomerName(""); // Clear selection when input is cleared
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          className: "text-white",
+                        }}
+                        InputLabelProps={{
+                          ...params.InputLabelProps,
+                          style: { color: "white" },
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                        placeholder={"Search Customer ID"}
+                        required
+                      />
+                    )}
+                    classes={{
+                      endAdornment: "text-white",
+                    }}
+                    sx={{
+                      "& .MuiAutocomplete-endAdornment": {
+                        color: "white",
+                      },
+                    }}
+                  />
+                )}
             </div>
             <div>
               <label className="block text-gray-700">Delivery *</label>
@@ -1747,7 +1741,7 @@ const POS = () => {
                         <td className="border px-4 py-2 text-center relative">
                           <button
                             onClick={() => handleActionClick(index)}
-                            className="bg-blue-500 text-white px-4 py-2 font-bold transform hover:scale-95"
+                            className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
                           >
                             Actions
                           </button>
