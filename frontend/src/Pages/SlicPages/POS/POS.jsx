@@ -12,11 +12,14 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash } from "react-icons/fa";
 import MobileNumberPopUp from "./MobileNumberPopUp";
+import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 
 const POS = () => {
   const [data, setData] = useState([]);
+  const [qrCode, setQrCode] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [customerName, setCustomerName] = useState("");
@@ -33,7 +36,7 @@ const POS = () => {
 
   const handleActionClick = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
-  
+
     // Select the correct row data based on the sales type
     if (selectedSalesType === "DIRECT SALES RETURN") {
       setSelectedRowData(invoiceData[index]); // Save the row data from invoiceData
@@ -41,7 +44,31 @@ const POS = () => {
       setSelectedRowData(DSalesNoInvoiceData[index]); // Save the row data from data (for sales invoices)
     }
   };
-  
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:1100/api/whatsapp/checkSession"
+        );
+        const data = await response.json();
+
+        if (data.status === "failure" && data.qrCode) {
+          setQrCode(data.qrCode);
+          console.log("QR code:", data.qrCode);
+          setShowPopup(true);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
 
   const [isExchangeClick, setIsExchangeClick] = useState(false);
   const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
@@ -76,7 +103,6 @@ const POS = () => {
       // console.log(locationData)
     }
   }, []);
-
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
@@ -198,7 +224,6 @@ const POS = () => {
     setData((prevData) => prevData.filter((_, i) => i !== index));
   };
 
-
   // Direct Sales No Invoice
   const [DSalesNoInvoiceData, setDSalesNoInvoiceData] = useState([]);
   const handleGetNoInvoiceBarcodes = async (e) => {
@@ -312,8 +337,6 @@ const POS = () => {
     }
   };
 
-
-
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
@@ -324,10 +347,10 @@ const POS = () => {
     //     "The datagrid is empty. Please ensure data is available before proceeding."
     //   );
     // } else {
-      setStoreDatagridData([...data]);
-      setStoreInvoiceDatagridData([...invoiceData]);
+    setStoreDatagridData([...data]);
+    setStoreInvoiceDatagridData([...invoiceData]);
 
-      setCreatePopupVisibility(true);
+    setCreatePopupVisibility(true);
     // }
   };
 
@@ -346,13 +369,16 @@ const POS = () => {
     setIsExchangeItemPopupVisible(true);
   };
 
-  const [isConfirmTransactionPopupVisible, setIsConfirmTransactionPopupVisible] =
-    useState(false);
+  const [
+    isConfirmTransactionPopupVisible,
+    setIsConfirmTransactionPopupVisible,
+  ] = useState(false);
   const handleShowConfirmTransactionPopup = () => {
     setIsConfirmTransactionPopupVisible(true);
   };
 
-  const [isMobileNumberPopupVisible, setIsMobileNumberPopupVisible] = useState(false);
+  const [isMobileNumberPopupVisible, setIsMobileNumberPopupVisible] =
+    useState(false);
   const handleShowMobileNumberPopup = () => {
     if (mobileNo) {
       setIsMobileNumberPopupVisible(true);
@@ -375,17 +401,17 @@ const POS = () => {
       // );
       // console.log(response.data?.data);
       // setTransactionCodes(response.data?.data);
-     
+
       const response = await newRequest.get(
         `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
-      );  
+      );
       let codes = response.data?.data || [];
 
       // Apply filtering based on selectedOption
       if (selectedSalesType === "DIRECT SALES INVOICE") {
-        codes = codes.filter(code => !code.TXN_CODE.includes("SR"));
+        codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
-        codes = codes.filter(code => !code.TXN_CODE.includes("IN"));
+        codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
       }
       // console.log(codes)
       setTransactionCodes(codes);
@@ -413,14 +439,13 @@ const POS = () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
       const allCustomers = response?.data?.data;
-    
+
       // Filter customers whose CUST_CODE starts with "CL"
-      const filteredCustomers = allCustomers.filter(customer =>
+      const filteredCustomers = allCustomers.filter((customer) =>
         customer.CUST_CODE.startsWith("CL")
       );
       // console.log(filteredCustomers);
       setSearchCustomerName(filteredCustomers);
-
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -468,7 +493,6 @@ const POS = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-
   const resetState = () => {
     setData([]);
     setBarcode("");
@@ -483,12 +507,12 @@ const POS = () => {
     setNetWithVat(0);
     setTotalVat(0);
     setExchangeData([]);
-  };  
+  };
 
   const insertInvoiceRecord = async () => {
     try {
       let invoiceData;
-      
+
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -506,7 +530,7 @@ const POS = () => {
           VatNumber: vat,
           // CustomerName: customerName,
         };
-  
+
         const details = data.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
@@ -529,7 +553,7 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
-  
+
         invoiceData = {
           master,
           details,
@@ -537,7 +561,8 @@ const POS = () => {
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
         // Construct the master and details data for Sales Return
         const master = {
-          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -550,14 +575,15 @@ const POS = () => {
           TransactionDate: todayDate,
           // CustomerName: customerName,
         };
-  
+
         const details = exchangeData.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU,
-          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedCustomerName?.CUST_CODE,
@@ -573,7 +599,7 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
-  
+
         invoiceData = {
           master,
           details,
@@ -623,22 +649,23 @@ const POS = () => {
           details,
         };
       }
-  
+
       // Call the API to save the invoice or return record
       const saveInvoiceResponse = await newRequest.post(
         "/invoice/v1/saveInvoice",
         invoiceData
       );
-      console.log("invoice body", invoiceData)
+      console.log("invoice body", invoiceData);
       console.log("Record saved successfully:", saveInvoiceResponse.data);
       resetState();
-      toast.success(saveInvoiceResponse?.data?.message || "Invoice saved successfully");
+      toast.success(
+        saveInvoiceResponse?.data?.message || "Invoice saved successfully"
+      );
     } catch (error) {
       console.error("Error saving record:", error);
       toast.error("Error saving record");
     }
   };
-  
 
   // Invoice generation api
   const [netWithVat, setNetWithVat] = useState("");
@@ -812,7 +839,11 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${selectedSalesType === "DIRECT SALES RETURN" ? "Sales Invoice" : "Return Slip Invoice"}
+            ${
+              selectedSalesType === "DIRECT SALES RETURN"
+                ? "Sales Invoice"
+                : "Return Slip Invoice"
+            }
           </div>
           
           <div class="customer-info">
@@ -863,10 +894,11 @@ const POS = () => {
             </thead>
 
            <tbody>
-           ${selectedSalesType === "DIRECT SALES RETURN"
-            ? invoiceData
-                .map(
-                  (item) => `
+           ${
+             selectedSalesType === "DIRECT SALES RETURN"
+               ? invoiceData
+                   .map(
+                     (item) => `
                     <tr>
                       <td>${item.SKU}</td>
                       <td>${item.Qty}</td>
@@ -874,12 +906,11 @@ const POS = () => {
                       <td>${item.ItemPrice * item.Qty}</td>
                     </tr>
                   `
-                )
-                .join("")
-            : selectedSalesType === "DSALES NO INVOICE"
-            ? DSalesNoInvoiceData
-                .map(
-                  (item) => `
+                   )
+                   .join("")
+               : selectedSalesType === "DSALES NO INVOICE"
+               ? DSalesNoInvoiceData.map(
+                   (item) => `
                     <tr>
                       <td>${item.SKU}</td>
                       <td>${item.Qty}</td>
@@ -887,11 +918,10 @@ const POS = () => {
                       <td>${item.ItemPrice * item.Qty}</td>
                     </tr>
                   `
-                )
-                .join("")
-            : data
-                .map(
-                  (item) => `
+                 ).join("")
+               : data
+                   .map(
+                     (item) => `
                     <tr>
                       <td>${item.SKU}</td>
                       <td>${item.Qty}</td>
@@ -899,8 +929,9 @@ const POS = () => {
                       <td>${item.ItemPrice * item.Qty}</td>
                     </tr>
                   `
-                )
-                .join("")}          
+                   )
+                   .join("")
+           }          
             </tbody>
           </table>
           <div class="total-section">
@@ -984,7 +1015,7 @@ const POS = () => {
       );
       const data = response?.data?.data;
       setInvoiceHeaderData(data);
-      console.log(data)
+      console.log(data);
       setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
@@ -1052,7 +1083,7 @@ const POS = () => {
     setData([]);
     setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
-  }
+  };
 
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = async (newData) => {
@@ -1105,7 +1136,7 @@ const POS = () => {
           ItemPrice: itemPrice,
           VAT: vat,
           Total: total,
-          Qty: Qty, 
+          Qty: Qty,
         };
 
         setExchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
@@ -1138,10 +1169,9 @@ const POS = () => {
     calculateTotals();
   }, [exchangeData]);
 
-
-
-  // DSALES no Invoice Exchange 
-  const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] = useState([]);
+  // DSALES no Invoice Exchange
+  const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
+    useState([]);
   const addDSalesExchangeData = async (newData) => {
     console.log(dSalesNoInvoiceexchangeData);
     // Extract necessary data from newData
@@ -1192,10 +1222,13 @@ const POS = () => {
           ItemPrice: itemPrice,
           VAT: vat,
           Total: total,
-          Qty: Qty, 
+          Qty: Qty,
         };
 
-        setDSalesNoInvoiceexchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
+        setDSalesNoInvoiceexchangeData((prevData) => [
+          ...prevData,
+          newExchangeItem,
+        ]); // Add the new item to exchangeData
       } else {
         throw new Error("Failed to retrieve item prices");
       }
@@ -1204,7 +1237,6 @@ const POS = () => {
       toast.error("Error fetching item prices");
     }
   };
-
 
   // DSales No Invoice Calculation
   useEffect(() => {
@@ -1246,12 +1278,10 @@ const POS = () => {
     calculateTotals();
   }, [dSalesNoInvoiceexchangeData]);
 
-
   // handleDelete
   const handleDeleteExchangeData = (index) => {
     setExchangeData((prevData) => prevData.filter((_, i) => i !== index));
   };
-
 
   const [isTenderCashEnabled, setIsTenderCashEnabled] = useState(false);
   const [isConfirmDisabled, setIsConfirmDisabled] = useState(false);
@@ -1286,7 +1316,8 @@ const POS = () => {
                 : "SALES RETURN"}
             </h2>
             <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
-              Cashier : {`${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`}
+              Cashier :{" "}
+              {`${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -1294,50 +1325,55 @@ const POS = () => {
               <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
               </label>
-                <Autocomplete
-                  id="transactionId"
-                  options={transactionCodes}
-                  getOptionLabel={(option) => 
-                    option && option.TXN_CODE && option.TXN_NAME 
-                      ? `${option.TXN_CODE} - ${option.TXN_NAME}` 
-                      : ''
+              <Autocomplete
+                id="transactionId"
+                options={transactionCodes}
+                getOptionLabel={(option) =>
+                  option && option.TXN_CODE && option.TXN_NAME
+                    ? `${option.TXN_CODE} - ${option.TXN_NAME}`
+                    : ""
+                }
+                onChange={handleTransactionCodes}
+                // value={selectedTransactionCode}
+                value={
+                  transactionCodes.find(
+                    (option) =>
+                      option.TXN_CODE === selectedTransactionCode?.TXN_CODE
+                  ) || null
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.TXN_CODE === value?.TXN_CODE
+                }
+                onInputChange={(event, value) => {
+                  if (!value) {
+                    setSelectedTransactionCode(""); // Clear selection
                   }
-                  onChange={handleTransactionCodes}
-                  // value={selectedTransactionCode}
-                  value={transactionCodes.find(option => option.TXN_CODE === selectedTransactionCode?.TXN_CODE) || null}
-                  isOptionEqualToValue={(option, value) =>
-                    option?.TXN_CODE === value?.TXN_CODE
-                  }
-                  onInputChange={(event, value) => {
-                    if (!value) {
-                      setSelectedTransactionCode(""); // Clear selection
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      InputProps={{
-                        ...params.InputProps,
-                        className: "text-white",
-                      }}
-                      InputLabelProps={{
-                        ...params.InputLabelProps,
-                        style: { color: "white" },
-                      }}
-                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={"Search Transaction Codes"}
-                      required
-                    />
-                  )}
-                  classes={{
-                    endAdornment: "text-white",
-                  }}
-                  sx={{
-                    "& .MuiAutocomplete-endAdornment": {
-                      color: "white",
-                    },
-                  }}
-                />
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    InputProps={{
+                      ...params.InputProps,
+                      className: "text-white",
+                    }}
+                    InputLabelProps={{
+                      ...params.InputLabelProps,
+                      style: { color: "white" },
+                    }}
+                    className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                    placeholder={"Search Transaction Codes"}
+                    required
+                  />
+                )}
+                classes={{
+                  endAdornment: "text-white",
+                }}
+                sx={{
+                  "& .MuiAutocomplete-endAdornment": {
+                    color: "white",
+                  },
+                }}
+              />
             </div>
             <div>
               <label className="block text-gray-700">Sale Type *</label>
@@ -1356,7 +1392,11 @@ const POS = () => {
             <div>
               <label className="block text-gray-700">Sales Locations *</label>
               <input
-                className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
+                className={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                }
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.SalesLocationCode || ""
@@ -1374,7 +1414,11 @@ const POS = () => {
                     ? invoiceHeaderData?.invoiceHeader?.InvoiceNo || ""
                     : invoiceNumber
                 }
-                className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}                   
+                className={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                }
                 readOnly
               />
             </div>
@@ -1382,65 +1426,69 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-gray-700">Search Customer</label>
-                {selectedSalesType === "DIRECT SALES RETURN" ? (
-                  <input
-                    id="field1"
-                    className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
-                    value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
-                    readOnly
-                    required
-                  />
-                ) : (
-                  <Autocomplete
-                    id="field1"
-                    options={searchCustomerName}
-                    // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                    getOptionLabel={(option) => 
-                      option && option.CUST_CODE && option.CUST_NAME 
-                        ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
-                        : ''
+              {selectedSalesType === "DIRECT SALES RETURN" ? (
+                <input
+                  id="field1"
+                  className={
+                    selectedSalesType === "DIRECT SALES RETURN"
+                      ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                      : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                  }
+                  value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
+                  readOnly
+                  required
+                />
+              ) : (
+                <Autocomplete
+                  id="field1"
+                  options={searchCustomerName}
+                  // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                  getOptionLabel={(option) =>
+                    option && option.CUST_CODE && option.CUST_NAME
+                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                      : ""
+                  }
+                  onChange={handleSearchCustomerName}
+                  value={
+                    searchCustomerName.find(
+                      (option) =>
+                        option?.CUST_CODE === selectedCustomerName?.CUST_CODE
+                    ) || null
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUST_CODE === value?.CUST_CODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedCustomerName(""); // Clear selection
                     }
-                    onChange={handleSearchCustomerName}
-                    value={
-                      searchCustomerName.find(
-                        (option) =>
-                          option?.CUST_CODE === selectedCustomerName?.CUST_CODE
-                      ) || null
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUST_CODE === value?.CUST_CODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomerName(""); // Clear selection
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={"Search Customer ID"}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                )}
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={"Search Customer ID"}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
+              )}
             </div>
             <div>
               <label className="block text-gray-700">Delivery *</label>
@@ -1452,7 +1500,11 @@ const POS = () => {
                       ""
                     : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
-                className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
+                className={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                }
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
@@ -1461,7 +1513,11 @@ const POS = () => {
               <input
                 type="text"
                 onChange={(e) => setCustomerName(e.target.value)}
-                className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black'}
+                className={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                }
                 placeholder="Walk-in customer"
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
@@ -1472,7 +1528,13 @@ const POS = () => {
               />
             </div>
             <div className="flex items-center">
-              <div className={selectedSalesType === "DIRECT SALES RETURN" ? "w-full" : "w-full -mt-3"}>
+              <div
+                className={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "w-full"
+                    : "w-full -mt-3"
+                }
+              >
                 <label className="block text-gray-700">Mobile *</label>
                 <input
                   type="number"
@@ -1511,9 +1573,14 @@ const POS = () => {
                 </button>
               </form>
             ) : selectedSalesType === "DSALES NO INVOICE" ? (
-              <form onSubmit={handleGetNoInvoiceBarcodes} className="flex items-center">
+              <form
+                onSubmit={handleGetNoInvoiceBarcodes}
+                className="flex items-center"
+              >
                 <div className="w-full">
-                  <label className="block text-gray-700">Scan Barcode (No Invoice)</label>
+                  <label className="block text-gray-700">
+                    Scan Barcode (No Invoice)
+                  </label>
                   <input
                     type="text"
                     value={barcode}
@@ -1530,7 +1597,10 @@ const POS = () => {
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleSearchInvoice} className="flex items-center">
+              <form
+                onSubmit={handleSearchInvoice}
+                className="flex items-center"
+              >
                 <div className="w-full">
                   <label className="block text-gray-700">Scan Invoice</label>
                   <input
@@ -1551,35 +1621,43 @@ const POS = () => {
             )}
 
             <div>
-                <label className="block text-gray-700">Remarks *</label>
-                <input
-                    type="text"
-                    value={
-                        selectedSalesType === "DIRECT SALES RETURN"
-                            ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
-                            : remarks
-                    }
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                    placeholder="Remarks"
-                    disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                    onChange={(e) => setRemarks(e.target.value)}
-                />
+              <label className="block text-gray-700">Remarks *</label>
+              <input
+                type="text"
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
+                    : remarks
+                }
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200"
+                    : "bg-green-200"
+                }`}
+                placeholder="Remarks"
+                disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                onChange={(e) => setRemarks(e.target.value)}
+              />
             </div>
             <div>
               <label className="block text-gray-700">VAT #</label>
               <input
-                  type="text"
-                  value={
-                      selectedSalesType === "DIRECT SALES RETURN"
-                          ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
-                          : vat
-                  }
-                  className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200' : 'bg-green-200'}`}
-                  disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                  placeholder="VAT"
-                  onChange={(e) => setVat(e.target.value)}
+                type="text"
+                value={
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
+                    : vat
+                }
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
+                  selectedSalesType === "DIRECT SALES RETURN"
+                    ? "bg-gray-200"
+                    : "bg-green-200"
+                }`}
+                disabled={selectedSalesType === "DIRECT SALES RETURN"}
+                placeholder="VAT"
+                onChange={(e) => setVat(e.target.value)}
               />
-          </div>
+            </div>
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
             <div className="mt-10 overflow-x-auto">
@@ -1683,7 +1761,11 @@ const POS = () => {
                                   Exchange Item
                                 </li>
                                 <li>
-                                  <button onClick={() => handleDeleteInvoiceData(index)}>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteInvoiceData(index)
+                                    }
+                                  >
                                     <FaTrash className="text-secondary hover:text-red-500" />
                                   </button>
                                 </li>
@@ -1734,7 +1816,9 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.VAT}</td>
                         <td className="border px-4 py-2">{item.Total}</td>
                         <td className="border px-4 py-2 text-center">
-                          <button onClick={() => handleDeleteExchangeData(index)}>
+                          <button
+                            onClick={() => handleDeleteExchangeData(index)}
+                          >
                             <FaTrash className="text-secondary hover:text-red-500" />
                           </button>
                         </td>
@@ -1745,7 +1829,6 @@ const POS = () => {
               </div>
             </div>
           )}
-
 
           {/* DSALES NO INVOICE */}
           {selectedSalesType === "DSALES NO INVOICE" && (
@@ -1779,37 +1862,41 @@ const POS = () => {
                         <tr key={index} className="bg-gray-100">
                           <td className="border px-4 py-2">{row.SKU}</td>
                           <td className="border px-4 py-2">{row.Barcode}</td>
-                          <td className="border px-4 py-2">{row.Description}</td>
+                          <td className="border px-4 py-2">
+                            {row.Description}
+                          </td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
                           <td className="border px-4 py-2">{row.Qty}</td>
                           <td className="border px-4 py-2">{row.ItemPrice}</td>
                           <td className="border px-4 py-2">{row.VAT}</td>
                           <td className="border px-4 py-2">{row.Total}</td>
                           <td className="border px-4 py-2 text-center relative">
-                          <button
-                            onClick={() => handleActionClick(index)}
-                            className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
-                          >
-                            Actions
-                          </button>
-                          {openDropdown === index && (
-                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
-                              <ul>
-                                <li
-                                  onClick={() => handleItemClick("exchange Dsales")}
-                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
-                                >
-                                  Exchange DSales
-                                </li>
-                                <li>
-                                  <button onClick={() => handleDelete(index)}>
-                                    <FaTrash className="text-secondary hover:text-red-500" />
-                                  </button>
-                                </li>
-                              </ul>
-                            </div>
-                          )}
-                        </td>
+                            <button
+                              onClick={() => handleActionClick(index)}
+                              className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
+                            >
+                              Actions
+                            </button>
+                            {openDropdown === index && (
+                              <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
+                                <ul>
+                                  <li
+                                    onClick={() =>
+                                      handleItemClick("exchange Dsales")
+                                    }
+                                    className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                                  >
+                                    Exchange DSales
+                                  </li>
+                                  <li>
+                                    <button onClick={() => handleDelete(index)}>
+                                      <FaTrash className="text-secondary hover:text-red-500" />
+                                    </button>
+                                  </li>
+                                </ul>
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1840,12 +1927,20 @@ const POS = () => {
                       <tbody>
                         {dSalesNoInvoiceexchangeData?.map((item, index) => (
                           <tr key={index} className="bg-gray-100">
-                            <td className="border px-4 py-2">{item.ItemCode || ""}</td>
+                            <td className="border px-4 py-2">
+                              {item.ItemCode || ""}
+                            </td>
                             <td className="border px-4 py-2">{item.GTIN}</td>
-                            <td className="border px-4 py-2">{item.Description}</td>
-                            <td className="border px-4 py-2">{item.ItemSize}</td>
+                            <td className="border px-4 py-2">
+                              {item.Description}
+                            </td>
+                            <td className="border px-4 py-2">
+                              {item.ItemSize}
+                            </td>
                             <td className="border px-4 py-2">{item?.Qty}</td>
-                            <td className="border px-4 py-2">{item.ItemPrice}</td>
+                            <td className="border px-4 py-2">
+                              {item.ItemPrice}
+                            </td>
                             <td className="border px-4 py-2">{item.VAT}</td>
                             <td className="border px-4 py-2">{item.Total}</td>
                             <td className="border px-4 py-2 text-center">
@@ -1869,7 +1964,9 @@ const POS = () => {
                 <button
                   onClick={handleShowConfirmTransactionPopup}
                   className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
-                    isConfirmDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"
+                    isConfirmDisabled
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-500"
                   }`}
                   disabled={isConfirmDisabled}
                 >
@@ -1973,7 +2070,9 @@ const POS = () => {
               setVisibility={setIsExchangeItemPopupVisible}
               addExchangeData={addExchangeData}
               selectedRowData={selectedRowData}
-              invoiceHeaderData={invoiceHeaderData?.invoiceHeader?.SalesLocationCode}
+              invoiceHeaderData={
+                invoiceHeaderData?.invoiceHeader?.SalesLocationCode
+              }
               dsalesLocationCode={selectedLocation?.stockLocation}
               selectedSalesType={selectedSalesType}
               addDSalesExchangeData={addDSalesExchangeData}
@@ -1998,6 +2097,9 @@ const POS = () => {
           )}
         </div>
       </div>
+
+      {/* What QR Code PopUp */}
+      {showPopup && <QRCodePopup qrCode={qrCode} onClose={handleClosePopup} />}
     </SideNav>
   );
 };

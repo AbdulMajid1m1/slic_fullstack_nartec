@@ -5,6 +5,9 @@ const POSInvoiceDetails = require("../models/tblPOSInvoiceDetails");
 const POSInvoiceTemp = require("../models/TblSalesReturnInvoicetmp");
 const response = require("../utils/response");
 const CustomError = require("../exceptions/customError");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+const Joi = require("joi");
 
 // exports.getInvoiceDetailsByTransactionCode = async (req, res, next) => {
 //   const { transactionCode } = req.params;
@@ -355,5 +358,190 @@ exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
       );
   } catch (error) {
     next(error);
+  }
+};
+
+exports.archiveInvoice = async (req, res, next) => {
+  try {
+    const { invoiceNo } = req.body;
+
+    if (!invoiceNo) {
+      return res.status(400).json({ error: "Invoice number is required" });
+    }
+
+    // Fetch the invoice master and details
+    const invoiceMaster = await prisma.tblPOSInvoiceMaster.findFirst({
+      where: { InvoiceNo: invoiceNo },
+    });
+
+    if (!invoiceMaster) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    const invoiceDetails = await prisma.tblPOSInvoiceDetails.findMany({
+      where: { InvoiceNo: invoiceNo },
+    });
+
+    // Insert into archive tables (excluding the 'id' field)
+    const { id, ...invoiceMasterDataWithoutId } = invoiceMaster;
+    await prisma.tblPOSInvoiceMasterArchive.create({
+      data: invoiceMasterDataWithoutId,
+    });
+
+    await Promise.all(
+      invoiceDetails.map(({ id, ...detailDataWithoutId }) =>
+        prisma.tblPOSInvoiceDetailsArchive.create({
+          data: detailDataWithoutId,
+        })
+      )
+    );
+
+    // Optionally, delete from the original tables
+    await prisma.tblPOSInvoiceMaster.deleteMany({
+      where: { InvoiceNo: invoiceNo },
+    });
+
+    await prisma.tblPOSInvoiceDetails.deleteMany({
+      where: { InvoiceNo: invoiceNo },
+    });
+
+    res.status(200).json({ message: "Invoice archived successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+const allowedMasterColumns = {
+  Rec_Num: Joi.number(),
+  TblSysNoID: Joi.number(),
+  SNo: Joi.number(),
+  DeliveryLocationCode: Joi.string(),
+  ItemSysID: Joi.string(),
+  InvoiceNo: Joi.string(),
+  Head_SYS_ID: Joi.string(),
+  TransactionCode: Joi.string(),
+  CustomerCode: Joi.string(),
+  SalesLocationCode: Joi.string(),
+  Remarks: Joi.string(),
+  TransactionType: Joi.string(),
+  UserID: Joi.string(),
+  MobileNo: Joi.string(),
+  TransactionDate: Joi.date(),
+  id: Joi.string(),
+  VatNumber: Joi.string(),
+  CustomerName: Joi.string(),
+};
+
+exports.getPOSInvoiceMasterArchive = async (req, res) => {
+  try {
+    const columnsSchema = Joi.object({
+      columns: Joi.array().items(
+        Joi.string().valid(...Object.keys(allowedMasterColumns))
+      ),
+      filter: Joi.object().pattern(Joi.string(), Joi.any()),
+    }).unknown(true);
+
+    const { error, value } = columnsSchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid query parameter: ${error.details[0].message}`,
+      });
+    }
+
+    const selectedColumns =
+      value.columns && value.columns.length > 0
+        ? value.columns
+        : Object.keys(allowedMasterColumns);
+
+    const filterConditions = value.filter || {};
+
+    const select = selectedColumns.reduce((obj, col) => {
+      obj[col] = true;
+      return obj;
+    }, {});
+
+    const invoices = await prisma.tblPOSInvoiceMasterArchive.findMany({
+      where: filterConditions,
+      select,
+      orderBy: {
+        TransactionDate: 'desc',
+      },
+    });
+
+    return res.json(invoices);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+const allowedDetailsColumns = {
+  Rec_Num: Joi.number(),
+  TblSysNoID: Joi.number(),
+  SNo: Joi.number(),
+  DeliveryLocationCode: Joi.string(),
+  ItemSysID: Joi.string(),
+  InvoiceNo: Joi.string(),
+  Head_SYS_ID: Joi.string(),
+  TransactionCode: Joi.string(),
+  CustomerCode: Joi.string(),
+  SalesLocationCode: Joi.string(),
+  Remarks: Joi.string(),
+  TransactionType: Joi.string(),
+  UserID: Joi.string(),
+  ItemSKU: Joi.string(),
+  ItemUnit: Joi.string(),
+  ItemSize: Joi.string(),
+  ITEMRATE: Joi.number(),
+  ItemPrice: Joi.number(),
+  ItemQry: Joi.number(),
+  TransactionDate: Joi.date(),
+  id: Joi.string(),
+};
+
+exports.getPOSInvoiceDetailsArchive = async (req, res) => {
+  try {
+    const columnsSchema = Joi.object({
+      columns: Joi.array().items(
+        Joi.string().valid(...Object.keys(allowedDetailsColumns))
+      ),
+      filter: Joi.object().pattern(Joi.string(), Joi.any()),
+    }).unknown(true);
+
+    const { error, value } = columnsSchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid query parameter: ${error.details[0].message}`,
+      });
+    }
+
+    const selectedColumns =
+      value.columns && value.columns.length > 0
+        ? value.columns
+        : Object.keys(allowedDetailsColumns);
+
+    const filterConditions = value.filter || {};
+
+    const select = selectedColumns.reduce((obj, col) => {
+      obj[col] = true;
+      return obj;
+    }, {});
+
+    const details = await prisma.tblPOSInvoiceDetailsArchive.findMany({
+      where: filterConditions,
+      select,
+      orderBy: {
+        TransactionDate: 'desc',
+      },
+    });
+
+    return res.json(details);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
 };

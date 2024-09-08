@@ -1,26 +1,35 @@
 const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js');
-const { check, validationResult } = require('express-validator');
+const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
+const { check, validationResult } = require('express-validator'); 
 
 // Initialize WhatsApp client with session persistence
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: 'client-one', // Unique identifier for the client to manage multiple sessions
-    dataPath: path.join(__dirname, '../.wwebjs_auth') // Folder where session data will be stored
+    clientId: 'client-one',
+    dataPath: path.join(__dirname, '../.wwebjs_auth')
   }),
 });
 
+// Variable to store the current QR code data URL
+let currentQRCodeDataURL = null;
+
 // Generate QR code if session is not saved
-client.on('qr', (qr) => {
-  const qrcode = require('qrcode-terminal');
-  qrcode.generate(qr, { small: true });
-  console.log('QR code received, scan with your phone');
+client.on('qr', async (qr) => {
+  try {
+    currentQRCodeDataURL = await QRCode.toDataURL(qr); // Convert QR code to data URL
+    console.log('QR code received, scan with your phone');
+  } catch (err) {
+    console.error('Error generating QR code:', err);
+  }
 });
 
 // Log when the client is ready to use
 client.on('ready', () => {
   console.log('WhatsApp client is ready!');
+  currentQRCodeDataURL = null;
 });
 
 // Log any authentication-related issues
@@ -35,6 +44,26 @@ client.on('auth_failure', (msg) => {
 
 // Initialize the client
 client.initialize();
+
+// Endpoint to check session status and return QR code if not authenticated
+exports.checkSession = (req, res) => {
+  if (client.info && client.info.wid) {
+    res.json({ status: 'success', message: 'Session is active' });
+  } else {
+    if (currentQRCodeDataURL) {
+      res.json({
+        status: 'failure',
+        message: 'No active session. Please scan the QR code.',
+        qrCode: currentQRCodeDataURL
+      });
+    } else {
+      res.json({
+        status: 'failure',
+        message: 'No active session and QR code not available. Please try again.'
+      });
+    }
+  }
+};
 
 // Controller function to send WhatsApp message with attachment and text
 exports.sendWhatsAppMessage = [
@@ -53,23 +82,16 @@ exports.sendWhatsAppMessage = [
     }
 
     const { phoneNumber, messageText } = req.body;
-    const attachmentPath = req.file ? req.file.path : null; // Check if an attachment exists
+    const attachmentPath = req.file ? req.file.path : null;
 
     try {
-      // Format the phone number for WhatsApp
       const formattedPhoneNumber = `${phoneNumber.replace(/\D/g, '')}@c.us`;
 
       if (attachmentPath) {
-        // Read the uploaded file and create a WhatsApp message media object
         const media = MessageMedia.fromFilePath(attachmentPath);
-
-        // Send the media and message text to the provided phone number
         await client.sendMessage(formattedPhoneNumber, media, { caption: messageText });
-
-        // Delete the file after sending
         fs.unlinkSync(attachmentPath);
       } else {
-        // Send just the message text without attachment
         await client.sendMessage(formattedPhoneNumber, messageText);
       }
 

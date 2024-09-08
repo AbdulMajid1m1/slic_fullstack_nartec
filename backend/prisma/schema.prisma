@@ -163,6 +163,57 @@ model tblPOSInvoiceMaster {
   id                   String    @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
   VatNumber            String?   @db.VarChar(50)
   CustomerName         String?   @db.NVarChar(255)
+  AdjAmount            Float?
+  PendingAmount        Float?
+  DocNo                String?   @db.NVarChar(255)
+}
+
+model tblPOSInvoiceDetailsArchive {
+  Rec_Num              Float?    @map("Rec ##")
+  TblSysNoID           Float?
+  SNo                  Float?
+  DeliveryLocationCode String?   @db.NVarChar(255)
+  ItemSysID            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @db.NVarChar(255)
+  Head_SYS_ID          String?   @db.NVarChar(255)
+  TransactionCode      String?   @db.NVarChar(255)
+  CustomerCode         String?   @db.NVarChar(255)
+  SalesLocationCode    String?   @db.NVarChar(255)
+  Remarks              String?   @db.NVarChar(255)
+  TransactionType      String?   @db.NVarChar(255)
+  UserID               String?   @db.NVarChar(255)
+  ItemSKU              String?   @db.NVarChar(255)
+  ItemUnit             String?   @db.NVarChar(255)
+  ItemSize             String?   @db.NVarChar(255)
+  ITEMRATE             Float?
+  ItemPrice            Float?
+  ItemQry              Float?
+  TransactionDate      DateTime? @db.DateTime
+  id                   String    @unique(map: "UQ_tblPOSInvoiceDetailsArchive_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517_arc") @db.UniqueIdentifier
+}
+
+model tblPOSInvoiceMasterArchive {
+  Rec_Num              Float?    @map("Rec ##")
+  TblSysNoID           Float?
+  SNo                  Float?
+  DeliveryLocationCode String?   @db.NVarChar(255)
+  ItemSysID            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @db.NVarChar(255)
+  Head_SYS_ID          String?   @db.NVarChar(255)
+  TransactionCode      String?   @db.NVarChar(255)
+  CustomerCode         String?   @db.NVarChar(255)
+  SalesLocationCode    String?   @db.NVarChar(255)
+  Remarks              String?   @db.NVarChar(255)
+  TransactionType      String?   @db.NVarChar(255)
+  UserID               String?   @db.NVarChar(255)
+  MobileNo             String?   @db.NVarChar(255)
+  TransactionDate      DateTime? @db.DateTime
+  id                   String    @unique(map: "UQ_tblPOSInvoiceMasterArchive_id") @default(uuid()) @db.UniqueIdentifier
+  VatNumber            String?   @db.VarChar(50)
+  CustomerName         String?   @db.NVarChar(255)
+  AdjAmount            Float?
+  PendingAmount        Float?
+  DocNo                String?   @db.NVarChar(255)
 }
 
 model TblSalesReturnInvoicetmp {
