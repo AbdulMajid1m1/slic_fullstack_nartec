@@ -7,31 +7,45 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, CircularProgress } from "@mui/material";
+import { Autocomplete, Button, CircularProgress, TextField } from "@mui/material";
 
 const PosHistory = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [secondGridData, setSecondGridData] = useState([]);
   const [filteredData, setFilteredData] = useState([]); // for the map markers
+  const [filteredTransactionCodesData, setFilteredTransactionCodesData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [transactionCodes, setTransactionCodes] = useState([]);
+  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const navigate = useNavigate();
   const [isPurchaseOrderDataLoading, setIsPurchaseOrderDataLoading] =
     useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await newRequest.get("/Invoice/v1/masters");
-      // console.log(response?.data?.data);
-      setData(response?.data?.data || []);
+
+
+    
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await newRequest.get("/Invoice/v1/masters");
+        // console.log(response?.data?.data);
+        setData(response?.data?.data || []);
+
+
+        const transactionData = response?.data?.data || [];
+        // Extracting only unique TransactionCodes
+        const codes = [...new Set(transactionData.map((item) => item.TransactionCode))];
+        setTransactionCodes(codes);
+        setFilteredTransactionCodesData(transactionData);
+
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
       toast.error(err?.response?.data?.message || "Something went Wrong");
     }
   };
-
+  
   useEffect(() => {
     fetchData(); // Calling the function within useEffect, not inside itself
   }, []);
@@ -42,7 +56,7 @@ const PosHistory = () => {
       setFilteredData(secondGridData);
       return;
     }
-
+    
     // call api
     setIsPurchaseOrderDataLoading(true);
     try {
@@ -58,12 +72,28 @@ const PosHistory = () => {
         err?.response?.data?.error ||
           err?.response?.data?.message ||
           "Something went wrong"
-      );
-      setFilteredData([]);
+        );
+        setFilteredData([]);
     } finally {
       setIsPurchaseOrderDataLoading(false);
     }
   };
+
+  
+  // Handle selection of a transaction code and filter data based on the selection
+  const handleTransactionCodes = (event, value) => {
+    setSelectedTransactionCode(value ? value : "");
+
+    // Filter the data based on selected TransactionCode
+    if (value) {
+      const filtered = data.filter(item => item.TransactionCode === value);
+      setFilteredTransactionCodesData(filtered);
+    } else {
+      // If no value is selected, show all data
+      setFilteredTransactionCodesData(data);
+    }
+  };
+
 
   return (
     <SideNav>
@@ -107,6 +137,27 @@ const PosHistory = () => {
                   </Button>
                 </div>
               </div>
+
+              <div className="p-4 gap-2 w-full grid grid-cols-2">
+                <div className="flex flex-col w-full">
+                  <label className='font-sans font-semibold text-sm text-secondary'>Transaction Codes</label>
+                  <Autocomplete
+                    id="transactionId"
+                    options={transactionCodes}
+                    getOptionLabel={(option) => option || ''}  // Display only TransactionCode
+                    onChange={handleTransactionCodes}
+                    value={selectedTransactionCode || null}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        className="bg-gray-50 border border-gray-300 text-black text-xs rounded-sm"
+                        placeholder="Select any Transaction Code"
+                        required
+                      />
+                    )}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -119,7 +170,7 @@ const PosHistory = () => {
             }}
           >
             <DataTable
-              data={data}
+              data={filteredTransactionCodesData}
               title={"POS History"}
               columnsName={posHistoryInvoiceColumns}
               loading={isLoading}

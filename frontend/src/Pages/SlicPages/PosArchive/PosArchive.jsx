@@ -10,7 +10,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const PosArchive = () => {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [secondGridData, setSecondGridData] = useState([]);
   const [filteredData, setFilteredData] = useState([]); // for the map markers
   const [loading, setLoading] = useState(false);
@@ -21,8 +21,8 @@ const PosArchive = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await newRequest.get("/Invoice/v1/masters");
-      // console.log(response?.data?.data);
+      const response = await newRequest.get("/invoice/v1/invoiceMasterArchive");
+      console.log(response?.data?.data);
       setData(response?.data?.data || []);
       setIsLoading(false);
     } catch (err) {
@@ -37,31 +37,31 @@ const PosArchive = () => {
 
   const handleRowClickInParent = async (item) => {
     // console.log(item)
-    // if (item.length === 0) {
-    //   setFilteredData(secondGridData);
-    //   return;
-    // }
+    if (item.length === 0) {
+      setFilteredData(secondGridData);
+      return;
+    }
 
-    // // call api
-    // setIsPurchaseOrderDataLoading(true);
-    // try {
-    //   const res = await newRequest.get(
-    //     `/Invoice/v1/detailsByInvoiceNo?InvoiceNo=${item[0].InvoiceNo}`
-    //   );
-    //   // console.log(res?.data?.data);
+    // call api
+    setIsPurchaseOrderDataLoading(true);
+    try {
+      const res = await newRequest.get(
+        `/invoice/v1/invoiceDetailsArchive?filter[InvoiceNo]=${item[0].InvoiceNo}`
+      );
+      // console.log(res?.data?.data);
 
-    //   setFilteredData(res?.data?.data || []);
-    // } catch (err) {
-    //   console.log(err);
-    //   toast.error(
-    //     err?.response?.data?.error ||
-    //       err?.response?.data?.message ||
-    //       "Something went wrong"
-    //   );
-    //   setFilteredData([]);
-    // } finally {
-    //   setIsPurchaseOrderDataLoading(false);
-    // }
+      setFilteredData(res?.data?.data || []);
+    } catch (err) {
+      console.log(err);
+      toast.error(
+        err?.response?.data?.error ||
+          err?.response?.data?.message ||
+          "Something went wrong"
+      );
+      setFilteredData([]);
+    } finally {
+      setIsPurchaseOrderDataLoading(false);
+    }
   };
 
   return (
