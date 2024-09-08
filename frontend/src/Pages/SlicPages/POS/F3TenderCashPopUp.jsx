@@ -75,16 +75,16 @@ const F3TenderCashPopUp = ({
   useEffect(() => {
     if (isVisible) {
       // console.log("Popup Data:", storeDatagridData);
-      // console.log("Invoice Data:", storeInvoiceDatagridData);
-      console.log("exchange Button", isExchangeClick)
-      console.log("Exchange DSales Button", isExchangeDSalesClick)
-      // console.log(selectedCustomerCode?.CUST_CODE)
+      console.log("Invoice Data:", storeInvoiceDatagridData);
+      // console.log("exchange Button", isExchangeClick)
+      // console.log("Exchange DSales Button", isExchangeDSalesClick)
+      console.log(selectedCustomerCode?.CUSTOMERCODE)
       // console.log(selectedTransactionCode?.TXN_CODE)
-      console.log(selectedRowData)
+      // console.log(selectedRowData)
       console.log(exchangeData)
 
-      console.log(DSalesNoInvoiceData)
-      console.log(dSalesNoInvoiceexchangeData)
+      // console.log(DSalesNoInvoiceData)
+      // console.log(dSalesNoInvoiceexchangeData)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -110,13 +110,14 @@ const F3TenderCashPopUp = ({
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
   
       const salesInvoiceBody = {
-        "_keyword_": "Invoice",
-        "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-        data: [
+        "keyword": "Invoice",
+        "secret-key": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+        "data": [
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
+            // "CustomerCode": "EX100003",
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
@@ -126,13 +127,15 @@ const F3TenderCashPopUp = ({
             "PosRefNo": invoiceNumber,
             "ZATCAPaymentMode": paymentModes.code,
             "TaxExemptionReason": "",
-            Item: items,
-          },
+            "Item": items
+          }
         ],
-        COMPANY: "SLIC",
-        USERID: "SYSADMIN",
-        APICODE: "INVOICE",
-        LANG: "ENG",
+         
+        "COMPANY": "SLIC",
+        "USERID": "SYSADMIN",
+        "APICODE": "INVOICE",
+        "LANG": "ENG"   
+
       };
   
       const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
@@ -159,7 +162,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: grossAmount,
-              CustomerId: selectedCustomerCode?.CUST_CODE,
+              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -195,7 +198,7 @@ const F3TenderCashPopUp = ({
   
   const handleSubmitDirectSalesReturn = async () => {
     setLoading(true);
-  
+   
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
         "Item-Code": item.ItemCode,
@@ -336,13 +339,21 @@ const F3TenderCashPopUp = ({
         handleInvoiceGenerator();
         setLoading(false);
 
-      } else {
+      } 
+      else {
         // Non-exchange scenario: Only call Sales Return API
         const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesReturnBody, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Sales Return Response:", res?.data);
   
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleClearData();
+        handleClearInvoiceData();
+        handleInvoiceGenerator();
+        setLoading(false);
+
         // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const documentNo = res?.data?.message["Document No"];
@@ -376,24 +387,25 @@ const F3TenderCashPopUp = ({
             LANG: "ENG",
           };
   
-          await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptDI, {
+          const bankRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptDI, {
             headers: { Authorization: `Bearer ${token}` },
           });
-  
+          
+          // Complete the process
+          showOtpPopup(bankRes?.data);
+          handleCloseCreatePopup();
+          handleClearData();
+          handleClearInvoiceData();
+          handleInvoiceGenerator();
+          setLoading(false);
           console.log("Bank Receipt processed for Direct Sales Return Debit/Credit");
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
       }
-  
-      // Complete the process
-      showOtpPopup(exsrRes?.data);
-      handleCloseCreatePopup();
-      handleClearData();
-      handleClearInvoiceData();
-      handleInvoiceGenerator();
-      setLoading(false);
+
     } catch (err) {
+      console.log(err)
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
@@ -433,7 +445,7 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            "CustomerCode": selectedCustomerCode?.CUST_CODE,
+            "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
@@ -467,7 +479,7 @@ const F3TenderCashPopUp = ({
             {
               "Company": "SLIC",
               "TransactionCode": `${modifiedTransactionCode}`,
-              "CustomerCode": selectedCustomerCode?.CUST_CODE,
+              "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
               "SalesLocationCode": selectedLocation?.stockLocation,
               "DeliveryLocationCode": selectedLocation?.stockLocation,
               "UserId": "SYSADMIN",
@@ -510,7 +522,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: selectedRowData?.ItemPrice - dSalesNoInvoiceexchangeData[0]?.ItemPrice,
-              CustomerId: selectedCustomerCode?.CUST_CODE,
+              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
@@ -570,7 +582,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: grossAmount,
-                CustomerId: selectedCustomerCode?.CUST_CODE,
+                CustomerId: selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
