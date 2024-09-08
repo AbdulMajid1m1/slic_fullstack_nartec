@@ -467,41 +467,6 @@ exports.archiveInvoice = async (req, res, next) => {
     });
 
     res.status(200).json({ message: "Invoice archived successfully" });
-exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
-  const { InvoiceNo } = req.body; // Get data from body instead of query
-
-  try {
-    // Check if InvoiceNo is provided and is an array
-    if (!InvoiceNo || !Array.isArray(InvoiceNo)) {
-      const error = new CustomError("A list of InvoiceNo is required");
-      error.statusCode = 400;
-      throw error;
-    }
-
-    // Fetch invoice details for multiple InvoiceNo
-    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFieldTwo(
-      "InvoiceNo",
-      InvoiceNo
-    );
-
-    if (!invoiceDetails || invoiceDetails.length === 0) {
-      const error = new CustomError(
-        `No invoice details found for the provided invoice numbers.`
-      );
-      error.statusCode = 404;
-      throw error;
-    }
-
-    res
-      .status(200)
-      .json(
-        response(
-          200,
-          true,
-          "Invoice details retrieved successfully",
-          invoiceDetails
-        )
-      );
   } catch (error) {
     next(error);
   }
@@ -639,5 +604,47 @@ exports.getPOSInvoiceDetailsArchive = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
+  const { InvoiceNo } = req.body; // Get data from body instead of query
+
+  try {
+    // Check if InvoiceNo is provided and is an array
+    if (!InvoiceNo || !Array.isArray(InvoiceNo)) {
+      const error = new CustomError("A list of InvoiceNo is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Fetch invoice details for multiple InvoiceNo
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFieldTwo(
+      "InvoiceNo",
+      InvoiceNo
+    );
+
+    if (!invoiceDetails || invoiceDetails.length === 0) {
+      const error = new CustomError(
+        `No invoice details found for the provided invoice numbers.`
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          "Invoice details retrieved successfully",
+          invoiceDetails
+        )
+      );
+  } catch (error) {
+    next(error);
   }
 };
