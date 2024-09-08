@@ -27,11 +27,18 @@ router.get("/v1/masters", controller.getAllMaters);
 // * Get invoice details by invoice number
 router.get("/v1/detailsByInvoiceNo", controller.getInvoiceDetailsByInvoiceNo);
 
+<<<<<<< HEAD
 router.post("/v1/archiveInvoice", controller.archiveInvoice);
 
 
 // Define routes
 router.get('/v1/invoiceMasterArchive', controller.getPOSInvoiceMasterArchive);
 router.get('/v1/invoiceDetailsArchive', controller.getPOSInvoiceDetailsArchive);
+=======
+router.post(
+  "/v1/detailsByInvoiceNos",
+  controller.getInvoiceDetailsByInvoiceNos
+);
+>>>>>>> 5eeec22c005c4a8b577f7dde24709cc8dafe317e
 
 module.exports = router;

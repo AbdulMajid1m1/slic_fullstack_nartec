@@ -323,6 +323,67 @@ exports.getAllMaters = async (req, res, next) => {
   }
 };
 
+// exports.getAllMaters = async (req, res, next) => {
+//   try {
+//     // Get sorting parameters from query (if any)
+//     const sortParams = req.query;
+
+//     // Define the valid fields that can be used for sorting
+//     const validFields = [
+//       "Rec_Num",
+//       "TblSysNoID",
+//       "SNo",
+//       "DeliveryLocationCode",
+//       "ItemSysID",
+//       "InvoiceNo",
+//       "Head_SYS_ID",
+//       "TransactionCode",
+//       "CustomerCode",
+//       "SalesLocationCode",
+//       "Remarks",
+//       "TransactionType",
+//       "UserID",
+//       "MobileNo",
+//       "TransactionDate",
+//       "VatNumber",
+//       "CustomerName",
+//     ];
+
+//     // Create the sortFields object
+//     const sortFields = {};
+
+//     // Loop through the query parameters and add valid sorting fields to sortFields object
+//     for (const field in sortParams) {
+//       if (validFields.includes(field)) {
+//         // Assume sort order as either 'asc' or 'desc' passed as query value, default to 'asc'
+//         sortFields[field] = sortParams[field] === "desc" ? "desc" : "asc";
+//       }
+//     }
+
+//     // Fetch all invoices with sorting
+//     const allInvoices = await POSInvoiceMaster.getAllInvoiceDetails(sortFields);
+
+//     if (!allInvoices || allInvoices.length === 0) {
+//       const error = new CustomError("No invoices found");
+//       error.statusCode = 404;
+//       throw error;
+//     }
+
+//     res
+//       .status(200)
+//       .json(
+//         response(
+//           200,
+//           true,
+//           "All invoice details retrieved successfully",
+//           allInvoices
+//         )
+//       );
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
   const { InvoiceNo } = req.query;
 
@@ -361,6 +422,7 @@ exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
   }
 };
 
+<<<<<<< HEAD
 exports.archiveInvoice = async (req, res, next) => {
   try {
     const { invoiceNo } = req.body;
@@ -406,10 +468,48 @@ exports.archiveInvoice = async (req, res, next) => {
     });
 
     res.status(200).json({ message: "Invoice archived successfully" });
+=======
+exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
+  const { InvoiceNo } = req.body; // Get data from body instead of query
+
+  try {
+    // Check if InvoiceNo is provided and is an array
+    if (!InvoiceNo || !Array.isArray(InvoiceNo)) {
+      const error = new CustomError("A list of InvoiceNo is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Fetch invoice details for multiple InvoiceNo
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFieldTwo(
+      "InvoiceNo",
+      InvoiceNo
+    );
+
+    if (!invoiceDetails || invoiceDetails.length === 0) {
+      const error = new CustomError(
+        `No invoice details found for the provided invoice numbers.`
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        response(
+          200,
+          true,
+          "Invoice details retrieved successfully",
+          invoiceDetails
+        )
+      );
+>>>>>>> 5eeec22c005c4a8b577f7dde24709cc8dafe317e
   } catch (error) {
     next(error);
   }
 };
+<<<<<<< HEAD
 
 
 
@@ -545,3 +645,5 @@ exports.getPOSInvoiceDetailsArchive = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+=======
+>>>>>>> 5eeec22c005c4a8b577f7dde24709cc8dafe317e
