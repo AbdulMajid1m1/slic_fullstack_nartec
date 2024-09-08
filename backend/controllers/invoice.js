@@ -422,7 +422,6 @@ exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
   }
 };
 
-<<<<<<< HEAD
 exports.archiveInvoice = async (req, res, next) => {
   try {
     const { invoiceNo } = req.body;
@@ -468,7 +467,6 @@ exports.archiveInvoice = async (req, res, next) => {
     });
 
     res.status(200).json({ message: "Invoice archived successfully" });
-=======
 exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
   const { InvoiceNo } = req.body; // Get data from body instead of query
 
@@ -504,12 +502,10 @@ exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
           invoiceDetails
         )
       );
->>>>>>> 5eeec22c005c4a8b577f7dde24709cc8dafe317e
   } catch (error) {
     next(error);
   }
 };
-<<<<<<< HEAD
 
 
 
@@ -645,5 +641,3 @@ exports.getPOSInvoiceDetailsArchive = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-=======
->>>>>>> 5eeec22c005c4a8b577f7dde24709cc8dafe317e
