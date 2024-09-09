@@ -138,8 +138,10 @@ const F3TenderCashPopUp = ({
         "APICODE": "INVOICE",
         "LANG": "ENG"   
 
-      };
-  
+      };  
+
+      console.log(salesInvoiceBody)
+
       const res = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -180,6 +182,9 @@ const F3TenderCashPopUp = ({
           APICODE: "BANKRECEIPTVOUCHER",
           LANG: "ENG",          
         };
+
+        console.log(bankReceiptBody)
+        
         await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
           headers: { Authorization: `Bearer ${token}` },
         });
