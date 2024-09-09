@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import { posHistoryInvoiceColumns } from "../../../utils/datatablesource";
+import { posArchiveColumns, posHistoryInvoiceColumns } from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
@@ -22,8 +22,8 @@ const PosArchive = () => {
     setIsLoading(true);
     try {
       const response = await newRequest.get("/invoice/v1/invoiceMasterArchive");
-      console.log(response?.data?.data);
-      setData(response?.data?.data || []);
+      console.log(response?.data);
+      setData(response?.data || []);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -32,7 +32,7 @@ const PosArchive = () => {
   };
 
   useEffect(() => {
-    // fetchData(); // Calling the function within useEffect, not inside itself
+    fetchData(); // Calling the function within useEffect, not inside itself
   }, []);
 
   const handleRowClickInParent = async (item) => {
@@ -78,7 +78,7 @@ const PosArchive = () => {
             <DataTable
               data={data}
               title={"POS Archive"}
-              columnsName={posHistoryInvoiceColumns}
+              columnsName={posArchiveColumns}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -119,7 +119,7 @@ const PosArchive = () => {
             data={filteredData}
             title={"POS Archive Details"}
             secondaryColor="secondary"
-            columnsName={posHistoryInvoiceColumns}
+            columnsName={posArchiveColumns}
             backButton={true}
             checkboxSelection="disabled"
             actionColumnVisibility={false}

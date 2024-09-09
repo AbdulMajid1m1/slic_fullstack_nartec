@@ -28,6 +28,7 @@ const F3TenderCashPopUp = ({
   isExchangeDSalesClick,
   dSalesNoInvoiceexchangeData,
   DSalesNoInvoiceData,
+  selectedCustomeNameWithDirectInvoice,
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -116,7 +117,7 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
+            "CustomerCode": selectedCustomeNameWithDirectInvoice?.CUST_CODE,
             // "CustomerCode": "EX100003",
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
@@ -162,7 +163,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: grossAmount,
-              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
+              CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -227,7 +228,7 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": selectTransactionCode,
-            "CustomerCode": invoiceHeaderData?.CustomerCode,
+            "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
@@ -261,7 +262,7 @@ const F3TenderCashPopUp = ({
             {
               "Company": "SLIC",
               "TransactionCode": modifiedTransactionCode,
-              "CustomerCode": invoiceHeaderData?.CustomerCode,
+              "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
               "SalesLocationCode": selectedLocation?.stockLocation,
               "DeliveryLocationCode": selectedLocation?.stockLocation,
               "UserId": "SYSADMIN",
@@ -304,7 +305,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: selectedRowData?.ItemPrice - exchangeData[0]?.ItemPrice,
-              CustomerId: invoiceHeaderData?.CustomerCode,
+              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
@@ -445,7 +446,7 @@ const F3TenderCashPopUp = ({
           {
             "Company": "SLIC",
             "TransactionCode": `${selectTransactionCode}`,
-            "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
+            "CustomerCode": selectedCustomeNameWithDirectInvoice?.CUST_CODE,
             "SalesLocationCode": selectedLocation?.stockLocation,
             "DeliveryLocationCode": selectedLocation?.stockLocation,
             "UserId": "SYSADMIN",
@@ -479,7 +480,7 @@ const F3TenderCashPopUp = ({
             {
               "Company": "SLIC",
               "TransactionCode": `${modifiedTransactionCode}`,
-              "CustomerCode": selectedCustomerCode?.CUSTOMERCODE,
+              "CustomerCode": selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               "SalesLocationCode": selectedLocation?.stockLocation,
               "DeliveryLocationCode": selectedLocation?.stockLocation,
               "UserId": "SYSADMIN",
@@ -522,7 +523,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: selectedRowData?.ItemPrice - dSalesNoInvoiceexchangeData[0]?.ItemPrice,
-              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
+              CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
@@ -582,7 +583,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: grossAmount,
-                CustomerId: selectedCustomerCode?.CUSTOMERCODE,
+                CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,

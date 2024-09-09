@@ -765,3 +765,59 @@ export const posHistoryInvoiceColumns = [
     width: 200,
   },
 ];
+
+
+
+export const posArchiveColumns = [
+  {
+    field: "CustomerCode",
+    headerName: "Customer Code",
+    width: 150,
+  },
+  {
+    field: "CustomerName",
+    headerName: "Customer Name",
+    width: 150,
+  },
+  {
+    field: "DeliveryLocationCode",
+    headerName: "Delivery Location Code",
+    width: 180,
+  },
+  {
+    field: "InvoiceNo",
+    headerName: "Invoice No",
+    width: 180,
+  },
+  {
+    field: "MobileNo",
+    headerName: "Mobile No",
+    width: 180,
+  },
+  {
+    field: "Remarks",
+    headerName: "Remarks",
+    width: 180,
+  },
+  {
+    field: "SalesLocationCode",
+    headerName: "Sales Location Code",
+    width: 150,
+  },
+  {
+    field: "TransactionCode",
+    headerName: "Transaction Code",
+    width: 180,
+  },
+  {
+    field: "TransactionDate",
+    headerName: "Transaction Date",
+    width: 180,
+  },
+
+
+  
+];
+
+
+
