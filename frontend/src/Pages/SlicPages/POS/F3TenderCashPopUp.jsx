@@ -80,6 +80,7 @@ const F3TenderCashPopUp = ({
       // console.log("exchange Button", isExchangeClick)
       // console.log("Exchange DSales Button", isExchangeDSalesClick)
       console.log(selectedCustomerCode?.CUSTOMERCODE)
+      // console.log(selectedCustomeNameWithDirectInvoice?.CUST_CODE)
       // console.log(selectedTransactionCode?.TXN_CODE)
       // console.log(selectedRowData)
       console.log(exchangeData)

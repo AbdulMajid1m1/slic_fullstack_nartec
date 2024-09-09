@@ -717,7 +717,22 @@ export const posHistoryInvoiceColumns = [
   {
     field: "InvoiceNo",
     headerName: "Invoice No",
-    width: 300,
+    width: 180,
+  },
+  {
+    field: "DocNo",
+    headerName: "Document No",
+    width: 180,
+  },
+  {
+    field: "AdjAmount",
+    headerName: "Adjustment Amount",
+    width: 180,
+  },
+  {
+    field: "PendingAmount",
+    headerName: "Pending Amount",
+    width: 180,
   },
   {
     field: "Head_SYS_ID",

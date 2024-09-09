@@ -549,7 +549,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE",
@@ -569,7 +569,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE",
@@ -648,7 +648,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -667,7 +667,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
@@ -694,6 +694,21 @@ const POS = () => {
       );
       console.log("invoice body", invoiceAllData)
       console.log("Record saved successfully:", saveInvoiceResponse.data);
+
+      if (isExchangeClick) {
+        const resArchive = await newRequest.post("/invoice/v1/archiveInvoice", {
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo,
+        });
+        console.log(resArchive.data);
+      }
+
+      if (isExchangeDSalesClick) {
+        const resArchive = await newRequest.post("/invoice/v1/archiveInvoice", {
+          InvoiceNo: invoiceNumber,
+        });
+        console.log(resArchive.data);
+      }
+
       resetState();
       toast.success(
         saveInvoiceResponse?.data?.message || "Invoice saved successfully"
