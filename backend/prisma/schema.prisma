@@ -219,8 +219,8 @@ model tblPOSInvoiceMasterArchive {
   CustomerName         String?   @db.NVarChar(255)
   AdjAmount            Float?
   PendingAmount        Float?
-  
-  DocNo                String?   @db.NVarChar(255)
+
+  DocNo String? @db.NVarChar(255)
 }
 
 model TblSalesReturnInvoicetmp {
@@ -503,4 +503,3 @@ model TblTrxCodes {
   @@index([TxNCode], map: "WDIDX172070276674")
   @@index([TXName], map: "WDIDX172070276675")
 }
-

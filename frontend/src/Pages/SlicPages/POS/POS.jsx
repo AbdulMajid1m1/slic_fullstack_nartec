@@ -45,26 +45,26 @@ const POS = () => {
     }
   };
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:1100/api/whatsapp/checkSession"
-        );
-        const data = await response.json();
+  // useEffect(() => {
+  //   const checkSession = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "http://localhost:1100/api/whatsapp/checkSession"
+  //       );
+  //       const data = await response.json();
 
-        if (data.status === "failure" && data.qrCode) {
-          setQrCode(data.qrCode);
-          console.log("QR code:", data.qrCode);
-          setShowPopup(true);
-        }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      }
-    };
+  //       if (data.status === "failure" && data.qrCode) {
+  //         setQrCode(data.qrCode);
+  //         console.log("QR code:", data.qrCode);
+  //         setShowPopup(true);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking session:", error);
+  //     }
+  //   };
 
-    checkSession();
-  }, []);
+  //   checkSession();
+  // }, []);
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -437,12 +437,13 @@ const POS = () => {
   const [selectedCustomerName, setSelectedCustomerName] = useState("");
   const fetchCustomerBasedonTransaction = async () => {
     try {
-      const response = await newRequest.get(`/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`);
+      const response = await newRequest.get(
+        `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
+      );
       const allCustomers = response?.data?.data;
       // console.log(allCustomers)
-     
-      setSearchCustomerName(allCustomers);
 
+      setSearchCustomerName(allCustomers);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -455,26 +456,28 @@ const POS = () => {
   };
 
   useEffect(() => {
-    if(selectedTransactionCode?.TXN_CODE) {
+    if (selectedTransactionCode?.TXN_CODE) {
       fetchCustomerBasedonTransaction();
     }
   }, [selectedTransactionCode?.TXN_CODE]);
 
-
-  const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] = useState([]);
-  const [selectedCustomeNameWithDirectInvoice, setSelectedCustomeNameWithDirectInvoice] = useState("");
+  const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] =
+    useState([]);
+  const [
+    selectedCustomeNameWithDirectInvoice,
+    setSelectedCustomeNameWithDirectInvoice,
+  ] = useState("");
   const fetchCustomerNames = async () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
       const allCustomers = response?.data?.data;
-    
+
       // Filter customers whose CUST_CODE starts with "CL"
-      const filteredCustomers = allCustomers.filter(customer =>
+      const filteredCustomers = allCustomers.filter((customer) =>
         customer.CUST_CODE.startsWith("CL")
       );
       // console.log(filteredCustomers);
       setCustomerNameWithDirectInvoice(filteredCustomers);
-
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -487,8 +490,8 @@ const POS = () => {
   };
 
   useEffect(() => {
-      fetchCustomerNames();
-}, []);
+    fetchCustomerNames();
+  }, []);
 
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
@@ -536,12 +539,12 @@ const POS = () => {
     setTotalVat(0);
     setExchangeData([]);
     setIsExchangeClick(false);
-  };  
+  };
 
   const insertInvoiceRecord = async () => {
     try {
       let invoiceAllData;
-      
+
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -582,13 +585,12 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
-  
+
         invoiceAllData = {
           master,
           details,
         };
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
-
         // Check if isExchangeClick is true, if so use exchangeData, otherwise use invoiceData
         const dataToUse = isExchangeClick ? exchangeData : invoiceData;
 
@@ -608,17 +610,20 @@ const POS = () => {
           TransactionDate: todayDate,
           CustomerName: customerName,
         };
-  
+
         const details = dataToUse.map((item, index) => ({
           Rec_Num: index + 1,
           TblSysNoID: 1000 + index,
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE || invoiceHeaderData?.invoiceHeader?.CustomerCode,
+          CustomerCode:
+            selectedCustomerName?.CUSTOMERCODE ||
+            invoiceHeaderData?.invoiceHeader?.CustomerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
@@ -631,17 +636,17 @@ const POS = () => {
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
-  
-        console.log(details)
+
+        console.log(details);
 
         invoiceAllData = {
           master,
           details,
         };
-
       } else if (selectedSalesType === "DSALES NO INVOICE") {
-
-        const dataToUseDSales = isExchangeDSalesClick ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
+        const dataToUseDSales = isExchangeDSalesClick
+          ? dSalesNoInvoiceexchangeData
+          : DSalesNoInvoiceData;
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
@@ -692,7 +697,7 @@ const POS = () => {
         "/invoice/v1/saveInvoice",
         invoiceAllData
       );
-      console.log("invoice body", invoiceAllData)
+      console.log("invoice body", invoiceAllData);
       console.log("Record saved successfully:", saveInvoiceResponse.data);
 
       if (isExchangeClick) {
@@ -891,7 +896,11 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${selectedSalesType === "DIRECT SALES INVOICE" ? "Sales Invoice" : "Return Slip Invoice"}
+            ${
+              selectedSalesType === "DIRECT SALES INVOICE"
+                ? "Sales Invoice"
+                : "Return Slip Invoice"
+            }
           </div>
           
           <div class="customer-info">
@@ -1474,109 +1483,110 @@ const POS = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-gray-700">Search Customer</label>
-                {selectedSalesType === "DIRECT SALES RETURN" ? (
-                  // <input
-                  //   id="field1"
-                  //   className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
-                  //   value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
-                  //   readOnly
-                  //   required
-                  // />
-                  <Autocomplete
-                    id="field1"
-                    options={searchCustomerName}
-                    getOptionLabel={(option) => 
-                      option && option.CUSTOMERCODE && option.TXN_NAME 
-                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}` 
-                        : ''
+              {selectedSalesType === "DIRECT SALES RETURN" ? (
+                // <input
+                //   id="field1"
+                //   className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
+                //   value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
+                //   readOnly
+                //   required
+                // />
+                <Autocomplete
+                  id="field1"
+                  options={searchCustomerName}
+                  getOptionLabel={(option) =>
+                    option && option.CUSTOMERCODE && option.TXN_NAME
+                      ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
+                      : ""
+                  }
+                  onChange={handleSearchCustomerName}
+                  // Ensure correct value is being set for selectedCustomerName
+                  value={selectedCustomerName || null}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUSTOMERCODE === value?.CUSTOMERCODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedCustomerName(""); // Clear selection when input is cleared
                     }
-                    onChange={handleSearchCustomerName}
-                    // Ensure correct value is being set for selectedCustomerName
-                    value={selectedCustomerName || null}
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={"Search Customer ID"}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
+              ) : (
+                <Autocomplete
+                  id="field1"
+                  options={customerNameWithDirectInvoice}
+                  // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                  getOptionLabel={(option) =>
+                    option && option.CUST_CODE && option.CUST_NAME
+                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                      : ""
+                  }
+                  onChange={handleSearchCustomerNameWithDirectInvoice}
+                  value={
+                    customerNameWithDirectInvoice.find(
+                      (option) =>
+                        option?.CUST_CODE ===
+                        selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                    ) || null
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUST_CODE === value?.CUST_CODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
                     }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomerName(""); // Clear selection when input is cleared
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={"Search Customer ID"}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                ) : (
-                  <Autocomplete
-                    id="field1"
-                    options={customerNameWithDirectInvoice}
-                    // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                    getOptionLabel={(option) => 
-                      option && option.CUST_CODE && option.CUST_NAME 
-                        ? `${option.CUST_CODE} - ${option.CUST_NAME}` 
-                        : ''
-                    }
-                    onChange={handleSearchCustomerNameWithDirectInvoice}
-                    value={
-                      customerNameWithDirectInvoice.find(
-                        (option) =>
-                          option?.CUST_CODE === selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                      ) || null
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUST_CODE === value?.CUST_CODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={"Search Customer ID"}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                )}
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={"Search Customer ID"}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
+              )}
             </div>
             <div>
               <label className="block text-gray-700">Delivery *</label>
@@ -2133,7 +2143,9 @@ const POS = () => {
               customerName={customerName}
               remarks={remarks}
               selectedCustomerCode={selectedCustomerName}
-              selectedCustomeNameWithDirectInvoice={selectedCustomeNameWithDirectInvoice}
+              selectedCustomeNameWithDirectInvoice={
+                selectedCustomeNameWithDirectInvoice
+              }
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
               isExchangeClick={isExchangeClick}
