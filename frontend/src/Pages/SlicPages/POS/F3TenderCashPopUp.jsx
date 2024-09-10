@@ -29,6 +29,15 @@ const F3TenderCashPopUp = ({
   dSalesNoInvoiceexchangeData,
   DSalesNoInvoiceData,
   selectedCustomeNameWithDirectInvoice,
+  // net withVat porps
+  netWithVat,
+  // net without exchange porps
+  netWithOutVatExchange,
+  totolAmountWithoutExchange,
+  // net without dSales exchange props
+  netWithOutVatDSalesNoInvoice,
+  totolAmountWithoutVatDSalesNoInvoice,
+  
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -79,11 +88,18 @@ const F3TenderCashPopUp = ({
       console.log("Invoice Data:", storeInvoiceDatagridData);
       // console.log("exchange Button", isExchangeClick)
       // console.log("Exchange DSales Button", isExchangeDSalesClick)
-      console.log(selectedCustomerCode?.CUSTOMERCODE)
+      // console.log(selectedCustomerCode?.CUSTOMERCODE)
       // console.log(selectedCustomeNameWithDirectInvoice?.CUST_CODE)
       // console.log(selectedTransactionCode?.TXN_CODE)
       // console.log(selectedRowData)
-      console.log(exchangeData)
+
+      console.log(netWithVat)
+      console.log(netWithOutVatExchange)
+      // console.log(totolAmountWithoutExchange)
+      console.log(netWithOutVatDSalesNoInvoice)
+      // console.log(totolAmountWithoutVatDSalesNoInvoice)
+      
+      // console.log(exchangeData)
 
       // console.log(DSalesNoInvoiceData)
       // console.log(dSalesNoInvoiceexchangeData)
@@ -165,14 +181,14 @@ const F3TenderCashPopUp = ({
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
-              ReceiptAmt: grossAmount,
+              ReceiptAmt: netWithVat,
               CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: changeAmount,
-                  AdjAmount: changeAmount,
+                  PendingAmount: netWithVat,
+                  AdjAmount: netWithVat,
                 },
               ],
             },
@@ -310,20 +326,20 @@ const F3TenderCashPopUp = ({
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
-              ReceiptAmt: selectedRowData?.ItemPrice - exchangeData[0]?.ItemPrice,
+              ReceiptAmt: netWithOutVatExchange - netWithVat,
               CustomerId: selectedCustomerCode?.CUSTOMERCODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
                   TransactionCode: modifiedTransactionCode,
-                  PendingAmount: exchangeData[0]?.ItemPrice,
-                  AdjAmount: exchangeData[0]?.ItemPrice,
+                  PendingAmount: netWithVat,
+                  AdjAmount: netWithVat,
                 },
                 {
                   DocNo: exsrDocumentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: selectedRowData?.ItemPrice,
-                  AdjAmount: selectedRowData?.ItemPrice,
+                  PendingAmount: netWithOutVatExchange,
+                  AdjAmount: netWithOutVatExchange,
                 },
               ],
             },
@@ -376,14 +392,14 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: grossAmount,
+                ReceiptAmt: netWithOutVatExchange,
                 CustomerId: invoiceHeaderData?.CustomerCode,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: changeAmount,
-                    AdjAmount: changeAmount,
+                    PendingAmount: netWithOutVatExchange,
+                    AdjAmount: netWithOutVatExchange,
                   },
                 ],
               },
@@ -528,20 +544,20 @@ const F3TenderCashPopUp = ({
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
-              ReceiptAmt: selectedRowData?.ItemPrice - dSalesNoInvoiceexchangeData[0]?.ItemPrice,
+              ReceiptAmt: netWithOutVatDSalesNoInvoice - netWithVat,
               CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
                   TransactionCode: modifiedTransactionCode,
-                  PendingAmount: dSalesNoInvoiceexchangeData[0]?.ItemPrice,
-                  AdjAmount: dSalesNoInvoiceexchangeData[0]?.ItemPrice,
+                  PendingAmount: netWithOutVatDSalesNoInvoice,
+                  AdjAmount: netWithOutVatDSalesNoInvoice,
                 },
                 {
                   DocNo: exsrDocumentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: selectedRowData?.ItemPrice,
-                  AdjAmount: selectedRowData?.ItemPrice,
+                  PendingAmount: netWithVat,
+                  AdjAmount: netWithVat,
                 },
               ],
             },
@@ -588,14 +604,14 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: grossAmount,
+                ReceiptAmt: netWithOutVatDSalesNoInvoice,
                 CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: changeAmount,
-                    AdjAmount: changeAmount,
+                    PendingAmount: netWithOutVatDSalesNoInvoice,
+                    AdjAmount: netWithOutVatDSalesNoInvoice,
                   },
                 ],
               },
@@ -862,21 +878,49 @@ const F3TenderCashPopUp = ({
                         <p className="font-semibold text-sm">
                           {paymentModes.name || "Payment Mode"}
                         </p>
-                        <input
+                        {(selectedSalesType === "DIRECT SALES INVOICE") && (
+                          <input
                           type="text"
-                          value={grossAmount}
+                          value={totalAmountWithVat}
                           readOnly
-                          // value={cashAmount}
-                          // onChange={(e) => setCashAmount(e.target.value)}
                           className="w-full border border-gray-300 px-2 py-2 rounded-md"
                           placeholder={paymentModes.name || "Payment Mode"}
-                        />
+                          />
+                        )}
+                        {selectedSalesType === "DIRECT SALES RETURN" && (
+                          isExchangeClick ? (
+                            <input
+                              type="text"
+                              value={totalAmountWithVat}
+                              readOnly
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                              placeholder={paymentModes.name || "Payment Mode"}
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={totolAmountWithoutExchange}
+                              readOnly
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                              placeholder={paymentModes.name || "Payment Mode"}
+                            />
+                          )
+                        )}
+                        {isExchangeDSalesClick && (
+                          <input
+                            type="text"
+                            value={totalAmountWithVat}
+                            readOnly
+                            className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                            placeholder={paymentModes.name || "Payment Mode"}
+                          />
+                        )}
                       </div>
                           <div className="mb-3">
                             <p className="font-semibold">Total Amount</p>
                             <input
                               type="text"
-                              value={grossAmount}
+                              value={totolAmountWithoutExchange}
                               readOnly
                               className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                               placeholder="Total Amount"
@@ -886,12 +930,36 @@ const F3TenderCashPopUp = ({
                             <p className="font-semibold">Change</p>
                             <input
                               type="text"
-                              value={changeAmount}
+                              value={totolAmountWithoutExchange - totalAmountWithVat}
                               readOnly
                               className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                               placeholder="Change"
                             />
                           </div>
+                          {isExchangeClick && (
+                            <div className="mb-3">
+                              <p className="font-semibold">Difference</p>
+                              <input
+                                type="text"
+                                value={totolAmountWithoutExchange - totalAmountWithVat}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                placeholder="Difference"
+                                />
+                            </div>
+                          )}
+                          {isExchangeDSalesClick && (
+                            <div className="mb-3">
+                              <p className="font-semibold">Difference</p>
+                              <input
+                                type="text"
+                                value={totolAmountWithoutVatDSalesNoInvoice - totalAmountWithVat}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                placeholder="Difference"
+                              />
+                            </div>
+                          )}
                       {(paymentModes.code === "4" || paymentModes.code === "5") && (
                         <>
                           <div className="mb-3">
