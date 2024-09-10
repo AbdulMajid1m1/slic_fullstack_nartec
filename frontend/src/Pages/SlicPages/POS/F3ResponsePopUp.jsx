@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
+const F3ResponsePopUp = ({
+  isVisible,
+  setVisibility,
+  apiResponse,
+  handlePrintSalesInvoice,
+}) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
   const [documentNo, setDocumentNo] = useState("");
@@ -47,7 +52,10 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                     Message
                   </h2>
                   <div className="flex items-center space-x-3">
-                    <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -55,10 +63,18 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 14H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 14H4"
+                        />
                       </svg>
                     </button>
-                    <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -66,10 +82,18 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4h16v16H4z"
+                        />
                       </svg>
                     </button>
-                    <button className="text-white hover:text-red-600 focus:outline-none" onClick={handleCloseCreatePopup}>
+                    <button
+                      className="text-white hover:text-red-600 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-6 w-6"
@@ -77,7 +101,12 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -89,7 +118,10 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                     {validationErrors ? (
                       <div>
                         {Object.keys(validationErrors).map((key, index) => (
-                          <div key={index} className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                          <div
+                            key={index}
+                            className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5"
+                          >
                             <label
                               htmlFor={key}
                               className="text-secondary border-b border-gray-300 font-semibold"
@@ -101,44 +133,82 @@ const F3ResponsePopUp = ({ isVisible, setVisibility, apiResponse }) => {
                             </p>
                           </div>
                         ))}
+                        <div className="mt-5">
+                          <button
+                            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                            onClick={() => handlePrintSalesInvoice()}
+                          >
+                            Print Receipt
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div>
                         <div className="w-full font-body sm:text-lg text-sm flex flex-wrap gap-3">
-                          <label htmlFor="transaction" className="text-secondary border-b border-gray-300 font-semibold">
-                            Transaction Code:
+                          <label
+                            htmlFor="transaction"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
+                            Transaction Code :
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{transaction}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {transaction}
+                          </p>
                         </div>
                         <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-6">
-                          <label htmlFor="success" className="text-secondary border-b border-gray-300 font-semibold">
+                          <label
+                            htmlFor="success"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
                             Success
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{success}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {success}
+                          </p>
                         </div>
                         <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label htmlFor="companyCode" className="text-secondary border-b border-gray-300 font-semibold">
+                          <label
+                            htmlFor="companyCode"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
                             Company Code:
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{companyCode}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {companyCode}
+                          </p>
                         </div>
                         <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label htmlFor="message" className="text-secondary border-b border-gray-300 font-semibold">
+                          <label
+                            htmlFor="message"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
                             Message:
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{message}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {message}
+                          </p>
                         </div>
                         <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label htmlFor="referenceNo" className="text-secondary border-b border-gray-300 font-semibold">
+                          <label
+                            htmlFor="referenceNo"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
                             Reference Number/System ID:
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{referenceNo}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {referenceNo}
+                          </p>
                         </div>
                         <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label htmlFor="documentNo" className="text-secondary border-b border-gray-300 font-semibold">
+                          <label
+                            htmlFor="documentNo"
+                            className="text-secondary border-b border-gray-300 font-semibold"
+                          >
                             Document No:
                           </label>
-                          <p className="text-secondary border-b border-gray-300">{documentNo}</p>
+                          <p className="text-secondary border-b border-gray-300">
+                            {documentNo}
+                          </p>
                         </div>
                       </div>
                     )}

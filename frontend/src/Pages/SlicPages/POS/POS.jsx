@@ -533,13 +533,13 @@ const POS = () => {
     // setSelectedCustomerName(null);
     setSelectedTransactionCode("");
     setInvoiceNumber(generateInvoiceNumber());
-    
+
     setTotalAmountWithVat(0);
     setNetWithVat(0);
     setTotalVat(0);
-    
+
     setNetWithOutExchange(0);
-    setTotalWithOutExchange(0); 
+    setTotalWithOutExchange(0);
     setTotolAmountWithoutExchange(0);
 
     setNetWithOutVatDSalesNoInvoice(0);
@@ -737,19 +737,25 @@ const POS = () => {
   const [netWithVat, setNetWithVat] = useState("");
   const [totalVat, setTotalVat] = useState("");
   const [totalAmountWithVat, setTotalAmountWithVat] = useState(0); // To store total amount with VAT
-  
+
   // invoice state without Exchange
   const [netWithOutVatExchange, setNetWithOutExchange] = useState("");
   const [totalWithOutExchange, setTotalWithOutExchange] = useState("");
-  const [totolAmountWithoutExchange, setTotolAmountWithoutExchange] = useState(0);
+  const [totolAmountWithoutExchange, setTotolAmountWithoutExchange] =
+    useState(0);
 
   // DSales state without exchange
-  const [netWithOutVatDSalesNoInvoice, setNetWithOutVatDSalesNoInvoice] = useState("");
-  const [totalWithOutVatDSalesNoInvoice, setTotalWithOutVatDSalesNoInvoice] = useState("");
-  const [totolAmountWithoutVatDSalesNoInvoice, setTotolAmountWithoutVatDSalesNoInvoice] = useState(0);
+  const [netWithOutVatDSalesNoInvoice, setNetWithOutVatDSalesNoInvoice] =
+    useState("");
+  const [totalWithOutVatDSalesNoInvoice, setTotalWithOutVatDSalesNoInvoice] =
+    useState("");
+  const [
+    totolAmountWithoutVatDSalesNoInvoice,
+    setTotolAmountWithoutVatDSalesNoInvoice,
+  ] = useState(0);
 
   const [invoiceLoader, setInvoiceLoader] = useState(false);
-
+  const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
     setInvoiceLoader(true);
@@ -763,7 +769,7 @@ const POS = () => {
             vatTotal: Number(totalVat),
           };
           break;
-  
+
         case "DIRECT SALES RETURN":
           payload = {
             invoiceDate: todayDate,
@@ -771,7 +777,7 @@ const POS = () => {
             vatTotal: Number(totalWithOutExchange),
           };
           break;
-  
+
         case "DSALES NO INVOICE":
           payload = {
             invoiceDate: todayDate,
@@ -779,7 +785,7 @@ const POS = () => {
             vatTotal: Number(totalWithOutVatDSalesNoInvoice),
           };
           break;
-  
+
         default:
           console.error("Unknown invoice type");
           setInvoiceLoader(false);
@@ -789,20 +795,16 @@ const POS = () => {
       // console.log('invoice', res?.data);
 
       const qrCodeDataFromApi = res?.data?.qrCodeData;
-      handlePrintSalesInvoice(qrCodeDataFromApi);
-
-      // if (isExchangeClick || isExchangeDSalesClick) {
-      //   handlePrintExchangeInvoice(qrCodeDataFromApi);  // Print exchange invoice
-      // } else {
-      //   handlePrintSalesInvoice(qrCodeDataFromApi);  // Print regular invoice
-      // }
+      console.log(qrCodeDataFromApi);
+      setZatcaQrcode(qrCodeDataFromApi);
+      // handlePrintSalesInvoice(qrCodeDataFromApi);
 
       setIsConfirmDisabled(false);
       setIsTenderCashEnabled(false);
       toast.success("Invoice generated successfully!");
       setInvoiceLoader(false);
     } catch (err) {
-      // console.log(err);
+      console.log(err);
       toast.error(
         err?.response?.data?.errors[0] ||
           "An error occurred while generating the invoice"
@@ -836,13 +838,9 @@ const POS = () => {
 
     const newInvoiceNumber = generateInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
-    const printWindow = window.open("", "Print Window", "height=800,width=800");
-
-    // Generate QR code data URL
-    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
 
     let totalsContent;
-  
+
     if (selectedSalesType === "DIRECT SALES INVOICE") {
       totalsContent = `
         <div>
@@ -928,6 +926,15 @@ const POS = () => {
         </div>
       `;
     }
+
+    console.log("selectedSalesType", selectedSalesType);
+    console.log("customerName", customerName);
+    console.log("vat", vat);
+    console.log("invoiceNumber", invoiceNumber);
+    console.log("currentTime", currentTime);
+    console.log("invoiceData", invoiceData);
+    console.log("DSalesNoInvoiceData", DSalesNoInvoiceData);
+
     const html = `
       <html>
         <head>
@@ -1056,7 +1063,7 @@ const POS = () => {
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
-                <img src="${qrCodeDataURL}" alt="QR Code" height="75" width="100" />
+                <img src="${sliclogo}" alt="QR Code" height="75" width="100" />
               </div>
             </div>
           </div>
@@ -1146,6 +1153,13 @@ const POS = () => {
         </body>
       </html>
     `;
+    const printWindow = window.open("", "Print Window", "height=800,width=800");
+    if (!printWindow) {
+      console.error(
+        "Failed to open the print window. It might be blocked by the browser."
+      );
+      return;
+    }
 
     // Write the static HTML into the print window
     printWindow.document.write(html);
@@ -1169,21 +1183,20 @@ const POS = () => {
           }
         }
       );
-
+      setIsOpenOtpPopupVisible(false);
       // console.log(qrCodeData);
     };
   };
 
-
   // exchange Item invoice
   // const handlePrintExchangeInvoice = async (qrCodeData) => {
   //   if (!isExchangeClick && !isExchangeDSalesClick) return;
-  
+
   //   const printWindow = window.open("", "Print Window", "height=800,width=800");
 
   //   // Use exchange data or DSales exchange data based on the exchange type
   //   const exchangeDataToUse = isExchangeClick ? exchangeData : dSalesNoInvoiceexchangeData;
-  
+
   //   // Generate totals for exchange invoice
   //   const totalsContent = `
   //     <div>
@@ -1212,7 +1225,7 @@ const POS = () => {
   //       0.00
   //     </div>
   //   `;
-  
+
   //   // Generate the exchange invoice HTML
   //   const html = `
   //     <html>
@@ -1274,9 +1287,9 @@ const POS = () => {
   //           <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
   //           <div>Tel. Number: 013 8121066</div>
   //         </div>
-  
+
   //         <div class="sales-invoice-title">Exchange Invoice</div>
-  
+
   //         <table class="table">
   //           <thead>
   //             <tr>
@@ -1299,22 +1312,22 @@ const POS = () => {
   //             ).join("")}
   //           </tbody>
   //         </table>
-  
+
   //         <div class="total-section">
   //           <div class="left-side">
   //             ${totalsContent}
   //           </div>
   //         </div>
-  
+
   //         <div class="qr-section">
   //           <canvas id="qrcode-canvas12"></canvas>
   //         </div>
-  
+
   //         <div class="receipt-footer">Thank you for shopping with us!</div>
   //       </body>
   //     </html>
   //   `;
-  
+
   //   // Write and print the exchange invoice
   //   printWindow.document.write(html);
   //   printWindow.document.close();
@@ -1340,7 +1353,6 @@ const POS = () => {
 
   //   };
   // };
-  
 
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
   const [invoiceData, setInvoiceData] = useState([]);
@@ -1365,7 +1377,7 @@ const POS = () => {
         setInvoiceData(
           invoiceDetails.map((item) => {
             const vat = item.ItemPrice * 0.15;
-            const total = (item.ItemPrice * item.ItemQry) + (vat * item.ItemQry);
+            const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
 
             return {
               SKU: item.ItemSKU,
@@ -1399,7 +1411,7 @@ const POS = () => {
     handleGetInvoiceDetails(searchInvoiceNumber);
   };
 
-  // Sales return Calculation without exhange 
+  // Sales return Calculation without exhange
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
@@ -1471,7 +1483,7 @@ const POS = () => {
         );
         const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
         const vat = itemPrice * 0.15;
-        const total = (itemPrice * Qty) + (vat * Qty);
+        const total = itemPrice * Qty + vat * Qty;
 
         // Insert the new item into exchangeData only if the API call is successful
         const newExchangeItem = {
@@ -2090,46 +2102,46 @@ const POS = () => {
                 )}
               </table>
               <div className="flex justify-end">
-                    <div className="bg-white p-4 rounded shadow-md w-[50%]">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Net Without VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={netWithVat}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
+                <div className="bg-white p-4 rounded shadow-md w-[50%]">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-gray-700 font-bold">
+                        Net Without VAT:
+                      </label>
+                      <input
+                        type="text"
+                        value={netWithVat}
+                        readOnly
+                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                      />
+                    </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={totalVat}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <label className="block text-gray-700 font-bold">
+                        Total VAT:
+                      </label>
+                      <input
+                        type="text"
+                        value={totalVat}
+                        readOnly
+                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                      />
+                    </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total Amount With VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={totalAmountWithVat}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
-                      </div>
+                    <div className="flex justify-between items-center">
+                      <label className="block text-gray-700 font-bold">
+                        Total Amount With VAT:
+                      </label>
+                      <input
+                        type="text"
+                        value={totalAmountWithVat}
+                        readOnly
+                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                      />
                     </div>
                   </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -2203,8 +2215,8 @@ const POS = () => {
                   </tbody>
                 )}
               </table>
-            {/* Total show without exchange */}
-            <div className="flex justify-end">
+              {/* Total show without exchange */}
+              <div className="flex justify-end">
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
                     <div className="flex justify-between items-center">
@@ -2411,46 +2423,46 @@ const POS = () => {
                   )}
                 </table>
                 <div className="flex justify-end items-center">
-                    <div className="bg-white p-4 rounded shadow-md w-[50%]">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Net Without VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={netWithOutVatDSalesNoInvoice}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
+                  <div className="bg-white p-4 rounded shadow-md w-[50%]">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-gray-700 font-bold">
+                          Net Without VAT:
+                        </label>
+                        <input
+                          type="text"
+                          value={netWithOutVatDSalesNoInvoice}
+                          readOnly
+                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                        />
+                      </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={totalWithOutVatDSalesNoInvoice}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
+                      <div className="flex justify-between items-center">
+                        <label className="block text-gray-700 font-bold">
+                          Total VAT:
+                        </label>
+                        <input
+                          type="text"
+                          value={totalWithOutVatDSalesNoInvoice}
+                          readOnly
+                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                        />
+                      </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total Amount With VAT:
-                          </label>
-                          <input
-                            type="text"
-                            value={totolAmountWithoutVatDSalesNoInvoice}
-                            readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
-                          />
-                        </div>
+                      <div className="flex justify-between items-center">
+                        <label className="block text-gray-700 font-bold">
+                          Total Amount With VAT:
+                        </label>
+                        <input
+                          type="text"
+                          value={totolAmountWithoutVatDSalesNoInvoice}
+                          readOnly
+                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                        />
                       </div>
                     </div>
                   </div>
+                </div>
               </div>
               {/* DSALES Exchange data grid */}
               {dSalesNoInvoiceexchangeData.length > 0 && (
@@ -2588,19 +2600,17 @@ const POS = () => {
               handleClearInvoiceData={handleClearInvoiceData}
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
-
               // pass in props netwithoutvat amount
               netWithVat={netWithVat}
               totalAmountWithVat={totalAmountWithVat}
-              
               // invoice state without Exchange
               netWithOutVatExchange={netWithOutVatExchange}
               totolAmountWithoutExchange={totolAmountWithoutExchange}
-
               // state for Dsales No Invoice
               netWithOutVatDSalesNoInvoice={netWithOutVatDSalesNoInvoice}
-              totolAmountWithoutVatDSalesNoInvoice={totolAmountWithoutVatDSalesNoInvoice}
-
+              totolAmountWithoutVatDSalesNoInvoice={
+                totolAmountWithoutVatDSalesNoInvoice
+              }
               invoiceHeaderData={invoiceHeaderData?.invoiceHeader}
               mobileNo={mobileNo}
               customerName={customerName}
@@ -2625,6 +2635,9 @@ const POS = () => {
               isVisible={isOpenOtpPopupVisible}
               setVisibility={setIsOpenOtpPopupVisible}
               apiResponse={apiResponse}
+              handlePrintSalesInvoice={() => {
+                handlePrintSalesInvoice(zatcaQrcode);
+              }}
             />
           )}
 
