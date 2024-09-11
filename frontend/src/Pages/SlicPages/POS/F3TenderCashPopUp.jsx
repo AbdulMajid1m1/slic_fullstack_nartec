@@ -37,7 +37,14 @@ const F3TenderCashPopUp = ({
   // net without dSales exchange props
   netWithOutVatDSalesNoInvoice,
   totolAmountWithoutVatDSalesNoInvoice,
-  
+  insertInvoiceRecord,
+
+  // document no state
+  setDirectSalesInvoiceDocumentNo,
+  setDirectSalesReturnDocumentNo,
+  setDSalesNoInvoice,
+  handleDocumentNoUpdate
+
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -165,7 +172,14 @@ const F3TenderCashPopUp = ({
       });
   
       console.log("Sales Invoice Response:", res?.data);
-  
+
+      const documentNo = res?.data?.message?.['Document No'];
+      if (documentNo) {
+        handleDocumentNoUpdate(documentNo, "DIRECT SALES INVOICE");
+      }
+      // Call insertInvoiceRecord with the documentNo directly
+      insertInvoiceRecord(documentNo);
+
       // Call the Bank API after successful sales invoice
       if (paymentModes.code === "4" || paymentModes.code === "5") {
         const documentNo = res?.data?.message?.['Document No'];
@@ -209,8 +223,8 @@ const F3TenderCashPopUp = ({
   
       showOtpPopup(res?.data);
       handleCloseCreatePopup();
-      handleClearData();
-      handleClearInvoiceData();
+      // handleClearData();
+      // handleClearInvoiceData();
       handleInvoiceGenerator();
       setLoading(false);
     } catch (err) {
@@ -312,53 +326,63 @@ const F3TenderCashPopUp = ({
         // Get document numbers for both EXSR and EXIN
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
+        
+        const documentNo = exinRes?.data?.message['Document No'];
+        if (documentNo) {
+          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        }
   
-        // Call Bank API for Exchange (EXSR + EXIN)
-        const bankReceiptBody = {
-          "_keyword_": "BANKRCPTEX",
-          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-          data: [
-            {
-              Company: "SLIC",
-              UserId: "SYSADMIN",
-              Department: "011",
-              TransactionCode: "BRV",
-              Division: "100",
-              BankApproverCode: bankApprovedCode,
-              CashCardFlag: "CARD",
-              ReceiptAmt: netWithOutVatExchange - netWithVat,
-              CustomerId: selectedCustomerCode?.CUSTOMERCODE,
-              MatchingTransactions: [
-                {
-                  DocNo: exinDocumentNo,
-                  TransactionCode: modifiedTransactionCode,
-                  PendingAmount: netWithVat,
-                  AdjAmount: netWithVat,
-                },
-                {
-                  DocNo: exsrDocumentNo,
-                  TransactionCode: selectTransactionCode,
-                  PendingAmount: netWithOutVatExchange,
-                  AdjAmount: netWithOutVatExchange,
-                },
-              ],
-            },
-          ],
-          COMPANY: "SLIC",
-          USERID: "SYSADMIN",
-          APICODE: "BANKRECEIPTVOUCHER",
-          LANG: "ENG",
-        };
-  
-        await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        console.log("Bank Receipt processed for Exchange");
+        insertInvoiceRecord(documentNo);
+
+        // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
+          const bankReceiptBody = {
+            "_keyword_": "BANKRCPTEX",
+            "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+            data: [
+              {
+                Company: "SLIC",
+                UserId: "SYSADMIN",
+                Department: "011",
+                TransactionCode: "BRV",
+                Division: "100",
+                BankApproverCode: bankApprovedCode,
+                CashCardFlag: "CARD",
+                ReceiptAmt: netWithOutVatExchange - netWithVat,
+                CustomerId: selectedCustomerCode?.CUSTOMERCODE,
+                MatchingTransactions: [
+                  {
+                    DocNo: exinDocumentNo,
+                    TransactionCode: modifiedTransactionCode,
+                    PendingAmount: netWithVat,
+                    AdjAmount: netWithVat,
+                  },
+                  {
+                    DocNo: exsrDocumentNo,
+                    TransactionCode: selectTransactionCode,
+                    PendingAmount: netWithOutVatExchange,
+                    AdjAmount: netWithOutVatExchange,
+                  },
+                ],
+              },
+            ],
+            COMPANY: "SLIC",
+            USERID: "SYSADMIN",
+            APICODE: "BANKRECEIPTVOUCHER",
+            LANG: "ENG",
+          };
+
+          await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          console.log("Bank Receipt processed for Exchange");
+        } else {
+          console.log("No Bank API call for Exchange (Non-card/cash payment)");
+        }
+
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
         handleInvoiceGenerator();
         setLoading(false);
 
@@ -369,11 +393,17 @@ const F3TenderCashPopUp = ({
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Sales Return Response:", res?.data);
-  
+        
+        const documentNo = res?.data?.message['Document No'];
+        if (documentNo) {
+          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        }
+        insertInvoiceRecord(documentNo);
+
         showOtpPopup(res?.data);
         handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
+        // handleClearData();
+        // handleClearInvoiceData();
         handleInvoiceGenerator();
         setLoading(false);
 
@@ -417,8 +447,8 @@ const F3TenderCashPopUp = ({
           // Complete the process
           showOtpPopup(bankRes?.data);
           handleCloseCreatePopup();
-          handleClearData();
-          handleClearInvoiceData();
+          // handleClearData();
+          // handleClearInvoiceData();
           handleInvoiceGenerator();
           setLoading(false);
           console.log("Bank Receipt processed for Direct Sales Return Debit/Credit");
@@ -530,8 +560,16 @@ const F3TenderCashPopUp = ({
         // Get document numbers for both EXSR and EXIN
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
+
+
+        const documentNo = exinRes?.data?.message['Document No'];
+        if (documentNo) {
+          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        }
+        insertInvoiceRecord(documentNo);
   
-        // Call Bank API for Exchange (EXSR + EXIN)
+        // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+        if (paymentModes.code === "4" || paymentModes.code === "5") {
         const bankReceiptBody = {
           "_keyword_": "BANKRCPTEX",
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
@@ -573,10 +611,12 @@ const F3TenderCashPopUp = ({
         });
   
         console.log("Bank Receipt processed for Exchange");
+        } else {
+          console.log("No Bank API call for Exchange (Non-card/cash payment)");
+        }
+
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
         handleInvoiceGenerator();
         setLoading(false);
 
@@ -588,7 +628,13 @@ const F3TenderCashPopUp = ({
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Sales Return Response:", res?.data);
-      
+        
+        const documentNo = res?.data?.message['Document No'];
+        if (documentNo) {
+          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        }
+        insertInvoiceRecord(documentNo);
+
         // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const documentNo = res?.data?.message["Document No"];
@@ -633,8 +679,8 @@ const F3TenderCashPopUp = ({
         // Complete the process
         showOtpPopup(res?.data);
         handleCloseCreatePopup();
-        handleClearData();
-        handleClearInvoiceData();
+        // handleClearData();
+        // handleClearInvoiceData();
         handleInvoiceGenerator();
         setLoading(false);
       }
@@ -662,10 +708,13 @@ const F3TenderCashPopUp = ({
   
     if (selectedSalesType === "DIRECT SALES INVOICE") {
       await handleSubmitDirectSalesInvoice();
+      // insertInvoiceRecord(); 
     } else if (selectedSalesType === "DIRECT SALES RETURN") {
       await handleSubmitDirectSalesReturn();
+      // insertInvoiceRecord();
     } else if (selectedSalesType === "DSALES NO INVOICE") {
       await handleSubmitDSalesInvoice();
+      // insertInvoiceRecord();
     }
   };
   
