@@ -38,7 +38,7 @@ class SalesReturnInvoiceTemp {
       });
 
       if (!invoice) {
-        throw new Error("Sales return invoice not found");
+        return invoice;
       }
 
       // Update the found record using its unique id
