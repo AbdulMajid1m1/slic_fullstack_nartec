@@ -118,7 +118,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         "P_LOCN_CODE": locationCode,
         "P_ITEM_CODE": item?.SKU,
         // "P_ITEM_CODE": "55782",
-        "P_GRADE_1": "43",
+        "P_GRADE_1": item?.ProductSize,
         "P_GRADE_2": "NA",
         },
         "M_COMP_CODE": "SLIC",
