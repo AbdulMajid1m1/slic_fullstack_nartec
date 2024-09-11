@@ -170,8 +170,8 @@ model tblPOSInvoiceMaster {
   VatNumber            String?   @db.VarChar(50)
   CustomerName         String?   @db.NVarChar(255)
   AdjAmount            Float?
-  PendingAmount        Float?
   DocNo                String?   @db.NVarChar(255)
+  PendingAmount        Float?
 }
 
 model tblPOSInvoiceDetailsArchive {
@@ -218,9 +218,8 @@ model tblPOSInvoiceMasterArchive {
   VatNumber            String?   @db.VarChar(50)
   CustomerName         String?   @db.NVarChar(255)
   AdjAmount            Float?
+  DocNo                String?   @db.NVarChar(255)
   PendingAmount        Float?
-
-  DocNo String? @db.NVarChar(255)
 }
 
 model TblSalesReturnInvoicetmp {
