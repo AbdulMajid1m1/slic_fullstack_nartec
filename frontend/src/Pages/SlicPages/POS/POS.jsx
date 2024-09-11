@@ -124,7 +124,7 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: "CL100948",
+            P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -450,7 +450,7 @@ const POS = () => {
   };
 
   const handleSearchCustomerName = (event, value) => {
-    // console.log(value);
+    console.log(value);
     setSelectedCustomerName(value);
   };
 
@@ -647,7 +647,7 @@ const POS = () => {
           UserID: "SYSADMIN",
           MobileNo: mobileNo,
           TransactionDate: todayDate,
-          CustomerName: customerName,
+          CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
           DocNo: newDocumentNo,
           PendingAmount: netWithVat,
           AdjAmount: netWithVat,
@@ -1795,6 +1795,9 @@ const POS = () => {
     setIsConfirmDisabled(false);
     setIsTenderCashEnabled(false);
     handleClearInvoiceData();
+    setNetWithVat(0);
+    setTotalVat(0);
+    setTotalAmountWithVat(0);
   }, [selectedSalesType]);
 
   return (
@@ -2063,7 +2066,7 @@ const POS = () => {
                 placeholder="Walk-in customer"
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
-                    ? invoiceHeaderData?.invoiceHeader?.CustomerCode || ""
+                    ? invoiceHeaderData?.invoiceHeader?.CustomerName || ""
                     : customerName
                 }
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
@@ -2812,6 +2815,7 @@ const POS = () => {
               dsalesLocationCode={selectedLocation?.stockLocation}
               selectedSalesType={selectedSalesType}
               addDSalesExchangeData={addDSalesExchangeData}
+              selectedCustomerName={selectedCustomerName}
             />
           )}
 

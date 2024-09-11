@@ -930,8 +930,8 @@ const F3TenderCashPopUp = ({
                         {(selectedSalesType === "DIRECT SALES INVOICE") && (
                           <input
                           type="text"
-                          value={totalAmountWithVat}
-                          readOnly
+                          value={cashAmount}
+                          onChange={(e) => setCashAmount(e.target.value)}
                           className="w-full border border-gray-300 px-2 py-2 rounded-md"
                           placeholder={paymentModes.name || "Payment Mode"}
                           />
@@ -969,7 +969,7 @@ const F3TenderCashPopUp = ({
                             <p className="font-semibold">Total Amount</p>
                             <input
                               type="text"
-                              value={totolAmountWithoutExchange}
+                              value={totalAmountWithVat}
                               readOnly
                               className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                               placeholder="Total Amount"
@@ -979,7 +979,7 @@ const F3TenderCashPopUp = ({
                             <p className="font-semibold">Change</p>
                             <input
                               type="text"
-                              value={totolAmountWithoutExchange - totalAmountWithVat}
+                              value={totalAmountWithVat - cashAmount}
                               readOnly
                               className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                               placeholder="Change"

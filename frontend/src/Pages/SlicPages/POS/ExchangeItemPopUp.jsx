@@ -5,7 +5,7 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,23 +24,22 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      console.log(data)
+
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ModelName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
         // call the second api later in their
         const secondApiBody = {
-          "filter": {
-            "P_COMP_CODE": "SLIC",
-            "P_ITEM_CODE": ItemCode,
-            "P_CUST_CODE": "CL100948",
-              "P_GRADE_CODE_1": ProductSize
+          filter: {
+            P_COMP_CODE: "SLIC",
+            P_ITEM_CODE: ItemCode,
+            P_CUST_CODE: selectedCustomerName?.CUSTOMERCODE,
+            P_GRADE_CODE_1: ProductSize,
           },
-          "M_COMP_CODE": "SLIC",
-          "M_USER_ID":"SYSADMIN",
-          "APICODE": "PRICELIST",
-          "M_LANG_CODE": "ENG"
-
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "PRICELIST",
+          M_LANG_CODE: "ENG",
         };
 
         try {
@@ -54,32 +53,60 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
             }
           );
           const secondApiData = secondApiResponse?.data;
-          console.log(secondApiData)
+          console.log(secondApiData);
 
-          const itemRates = secondApiData.map(item => item?.PRICELIST?.PLI_RATE);
-          
-        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-        // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-        const vat = itemPrice * 0.15;
-        const total = itemPrice + vat;
-        // console.log(itemPrice);
+          let storedData = sessionStorage.getItem("secondApiResponses");
+          storedData = storedData ? JSON.parse(storedData) : {};
 
-        setData((prevData) => {
-          return [
-            ...prevData,
-            {
-              SKU: ItemCode,
-              Barcode: GTIN,
-              Description: EnglishName,
-              ItemSize: ProductSize,
-              Qty: selectedRowData.Qty,
-              ItemPrice: itemPrice,
-              ModelName: ModelName,
-              VAT: vat,
-              Total: total,
-            },
-          ];
-        });
+          const itemRates = secondApiData.map(
+            (item) => item?.PRICELIST?.PLI_RATE
+          );
+          // Store the array of rates under the respective ItemCode
+          storedData[ItemCode] = itemRates;
+          // storedData[ItemCode] = secondApiData;
+
+          sessionStorage.setItem(
+            "secondApiResponses",
+            JSON.stringify(storedData)
+          );
+
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+          const vat = itemPrice * 0.15;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
+
+          setData((prevData) => {
+            const existingItemIndex = prevData.findIndex(
+              (item) => item.Barcode === GTIN
+            );
+
+            if (existingItemIndex !== -1) {
+              // If the item already exists, just update the Qty and Total
+              const updatedData = [...prevData];
+              updatedData[existingItemIndex] = {
+                ...updatedData[existingItemIndex],
+                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Total:
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+              };
+              return updatedData;
+            } else {
+              // If the item is new, add it to the data array
+              return [
+                ...prevData,
+                {
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: vat,
+                  Total: total,
+                },
+              ];
+            }
+          });
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
@@ -87,8 +114,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           );
         }
         // barcode state empty once response is true
-        // setBarcode('');
-      } 
+        setBarcode("");
+      } else {
+        setData([]);
+      }
     } catch (error) {
       toast.error(error?.response?.data?.message || "An error occurred");
     } finally {
