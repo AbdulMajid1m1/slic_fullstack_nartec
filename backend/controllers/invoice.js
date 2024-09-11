@@ -472,8 +472,6 @@ exports.archiveInvoice = async (req, res, next) => {
   }
 };
 
-
-
 const allowedMasterColumns = {
   Rec_Num: Joi.number(),
   TblSysNoID: Joi.number(),
@@ -527,7 +525,7 @@ exports.getPOSInvoiceMasterArchive = async (req, res) => {
       where: filterConditions,
       select,
       orderBy: {
-        TransactionDate: 'desc',
+        TransactionDate: "desc",
       },
     });
 
@@ -537,8 +535,6 @@ exports.getPOSInvoiceMasterArchive = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-
 
 const allowedDetailsColumns = {
   Rec_Num: Joi.number(),
@@ -596,7 +592,7 @@ exports.getPOSInvoiceDetailsArchive = async (req, res) => {
       where: filterConditions,
       select,
       orderBy: {
-        TransactionDate: 'desc',
+        TransactionDate: "desc",
       },
     });
 
@@ -606,8 +602,6 @@ exports.getPOSInvoiceDetailsArchive = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-
 
 exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
   const { InvoiceNo } = req.body; // Get data from body instead of query
