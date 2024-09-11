@@ -597,6 +597,9 @@ const POS = () => {
           TransactionDate: todayDate,
           VatNumber: vat,
           CustomerName: customerName,
+          DocNo: newDocumentNo,
+          PendingAmount: netWithVat,
+          AdjAmount: netWithVat,
         };
 
         const details = data.map((item, index) => ({
@@ -620,9 +623,6 @@ const POS = () => {
           ItemPrice: item.ItemPrice,
           ItemQry: item.Qty,
           TransactionDate: todayDate,
-          DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
         }));
 
         invoiceAllData = {
@@ -648,6 +648,9 @@ const POS = () => {
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           CustomerName: customerName,
+          DocNo: newDocumentNo,
+          PendingAmount: netWithVat,
+          AdjAmount: netWithVat,
         };
 
         const details = dataToUse.map((item, index) => ({
@@ -674,9 +677,6 @@ const POS = () => {
           ItemPrice: item.ItemPrice,
           ItemQry: item.Qty,
           TransactionDate: todayDate,
-          DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
         }));
 
         console.log(details);
@@ -704,6 +704,9 @@ const POS = () => {
           TransactionDate: todayDate,
           VatNumber: vat,
           CustomerName: customerName,
+          DocNo: newDocumentNo,
+          PendingAmount: netWithVat,
+          AdjAmount: netWithVat,
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -726,9 +729,6 @@ const POS = () => {
           ItemPrice: item.ItemPrice,
           ItemQry: item.Qty,
           TransactionDate: todayDate,
-          DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
         }));
 
         invoiceAllData = {
