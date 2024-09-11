@@ -5,6 +5,8 @@ const F3ResponsePopUp = ({
   setVisibility,
   apiResponse,
   handlePrintSalesInvoice,
+  handlePrintExchangeInvoice,
+  selectedSalesType
 }) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
@@ -36,6 +38,9 @@ const F3ResponsePopUp = ({
   const handleCloseCreatePopup = () => {
     setVisibility(false);
   };
+
+  const showPrintExchangeReceipt =
+    selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE";
 
   return (
     <div>
@@ -133,84 +138,95 @@ const F3ResponsePopUp = ({
                             </p>
                           </div>
                         ))}
-                        <div className="mt-5">
+                        <div className="mt-5 flex justify-between items-center">
                           <button
                             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
                             onClick={() => handlePrintSalesInvoice()}
                           >
                             Print Receipt
                           </button>
+
+                          {showPrintExchangeReceipt && (
+                            <button
+                              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                              onClick={() => handlePrintExchangeInvoice()}
+                            >
+                              Print Exchange Receipt
+                            </button>
+                          )}
                         </div>
                       </div>
-                    ) : (
-                      <div>
-                        <div className="w-full font-body sm:text-lg text-sm flex flex-wrap gap-3">
-                          <label
-                            htmlFor="transaction"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Transaction Code :
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {transaction}
-                          </p>
-                        </div>
-                        <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-6">
-                          <label
-                            htmlFor="success"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Success
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {success}
-                          </p>
-                        </div>
-                        <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label
-                            htmlFor="companyCode"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Company Code:
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {companyCode}
-                          </p>
-                        </div>
-                        <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label
-                            htmlFor="message"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Message:
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {message}
-                          </p>
-                        </div>
-                        <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label
-                            htmlFor="referenceNo"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Reference Number/System ID:
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {referenceNo}
-                          </p>
-                        </div>
-                        <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
-                          <label
-                            htmlFor="documentNo"
-                            className="text-secondary border-b border-gray-300 font-semibold"
-                          >
-                            Document No:
-                          </label>
-                          <p className="text-secondary border-b border-gray-300">
-                            {documentNo}
-                          </p>
-                        </div>
-                      </div>
+                    ) 
+                    : (
+                      null
+                      // <div>
+                      //   <div className="w-full font-body sm:text-lg text-sm flex flex-wrap gap-3">
+                      //     <label
+                      //       htmlFor="transaction"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Transaction Code :
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {transaction}
+                      //     </p>
+                      //   </div>
+                      //   <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-6">
+                      //     <label
+                      //       htmlFor="success"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Success
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {success}
+                      //     </p>
+                      //   </div>
+                      //   <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                      //     <label
+                      //       htmlFor="companyCode"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Company Code:
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {companyCode}
+                      //     </p>
+                      //   </div>
+                      //   <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                      //     <label
+                      //       htmlFor="message"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Message:
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {message}
+                      //     </p>
+                      //   </div>
+                      //   <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                      //     <label
+                      //       htmlFor="referenceNo"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Reference Number/System ID:
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {referenceNo}
+                      //     </p>
+                      //   </div>
+                      //   <div className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5">
+                      //     <label
+                      //       htmlFor="documentNo"
+                      //       className="text-secondary border-b border-gray-300 font-semibold"
+                      //     >
+                      //       Document No:
+                      //     </label>
+                      //     <p className="text-secondary border-b border-gray-300">
+                      //       {documentNo}
+                      //     </p>
+                      //   </div>
+                      // </div>
                     )}
                   </div>
                 </div>
