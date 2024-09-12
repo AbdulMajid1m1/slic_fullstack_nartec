@@ -623,6 +623,7 @@ const F3TenderCashPopUp = ({
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
 
+        const documentNo = exinRes?.data?.message['Document No'];
         const headSysId = exinRes?.data?.message["Ref-No/SysID"];
         if (documentNo || headSysId) {
           handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
@@ -1042,6 +1043,7 @@ const F3TenderCashPopUp = ({
                               <>
                                 {/* Cash Payment */}
                                 <div className="mb-3">
+                                  <p className="font-semibold">Cash</p>
                                   <input
                                     type="text"
                                     value={cashAmount}

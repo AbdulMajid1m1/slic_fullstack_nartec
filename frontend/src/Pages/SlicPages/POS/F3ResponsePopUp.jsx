@@ -6,7 +6,9 @@ const F3ResponsePopUp = ({
   apiResponse,
   handlePrintSalesInvoice,
   handlePrintExchangeInvoice,
-  selectedSalesType
+  selectedSalesType,
+  isExchangeClick,
+  isExchangeDSalesClick,
 }) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
