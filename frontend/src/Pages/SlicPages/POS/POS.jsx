@@ -31,6 +31,8 @@ const POS = () => {
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+  const [selectedSalesReturnType, setSelectedSalesReturnType] =
+    useState("DIRECT RETURN");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -550,13 +552,18 @@ const POS = () => {
     setIsExchangeClick(false);
   };
 
-  const [directSalesInvoiceDocumentNo, setDirectSalesInvoiceDocumentNo] = useState(null);
-  const [directSalesReturnDocumentNo, setDirectSalesReturnDocumentNo] = useState(null);
+  const [directSalesInvoiceDocumentNo, setDirectSalesInvoiceDocumentNo] =
+    useState(null);
+  const [directSalesReturnDocumentNo, setDirectSalesReturnDocumentNo] =
+    useState(null);
   const [dSalesNoInvoice, setDSalesNoInvoice] = useState(null);
-  
+
   useEffect(() => {
     if (directSalesInvoiceDocumentNo) {
-      console.log("Updated Invoice DocNo Number:", directSalesInvoiceDocumentNo);
+      console.log(
+        "Updated Invoice DocNo Number:",
+        directSalesInvoiceDocumentNo
+      );
     }
     if (directSalesReturnDocumentNo) {
       console.log("Updated Return DocNo Number:", directSalesReturnDocumentNo);
@@ -564,7 +571,11 @@ const POS = () => {
     if (dSalesNoInvoice) {
       console.log("Updated DSales DocNo Number:", dSalesNoInvoice);
     }
-  }, [directSalesInvoiceDocumentNo, directSalesReturnDocumentNo, dSalesNoInvoice]);
+  }, [
+    directSalesInvoiceDocumentNo,
+    directSalesReturnDocumentNo,
+    dSalesNoInvoice,
+  ]);
 
   // This function handles updating document numbers for all types
   const handleDocumentNoUpdate = (newDocNo, salesType) => {
@@ -576,7 +587,7 @@ const POS = () => {
       setDSalesNoInvoice(newDocNo);
     }
   };
-  
+
   const insertInvoiceRecord = async (newDocumentNo) => {
     try {
       let invoiceAllData;
@@ -640,7 +651,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
@@ -663,9 +674,7 @@ const POS = () => {
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode:
-            selectedCustomerName?.CUSTOMERCODE ||
-            invoiceHeaderData?.invoiceHeader?.CustomerCode,
+          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
@@ -695,7 +704,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -717,7 +726,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
@@ -790,7 +799,6 @@ const POS = () => {
     setTotolAmountWithoutVatDSalesNoInvoice,
   ] = useState(0);
 
-  
   const [invoiceLoader, setInvoiceLoader] = useState(false);
   const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const [zatchaQrcodeExchange, setZatchaQrcodeExchange] = useState(null);
@@ -877,7 +885,6 @@ const POS = () => {
 
   // invoice generate
   const handlePrintSalesInvoice = async (qrCodeData) => {
-
     const newInvoiceNumber = generateInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
 
@@ -1239,11 +1246,13 @@ const POS = () => {
 
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
-     // Generate QR code data URL
-     const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    // Generate QR code data URL
+    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
 
     // Use exchange data or DSales exchange data based on the exchange type
-    const exchangeDataToUse = isExchangeClick ? exchangeData : dSalesNoInvoiceexchangeData;
+    const exchangeDataToUse = isExchangeClick
+      ? exchangeData
+      : dSalesNoInvoiceexchangeData;
 
     // Generate totals for exchange invoice
     const totalsContent = `
@@ -1433,8 +1442,9 @@ const POS = () => {
             </thead>
 
             <tbody>
-              ${exchangeDataToUse.map(
-                (item) => `
+              ${exchangeDataToUse
+                .map(
+                  (item) => `
                   <tr>
                     <td>${item.ItemCode}</td>
                     <td>${item.Qty}</td>
@@ -1442,7 +1452,8 @@ const POS = () => {
                     <td>${item.Total}</td>
                   </tr>
                 `
-              ).join("")}
+                )
+                .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -1459,7 +1470,7 @@ const POS = () => {
         </body>
       </html>
     `;
-   
+
     // Write the static HTML into the print window
     printWindow.document.write(html);
     printWindow.document.close();
@@ -1482,7 +1493,6 @@ const POS = () => {
           }
         }
       );
-
     };
   };
 
@@ -1571,7 +1581,7 @@ const POS = () => {
     setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
   };
-  
+
   useEffect(() => {
     if (!isOpenOtpPopupVisible) {
       handleClearInvoiceData();
@@ -1634,7 +1644,7 @@ const POS = () => {
         };
 
         setExchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
-        console.log("newExchange Data", newExchangeItem)
+        console.log("newExchange Data", newExchangeItem);
       } else {
         throw new Error("Failed to retrieve item prices");
       }
@@ -1893,6 +1903,26 @@ const POS = () => {
                 <option value="DSALES NO INVOICE">DSALES NO INVOICE</option>
               </select>
             </div>
+
+            {/* Select Return or Exchange */}
+            {(selectedSalesType === "DIRECT SALES RETURN" ||
+              selectedSalesType === "DSALES NO INVOICE") && (
+              <div>
+                <label className="block text-gray-700">
+                  Sale Return Type *
+                </label>
+                <select
+                  className="w-full mt-1 p-2 border rounded border-gray-400"
+                  value={selectedSalesReturnType}
+                  onChange={(e) => setSelectedSalesReturnType(e.target.value)}
+                >
+                  <option value="DIRECT RETURN">DIRECT RETURN</option>
+                  <option value="RETRUN WITH EXCHANGE">
+                    RETRUN WITH EXCHANGE
+                  </option>
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-gray-700">Sales Locations *</label>
               <input
@@ -1931,58 +1961,105 @@ const POS = () => {
             <div>
               <label className="block text-gray-700">Search Customer</label>
               {selectedSalesType === "DIRECT SALES RETURN" ? (
-                // <input
-                //   id="field1"
-                //   className={selectedSalesType === "DIRECT SALES RETURN" ? 'bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black' : 'w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black'}
-                //   value={invoiceHeaderData?.invoiceHeader?.CustomerCode || ""}
-                //   readOnly
-                //   required
-                // />
-                <Autocomplete
-                  id="field1"
-                  options={searchCustomerName}
-                  getOptionLabel={(option) =>
-                    option && option.CUSTOMERCODE && option.TXN_NAME
-                      ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
-                      : ""
-                  }
-                  onChange={handleSearchCustomerName}
-                  // Ensure correct value is being set for selectedCustomerName
-                  value={selectedCustomerName || null}
-                  isOptionEqualToValue={(option, value) =>
-                    option?.CUSTOMERCODE === value?.CUSTOMERCODE
-                  }
-                  onInputChange={(event, value) => {
-                    if (!value) {
-                      setSelectedCustomerName(""); // Clear selection when input is cleared
+                selectedSalesReturnType === "DIRECT RETURN" ? (
+                  // Show the combo box for DIRECT RETURN
+                  <Autocomplete
+                    id="field1"
+                    options={customerNameWithDirectInvoice}
+                    getOptionLabel={(option) =>
+                      option && option.CUST_CODE && option.CUST_NAME
+                        ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                        : ""
                     }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      InputProps={{
-                        ...params.InputProps,
-                        className: "text-white",
-                      }}
-                      InputLabelProps={{
-                        ...params.InputLabelProps,
-                        style: { color: "white" },
-                      }}
-                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={"Search Customer ID"}
-                      required
-                    />
-                  )}
-                  classes={{
-                    endAdornment: "text-white",
-                  }}
-                  sx={{
-                    "& .MuiAutocomplete-endAdornment": {
-                      color: "white",
-                    },
-                  }}
-                />
+                    onChange={handleSearchCustomerNameWithDirectInvoice}
+                    value={
+                      customerNameWithDirectInvoice.find(
+                        (option) =>
+                          option?.CUST_CODE ===
+                          selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                      ) || null
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option?.CUST_CODE === value?.CUST_CODE
+                    }
+                    onInputChange={(event, value) => {
+                      if (!value) {
+                        setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          className: "text-white",
+                        }}
+                        InputLabelProps={{
+                          ...params.InputLabelProps,
+                          style: { color: "white" },
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                        placeholder={"Search Customer ID"}
+                        required
+                      />
+                    )}
+                    classes={{
+                      endAdornment: "text-white",
+                    }}
+                    sx={{
+                      "& .MuiAutocomplete-endAdornment": {
+                        color: "white",
+                      },
+                    }}
+                  />
+                ) : (
+                  // Show the combo box for RETURN WITH EXCHANGE
+                  <Autocomplete
+                    id="field1"
+                    options={searchCustomerName}
+                    getOptionLabel={(option) =>
+                      option && option.CUSTOMERCODE && option.TXN_NAME
+                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
+                        : ""
+                    }
+                    onChange={handleSearchCustomerName}
+                    value={selectedCustomerName || null}
+                    isOptionEqualToValue={(option, value) =>
+                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
+                    }
+                    onInputChange={(event, value) => {
+                      if (!value) {
+                        setSelectedCustomerName(""); // Clear selection when input is cleared
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          className: "text-white",
+                        }}
+                        InputLabelProps={{
+                          ...params.InputLabelProps,
+                          style: { color: "white" },
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                        placeholder={"Search Customer ID"}
+                        required
+                      />
+                    )}
+                    classes={{
+                      endAdornment: "text-white",
+                    }}
+                    sx={{
+                      "& .MuiAutocomplete-endAdornment": {
+                        color: "white",
+                      },
+                    }}
+                  />
+                )
               ) : (
+                // otherwise in drect sales invoice
                 <Autocomplete
                   id="field1"
                   options={customerNameWithDirectInvoice}
@@ -2760,8 +2837,7 @@ const POS = () => {
               totolAmountWithoutVatDSalesNoInvoice={
                 totolAmountWithoutVatDSalesNoInvoice
               }
-
-              // insert the data in our pos history 
+              // insert the data in our pos history
               insertInvoiceRecord={insertInvoiceRecord}
               invoiceHeaderData={invoiceHeaderData?.invoiceHeader}
               mobileNo={mobileNo}
@@ -2779,12 +2855,14 @@ const POS = () => {
               isExchangeDSalesClick={isExchangeDSalesClick}
               DSalesNoInvoiceData={DSalesNoInvoiceData}
               dSalesNoInvoiceexchangeData={dSalesNoInvoiceexchangeData}
-
-              // save the documents no 
+              // save the documents no
               setDirectSalesInvoiceDocumentNo={setDirectSalesInvoiceDocumentNo}
               setDirectSalesReturnDocumentNo={setDirectSalesReturnDocumentNo}
               setDSalesNoInvoice={setDSalesNoInvoice}
               handleDocumentNoUpdate={handleDocumentNoUpdate}
+
+              // return sales type
+              selectedSalesReturnType={selectedSalesReturnType}
             />
           )}
 
