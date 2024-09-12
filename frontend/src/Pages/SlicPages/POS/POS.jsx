@@ -235,9 +235,9 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-
+      // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, id } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -310,6 +310,7 @@ const POS = () => {
               return [
                 ...prevData,
                 {
+                  id: id,
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,

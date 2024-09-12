@@ -111,11 +111,12 @@ const F3TenderCashPopUp = ({
       
       // console.log(exchangeData)
 
-      // console.log(DSalesNoInvoiceData)
+      // console.log("DSales Data", DSalesNoInvoiceData)
+      // console.log("Header Data", invoiceHeaderData)
       // console.log(dSalesNoInvoiceexchangeData)
 
       // console.log(selectedSalesReturnType)
-      console.log(searchInvoiceNumber)
+      // console.log(searchInvoiceNumber)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -256,10 +257,10 @@ const F3TenderCashPopUp = ({
         itemsToReturn,
       });
   
-      console.log("Archive Invoice Response:", resInvoiceArchive.data);
+      // console.log("Archive Invoice Response:", resInvoiceArchive.data);
       toast.success(resInvoiceArchive?.data?.message || "Invoice archived successfully");
     } catch (err) {
-      console.error("Error archiving invoice:", err);
+      // console.error("Error archiving invoice:", err);
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Error In Archived The Data");
     }
   };
@@ -505,6 +506,27 @@ const F3TenderCashPopUp = ({
   };
 
   
+
+  // Archive Api I call their
+  // const handleDSalesArchiveInvoice = async () => {
+  //   try {
+  //     const itemsToReturn = DSalesNoInvoiceData.map(item => ({
+  //       id: item.id,
+  //       qtyToReturn: item.Qty,
+  //     }));
+  
+  //     const resInvoiceArchive = await newRequest.post('/invoice/v1/archiveInvoice', {
+  //       invoiceNo: searchInvoiceNumber,
+  //       itemsToReturn,
+  //     });
+  
+  //     // console.log("Archive Invoice Response:", resInvoiceArchive.data);
+  //     toast.success(resInvoiceArchive?.data?.message || "Invoice archived successfully");
+  //   } catch (err) {
+  //     // console.error("Error archiving invoice:", err);
+  //     toast.error(err?.response?.data?.error || err?.response?.data?.message || "Error In Archived The Data");
+  //   }
+  // };
 
   // DSALES no Invoice
   const handleSubmitDSalesInvoice = async () => {
