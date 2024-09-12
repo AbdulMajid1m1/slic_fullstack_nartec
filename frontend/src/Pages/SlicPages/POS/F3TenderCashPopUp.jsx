@@ -1108,55 +1108,108 @@ const F3TenderCashPopUp = ({
                           </>
                         )}
 
-                        {/* {isExchangeDSalesClick && (
+                        {selectedSalesType === "DSALES NO INVOICE" && (
                           <>
-                            <input
-                              type="text"
-                              value={totalAmountWithVat}
-                              readOnly
-                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                              placeholder={paymentModes.name || "Payment Mode"}
-                            />
+                          {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                              <>
+                                <div className="mb-3">
+                                 <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutExchange}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                    readOnly
+                                  />
+                                </div>
+                                {/* Total Amount in the middle */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={netWithOutVatExchange}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div> */}
+                                {/* Change for credit/debit is always 0 */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={0}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div> */}
+                              </>
+                            ) : (
+                              <>
+                                {/* Cash Payment */}
+                                <div className="mb-3">
+                                  <p className="font-semibold">Return Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutExchange}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div>
+                                {/* Change for cash payment */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={Number(cashAmount) - Number(totolAmountWithoutExchange)}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div> */}
+                              </>
+                            )}
+                            {isExchangeDSalesClick && (
+                              <>
+                              <div className="mb-3">
+                                <p className="font-semibold">Exchange Amount</p>
+                                <input
+                                  type="text"
+                                  value={grossAmount}
+                                  readOnly
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                  placeholder="Total Amount"
+                                />
+                              </div>
+                              <div className="mb-3">
+                                <p className="font-semibold">Difference</p>
+                                <input
+                                  type="text"
+                                  value={totolAmountWithoutExchange - grossAmount}
+                                  readOnly
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                  placeholder="Difference"
+                                />
+                              </div>
+                              </>
+                            )}
+                            {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
+                            {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                              <div className="mb-3">
+                                <p className="font-semibold">Bank Approval Code</p>
+                                <input
+                                  type="text"
+                                  value={bankApprovedCode}
+                                  onChange={(e) => setBankApprovedCode(e.target.value)}
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  placeholder="Enter Bank Approval Code"
+                                />
+                              </div>
+                            )}
                           </>
-                        )} */}
-
-                        {/* {isExchangeClick && (
-                          <div className="mb-3">
-                            <p className="font-semibold">Difference</p>
-                            <input
-                              type="text"
-                              value={
-                                totolAmountWithoutExchange
-                                  ? totolAmountWithoutExchange - totalAmountWithVat
-                                  : 0
-                              }
-                              readOnly
-                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                              placeholder="Difference"
-                            />
-                          </div>
                         )}
-
-                        {isExchangeDSalesClick && (
-                          <div className="mb-3">
-                            <p className="font-semibold">Difference</p>
-                            <input
-                              type="text"
-                              value={
-                                totolAmountWithoutVatDSalesNoInvoice
-                                  ? totolAmountWithoutVatDSalesNoInvoice - totalAmountWithVat
-                                  : 0
-                              }
-                              readOnly
-                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                              placeholder="Difference"
-                            />
-                          </div>
-                        )} */}
-
-                        {/* {(paymentModes.code === "4" || paymentModes.code === "5") && (
-                          
-                        )} */}
                       </div>
                     </div>
                   </div>

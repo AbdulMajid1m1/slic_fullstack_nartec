@@ -117,7 +117,7 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-
+      // console.log(data)
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
@@ -244,7 +244,9 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: "CL100948",
+            P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+            ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+            : selectedCustomerName?.CUSTOMERCODE,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -411,7 +413,7 @@ const POS = () => {
       // Apply filtering based on selectedOption
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
-      } else if (selectedSalesType === "DIRECT SALES RETURN") {
+      } else if (selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE") {
         codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
       }
       // console.log(codes)
@@ -1496,6 +1498,8 @@ const POS = () => {
     };
   };
 
+
+  // Direct Sales Return InvoiceData Datagrid
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
   const [invoiceData, setInvoiceData] = useState([]);
   const [invoiceHeaderData, setInvoiceHeaderData] = useState([]);
@@ -1543,35 +1547,56 @@ const POS = () => {
     }
   };
 
-  // handleDelete
-  const handleDeleteInvoiceData = (index) => {
-    setInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
-  };
-
+  
   const handleSearchInvoice = (e) => {
     e.preventDefault();
     handleGetInvoiceDetails(searchInvoiceNumber);
   };
-
+  
   // Sales return Calculation without exhange
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+      
       invoiceData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
-
+      
       setNetWithOutExchange(totalNet);
       setTotalWithOutExchange(totalVat);
       setTotolAmountWithoutExchange(totalNet + totalVat);
     };
-
+    
     calculateTotals();
   }, [invoiceData]);
+  
+  // New function to handle Qty changes
+  const handleQtyChange = (index, newQty) => {
+    const qty = Number(newQty);
+    if (qty > 4 || qty < 1) return;
+    
+    // Update the state with the new quantity
+    const updatedInvoiceData = invoiceData.map((item, i) => {
+      if (i === index) {
+        return {
+          ...item,
+          Qty: qty,
+          Total: item.ItemPrice * qty + item.VAT * qty, // Recalculate total
+        };
+      }
+      return item;
+    });
+    setInvoiceData(updatedInvoiceData);
+  };
+  
+  // handleDelete
+  const handleDeleteInvoiceData = (index) => {
+    const updatedInvoiceData = invoiceData.filter((_, i) => i !== index);
+    setInvoiceData(updatedInvoiceData);
+  };
 
   const handleClearInvoiceData = () => {
     setInvoiceData([]);
@@ -1604,7 +1629,9 @@ const POS = () => {
       filter: {
         P_COMP_CODE: "SLIC",
         P_ITEM_CODE: ItemCode,
-        P_CUST_CODE: "CL100948",
+        P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+        ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+        : selectedCustomerName?.CUSTOMERCODE,
         P_GRADE_CODE_1: ItemSize,
       },
       M_COMP_CODE: "SLIC",
@@ -1694,7 +1721,9 @@ const POS = () => {
       filter: {
         P_COMP_CODE: "SLIC",
         P_ITEM_CODE: ItemCode,
-        P_CUST_CODE: "CL100948",
+        P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+        ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+        : selectedCustomerName?.CUSTOMERCODE,
         P_GRADE_CODE_1: ItemSize,
       },
       M_COMP_CODE: "SLIC",
@@ -1835,6 +1864,7 @@ const POS = () => {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            {/* Trasnaction Code Combo box */}
             <div>
               <label htmlFor="transactionId" className="block text-gray-700">
                 Transactions Codes *
@@ -1889,6 +1919,8 @@ const POS = () => {
                 }}
               />
             </div>
+
+            {/* Sale Selection */}
             <div>
               <label className="block text-gray-700">Sale Type *</label>
               <select
@@ -1918,7 +1950,7 @@ const POS = () => {
                 >
                   <option value="DIRECT RETURN">DIRECT RETURN</option>
                   <option value="RETRUN WITH EXCHANGE">
-                    RETRUN WITH EXCHANGE
+                    RETURN WITH EXCHANGE
                   </option>
                 </select>
               </div>
@@ -1956,11 +1988,11 @@ const POS = () => {
                 readOnly
               />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          {/* </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"> */}
             <div>
               <label className="block text-gray-700">Search Customer</label>
-              {selectedSalesType === "DIRECT SALES RETURN" ? (
+              {selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE" ? (
                 selectedSalesReturnType === "DIRECT RETURN" ? (
                   // Show the combo box for DIRECT RETURN
                   <Autocomplete
@@ -2403,7 +2435,17 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.Barcode}</td>
                         <td className="border px-4 py-2">{row.Description}</td>
                         <td className="border px-4 py-2">{row.ItemSize}</td>
-                        <td className="border px-4 py-2">{row.Qty}</td>
+                        {/* <td className="border px-4 py-2">{row.Qty}</td> */}
+                        <td className="border px-4 py-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max="4"
+                            value={row.Qty}
+                            onChange={(e) => handleQtyChange(index, e.target.value)}
+                            className="w-full text-center border rounded p-1"
+                          />
+                        </td>
                         <td className="border px-4 py-2">{row.ItemPrice}</td>
                         <td className="border px-4 py-2">{row.VAT}</td>
                         <td className="border px-4 py-2">{row.Total}</td>
