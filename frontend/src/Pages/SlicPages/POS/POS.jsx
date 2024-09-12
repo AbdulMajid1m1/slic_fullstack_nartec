@@ -1541,6 +1541,7 @@ const POS = () => {
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
 
             return {
+              id: item.id,
               SKU: item.ItemSKU,
               Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
               Description: item.Remarks || "No description",
@@ -2920,6 +2921,8 @@ const POS = () => {
 
               // return sales type
               selectedSalesReturnType={selectedSalesReturnType}
+              // search invoice number 
+              searchInvoiceNumber={searchInvoiceNumber}
             />
           )}
 
