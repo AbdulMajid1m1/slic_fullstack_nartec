@@ -560,6 +560,11 @@ const POS = () => {
     useState(null);
   const [dSalesNoInvoice, setDSalesNoInvoice] = useState(null);
 
+  // Add state for HeadSysId for each sales type
+  const [directSalesInvoiceHeadSysId, setDirectSalesInvoiceHeadSysId] = useState(null);
+  const [directSalesReturnHeadSysId, setDirectSalesReturnHeadSysId] = useState(null);
+  const [dSalesNoInvoiceHeadSysId, setDSalesNoInvoiceHeadSysId] = useState(null);
+
   useEffect(() => {
     if (directSalesInvoiceDocumentNo) {
       console.log(
@@ -573,24 +578,31 @@ const POS = () => {
     if (dSalesNoInvoice) {
       console.log("Updated DSales DocNo Number:", dSalesNoInvoice);
     }
+    if(directSalesInvoiceHeadSysId) {
+      console.log("Updated HeadSysId for DSIN:", directSalesInvoiceHeadSysId);
+    }
   }, [
     directSalesInvoiceDocumentNo,
     directSalesReturnDocumentNo,
     dSalesNoInvoice,
+    directSalesInvoiceHeadSysId,
   ]);
 
-  // This function handles updating document numbers for all types
-  const handleDocumentNoUpdate = (newDocNo, salesType) => {
+  // This function handles updating document numbers and sysId for all types
+  const handleDocumentNoUpdate = (newDocNo, newHeadSysId, salesType) => {
     if (salesType === "DIRECT SALES INVOICE") {
       setDirectSalesInvoiceDocumentNo(newDocNo);
+      setDirectSalesInvoiceHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     } else if (salesType === "DIRECT SALES RETURN") {
       setDirectSalesReturnDocumentNo(newDocNo);
+      setDirectSalesReturnHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     } else if (salesType === "DSALES NO INVOICE") {
       setDSalesNoInvoice(newDocNo);
+      setDSalesNoInvoiceHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     }
   };
 
-  const insertInvoiceRecord = async (newDocumentNo) => {
+  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId) => {
     try {
       let invoiceAllData;
 
@@ -598,6 +610,7 @@ const POS = () => {
         // Construct the master and details data for Sales Invoice
         const master = {
           InvoiceNo: invoiceNumber,
+          Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -650,6 +663,7 @@ const POS = () => {
         const master = {
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -703,6 +717,7 @@ const POS = () => {
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
+          Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,

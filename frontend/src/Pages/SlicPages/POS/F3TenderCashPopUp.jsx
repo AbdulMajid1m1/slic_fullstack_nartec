@@ -177,11 +177,14 @@ const F3TenderCashPopUp = ({
       console.log("Sales Invoice Response:", res?.data);
 
       const documentNo = res?.data?.message?.['Document No'];
-      if (documentNo) {
-        handleDocumentNoUpdate(documentNo, "DIRECT SALES INVOICE");
-      }
-      // Call insertInvoiceRecord with the documentNo directly
-      insertInvoiceRecord(documentNo);
+      const headSysId = res?.data?.message?.["Ref-No/SysID"];
+      
+      if (documentNo || headSysId) {
+        handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES INVOICE");
+      } 
+      // Call insertInvoiceRecord with both documentNo and headSysId
+      insertInvoiceRecord(documentNo, headSysId);
+
 
       // Call the Bank API after successful sales invoice
       if (paymentModes.code === "4" || paymentModes.code === "5") {
@@ -331,10 +334,11 @@ const F3TenderCashPopUp = ({
         const exinDocumentNo = exinRes?.data?.message["Document No"];
         
         const documentNo = exinRes?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
         }
-  
+       
         insertInvoiceRecord(documentNo);
 
         // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
@@ -398,9 +402,11 @@ const F3TenderCashPopUp = ({
         console.log("Sales Return Response:", res?.data);
         
         const documentNo = res?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        const headSysId = res?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
         }
+        
         insertInvoiceRecord(documentNo);
 
         showOtpPopup(res?.data);
@@ -564,11 +570,11 @@ const F3TenderCashPopUp = ({
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
 
-
-        const documentNo = exinRes?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
         }
+
         insertInvoiceRecord(documentNo);
   
         // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
@@ -633,9 +639,11 @@ const F3TenderCashPopUp = ({
         console.log("Sales Return Response:", res?.data);
         
         const documentNo = res?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        const headSysId = res?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
         }
+        
         insertInvoiceRecord(documentNo);
 
         // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
