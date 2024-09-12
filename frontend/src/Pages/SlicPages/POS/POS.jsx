@@ -610,7 +610,7 @@ const POS = () => {
         // Construct the master and details data for Sales Invoice
         const master = {
           InvoiceNo: invoiceNumber,
-          Head_SYS_ID: newHeadSysId,
+          Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
