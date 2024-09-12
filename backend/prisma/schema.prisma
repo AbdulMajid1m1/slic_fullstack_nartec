@@ -144,6 +144,7 @@ model tblPOSInvoiceDetails {
   ItemQry              Float?
   TransactionDate      DateTime? @db.DateTime
   id                   String    @unique(map: "UQ_tblPOSInvoiceDetails_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
+  ReturnQty            Float?
 }
 
 model tblPOSInvoiceMaster {
