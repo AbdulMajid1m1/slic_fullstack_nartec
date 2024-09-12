@@ -1027,6 +1027,16 @@ const F3TenderCashPopUp = ({
                                     placeholder="Change"
                                   />
                                 </div>
+                                <div className="mb-3">
+                                    <p className="font-semibold">Bank Approval Code</p>
+                                    <input
+                                      type="text"
+                                      value={bankApprovedCode}
+                                      onChange={(e) => setBankApprovedCode(e.target.value)}
+                                      className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                      placeholder="Enter Bank Approval Code"
+                                    />
+                                  </div>
                               </>
                             ) : (
                               <>
@@ -1061,6 +1071,9 @@ const F3TenderCashPopUp = ({
                                     placeholder="Change"
                                   />
                                 </div>
+                                {/* {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                                 
+                                )} */}
                               </>
                             )}
                           </>
