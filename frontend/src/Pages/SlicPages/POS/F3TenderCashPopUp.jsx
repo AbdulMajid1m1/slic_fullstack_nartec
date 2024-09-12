@@ -965,17 +965,65 @@ const F3TenderCashPopUp = ({
                         <p className="font-semibold text-sm">
                           {paymentModes.name || "Payment Mode"}
                         </p>
+
                         {selectedSalesType === "DIRECT SALES INVOICE" && (
-                          <input
-                            type="text"
-                            value={cashAmount}
-                            onChange={(e) => setCashAmount(e.target.value)}
-                            className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                            placeholder={paymentModes.name || "Payment Mode"}
-                          />
+                          <>
+                            <div className="mb-3">
+                              <input
+                                type="text"
+                                value={cashAmount}
+                                onChange={(e) => setCashAmount(e.target.value)}
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                placeholder={paymentModes.name || "Payment Mode"}
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <p className="font-semibold">Total Amount</p>
+                              <input
+                                type="text"
+                                value={totalAmountWithVat}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                placeholder="Total Amount"
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <p className="font-semibold">Change</p>
+                              <input
+                                type="text"
+                                value={cashAmount ? totalAmountWithVat - cashAmount : 0}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                placeholder="Change"
+                              />
+                            </div>
+                          </>
                         )}
-                        {selectedSalesType === "DIRECT SALES RETURN" &&
-                          (isExchangeClick ? (
+
+                        {selectedSalesType === "DIRECT SALES RETURN" && (
+                          <>
+                            {isExchangeClick ? (
+                              <input
+                                type="text"
+                                value={totalAmountWithVat}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                placeholder={paymentModes.name || "Payment Mode"}
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                value={totolAmountWithoutExchange}
+                                readOnly
+                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                placeholder={paymentModes.name || "Payment Mode"}
+                              />
+                            )}
+                          </>
+                        )}
+
+                        {isExchangeDSalesClick && (
+                          <>
                             <input
                               type="text"
                               value={totalAmountWithVat}
@@ -983,81 +1031,44 @@ const F3TenderCashPopUp = ({
                               className="w-full border border-gray-300 px-2 py-2 rounded-md"
                               placeholder={paymentModes.name || "Payment Mode"}
                             />
-                          ) : (
+                          </>
+                        )}
+
+                        {isExchangeClick && (
+                          <div className="mb-3">
+                            <p className="font-semibold">Difference</p>
                             <input
                               type="text"
-                              value={totolAmountWithoutExchange}
+                              value={
+                                totolAmountWithoutExchange
+                                  ? totolAmountWithoutExchange - totalAmountWithVat
+                                  : 0
+                              }
                               readOnly
-                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                              placeholder={paymentModes.name || "Payment Mode"}
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                              placeholder="Difference"
                             />
-                          ))}
-                        {isExchangeDSalesClick && (
-                          <input
-                            type="text"
-                            value={totalAmountWithVat}
-                            readOnly
-                            className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                            placeholder={paymentModes.name || "Payment Mode"}
-                          />
+                          </div>
                         )}
-                      </div>
-                      <div className="mb-3">
-                        <p className="font-semibold">Total Amount</p>
-                        <input
-                          type="text"
-                          value={totalAmountWithVat}
-                          readOnly
-                          className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                          placeholder="Total Amount"
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <p className="font-semibold">Change</p>
-                        {console.log("cashAmount", Number(cashAmount))}
-                        {console.log(Number(Number(totalAmountWithVat)))}
-                        <input
-                          type="text"
-                          value={
-                            Number(cashAmount) - Number(totalAmountWithVat)
-                          }
-                          readOnly
-                          className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                          placeholder="Change"
-                        />
-                      </div>
-                      {isExchangeClick && (
-                        <div className="mb-3">
-                          <p className="font-semibold">Difference</p>
-                          <input
-                            type="text"
-                            value={
-                              totolAmountWithoutExchange - totalAmountWithVat
-                            }
-                            readOnly
-                            className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                            placeholder="Difference"
-                          />
-                        </div>
-                      )}
-                      {isExchangeDSalesClick && (
-                        <div className="mb-3">
-                          <p className="font-semibold">Difference</p>
-                          <input
-                            type="text"
-                            value={
-                              totolAmountWithoutVatDSalesNoInvoice -
-                              totalAmountWithVat
-                            }
-                            readOnly
-                            className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                            placeholder="Difference"
-                          />
-                        </div>
-                      )}
-                      {(paymentModes.code === "4" ||
-                        paymentModes.code === "5") && (
-                        <>
+
+                        {isExchangeDSalesClick && (
+                          <div className="mb-3">
+                            <p className="font-semibold">Difference</p>
+                            <input
+                              type="text"
+                              value={
+                                totolAmountWithoutVatDSalesNoInvoice
+                                  ? totolAmountWithoutVatDSalesNoInvoice - totalAmountWithVat
+                                  : 0
+                              }
+                              readOnly
+                              className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                              placeholder="Difference"
+                            />
+                          </div>
+                        )}
+
+                        {(paymentModes.code === "4" || paymentModes.code === "5") && (
                           <div className="mb-3">
                             <p className="font-semibold">Bank Approval Code</p>
                             <input
@@ -1070,8 +1081,8 @@ const F3TenderCashPopUp = ({
                               placeholder="Enter Bank Approval Code"
                             />
                           </div>
-                        </>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
