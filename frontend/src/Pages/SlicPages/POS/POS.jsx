@@ -1129,7 +1129,13 @@ const POS = () => {
             <div><span class="field-label">VAT#: </span>${vat}</div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>
+                 ${
+                  selectedSalesType === "DIRECT SALES INVOICE"
+                    ? invoiceNumber
+                    : searchInvoiceNumber
+                }
+                </div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
