@@ -1124,14 +1124,14 @@ const POS = () => {
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
             ${
-              selectedSalesType === "DIRECT SALES INVOICE"
+              selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                 ? customerName
                 : invoiceHeaderData?.CustomerName
             }
             </div>
             <div><span class="field-label">VAT#: </span>
             ${
-              selectedSalesType === "DIRECT SALES INVOICE"
+              selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                 ? vat
                 : invoiceHeaderData?.VatNumber
             }
@@ -1140,7 +1140,7 @@ const POS = () => {
               <div>
                 <div><span class="field-label">Receipt: </span>
                  ${
-                  selectedSalesType === "DIRECT SALES INVOICE"
+                  selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                     ? invoiceNumber
                     : searchInvoiceNumber
                 }
