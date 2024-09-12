@@ -24,7 +24,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-
+      console.log(data)
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName } = data;
 
@@ -133,7 +133,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     }
   
     const item = data[0]; // Assuming you are dealing with a single item at a time
-    // console.log(item);
+    console.log(item);
     
     const locationCode = selectedSalesType === "DSALES NO INVOICE" 
     ? dsalesLocationCode
@@ -147,7 +147,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         "P_LOCN_CODE": locationCode,
         "P_ITEM_CODE": item?.SKU,
         // "P_ITEM_CODE": "55782",
-        "P_GRADE_1": item?.ProductSize,
+        "P_GRADE_1": item?.ItemSize,
         "P_GRADE_2": "NA",
         },
         "M_COMP_CODE": "SLIC",

@@ -44,6 +44,8 @@ const F3TenderCashPopUp = ({
   setDirectSalesReturnDocumentNo,
   setDSalesNoInvoice,
   handleDocumentNoUpdate,
+  selectedSalesReturnType
+
 }) => {
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -99,16 +101,18 @@ const F3TenderCashPopUp = ({
       // console.log(selectedTransactionCode?.TXN_CODE)
       // console.log(selectedRowData)
 
-      console.log(netWithVat);
-      console.log(netWithOutVatExchange);
-      // console.log(totolAmountWithoutExchange)
-      console.log(netWithOutVatDSalesNoInvoice);
+      console.log(netWithVat)
+      console.log(netWithOutVatExchange)
+      console.log(totolAmountWithoutExchange)
+      console.log(netWithOutVatDSalesNoInvoice)
       // console.log(totolAmountWithoutVatDSalesNoInvoice)
 
       // console.log(exchangeData)
 
       // console.log(DSalesNoInvoiceData)
       // console.log(dSalesNoInvoiceexchangeData)
+
+      // console.log(selectedSalesReturnType)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -267,18 +271,18 @@ const F3TenderCashPopUp = ({
         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
         data: [
           {
-            Company: "SLIC",
-            TransactionCode: selectTransactionCode,
-            CustomerCode: selectedCustomerCode?.CUSTOMERCODE,
-            SalesLocationCode: selectedLocation?.stockLocation,
-            DeliveryLocationCode: selectedLocation?.stockLocation,
-            UserId: "SYSADMIN",
-            CustomerName: invoiceHeaderData?.CustomerCode,
-            MobileNo: invoiceHeaderData?.MobileNo,
-            Remarks: invoiceHeaderData?.Remarks,
-            PosRefNo: invoiceHeaderData?.InvoiceNo,
-            ZATCAPaymentMode: paymentModes.code,
-            TaxExemptionReason: "1",
+            "Company": "SLIC",
+            "TransactionCode": selectTransactionCode,
+            "CustomerCode": selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
+            "UserId": "SYSADMIN",
+            "CustomerName": invoiceHeaderData?.CustomerCode,
+            "MobileNo": invoiceHeaderData?.MobileNo,
+            "Remarks": invoiceHeaderData?.Remarks,
+            "PosRefNo": invoiceHeaderData?.InvoiceNo,
+            "ZATCAPaymentMode": paymentModes.code,
+            "TaxExemptionReason": "1",
             Item: SecondDataGridItem,
           },
         ],
@@ -305,18 +309,18 @@ const F3TenderCashPopUp = ({
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
           data: [
             {
-              Company: "SLIC",
-              TransactionCode: modifiedTransactionCode,
-              CustomerCode: selectedCustomerCode?.CUSTOMERCODE,
-              SalesLocationCode: selectedLocation?.stockLocation,
-              DeliveryLocationCode: selectedLocation?.stockLocation,
-              UserId: "SYSADMIN",
-              CustomerName: invoiceHeaderData?.CustomerCode,
-              MobileNo: invoiceHeaderData?.MobileNo,
-              Remarks: invoiceHeaderData?.Remarks,
-              PosRefNo: invoiceHeaderData?.InvoiceNo,
-              ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: "0", // Invoice specific field
+              "Company": "SLIC",
+              "TransactionCode": modifiedTransactionCode,
+              "CustomerCode": selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
+              "SalesLocationCode": selectedLocation?.stockLocation,
+              "DeliveryLocationCode": selectedLocation?.stockLocation,
+              "UserId": "SYSADMIN",
+              "CustomerName": invoiceHeaderData?.CustomerCode,
+              "MobileNo": invoiceHeaderData?.MobileNo,
+              "Remarks": invoiceHeaderData?.Remarks,
+              "PosRefNo": invoiceHeaderData?.InvoiceNo,
+              "ZATCAPaymentMode": paymentModes.code,
+              "TaxExemptionReason": "0",  // Invoice specific field
               Item: firstDataGridItem,
             },
           ],
@@ -362,7 +366,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: netWithOutVatExchange - netWithVat,
-                CustomerId: selectedCustomerCode?.CUSTOMERCODE,
+                CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
@@ -442,7 +446,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: netWithOutVatExchange,
-                CustomerId: invoiceHeaderData?.CustomerCode,
+                CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
@@ -518,18 +522,18 @@ const F3TenderCashPopUp = ({
         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
         data: [
           {
-            Company: "SLIC",
-            TransactionCode: `${selectTransactionCode}`,
-            CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
-            SalesLocationCode: selectedLocation?.stockLocation,
-            DeliveryLocationCode: selectedLocation?.stockLocation,
-            UserId: "SYSADMIN",
-            CustomerName: customerName,
-            MobileNo: mobileNo,
-            Remarks: remarks,
-            PosRefNo: invoiceNumber,
-            ZATCAPaymentMode: paymentModes.code,
-            TaxExemptionReason: "1",
+            "Company": "SLIC",
+            "TransactionCode": `${selectTransactionCode}`,
+            "CustomerCode": selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
+            "SalesLocationCode": selectedLocation?.stockLocation,
+            "DeliveryLocationCode": selectedLocation?.stockLocation,
+            "UserId": "SYSADMIN",
+            "CustomerName": customerName,
+            "MobileNo": mobileNo,
+            "Remarks": remarks,
+            "PosRefNo": invoiceNumber,
+            "ZATCAPaymentMode": paymentModes.code,
+            "TaxExemptionReason": "1",
             Item: SecondDataGridItem,
           },
         ],
@@ -556,18 +560,18 @@ const F3TenderCashPopUp = ({
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
           data: [
             {
-              Company: "SLIC",
-              TransactionCode: `${modifiedTransactionCode}`,
-              CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
-              SalesLocationCode: selectedLocation?.stockLocation,
-              DeliveryLocationCode: selectedLocation?.stockLocation,
-              UserId: "SYSADMIN",
-              CustomerName: customerName,
-              MobileNo: mobileNo,
-              Remarks: remarks,
-              PosRefNo: invoiceNumber,
-              ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: "0", // Invoice specific field
+              "Company": "SLIC",
+              "TransactionCode": `${modifiedTransactionCode}`,
+              "CustomerCode": selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
+              "SalesLocationCode": selectedLocation?.stockLocation,
+              "DeliveryLocationCode": selectedLocation?.stockLocation,
+              "UserId": "SYSADMIN",
+              "CustomerName": customerName,
+              "MobileNo": mobileNo,
+              "Remarks": remarks,
+              "PosRefNo": invoiceNumber,
+              "ZATCAPaymentMode": paymentModes.code,
+              "TaxExemptionReason": "0",  // Invoice specific field
               Item: firstDataGridItem,
             },
           ],
@@ -639,11 +643,42 @@ const F3TenderCashPopUp = ({
             "/slicuat05api/v1/postData",
             bankReceiptBody,
             {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          console.log("Bank Receipt processed for Exchange");
+              Company: "SLIC",
+              UserId: "SYSADMIN",
+              Department: "011",
+              TransactionCode: "BRV",
+              Division: "100",
+              BankApproverCode: bankApprovedCode,
+              CashCardFlag: "CARD",
+              ReceiptAmt: netWithOutVatDSalesNoInvoice - netWithVat,
+              CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
+              MatchingTransactions: [
+                {
+                  DocNo: exinDocumentNo,
+                  TransactionCode: modifiedTransactionCode,
+                  PendingAmount: netWithOutVatDSalesNoInvoice,
+                  AdjAmount: netWithOutVatDSalesNoInvoice,
+                },
+                {
+                  DocNo: exsrDocumentNo,
+                  TransactionCode: selectTransactionCode,
+                  PendingAmount: netWithVat,
+                  AdjAmount: netWithVat,
+                },
+              ],
+            },
+          ],
+          COMPANY: "SLIC",
+          USERID: "SYSADMIN",
+          APICODE: "BANKRECEIPTVOUCHER",
+          LANG: "ENG",
+        };
+  
+        await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        console.log("Bank Receipt processed for Exchange");
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
@@ -685,7 +720,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: netWithOutVatDSalesNoInvoice,
-                CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+                CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
@@ -962,67 +997,188 @@ const F3TenderCashPopUp = ({
                   <div className="border p-2 w-full">
                     <div className="grid grid-cols-1 gap-3">
                       <div className="mt-3">
-                        <p className="font-semibold text-sm">
+                        {/* <p className="font-semibold text-sm">
                           {paymentModes.name || "Payment Mode"}
-                        </p>
-
+                        </p> */}
+                        {/* For Direct Sales Invoice */}
                         {selectedSalesType === "DIRECT SALES INVOICE" && (
                           <>
-                            <div className="mb-3">
-                              <input
-                                type="text"
-                                value={cashAmount}
-                                onChange={(e) => setCashAmount(e.target.value)}
-                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                                placeholder={paymentModes.name || "Payment Mode"}
-                              />
-                            </div>
-                            <div className="mb-3">
-                              <p className="font-semibold">Total Amount</p>
-                              <input
-                                type="text"
-                                value={totalAmountWithVat}
-                                readOnly
-                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                placeholder="Total Amount"
-                              />
-                            </div>
-                            <div className="mb-3">
-                              <p className="font-semibold">Change</p>
-                              <input
-                                type="text"
-                                value={cashAmount ? totalAmountWithVat - cashAmount : 0}
-                                readOnly
-                                className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                placeholder="Change"
-                              />
-                            </div>
+                            {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                              <>
+                                <div className="mb-3">
+                                  <input
+                                    type="text"
+                                    value={totalAmountWithVat}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                    readOnly
+                                  />
+                                </div>
+                                {/* Total Amount in the middle */}
+                                <div className="mb-3">
+                                  <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totalAmountWithVat}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div>
+                                {/* Change for credit/debit is always 0 */}
+                                <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={0}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                {/* Cash Payment */}
+                                <div className="mb-3">
+                                  <input
+                                    type="text"
+                                    value={cashAmount}
+                                    onChange={(e) => setCashAmount(e.target.value)}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                  />
+                                </div>
+                                <div className="mb-3">
+                                  <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totalAmountWithVat}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div>
+                                {/* Change for cash payment */}
+                                <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={Number(cashAmount) - Number(totalAmountWithVat)}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div>
+                              </>
+                            )}
                           </>
                         )}
 
                         {selectedSalesType === "DIRECT SALES RETURN" && (
                           <>
-                            {isExchangeClick ? (
-                              <input
-                                type="text"
-                                value={totalAmountWithVat}
-                                readOnly
-                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                                placeholder={paymentModes.name || "Payment Mode"}
-                              />
+                          {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                              <>
+                                <div className="mb-3">
+                                 <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutExchange}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                    readOnly
+                                  />
+                                </div>
+                                {/* Total Amount in the middle */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Total Amount</p>
+                                  <input
+                                    type="text"
+                                    value={netWithOutVatExchange}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div> */}
+                                {/* Change for credit/debit is always 0 */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={0}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div> */}
+                              </>
                             ) : (
-                              <input
-                                type="text"
-                                value={totolAmountWithoutExchange}
-                                readOnly
-                                className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                                placeholder={paymentModes.name || "Payment Mode"}
-                              />
+                              <>
+                                {/* Cash Payment */}
+                                <div className="mb-3">
+                                  <p className="font-semibold">Return Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutExchange}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Total Amount"
+                                  />
+                                </div>
+                                {/* Change for cash payment */}
+                                {/* <div className="mb-3">
+                                  <p className="font-semibold">Change</p>
+                                  <input
+                                    type="text"
+                                    value={Number(cashAmount) - Number(totolAmountWithoutExchange)}
+                                    readOnly
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    placeholder="Change"
+                                  />
+                                </div> */}
+                              </>
+                            )}
+                            {isExchangeClick && (
+                              <>
+                              <div className="mb-3">
+                                <p className="font-semibold">Exchange Amount</p>
+                                <input
+                                  type="text"
+                                  value={grossAmount}
+                                  readOnly
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                  placeholder="Total Amount"
+                                />
+                              </div>
+                              <div className="mb-3">
+                                <p className="font-semibold">Difference</p>
+                                <input
+                                  type="text"
+                                  value={totolAmountWithoutExchange - grossAmount}
+                                  readOnly
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                  placeholder="Difference"
+                                />
+                              </div>
+                              </>
+                            )}
+                            {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
+                            {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                              <div className="mb-3">
+                                <p className="font-semibold">Bank Approval Code</p>
+                                <input
+                                  type="text"
+                                  value={bankApprovedCode}
+                                  onChange={(e) => setBankApprovedCode(e.target.value)}
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  placeholder="Enter Bank Approval Code"
+                                />
+                              </div>
                             )}
                           </>
                         )}
 
-                        {isExchangeDSalesClick && (
+                        {/* {isExchangeDSalesClick && (
                           <>
                             <input
                               type="text"
@@ -1032,9 +1188,9 @@ const F3TenderCashPopUp = ({
                               placeholder={paymentModes.name || "Payment Mode"}
                             />
                           </>
-                        )}
+                        )} */}
 
-                        {isExchangeClick && (
+                        {/* {isExchangeClick && (
                           <div className="mb-3">
                             <p className="font-semibold">Difference</p>
                             <input
@@ -1066,22 +1222,11 @@ const F3TenderCashPopUp = ({
                               placeholder="Difference"
                             />
                           </div>
-                        )}
+                        )} */}
 
-                        {(paymentModes.code === "4" || paymentModes.code === "5") && (
-                          <div className="mb-3">
-                            <p className="font-semibold">Bank Approval Code</p>
-                            <input
-                              type="text"
-                              value={bankApprovedCode}
-                              onChange={(e) =>
-                                setBankApprovedCode(e.target.value)
-                              }
-                              className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                              placeholder="Enter Bank Approval Code"
-                            />
-                          </div>
-                        )}
+                        {/* {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                          
+                        )} */}
                       </div>
                     </div>
                   </div>
