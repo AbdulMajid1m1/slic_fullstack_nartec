@@ -235,9 +235,9 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-
+      // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, id } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -310,6 +310,7 @@ const POS = () => {
               return [
                 ...prevData,
                 {
+                  id: id,
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
@@ -560,6 +561,11 @@ const POS = () => {
     useState(null);
   const [dSalesNoInvoice, setDSalesNoInvoice] = useState(null);
 
+  // Add state for HeadSysId for each sales type
+  const [directSalesInvoiceHeadSysId, setDirectSalesInvoiceHeadSysId] = useState(null);
+  const [directSalesReturnHeadSysId, setDirectSalesReturnHeadSysId] = useState(null);
+  const [dSalesNoInvoiceHeadSysId, setDSalesNoInvoiceHeadSysId] = useState(null);
+
   useEffect(() => {
     if (directSalesInvoiceDocumentNo) {
       console.log(
@@ -573,24 +579,31 @@ const POS = () => {
     if (dSalesNoInvoice) {
       console.log("Updated DSales DocNo Number:", dSalesNoInvoice);
     }
+    if(directSalesInvoiceHeadSysId) {
+      console.log("Updated HeadSysId for DSIN:", directSalesInvoiceHeadSysId);
+    }
   }, [
     directSalesInvoiceDocumentNo,
     directSalesReturnDocumentNo,
     dSalesNoInvoice,
+    directSalesInvoiceHeadSysId,
   ]);
 
-  // This function handles updating document numbers for all types
-  const handleDocumentNoUpdate = (newDocNo, salesType) => {
+  // This function handles updating document numbers and sysId for all types
+  const handleDocumentNoUpdate = (newDocNo, newHeadSysId, salesType) => {
     if (salesType === "DIRECT SALES INVOICE") {
       setDirectSalesInvoiceDocumentNo(newDocNo);
+      setDirectSalesInvoiceHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     } else if (salesType === "DIRECT SALES RETURN") {
       setDirectSalesReturnDocumentNo(newDocNo);
+      setDirectSalesReturnHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     } else if (salesType === "DSALES NO INVOICE") {
       setDSalesNoInvoice(newDocNo);
+      setDSalesNoInvoiceHeadSysId(newHeadSysId); // Assuming you have state for HeadSysId
     }
   };
 
-  const insertInvoiceRecord = async (newDocumentNo) => {
+  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId) => {
     try {
       let invoiceAllData;
 
@@ -598,6 +611,7 @@ const POS = () => {
         // Construct the master and details data for Sales Invoice
         const master = {
           InvoiceNo: invoiceNumber,
+          Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -650,6 +664,7 @@ const POS = () => {
         const master = {
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: exchangeData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -703,6 +718,7 @@ const POS = () => {
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
+          Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
@@ -1113,7 +1129,13 @@ const POS = () => {
             <div><span class="field-label">VAT#: </span>${vat}</div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>
+                 ${
+                  selectedSalesType === "DIRECT SALES INVOICE"
+                    ? invoiceNumber
+                    : searchInvoiceNumber
+                }
+                </div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -1526,6 +1548,7 @@ const POS = () => {
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
 
             return {
+              id: item.id,
               SKU: item.ItemSKU,
               Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
               Description: item.Remarks || "No description",
@@ -2905,6 +2928,8 @@ const POS = () => {
 
               // return sales type
               selectedSalesReturnType={selectedSalesReturnType}
+              // search invoice number 
+              searchInvoiceNumber={searchInvoiceNumber}
             />
           )}
 

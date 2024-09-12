@@ -3,6 +3,7 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import newRequest from "../../../utils/userRequest";
 
 const F3TenderCashPopUp = ({
   isVisible,
@@ -44,7 +45,8 @@ const F3TenderCashPopUp = ({
   setDirectSalesReturnDocumentNo,
   setDSalesNoInvoice,
   handleDocumentNoUpdate,
-  selectedSalesReturnType
+  selectedSalesReturnType,
+  searchInvoiceNumber
 
 }) => {
   const [loading, setLoading] = useState(false);
@@ -109,10 +111,12 @@ const F3TenderCashPopUp = ({
       
       // console.log(exchangeData)
 
-      // console.log(DSalesNoInvoiceData)
+      // console.log("DSales Data", DSalesNoInvoiceData)
+      // console.log("Header Data", invoiceHeaderData)
       // console.log(dSalesNoInvoiceexchangeData)
 
       // console.log(selectedSalesReturnType)
+      // console.log(searchInvoiceNumber)
     }
   }, [isVisible, storeDatagridData]);
 
@@ -177,11 +181,14 @@ const F3TenderCashPopUp = ({
       console.log("Sales Invoice Response:", res?.data);
 
       const documentNo = res?.data?.message?.['Document No'];
-      if (documentNo) {
-        handleDocumentNoUpdate(documentNo, "DIRECT SALES INVOICE");
-      }
-      // Call insertInvoiceRecord with the documentNo directly
-      insertInvoiceRecord(documentNo);
+      const headSysId = res?.data?.message?.["Ref-No/SysID"];
+      
+      if (documentNo || headSysId) {
+        handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES INVOICE");
+      } 
+      // Call insertInvoiceRecord with both documentNo and headSysId
+      insertInvoiceRecord(documentNo, headSysId);
+
 
       // Call the Bank API after successful sales invoice
       if (paymentModes.code === "4" || paymentModes.code === "5") {
@@ -233,6 +240,28 @@ const F3TenderCashPopUp = ({
     } catch (err) {
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
+    }
+  };
+  
+
+  // Archive Api I call their
+  const handleArchiveInvoice = async () => {
+    try {
+      const itemsToReturn = storeInvoiceDatagridData.map(item => ({
+        id: item.id,
+        qtyToReturn: item.Qty,  // Adjust this as per your data structure
+      }));
+  
+      const resInvoiceArchive = await newRequest.post('/invoice/v1/archiveInvoice', {
+        invoiceNo: searchInvoiceNumber,
+        itemsToReturn,
+      });
+  
+      // console.log("Archive Invoice Response:", resInvoiceArchive.data);
+      toast.success(resInvoiceArchive?.data?.message || "Invoice archived successfully");
+    } catch (err) {
+      // console.error("Error archiving invoice:", err);
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || "Error In Archived The Data");
     }
   };
   
@@ -331,11 +360,15 @@ const F3TenderCashPopUp = ({
         const exinDocumentNo = exinRes?.data?.message["Document No"];
         
         const documentNo = exinRes?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
         }
-  
+       
         insertInvoiceRecord(documentNo);
+
+        // after the Success response of return ERP api i call our own Archive Api
+        await handleArchiveInvoice();
 
         // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
         if (paymentModes.code === "4" || paymentModes.code === "5") {
@@ -398,10 +431,15 @@ const F3TenderCashPopUp = ({
         console.log("Sales Return Response:", res?.data);
         
         const documentNo = res?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DIRECT SALES RETURN");
+        const headSysId = res?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
         }
-        insertInvoiceRecord(documentNo);
+        
+        // insertInvoiceRecord(documentNo);
+
+        // Our Api
+        await handleArchiveInvoice();
 
         showOtpPopup(res?.data);
         handleCloseCreatePopup();
@@ -468,6 +506,27 @@ const F3TenderCashPopUp = ({
   };
 
   
+
+  // Archive Api I call their
+  // const handleDSalesArchiveInvoice = async () => {
+  //   try {
+  //     const itemsToReturn = DSalesNoInvoiceData.map(item => ({
+  //       id: item.id,
+  //       qtyToReturn: item.Qty,
+  //     }));
+  
+  //     const resInvoiceArchive = await newRequest.post('/invoice/v1/archiveInvoice', {
+  //       invoiceNo: searchInvoiceNumber,
+  //       itemsToReturn,
+  //     });
+  
+  //     // console.log("Archive Invoice Response:", resInvoiceArchive.data);
+  //     toast.success(resInvoiceArchive?.data?.message || "Invoice archived successfully");
+  //   } catch (err) {
+  //     // console.error("Error archiving invoice:", err);
+  //     toast.error(err?.response?.data?.error || err?.response?.data?.message || "Error In Archived The Data");
+  //   }
+  // };
 
   // DSALES no Invoice
   const handleSubmitDSalesInvoice = async () => {
@@ -564,11 +623,11 @@ const F3TenderCashPopUp = ({
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
 
-
-        const documentNo = exinRes?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
         }
+
         insertInvoiceRecord(documentNo);
   
         // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
@@ -633,9 +692,11 @@ const F3TenderCashPopUp = ({
         console.log("Sales Return Response:", res?.data);
         
         const documentNo = res?.data?.message['Document No'];
-        if (documentNo) {
-          handleDocumentNoUpdate(documentNo, "DSALES NO INVOICE");
+        const headSysId = res?.data?.message["Ref-No/SysID"];
+        if (documentNo || headSysId) {
+          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
         }
+
         insertInvoiceRecord(documentNo);
 
         // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
