@@ -156,7 +156,7 @@ model tblPOSInvoiceMaster {
   SNo                  Float?
   DeliveryLocationCode String?   @db.NVarChar(255)
   ItemSysID            String?   @db.NVarChar(255)
-  InvoiceNo            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @unique @db.NVarChar(255)
   Head_SYS_ID          String?   @db.NVarChar(255)
   TransactionCode      String?   @db.NVarChar(255)
   CustomerCode         String?   @db.NVarChar(255)
@@ -204,7 +204,7 @@ model tblPOSInvoiceMasterArchive {
   SNo                  Float?
   DeliveryLocationCode String?   @db.NVarChar(255)
   ItemSysID            String?   @db.NVarChar(255)
-  InvoiceNo            String?   @db.NVarChar(255)
+  InvoiceNo            String?   @unique @db.NVarChar(255)
   Head_SYS_ID          String?   @db.NVarChar(255)
   TransactionCode      String?   @db.NVarChar(255)
   CustomerCode         String?   @db.NVarChar(255)
