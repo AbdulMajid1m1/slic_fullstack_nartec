@@ -1122,16 +1122,25 @@ const POS = () => {
           </div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${
-              // selectedCustomerName?.CUST_NAME
-              customerName
-            }</div>
-            <div><span class="field-label">VAT#: </span>${vat}</div>
+            <div><span class="field-label">Customer: </span>
+            ${
+              selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+                ? customerName
+                : invoiceHeaderData?.CustomerName
+            }
+            </div>
+            <div><span class="field-label">VAT#: </span>
+            ${
+              selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+                ? vat
+                : invoiceHeaderData?.VatNumber
+            }
+            </div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>
                  ${
-                  selectedSalesType === "DIRECT SALES INVOICE"
+                  selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                     ? invoiceNumber
                     : searchInvoiceNumber
                 }
@@ -1419,11 +1428,20 @@ const POS = () => {
           <div class="sales-invoice-title">Exchange Slip Invoice</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${
-              // selectedCustomerName?.CUST_NAME
-              customerName
-            }</div>
-            <div><span class="field-label">VAT#: </span>${vat}</div>
+            <div><span class="field-label">Customer: </span>
+            ${
+              selectedSalesType === "DSALES NO INVOICE"
+                ? customerName
+                : invoiceHeaderData?.CustomerName
+            }
+            </div>
+            <div><span class="field-label">VAT#: </span>
+            ${
+              selectedSalesType === "DSALES NO INVOICE"
+                ? vat
+                : invoiceHeaderData?.VatNumber
+            }
+            </div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
@@ -2945,6 +2963,8 @@ const POS = () => {
                 handlePrintExchangeInvoice(zatchaQrcodeExchange);
               }}
               selectedSalesType={selectedSalesType}
+              isExchangeClick={isExchangeClick}
+              isExchangeDSalesClick={isExchangeDSalesClick}
             />
           )}
 

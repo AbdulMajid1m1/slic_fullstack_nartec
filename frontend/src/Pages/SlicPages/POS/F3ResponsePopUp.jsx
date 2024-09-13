@@ -6,7 +6,9 @@ const F3ResponsePopUp = ({
   apiResponse,
   handlePrintSalesInvoice,
   handlePrintExchangeInvoice,
-  selectedSalesType
+  selectedSalesType,
+  isExchangeClick,
+  isExchangeDSalesClick,
 }) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
@@ -39,8 +41,12 @@ const F3ResponsePopUp = ({
     setVisibility(false);
   };
 
+  // const showPrintExchangeReceipt =
+  //   selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE";
+
   const showPrintExchangeReceipt =
-    selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE";
+    (selectedSalesType === "DIRECT SALES RETURN" && isExchangeClick) ||
+    (selectedSalesType === "DSALES NO INVOICE" && isExchangeDSalesClick);
 
   return (
     <div>
