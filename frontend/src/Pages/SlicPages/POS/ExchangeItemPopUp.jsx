@@ -5,7 +5,7 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,9 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: selectedCustomerName?.CUSTOMERCODE,
+            P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+            ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+            : selectedCustomerName?.CUSTOMERCODE,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -292,6 +294,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                       <th className="px-4 py-2">Qty</th>
                       <th className="px-4 py-2">Item Price</th>
                       <th className="px-4 py-2">VAT (15%)</th>
+                      <th className="px-4 py-2">Total</th>
                     </tr>
                   </thead>
                   {isLoading ? (
@@ -313,6 +316,9 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                             {row.ItemPrice}
                           </td>
                           <td className="border px-4 py-2">{row.VAT}</td>
+                          <td className="border px-4 py-2">
+                            {row.Total}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

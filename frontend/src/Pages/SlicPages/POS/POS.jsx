@@ -2981,6 +2981,11 @@ const POS = () => {
               selectedSalesType={selectedSalesType}
               addDSalesExchangeData={addDSalesExchangeData}
               selectedCustomerName={selectedCustomerName}
+              // return sales type
+              selectedSalesReturnType={selectedSalesReturnType}
+              selectedCustomeNameWithDirectInvoice={
+                selectedCustomeNameWithDirectInvoice
+              }
             />
           )}
 
