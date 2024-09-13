@@ -1126,14 +1126,14 @@ const POS = () => {
             ${
               selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                 ? customerName
-                : invoiceHeaderData?.CustomerName
+                : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
             <div><span class="field-label">VAT#: </span>
             ${
               selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
                 ? vat
-                : invoiceHeaderData?.VatNumber
+                : invoiceHeaderData?.invoiceHeader?.VatNumber
             }
             </div>
             <div class="customer-invoiceNumber">
@@ -1432,14 +1432,14 @@ const POS = () => {
             ${
               selectedSalesType === "DSALES NO INVOICE"
                 ? customerName
-                : invoiceHeaderData?.CustomerName
+                : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
             <div><span class="field-label">VAT#: </span>
             ${
               selectedSalesType === "DSALES NO INVOICE"
                 ? vat
-                : invoiceHeaderData?.VatNumber
+                : invoiceHeaderData?.invoiceHeader?.VatNumber
             }
             </div>
             <div class="customer-invoiceNumber">
