@@ -427,26 +427,30 @@ exports.archiveInvoice = async (req, res, next) => {
     // Define the Joi schema for validation
     const schema = Joi.object({
       invoiceNo: Joi.string().required().messages({
-        'any.required': 'Invoice number is required',
-        'string.empty': 'Invoice number cannot be empty',
+        "any.required": "Invoice number is required",
+        "string.empty": "Invoice number cannot be empty",
       }),
-      itemsToReturn: Joi.array().items(
-        Joi.object({
-          id: Joi.string().required().messages({
-            'any.required': 'Item ID is required',
-            'string.empty': 'Item ID cannot be empty',
-          }),
-          qtyToReturn: Joi.number().integer().positive().required().messages({
-            'any.required': 'Quantity to return is required',
-            'number.base': 'Quantity must be a number',
-            'number.integer': 'Quantity must be an integer',
-            'number.positive': 'Quantity must be greater than zero',
-          }),
-        })
-      ).min(1).required().messages({
-        'array.min': 'At least one item is required to return',
-        'any.required': 'Items to return are required',
-      }),
+      itemsToReturn: Joi.array()
+        .items(
+          Joi.object({
+            id: Joi.string().required().messages({
+              "any.required": "Item ID is required",
+              "string.empty": "Item ID cannot be empty",
+            }),
+            qtyToReturn: Joi.number().integer().positive().required().messages({
+              "any.required": "Quantity to return is required",
+              "number.base": "Quantity must be a number",
+              "number.integer": "Quantity must be an integer",
+              "number.positive": "Quantity must be greater than zero",
+            }),
+          })
+        )
+        .min(1)
+        .required()
+        .messages({
+          "array.min": "At least one item is required to return",
+          "any.required": "Items to return are required",
+        }),
     });
 
     // Validate the request body
@@ -454,7 +458,7 @@ exports.archiveInvoice = async (req, res, next) => {
 
     if (error) {
       return res.status(400).json({
-        error: error.details.map(err => err.message),
+        error: error.details.map((err) => err.message),
       });
     }
 
@@ -473,16 +477,18 @@ exports.archiveInvoice = async (req, res, next) => {
     const invoiceDetails = await prisma.tblPOSInvoiceDetails.findMany({
       where: {
         InvoiceNo: invoiceNo,
-        id: { in: itemsToReturn.map(item => item.id) },
+        id: { in: itemsToReturn.map((item) => item.id) },
       },
     });
 
     if (invoiceDetails.length === 0) {
-      return res.status(404).json({ error: "No matching items found in invoice" });
+      return res
+        .status(404)
+        .json({ error: "No matching items found in invoice" });
     }
 
     // Insert the master record into the archive table if not already archived
-    const { id, ...invoiceMasterDataWithoutId } = invoiceMaster;
+    const { id: masterId, ...invoiceMasterDataWithoutId } = invoiceMaster;
     await prisma.tblPOSInvoiceMasterArchive.upsert({
       where: { InvoiceNo: invoiceNo },
       update: {},
@@ -491,39 +497,51 @@ exports.archiveInvoice = async (req, res, next) => {
 
     // Process each item to return
     for (const item of itemsToReturn) {
-      const detailItem = invoiceDetails.find(d => d.id === item.id);
+      const detailItem = invoiceDetails.find((d) => d.id === item.id);
 
       if (!detailItem) {
-        return res.status(400).json({ error: `Item with id ${item.id} not found in invoice details` });
+        return res
+          .status(400)
+          .json({
+            error: `Item with id ${item.id} not found in invoice details`,
+          });
       }
 
       const qtyToReturn = item.qtyToReturn;
 
       if (detailItem.ItemQry < qtyToReturn) {
-        return res.status(400).json({ error: `Quantity to return exceeds quantity purchased for item with id ${item.id}` });
+        return res
+          .status(400)
+          .json({
+            error: `Quantity to return exceeds quantity purchased for item with id ${item.id}`,
+          });
       }
 
       // Check if the item is already in the archive
-      const existingArchiveRecord = await prisma.tblPOSInvoiceDetailsArchive.findFirst({
-        where: {
-          InvoiceNo: detailItem.InvoiceNo,
-          ItemSysID: detailItem.ItemSysID, // Ensure you use the correct unique constraints here
-        },
-      });
+      const existingArchiveRecord =
+        await prisma.tblPOSInvoiceDetailsArchive.findFirst({
+          where: {
+            InvoiceNo: detailItem.InvoiceNo,
+            ItemSysID: detailItem.ItemSysID,
+          },
+        });
 
       if (existingArchiveRecord) {
         // Update the existing archive record by increasing the quantity
         await prisma.tblPOSInvoiceDetailsArchive.update({
           where: { id: existingArchiveRecord.id },
-          data: { 
-            ItemQry: existingArchiveRecord.ItemQry + qtyToReturn  // Increase the quantity by the returned amount
+          data: {
+            ItemQry: existingArchiveRecord.ItemQry + qtyToReturn, // Increase the quantity by the returned amount
           },
         });
       } else {
+        // Exclude 'ReturnQty' and 'id' from detailItem
+        const { ReturnQty, id, ...validDetailItemData } = detailItem;
+
         // Insert a new record if it doesn't exist in the archive
         await prisma.tblPOSInvoiceDetailsArchive.create({
           data: {
-            ...detailItem, // Spread original detailItem data
+            ...validDetailItemData, // Spread the valid fields
             ItemQry: qtyToReturn, // Set the returned quantity
           },
         });
@@ -555,7 +573,9 @@ exports.archiveInvoice = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ message: "Items returned and invoice archived successfully" });
+    res
+      .status(200)
+      .json({ message: "Items returned and invoice archived successfully" });
   } catch (error) {
     next(error);
   }
