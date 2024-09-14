@@ -998,6 +998,7 @@ const F3TenderCashPopUp = ({
                             {(paymentModes.code === "4" || paymentModes.code === "5") ? (
                               <>
                                 <div className="mb-3">
+                                 <p className="font-semibold">Cash</p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
