@@ -46,7 +46,8 @@ const F3TenderCashPopUp = ({
   setDSalesNoInvoice,
   handleDocumentNoUpdate,
   selectedSalesReturnType,
-  searchInvoiceNumber
+  searchInvoiceNumber,
+  handleZatcaInvoiceGenerator
 
 }) => {
   const [loading, setLoading] = useState(false);
@@ -420,6 +421,7 @@ const F3TenderCashPopUp = ({
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
         handleInvoiceGenerator();
+        handleZatcaInvoiceGenerator();
         setLoading(false);
 
       } 
@@ -681,6 +683,7 @@ const F3TenderCashPopUp = ({
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
         handleInvoiceGenerator();
+        handleZatcaInvoiceGenerator();
         setLoading(false);
 
       } 
