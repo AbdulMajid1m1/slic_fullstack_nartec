@@ -819,7 +819,7 @@ const POS = () => {
 
   const [invoiceLoader, setInvoiceLoader] = useState(false);
   const [zatcaQrcode, setZatcaQrcode] = useState(null);
-  const [zatchaQrcodeExchange, setZatchaQrcodeExchange] = useState(null);
+  // const [zatchaQrcodeExchange, setZatchaQrcodeExchange] = useState(null);
   const handleInvoiceGenerator = async (e) => {
     // e.preventDefault();
     setInvoiceLoader(true);
@@ -861,7 +861,7 @@ const POS = () => {
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       console.log(qrCodeDataFromApi);
       setZatcaQrcode(qrCodeDataFromApi);
-      setZatchaQrcodeExchange(qrCodeDataFromApi);
+      // setZatchaQrcodeExchange(qrCodeDataFromApi);
       // handlePrintSalesInvoice(qrCodeDataFromApi);
 
       // insertInvoiceRecord();
@@ -875,6 +875,41 @@ const POS = () => {
         err?.response?.data?.errors[0] ||
           "An error occurred while generating the invoice"
       );
+      setInvoiceLoader(false);
+    }
+  };
+
+
+  const [zatchaQrcodeExchange, setZatchaQrcodeExchange] = useState(null);
+  const handleZatcaInvoiceGenerator = async (e) => {
+    setInvoiceLoader(true);
+  
+    // Check if either of the buttons is clicked
+    if (!isExchangeClick && !isExchangeDSalesClick) {
+      toast.error("Please select a valid action to proceed.");
+      setInvoiceLoader(false);
+      return;
+    }
+  
+    let payload = {
+      invoiceDate: todayDate,
+      totalWithVat: totalAmountWithVat,
+      vatTotal: Number(totalVat),
+    };
+  
+    try {
+      const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
+      const qrCodeDataFromApi = res?.data?.qrCodeData;
+      console.log(qrCodeDataFromApi);
+      setZatchaQrcodeExchange(qrCodeDataFromApi);
+  
+      toast.success("Invoice generated successfully!");
+    } catch (err) {
+      console.log(err);
+      toast.error(
+        err?.response?.data?.errors[0] || "An error occurred while generating the invoice"
+      );
+    } finally {
       setInvoiceLoader(false);
     }
   };
@@ -2913,6 +2948,7 @@ const POS = () => {
               // handleClearInvoiceData={handleClearInvoiceData}
               selectedSalesType={selectedSalesType}
               handleInvoiceGenerator={handleInvoiceGenerator}
+              handleZatcaInvoiceGenerator={handleZatcaInvoiceGenerator}
               // pass in props netwithoutvat amount
               netWithVat={netWithVat}
               totalAmountWithVat={totalAmountWithVat}
