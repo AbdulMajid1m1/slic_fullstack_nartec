@@ -623,6 +623,7 @@ const F3TenderCashPopUp = ({
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exinDocumentNo = exinRes?.data?.message["Document No"];
 
+        const documentNo = exinRes?.data?.message['Document No'];
         const headSysId = exinRes?.data?.message["Ref-No/SysID"];
         if (documentNo || headSysId) {
           handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
@@ -1027,11 +1028,22 @@ const F3TenderCashPopUp = ({
                                     placeholder="Change"
                                   />
                                 </div>
+                                <div className="mb-3">
+                                    <p className="font-semibold">Bank Approval Code</p>
+                                    <input
+                                      type="text"
+                                      value={bankApprovedCode}
+                                      onChange={(e) => setBankApprovedCode(e.target.value)}
+                                      className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                      placeholder="Enter Bank Approval Code"
+                                    />
+                                  </div>
                               </>
                             ) : (
                               <>
                                 {/* Cash Payment */}
                                 <div className="mb-3">
+                                  <p className="font-semibold">Cash</p>
                                   <input
                                     type="text"
                                     value={cashAmount}
@@ -1061,6 +1073,9 @@ const F3TenderCashPopUp = ({
                                     placeholder="Change"
                                   />
                                 </div>
+                                {/* {(paymentModes.code === "4" || paymentModes.code === "5") && (
+                                 
+                                )} */}
                               </>
                             )}
                           </>
@@ -1177,7 +1192,7 @@ const F3TenderCashPopUp = ({
                                  <p className="font-semibold">Total Amount</p>
                                   <input
                                     type="text"
-                                    value={totolAmountWithoutExchange}
+                                    value={totolAmountWithoutVatDSalesNoInvoice}
                                     className="w-full border border-gray-300 px-2 py-2 rounded-md"
                                     placeholder={paymentModes.name || "Payment Mode"}
                                     readOnly
@@ -1213,7 +1228,7 @@ const F3TenderCashPopUp = ({
                                   <p className="font-semibold">Return Amount</p>
                                   <input
                                     type="text"
-                                    value={totolAmountWithoutExchange}
+                                    value={totolAmountWithoutVatDSalesNoInvoice}
                                     readOnly
                                     className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                                     placeholder="Total Amount"
@@ -1248,7 +1263,7 @@ const F3TenderCashPopUp = ({
                                 <p className="font-semibold">Difference</p>
                                 <input
                                   type="text"
-                                  value={totolAmountWithoutExchange - grossAmount}
+                                  value={totolAmountWithoutVatDSalesNoInvoice - grossAmount}
                                   readOnly
                                   className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                                   placeholder="Difference"

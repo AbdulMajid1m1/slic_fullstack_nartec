@@ -106,22 +106,18 @@ model TrxCodesType {
 }
 
 model TblAppRoles {
-  RoleID   Int     @id @default(autoincrement())
-  RoleName String? @db.VarChar(255)
-
-  // Add this to connect roles to user roles
+  RoleID    Int            @id @default(autoincrement())
+  RoleName  String?        @db.VarChar(255)
   userRoles TblUserRoles[]
 
   @@map("TblAppRoles")
 }
 
 model TblUserRoles {
-  id          Int     @id(map: "PK__TblUserR__3213E83FCDBDAD5C") @default(autoincrement())
-  UserLoginID String? @db.VarChar(255)
-  RoleID      Int? // RoleID references TblAppRoles
-
-  // Add this to create the relationship between TblUserRoles and TblAppRoles
-  role TblAppRoles? @relation(fields: [RoleID], references: [RoleID])
+  id          Int          @id(map: "PK__TblUserR__3213E83FCDBDAD5C") @default(autoincrement())
+  UserLoginID String?      @db.VarChar(255)
+  RoleID      Int?
+  role        TblAppRoles? @relation(fields: [RoleID], references: [RoleID])
 
   @@map("TblUserRoles")
 }
@@ -148,6 +144,7 @@ model tblPOSInvoiceDetails {
   ItemQry              Float?
   TransactionDate      DateTime? @db.DateTime
   id                   String    @unique(map: "UQ_tblPOSInvoiceDetails_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
+  ReturnQty            Float?
 }
 
 model tblPOSInvoiceMaster {
