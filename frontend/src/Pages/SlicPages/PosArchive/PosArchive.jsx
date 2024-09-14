@@ -48,9 +48,9 @@ const PosArchive = () => {
       const res = await newRequest.get(
         `/invoice/v1/invoiceDetailsArchive?filter[InvoiceNo]=${item[0].InvoiceNo}`
       );
-      // console.log(res?.data?.data);
+      console.log(res?.data);
 
-      setFilteredData(res?.data?.data || []);
+      setFilteredData(res?.data || []);
     } catch (err) {
       console.log(err);
       toast.error(

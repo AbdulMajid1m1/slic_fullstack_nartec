@@ -1572,6 +1572,7 @@ const POS = () => {
               Description: item.Remarks || "No description",
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
+              originalQty: item.ItemQry,
               ItemPrice: item.ItemPrice,
               VAT: vat,
               Total: total,
@@ -1616,8 +1617,11 @@ const POS = () => {
   
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
+    const originalQty = invoiceData[index].originalQty;
     const qty = Number(newQty);
-    if (qty > 4 || qty < 1) return;
+    // console.log(originalQty)
+    
+    if (qty > originalQty || qty < 1) return;
     
     // Update the state with the new quantity
     const updatedInvoiceData = invoiceData.map((item, i) => {
@@ -2481,7 +2485,7 @@ const POS = () => {
                           <input
                             type="number"
                             min="1"
-                            max="4"
+                            max={row.originalQty}
                             value={row.Qty}
                             onChange={(e) => handleQtyChange(index, e.target.value)}
                             className="w-full text-center border rounded p-1"
