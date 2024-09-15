@@ -176,23 +176,27 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
       // console.log(availableStock)
       if (availableStock >= item.Qty) {
         // console.log(item.Qty)
-        const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
-          EnglishName: item.Description,
-          GTIN: item.Barcode,
-          ModelName: item.SKU,
-          ProductSize: item.ItemSize,
-        });
+
+        // I commented the createExchangeInvocie Api
+        // const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
+        //   EnglishName: item.Description,
+        //   GTIN: item.Barcode,
+        //   ModelName: item.SKU,
+        //   ProductSize: item.ItemSize,
+        // });
   
-        // console.log(res?.data);
-        toast.success(res?.data?.message || "Exchange Invoice created successfully");
+        // // console.log(res?.data);
+        // toast.success(res?.data?.message || "Exchange Invoice created successfully");
   
         // addExchangeData(res?.data?.data);
 
         // i show the data based on user selection datagrid
         if (selectedSalesType === "DSALES NO INVOICE") {
-          addDSalesExchangeData(res?.data?.data);
+          // addDSalesExchangeData(res?.data?.data);
+          addDSalesExchangeData(data);
         } else {
-          addExchangeData(res?.data?.data);
+          // addExchangeData(res?.data?.data);
+          addExchangeData(data);
         }
 
         handleCloseCreatePopup();

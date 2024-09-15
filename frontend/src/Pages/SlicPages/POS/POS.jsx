@@ -666,7 +666,8 @@ const POS = () => {
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: exchangeData[0]?.ItemCode,
+          // ItemSysID: exchangeData[0]?.ItemCode,
+          ItemSysID: exchangeData[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
@@ -696,7 +697,8 @@ const POS = () => {
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: "SYSADMIN",
-          ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
+          // ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
+          ItemSKU: isExchangeClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -720,7 +722,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: newHeadSysId,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: DSalesNoInvoiceData[0]?.ItemCode,
+          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
           CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
@@ -749,7 +751,7 @@ const POS = () => {
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
           UserID: "SYSADMIN",
-          ItemSKU: isExchangeDSalesClick ? item.ItemCode : item.SKU,
+          ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
@@ -1695,71 +1697,35 @@ const POS = () => {
   }, [isOpenOtpPopupVisible]);
 
   const [exchangeData, setExchangeData] = useState([]);
-  const addExchangeData = async (newData) => {
-    console.log(exchangeData);
-    // Extract necessary data from newData
-    const { ItemCode, ItemSize } = newData;
-
-    // Get the corresponding invoice item to extract the Qty
-    console.log(invoiceData[0]?.Qty);
-    const Qty = invoiceData[0]?.Qty;
-    // const Qty = 1;
-
-    const secondApiBody = {
-      filter: {
-        P_COMP_CODE: "SLIC",
-        P_ITEM_CODE: ItemCode,
-        P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-        ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-        : selectedCustomerName?.CUSTOMERCODE,
-        P_GRADE_CODE_1: ItemSize,
-      },
-      M_COMP_CODE: "SLIC",
-      M_USER_ID: "SYSADMIN",
-      APICODE: "PRICELIST",
-      M_LANG_CODE: "ENG",
-    };
-
-    try {
-      const secondApiResponse = await ErpTeamRequest.post(
-        "/slicuat05api/v1/getApi",
-        secondApiBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (secondApiResponse?.data) {
-        const secondApiData = secondApiResponse.data;
-        console.log("second Exhcnage", secondApiData);
-        const itemRates = secondApiData.map(
-          (item) => item?.PRICELIST?.PLI_RATE
+  const addExchangeData = (newData) => {
+    setExchangeData((prevData) => {
+      // Loop through the newData array to handle multiple scanned items
+      return newData.reduce((updatedData, newItem) => {
+        const existingItemIndex = updatedData.findIndex(
+          (item) => item.Barcode === newItem.Barcode
         );
-        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-        const vat = itemPrice * 0.15;
-        const total = itemPrice * Qty + vat * Qty;
-
-        // Insert the new item into exchangeData only if the API call is successful
-        const newExchangeItem = {
-          ...newData,
-          ItemPrice: itemPrice,
-          VAT: vat,
-          Total: total,
-          Qty: Qty,
-        };
-
-        setExchangeData((prevData) => [...prevData, newExchangeItem]); // Add the new item to exchangeData
-        console.log("newExchange Data", newExchangeItem);
-      } else {
-        throw new Error("Failed to retrieve item prices");
-      }
-    } catch (error) {
-      console.error("Error fetching item prices:", error);
-      toast.error("Error fetching item prices");
-    }
-  };
+  
+        if (existingItemIndex !== -1) {
+          // If the item exists, update the quantity and total
+          const updatedItem = {
+            ...updatedData[existingItemIndex],
+            Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
+            Total:
+              (updatedData[existingItemIndex].Qty + newItem.Qty) *
+              (newItem.ItemPrice + newItem.VAT),
+          };
+  
+          // Replace the existing item with the updated item
+          updatedData[existingItemIndex] = updatedItem;
+        } else {
+          // If the item is new, add it to the data array
+          updatedData.push(newItem);
+        }
+  
+        return updatedData;
+      }, [...prevData]); // Start with the current exchangeData
+    });
+  };  
 
   // exchange calculation
   useEffect(() => {
@@ -1784,77 +1750,37 @@ const POS = () => {
     }
   }, [exchangeData]);
 
+
+
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
     useState([]);
-  const addDSalesExchangeData = async (newData) => {
-    console.log(dSalesNoInvoiceexchangeData);
-    // Extract necessary data from newData
-    const { ItemCode, ItemSize } = newData;
-
-    // Get the corresponding invoice item to extract the Qty
-    console.log(DSalesNoInvoiceData[0]?.Qty);
-    const Qty = DSalesNoInvoiceData[0]?.Qty;
-    // const Qty = 1;
-
-    const secondApiBody = {
-      filter: {
-        P_COMP_CODE: "SLIC",
-        P_ITEM_CODE: ItemCode,
-        P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-        ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-        : selectedCustomerName?.CUSTOMERCODE,
-        P_GRADE_CODE_1: ItemSize,
-      },
-      M_COMP_CODE: "SLIC",
-      M_USER_ID: "SYSADMIN",
-      APICODE: "PRICELIST",
-      M_LANG_CODE: "ENG",
-    };
-
-    try {
-      const secondApiResponse = await ErpTeamRequest.post(
-        "/slicuat05api/v1/getApi",
-        secondApiBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (secondApiResponse?.data) {
-        const secondApiData = secondApiResponse.data;
-        console.log("second Exhcnage", secondApiData);
-        const itemRates = secondApiData.map(
-          (item) => item?.PRICELIST?.PLI_RATE
+  const addDSalesExchangeData = (newData) => {
+    setDSalesNoInvoiceexchangeData((prevData) => {
+      return newData.reduce((updatedData, newItem) => {
+        const existingItemIndex = updatedData.findIndex(
+          (item) => item.Barcode === newItem.Barcode
         );
-        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-        const vat = itemPrice * 0.15;
-        const total = itemPrice * Qty + vat; // Multiply by Qty for the total
-
-        // Insert the new item into exchangeData only if the API call is successful
-        const newExchangeItem = {
-          ...newData,
-          ItemPrice: itemPrice,
-          VAT: vat,
-          Total: total,
-          Qty: Qty,
-        };
-
-        setDSalesNoInvoiceexchangeData((prevData) => [
-          ...prevData,
-          newExchangeItem,
-        ]); // Add the new item to exchangeData
-      } else {
-        throw new Error("Failed to retrieve item prices");
-      }
-    } catch (error) {
-      console.error("Error fetching item prices:", error);
-      toast.error("Error fetching item prices");
-    }
+  
+        if (existingItemIndex !== -1) {
+          const updatedItem = {
+            ...updatedData[existingItemIndex],
+            Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
+            Total:
+              (updatedData[existingItemIndex].Qty + newItem.Qty) *
+              (newItem.ItemPrice + newItem.VAT),
+          };
+  
+          updatedData[existingItemIndex] = updatedItem;
+        } else {
+          updatedData.push(newItem);
+        }
+  
+        return updatedData;
+      }, [...prevData]);
+    });
   };
-
+  
   // DSales No Invoice Calculation
   useEffect(() => {
     const calculateTotals = () => {
@@ -1880,7 +1806,7 @@ const POS = () => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+      console.log(dSalesNoInvoiceexchangeData);
       dSalesNoInvoiceexchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
@@ -2295,6 +2221,7 @@ const POS = () => {
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
+                    required
                     className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                     placeholder="Enter Barcode"
                   />
@@ -2319,6 +2246,7 @@ const POS = () => {
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
+                    required
                     className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                     placeholder="Enter Barcode (No Invoice)"
                   />
@@ -2341,6 +2269,7 @@ const POS = () => {
                     type="text"
                     value={searchInvoiceNumber}
                     onChange={(e) => setSearchInvoiceNumber(e.target.value)}
+                    required
                     placeholder="Enter Invoice Number"
                     className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                   />
@@ -2633,9 +2562,11 @@ const POS = () => {
                     {exchangeData?.map((item, index) => (
                       <tr key={index} className="bg-gray-100">
                         <td className="border px-4 py-2">
-                          {item.ItemCode || ""}
+                          {/* {item.ItemCode || ""} */}
+                          {item.SKU || ""}
                         </td>
-                        <td className="border px-4 py-2">{item.GTIN}</td>
+                        {/* <td className="border px-4 py-2">{item.GTIN}</td> */}
+                        <td className="border px-4 py-2">{item.Barcode}</td>
                         <td className="border px-4 py-2">{item.Description}</td>
                         <td className="border px-4 py-2">{item.ItemSize}</td>
                         <td className="border px-4 py-2">{item?.Qty}</td>
@@ -2837,9 +2768,11 @@ const POS = () => {
                         {dSalesNoInvoiceexchangeData?.map((item, index) => (
                           <tr key={index} className="bg-gray-100">
                             <td className="border px-4 py-2">
-                              {item.ItemCode || ""}
+                              {/* {item.ItemCode || ""} */}
+                              {item.SKU || ""}
                             </td>
-                            <td className="border px-4 py-2">{item.GTIN}</td>
+                            {/* <td className="border px-4 py-2">{item.GTIN}</td> */}
+                            <td className="border px-4 py-2">{item.Barcode}</td>
                             <td className="border px-4 py-2">
                               {item.Description}
                             </td>
