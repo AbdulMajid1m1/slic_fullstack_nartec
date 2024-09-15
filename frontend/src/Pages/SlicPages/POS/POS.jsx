@@ -1527,7 +1527,7 @@ const POS = () => {
                 .map(
                   (item) => `
                   <tr>
-                    <td>${item.ItemCode}</td>
+                    <td>${item.SKU}</td>
                     <td>${item.Qty}</td>
                     <td>${item.ItemPrice}</td>
                     <td>${item.Total}</td>
@@ -2680,10 +2680,10 @@ const POS = () => {
                               Actions
                             </button>
                             {openDropdown === index && (
-                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10 right-0">
+                            <div className="absolute bg-white shadow-md border mt-2 rounded w-44 z-10 right-0">
                               <ul className="list-none p-0 m-0">
                                 <li
-                                  onClick={() => handleItemClick("exchange")}
+                                  onClick={() => handleItemClick("exchange Dsales")}
                                   className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
                                 >
                                   <FaExchangeAlt className="text-secondary mr-2" />
