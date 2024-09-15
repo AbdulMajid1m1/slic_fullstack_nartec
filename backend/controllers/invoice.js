@@ -622,6 +622,63 @@ const allowedMasterColumns = {
   CustomerName: Joi.string(),
 };
 
+exports.getPOSInvoiceMaster = async (req, res) => {
+  try {
+    const columnsSchema = Joi.object({
+      columns: Joi.array().items(
+        Joi.string().valid(...Object.keys(allowedMasterColumns))
+      ),
+      filter: Joi.object().pattern(Joi.string(), Joi.any()),
+      cutoffDate: Joi.date().optional(), // Add cutoffDate as optional
+    }).unknown(true);
+
+    const { error, value } = columnsSchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid query parameter: ${error.details[0].message}`,
+      });
+    }
+
+    const selectedColumns =
+      value.columns && value.columns.length > 0
+        ? value.columns
+        : Object.keys(allowedMasterColumns);
+
+    const filterConditions = value.filter || {};
+
+    // Convert TransactionDate filter to a valid Date object
+    if (filterConditions.TransactionDate) {
+      filterConditions.TransactionDate = new Date(filterConditions.TransactionDate);
+    }
+
+    // If cutoffDate is provided, add it to the filter conditions
+    if (value.cutoffDate) {
+      filterConditions.TransactionDate = {
+        gt: new Date(value.cutoffDate), // Fetch records after the cutoff date
+      };
+    }
+
+    const select = selectedColumns.reduce((obj, col) => {
+      obj[col] = true;
+      return obj;
+    }, {});
+
+    const invoices = await prisma.tblPOSInvoiceMaster.findMany({
+      where: filterConditions,
+      select,
+      orderBy: {
+        TransactionDate: "desc",
+      },
+    });
+
+    return res.json(invoices);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 exports.getPOSInvoiceMasterArchive = async (req, res) => {
   try {
     const columnsSchema = Joi.object({
@@ -798,26 +855,31 @@ exports.getCustomersWithPendingReceipts = async (req, res, next) => {
     const { SalesLocationCode, cutoffDate } = value;
 
     // Fetch all unique customer codes where isReceiptCreated is false, SalesLocationCode matches, and createdAt is after cutoffDate
-    const customersWithPendingReceipts = await prisma.tblPOSInvoiceMaster.findMany({
-      where: {
-        isReceiptCreated: false,   // Filter where receipt is not created
-        SalesLocationCode: SalesLocationCode,  // Filter by SalesLocationCode
-        createdAt: {
-          gt: new Date(cutoffDate),  // Fetch records created after the cutoffDate
+    const customersWithPendingReceipts =
+      await prisma.tblPOSInvoiceMaster.findMany({
+        where: {
+          isReceiptCreated: false, // Filter where receipt is not created
+          SalesLocationCode: SalesLocationCode, // Filter by SalesLocationCode
+          TransactionDate: {
+            gt: new Date(cutoffDate), // Fetch records created after the cutoffDate
+          },
         },
-      },
-      select: {
-        CustomerCode: true,  // Select only the CustomerCode field
-      },
-      distinct: ['CustomerCode'],  // Ensure uniqueness of CustomerCode
-    });
+        select: {
+          CustomerCode: true, // Select only the CustomerCode field
+        },
+        distinct: ["CustomerCode"], // Ensure uniqueness of CustomerCode
+      });
 
     if (customersWithPendingReceipts.length === 0) {
-      return res.status(404).json({ message: "No customers found with pending receipts" });
+      return res
+        .status(404)
+        .json({ message: "No customers found with pending receipts" });
     }
 
     res.status(200).json({
-      customerCodes: customersWithPendingReceipts.map((record) => record.CustomerCode),
+      customerCodes: customersWithPendingReceipts.map(
+        (record) => record.CustomerCode
+      ),
     });
   } catch (error) {
     next(error);
