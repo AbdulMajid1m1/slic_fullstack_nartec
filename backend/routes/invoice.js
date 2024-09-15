@@ -39,5 +39,9 @@ router.post(
   "/v1/detailsByInvoiceNos",
   controller.getInvoiceDetailsByInvoiceNos
 );
+router.post(
+  "/v1/updateReceiptStatus",
+  controller.updateReceiptStatus
+);
 
 module.exports = router;

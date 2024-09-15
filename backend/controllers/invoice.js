@@ -620,6 +620,7 @@ const allowedMasterColumns = {
   id: Joi.string(),
   VatNumber: Joi.string(),
   CustomerName: Joi.string(),
+  isReceiptCreated: Joi.boolean(),
 };
 
 exports.getPOSInvoiceMaster = async (req, res) => {
@@ -883,5 +884,55 @@ exports.getCustomersWithPendingReceipts = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+
+
+exports.updateReceiptStatus = async (req, res) => {
+  try {
+    // Define Joi schema for validation
+    const schema = Joi.object({
+      ids: Joi.array().items(Joi.string().required()).min(1).required()
+        .messages({
+          'array.min': 'At least one id is required',
+          'any.required': 'IDs are required',
+        }),
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid input: ${error.details[0].message}`,
+      });
+    }
+
+    const { ids } = value;
+
+    // Update isReceiptCreated to true for all provided ids
+    const updateResult = await prisma.tblPOSInvoiceMaster.updateMany({
+      where: {
+        id: {
+          in: ids, // Update only the records that match the given ids
+        },
+      },
+      data: {
+        isReceiptCreated: true, // Set isReceiptCreated to true
+      },
+    });
+
+    // Check if any records were updated
+    if (updateResult.count === 0) {
+      return res.status(404).json({
+        message: 'No records found to update',
+      });
+    }
+
+    return res.status(200).json({
+      message: `${updateResult.count} record(s) updated successfully`,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error: ' + error.message });
   }
 };
