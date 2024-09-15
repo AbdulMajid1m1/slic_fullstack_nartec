@@ -421,10 +421,8 @@ exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
     next(error);
   }
 };
-
 exports.archiveInvoice = async (req, res, next) => {
   try {
-    // Define the Joi schema for validation
     const schema = Joi.object({
       invoiceNo: Joi.string().required().messages({
         "any.required": "Invoice number is required",
@@ -453,7 +451,6 @@ exports.archiveInvoice = async (req, res, next) => {
         }),
     });
 
-    // Validate the request body
     const { error, value } = schema.validate(req.body, { abortEarly: false });
 
     if (error) {
@@ -496,26 +493,28 @@ exports.archiveInvoice = async (req, res, next) => {
     });
 
     // Process each item to return
+    let totalReturnAmount = 0;
+
     for (const item of itemsToReturn) {
       const detailItem = invoiceDetails.find((d) => d.id === item.id);
 
       if (!detailItem) {
-        return res
-          .status(400)
-          .json({
-            error: `Item with id ${item.id} not found in invoice details`,
-          });
+        return res.status(400).json({
+          error: `Item with id ${item.id} not found in invoice details`,
+        });
       }
 
       const qtyToReturn = item.qtyToReturn;
 
       if (detailItem.ItemQry < qtyToReturn) {
-        return res
-          .status(400)
-          .json({
-            error: `Quantity to return exceeds quantity purchased for item with id ${item.id}`,
-          });
+        return res.status(400).json({
+          error: `Quantity to return exceeds quantity purchased for item with id ${item.id}`,
+        });
       }
+
+      // Calculate return amount
+      const returnAmount = detailItem.ItemPrice * qtyToReturn;
+      totalReturnAmount += returnAmount;
 
       // Check if the item is already in the archive
       const existingArchiveRecord =
@@ -535,7 +534,6 @@ exports.archiveInvoice = async (req, res, next) => {
           },
         });
       } else {
-        // Exclude 'ReturnQty' and 'id' from detailItem
         const { ReturnQty, id, ...validDetailItemData } = detailItem;
 
         // Insert a new record if it doesn't exist in the archive
@@ -561,6 +559,28 @@ exports.archiveInvoice = async (req, res, next) => {
         });
       }
     }
+
+    // Update the invoice master and archive tables with the new AdjAmount and PendingAmount
+    const newAdjAmount = invoiceMaster.AdjAmount - totalReturnAmount;
+    const newPendingAmount = invoiceMaster.PendingAmount - totalReturnAmount;
+
+    // Update tblPOSInvoiceMaster
+    await prisma.tblPOSInvoiceMaster.update({
+      where: { InvoiceNo: invoiceNo },
+      data: {
+        AdjAmount: newAdjAmount,
+        PendingAmount: newPendingAmount,
+      },
+    });
+
+    // Update tblPOSInvoiceMasterArchive
+    await prisma.tblPOSInvoiceMasterArchive.update({
+      where: { InvoiceNo: invoiceNo },
+      data: {
+        AdjAmount: totalReturnAmount,
+        PendingAmount: totalReturnAmount,
+      },
+    });
 
     // Check if all items have been returned, in which case delete the master record
     const remainingItems = await prisma.tblPOSInvoiceDetails.count({
@@ -747,6 +767,58 @@ exports.getInvoiceDetailsByInvoiceNos = async (req, res, next) => {
           invoiceDetails
         )
       );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCustomersWithPendingReceipts = async (req, res, next) => {
+  try {
+    // Define Joi schema for validation
+    const schema = Joi.object({
+      SalesLocationCode: Joi.string().required().messages({
+        "any.required": "SalesLocationCode is required",
+        "string.empty": "SalesLocationCode cannot be empty",
+      }),
+      cutoffDate: Joi.date().required().messages({
+        "any.required": "cutoffDate is required",
+        "date.base": "cutoffDate must be a valid date",
+      }),
+    });
+
+    // Validate the request query parameters
+    const { error, value } = schema.validate(req.query, { abortEarly: false });
+
+    if (error) {
+      return res.status(400).json({
+        error: error.details.map((err) => err.message),
+      });
+    }
+
+    const { SalesLocationCode, cutoffDate } = value;
+
+    // Fetch all unique customer codes where isReceiptCreated is false, SalesLocationCode matches, and createdAt is after cutoffDate
+    const customersWithPendingReceipts = await prisma.tblPOSInvoiceMaster.findMany({
+      where: {
+        isReceiptCreated: false,   // Filter where receipt is not created
+        SalesLocationCode: SalesLocationCode,  // Filter by SalesLocationCode
+        createdAt: {
+          gt: new Date(cutoffDate),  // Fetch records created after the cutoffDate
+        },
+      },
+      select: {
+        CustomerCode: true,  // Select only the CustomerCode field
+      },
+      distinct: ['CustomerCode'],  // Ensure uniqueness of CustomerCode
+    });
+
+    if (customersWithPendingReceipts.length === 0) {
+      return res.status(404).json({ message: "No customers found with pending receipts" });
+    }
+
+    res.status(200).json({
+      customerCodes: customersWithPendingReceipts.map((record) => record.CustomerCode),
+    });
   } catch (error) {
     next(error);
   }
