@@ -1116,7 +1116,7 @@ const F3TenderCashPopUp = ({
                             )} */}
                             {!isExchangeClick && (
                               <div className="mb-3">
-                                <p className="font-semibold">Total Amount</p>
+                                <p className="font-semibold">Return Amount</p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutExchange}
@@ -1209,7 +1209,7 @@ const F3TenderCashPopUp = ({
 
                             {!isExchangeDSalesClick && (
                               <div className="mb-3">
-                                <p className="font-semibold">Total Amount</p>
+                                <p className="font-semibold">Return Amount</p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutVatDSalesNoInvoice}
