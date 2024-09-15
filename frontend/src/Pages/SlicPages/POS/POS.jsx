@@ -12,7 +12,9 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
-import { FaTrash } from "react-icons/fa";
+import { FaExchangeAlt, FaTrash } from "react-icons/fa";
+import { MdRemoveCircleOutline } from "react-icons/md";
+import { MdRemoveCircle } from "react-icons/md";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 
@@ -2360,7 +2362,7 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.Total}</td>
                         <td className="border px-4 py-2 text-center">
                           <button onClick={() => handleDelete(index)}>
-                            <FaTrash className="text-secondary hover:text-red-500" />
+                            <MdRemoveCircle className="text-secondary text-xl hover:text-red-500" />
                           </button>
                         </td>
                       </tr>
@@ -2466,21 +2468,22 @@ const POS = () => {
                             Actions
                           </button>
                           {openDropdown === index && (
-                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
-                              <ul>
+                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10 right-0">
+                              <ul className="list-none p-0 m-0">
                                 <li
                                   onClick={() => handleItemClick("exchange")}
-                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
                                 >
+                                  <FaExchangeAlt className="text-secondary mr-2" />
                                   Exchange Item
                                 </li>
                                 <li>
                                   <button
-                                    onClick={() =>
-                                      handleDeleteInvoiceData(index)
-                                    }
+                                    onClick={() => handleDeleteInvoiceData(index)}
+                                    className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
-                                    <FaTrash className="text-secondary hover:text-red-500" />
+                                    <MdRemoveCircle className="text-secondary mr-2" />
+                                    Remove
                                   </button>
                                 </li>
                               </ul>
@@ -2577,7 +2580,7 @@ const POS = () => {
                           <button
                             onClick={() => handleDeleteExchangeData(index)}
                           >
-                            <FaTrash className="text-secondary hover:text-red-500" />
+                            <MdRemoveCircle className="text-secondary text-xl hover:text-red-500" />
                           </button>
                         </td>
                       </tr>
@@ -2677,24 +2680,27 @@ const POS = () => {
                               Actions
                             </button>
                             {openDropdown === index && (
-                              <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10">
-                                <ul>
-                                  <li
-                                    onClick={() =>
-                                      handleItemClick("exchange Dsales")
-                                    }
-                                    className="hover:bg-gray-100 cursor-pointer px-4 py-2"
+                            <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10 right-0">
+                              <ul className="list-none p-0 m-0">
+                                <li
+                                  onClick={() => handleItemClick("exchange")}
+                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
+                                >
+                                  <FaExchangeAlt className="text-secondary mr-2" />
+                                  Exchange DSales
+                                </li>
+                                <li>
+                                  <button
+                                    onClick={() => handleDelete(index)}
+                                    className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
-                                    Exchange DSales
-                                  </li>
-                                  <li>
-                                    <button onClick={() => handleDelete(index)}>
-                                      <FaTrash className="text-secondary hover:text-red-500" />
-                                    </button>
-                                  </li>
-                                </ul>
-                              </div>
-                            )}
+                                    <MdRemoveCircle className="text-secondary mr-2" />
+                                    Remove
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          )}
                           </td>
                         </tr>
                       ))}
@@ -2787,7 +2793,7 @@ const POS = () => {
                             <td className="border px-4 py-2">{item.Total}</td>
                             <td className="border px-4 py-2 text-center">
                               <button>
-                                <FaTrash className="text-secondary hover:text-red-500" />
+                                <MdRemoveCircle className="text-secondary hover:text-red-500" />
                               </button>
                             </td>
                           </tr>
