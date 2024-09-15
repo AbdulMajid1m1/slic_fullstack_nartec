@@ -206,14 +206,14 @@ const F3TenderCashPopUp = ({
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
-              ReceiptAmt: netWithVat,
+              ReceiptAmt: totalAmountWithVat,
               CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: netWithVat,
-                  AdjAmount: netWithVat,
+                  PendingAmount: totalAmountWithVat,
+                  AdjAmount: totalAmountWithVat,
                 },
               ],
             },
@@ -385,20 +385,20 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: netWithOutVatExchange - netWithVat,
+                ReceiptAmt: totalAmountWithVat - totolAmountWithoutExchange,
                 CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
                     TransactionCode: modifiedTransactionCode,
-                    PendingAmount: netWithVat,
-                    AdjAmount: netWithVat,
+                    PendingAmount: totalAmountWithVat,
+                    AdjAmount: totalAmountWithVat,
                   },
                   {
                     DocNo: exsrDocumentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: netWithOutVatExchange,
-                    AdjAmount: netWithOutVatExchange,
+                    PendingAmount: totolAmountWithoutExchange,
+                    AdjAmount: totolAmountWithoutExchange,
                   },
                 ],
               },
@@ -465,14 +465,14 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: netWithOutVatExchange,
+                ReceiptAmt: totolAmountWithoutExchange,
                 CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: netWithOutVatExchange,
-                    AdjAmount: netWithOutVatExchange,
+                    PendingAmount: totolAmountWithoutExchange,
+                    AdjAmount: totolAmountWithoutExchange,
                   },
                 ],
               },
@@ -647,20 +647,20 @@ const F3TenderCashPopUp = ({
               Division: "100",
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
-              ReceiptAmt: netWithOutVatDSalesNoInvoice - netWithVat,
+              ReceiptAmt: totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
               CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
               MatchingTransactions: [
                 {
                   DocNo: exinDocumentNo,
                   TransactionCode: modifiedTransactionCode,
-                  PendingAmount: netWithOutVatDSalesNoInvoice,
-                  AdjAmount: netWithOutVatDSalesNoInvoice,
+                  PendingAmount: totalAmountWithVat,
+                  AdjAmount: totalAmountWithVat,
                 },
                 {
                   DocNo: exsrDocumentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: netWithVat,
-                  AdjAmount: netWithVat,
+                  PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
+                  AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
                 },
               ],
             },
@@ -718,14 +718,14 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: netWithOutVatDSalesNoInvoice,
+                ReceiptAmt: totolAmountWithoutVatDSalesNoInvoice,
                 CustomerId: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerCode?.CUSTOMERCODE,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: netWithOutVatDSalesNoInvoice,
-                    AdjAmount: netWithOutVatDSalesNoInvoice,
+                    PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
+                    AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
                   },
                 ],
               },
@@ -789,7 +789,7 @@ const F3TenderCashPopUp = ({
   
   
   const validateForm = () => {
-    if ((paymentModes.code === "4" || paymentModes.code === "5") && !bankApprovedCode) {
+    if ((paymentModes.code === "4" || paymentModes.code === "5") && bankApprovedCode.length < 4) {
       setIsPrintEnabled(false);
     } else {
       setIsPrintEnabled(true);
@@ -1087,7 +1087,20 @@ const F3TenderCashPopUp = ({
 
                         {selectedSalesType === "DIRECT SALES RETURN" && (
                           <>
-                          {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                          {/* {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                              <>
+                              <div className="mb-3">
+                                <p className="font-semibold">Exchange Amount</p>
+                                <input
+                                  type="text"
+                                  value={grossAmount}
+                                  readOnly
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                  placeholder="Total Amount"
+                                />
+                              </div>
+                              </>
+                            ) : (
                               <>
                                 <div className="mb-3">
                                  <p className="font-semibold">Total Amount</p>
@@ -1099,55 +1112,21 @@ const F3TenderCashPopUp = ({
                                     readOnly
                                   />
                                 </div>
-                                {/* Total Amount in the middle */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Total Amount</p>
-                                  <input
-                                    type="text"
-                                    value={netWithOutVatExchange}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Total Amount"
-                                  />
-                                </div> */}
-                                {/* Change for credit/debit is always 0 */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
-                                  <input
-                                    type="text"
-                                    value={0}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Change"
-                                  />
-                                </div> */}
                               </>
-                            ) : (
-                              <>
-                                {/* Cash Payment */}
-                                <div className="mb-3">
-                                  <p className="font-semibold">Return Amount</p>
-                                  <input
-                                    type="text"
-                                    value={totolAmountWithoutExchange}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Total Amount"
-                                  />
-                                </div>
-                                {/* Change for cash payment */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
-                                  <input
-                                    type="text"
-                                    value={Number(cashAmount) - Number(totolAmountWithoutExchange)}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Change"
-                                  />
-                                </div> */}
-                              </>
+                            )} */}
+                            {!isExchangeClick && (
+                              <div className="mb-3">
+                                <p className="font-semibold">Return Amount</p>
+                                <input
+                                  type="text"
+                                  value={totolAmountWithoutExchange}
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  placeholder={paymentModes.name || "Payment Mode"}
+                                  readOnly
+                                />
+                              </div>
                             )}
+
                             {isExchangeClick && (
                               <>
                               <div className="mb-3">
@@ -1161,10 +1140,20 @@ const F3TenderCashPopUp = ({
                                 />
                               </div>
                               <div className="mb-3">
+                                 <p className="font-semibold">Return Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutExchange}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                    readOnly
+                                  />
+                                </div>
+                              <div className="mb-3">
                                 <p className="font-semibold">Difference</p>
                                 <input
                                   type="text"
-                                  value={totolAmountWithoutExchange - grossAmount}
+                                  value={grossAmount - totolAmountWithoutExchange}
                                   readOnly
                                   className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                                   placeholder="Difference"
@@ -1190,7 +1179,7 @@ const F3TenderCashPopUp = ({
 
                         {selectedSalesType === "DSALES NO INVOICE" && (
                           <>
-                          {(paymentModes.code === "4" || paymentModes.code === "5") ? (
+                          {/* {(paymentModes.code === "4" || paymentModes.code === "5") ? (
                               <>
                                 <div className="mb-3">
                                  <p className="font-semibold">Total Amount</p>
@@ -1202,32 +1191,9 @@ const F3TenderCashPopUp = ({
                                     readOnly
                                   />
                                 </div>
-                                {/* Total Amount in the middle */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Total Amount</p>
-                                  <input
-                                    type="text"
-                                    value={netWithOutVatExchange}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Total Amount"
-                                  />
-                                </div> */}
-                                {/* Change for credit/debit is always 0 */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
-                                  <input
-                                    type="text"
-                                    value={0}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Change"
-                                  />
-                                </div> */}
                               </>
                             ) : (
                               <>
-                                {/* Cash Payment */}
                                 <div className="mb-3">
                                   <p className="font-semibold">Return Amount</p>
                                   <input
@@ -1238,19 +1204,22 @@ const F3TenderCashPopUp = ({
                                     placeholder="Total Amount"
                                   />
                                 </div>
-                                {/* Change for cash payment */}
-                                {/* <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
-                                  <input
-                                    type="text"
-                                    value={Number(cashAmount) - Number(totolAmountWithoutExchange)}
-                                    readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Change"
-                                  />
-                                </div> */}
                               </>
+                            )} */}
+
+                            {!isExchangeDSalesClick && (
+                              <div className="mb-3">
+                                <p className="font-semibold">Return Amount</p>
+                                <input
+                                  type="text"
+                                  value={totolAmountWithoutVatDSalesNoInvoice}
+                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  placeholder={paymentModes.name || "Payment Mode"}
+                                  readOnly
+                                />
+                              </div>
                             )}
+
                             {isExchangeDSalesClick && (
                               <>
                               <div className="mb-3">
@@ -1264,10 +1233,20 @@ const F3TenderCashPopUp = ({
                                 />
                               </div>
                               <div className="mb-3">
+                                 <p className="font-semibold">Return Amount</p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutVatDSalesNoInvoice}
+                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    placeholder={paymentModes.name || "Payment Mode"}
+                                    readOnly
+                                  />
+                                </div>
+                              <div className="mb-3">
                                 <p className="font-semibold">Difference</p>
                                 <input
                                   type="text"
-                                  value={totolAmountWithoutVatDSalesNoInvoice - grossAmount}
+                                  value={grossAmount - totolAmountWithoutVatDSalesNoInvoice}
                                   readOnly
                                   className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
                                   placeholder="Difference"

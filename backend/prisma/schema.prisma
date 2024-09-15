@@ -145,6 +145,8 @@ model tblPOSInvoiceDetails {
   TransactionDate      DateTime? @db.DateTime
   id                   String    @unique(map: "UQ_tblPOSInvoiceDetails_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517") @db.UniqueIdentifier
   ReturnQty            Float?
+  createdAt            DateTime? @default(now()) // Automatically set to current date/time
+  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
 }
 
 model tblPOSInvoiceMaster {
@@ -169,6 +171,9 @@ model tblPOSInvoiceMaster {
   AdjAmount            Float?
   DocNo                String?   @db.NVarChar(255)
   PendingAmount        Float?
+  isReceiptCreated     Boolean?  @default(false) // New column for receipt status
+  createdAt            DateTime? @default(now()) // Automatically set to current date/time
+  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
 }
 
 model tblPOSInvoiceDetailsArchive {
@@ -193,6 +198,8 @@ model tblPOSInvoiceDetailsArchive {
   ItemQry              Float?
   TransactionDate      DateTime? @db.DateTime
   id                   String    @unique(map: "UQ_tblPOSInvoiceDetailsArchive_id") @default(dbgenerated("newid()"), map: "DF__tblPOSInvoic__id__1975C517_arc") @db.UniqueIdentifier
+  createdAt            DateTime? @default(now()) // Automatically set to current date/time
+  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
 }
 
 model tblPOSInvoiceMasterArchive {
@@ -217,6 +224,9 @@ model tblPOSInvoiceMasterArchive {
   AdjAmount            Float?
   DocNo                String?   @db.NVarChar(255)
   PendingAmount        Float?
+  isReceiptCreated     Boolean?  @default(false) // New column for receipt status
+  createdAt            DateTime? @default(now()) // Automatically set to current date/time
+  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
 }
 
 model TblSalesReturnInvoicetmp {
