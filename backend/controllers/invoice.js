@@ -621,6 +621,11 @@ const allowedMasterColumns = {
   VatNumber: Joi.string(),
   CustomerName: Joi.string(),
   isReceiptCreated: Joi.boolean(),
+  createdAt: Joi.date(),
+  updatedAt: Joi.date(),
+  AdjAmount: Joi.number(),
+  DocNo: Joi.string(),
+  PendingAmount: Joi.number(),
 };
 
 exports.getPOSInvoiceMaster = async (req, res) => {
