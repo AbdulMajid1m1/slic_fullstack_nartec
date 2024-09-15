@@ -32,11 +32,16 @@ router.post("/v1/archiveInvoice", controller.archiveInvoice);
 
 // Define routes
 router.get('/v1/invoiceMasterArchive', controller.getPOSInvoiceMasterArchive);
+router.get('/v1/getPOSInvoiceMaster', controller.getPOSInvoiceMaster);
 router.get('/v1/invoiceDetailsArchive', controller.getPOSInvoiceDetailsArchive);
 router.get('/v1/getCustomersWithPendingReceipts', controller.getCustomersWithPendingReceipts);
 router.post(
   "/v1/detailsByInvoiceNos",
   controller.getInvoiceDetailsByInvoiceNos
+);
+router.post(
+  "/v1/updateReceiptStatus",
+  controller.updateReceiptStatus
 );
 
 module.exports = router;
