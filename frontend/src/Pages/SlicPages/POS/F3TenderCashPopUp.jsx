@@ -268,7 +268,7 @@ const F3TenderCashPopUp = ({
   
   const handleSubmitDirectSalesReturn = async () => {
     setLoading(true);
-   
+    console.log("Direct Sales Return Data", exchangeData);
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
         "Item-Code": item.ItemCode,
