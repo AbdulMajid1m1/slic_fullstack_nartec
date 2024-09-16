@@ -121,7 +121,7 @@ const POS = () => {
       const data = response?.data?.data;
       // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -195,6 +195,7 @@ const POS = () => {
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
+                  DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
@@ -239,7 +240,7 @@ const POS = () => {
       const data = response?.data?.data;
       // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, id } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -316,6 +317,7 @@ const POS = () => {
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
+                  DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
@@ -1156,7 +1158,7 @@ const POS = () => {
             ${
               selectedSalesType === "DIRECT SALES INVOICE"
                 ? "Sales Invoice"
-                : "Return Slip Invoice"
+                : "CREDIT NOTE"
             }
           </div>
           
@@ -1229,10 +1231,22 @@ const POS = () => {
                    .map(
                      (item) => `
                     <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${item.SKU}</td>
+                      <td style="border-bottom: none;">${item.Qty}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: left; padding-left: 20px;">
+                        <div>
+                          <span style="direction: ltr; text-align: left; display: block;">
+                            ${item.Description.substring(0, item.Description.length / 2)}
+                          </span>
+                          <span style="direction: rtl; text-align: right; display: block;">
+                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                          </span>
+                        </div>
+                      </td>
                     </tr>
                   `
                    )
@@ -1241,23 +1255,47 @@ const POS = () => {
                ? DSalesNoInvoiceData.map(
                    (item) => `
                     <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${item.SKU}</td>
+                      <td style="border-bottom: none;">${item.Qty}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: left; padding-left: 20px;">
+                        <div>
+                          <span style="direction: ltr; text-align: left; display: block;">
+                            ${item.Description.substring(0, item.Description.length / 2)}
+                          </span>
+                          <span style="direction: rtl; text-align: right; display: block;">
+                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                          </span>
+                        </div>
+                      </td>
                     </tr>
                   `
                  ).join("")
                : data
                    .map(
                      (item) => `
-                    <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
-                    </tr>
-                  `
+                       <tr>
+                        <td style="border-bottom: none;">${item.SKU}</td>
+                        <td style="border-bottom: none;">${item.Qty}</td>
+                        <td style="border-bottom: none;">${item.ItemPrice}</td>
+                        <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" style="text-align: left; padding-left: 20px;">
+                          <div>
+                            <span style="direction: ltr; text-align: left; display: block;">
+                              ${item.Description.substring(0, item.Description.length / 2)}
+                            </span>
+                            <span style="direction: rtl; text-align: right; display: block;">
+                              ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                     `
                    )
                    .join("")
            }          
@@ -1609,6 +1647,7 @@ const POS = () => {
               SKU: item.ItemSKU,
               Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
               Description: item.Remarks || "No description",
+              DescriptionArabic: item.Remarks || "No description",
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
@@ -1686,7 +1725,7 @@ const POS = () => {
     setInvoiceData([]);
     setExchangeData([]);
     setInvoiceHeaderData([]);
-    setData([]);
+    // setData([]);
     setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
   };
