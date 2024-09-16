@@ -580,6 +580,8 @@ const F3TenderCashPopUp = ({
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
+
+      console.log("Sales Return", salesReturnBody)
   
       if (isExchangeDSalesClick) {
         // Exchange scenario: Call both Sales Return and Invoice APIs
@@ -614,6 +616,9 @@ const F3TenderCashPopUp = ({
           APICODE: "INVOICE",
           LANG: "ENG",
         };
+
+
+        console.log("Sales Invoice", salesInvoiceBody)
   
         // Call the Invoice API (EXIN)
         const exinRes = await ErpTeamRequest.post("/slicuat05api/v1/postData", salesInvoiceBody, {
@@ -671,6 +676,9 @@ const F3TenderCashPopUp = ({
           LANG: "ENG",
         };
   
+
+        console.log("Bank Api", bankReceiptBody)
+
         await ErpTeamRequest.post("/slicuat05api/v1/postData", bankReceiptBody, {
           headers: { Authorization: `Bearer ${token}` },
         });

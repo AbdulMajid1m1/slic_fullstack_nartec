@@ -93,6 +93,7 @@ const PosHistory = () => {
 
   const handleSelectAllInvoice = (event, value) => {
     setSelectedInvoice(value);
+    console.log(value);
     if (value) {
       // Trigger POS Invoice Master API call based on selected customer code
       fetchPOSInvoiceMaster(value);
@@ -159,12 +160,12 @@ const PosHistory = () => {
           BankApproverCode: "CIUB0000266",
           CashCardFlag: "CASH",
           ReceiptAmt: totalInvoiceAmount,
-          CustomerId: "CL102726",
+          CustomerId: selectedInvoice,
           MatchingTransactions: mappedData.map((transaction) => ({
             DocNo: transaction.DocNo,
             TransactionCode: transaction.TransactionCode,
-            PendingAmount: remainingAmount,
-            AdjAmount: exchangeAmount,
+            PendingAmount: transaction.PendingAmount,
+            AdjAmount: transaction.AdjAmount,
           })),
         },
       ],
