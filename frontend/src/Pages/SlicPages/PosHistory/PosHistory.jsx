@@ -131,10 +131,10 @@ const PosHistory = () => {
     // Extract the necessary fields from the data
     const mappedData = data.map((row) => ({
       id: row.id,
-      AdjAmount: row.AdjAmount,
+      AdjAmount: row.AdjAmount * 1.15,
       DocNo: row.DocNo,
       TransactionCode: row.TransactionCode,
-      PendingAmount: row.PendingAmount,
+      PendingAmount: row.PendingAmount * 1.15,
     }));
     // console.log(mappedData)
 
@@ -157,7 +157,7 @@ const PosHistory = () => {
           Department: "011",
           TransactionCode: "BRV",
           Division: "100",
-          BankApproverCode: "CIUB0000266",
+          // BankApproverCode: "CIUB0000266",
           CashCardFlag: "CASH",
           ReceiptAmt: totalInvoiceAmount,
           CustomerId: selectedInvoice,
@@ -202,6 +202,14 @@ const PosHistory = () => {
         toast.success(
           res?.data?.message || "Receipt status updated successfully!"
         );
+
+        fetchCustomerCodes();
+        setSelectedInvoice([]);
+        setTotalInvoiceAmount(0);
+        setExchangeAmount(0);
+        setRemainingAmount(0);
+        setData([]);
+
       } catch (errIdsApi) {
         toast.error(
           errIdsApi?.response?.data?.error || "Failed to update receipt status."
@@ -261,8 +269,11 @@ const PosHistory = () => {
                 <div className="flex justify-center items-center sm:w-[40%] w-full mt-4">
                   <Button
                     variant="contained"
-                    style={{ backgroundColor: "#021F69", color: "#ffffff" }}
-                    disabled={loading}
+                    style={{
+                      backgroundColor: selectedInvoice ? "#021F69" : "#d3d3d3",
+                      color: selectedInvoice ? "#ffffff" : "#a9a9a9",
+                    }}
+                    disabled={!selectedInvoice || loading}
                     className="w-full"
                     onClick={handleGenerateReceipt}
                     endIcon={
