@@ -271,7 +271,7 @@ const F3TenderCashPopUp = ({
     console.log("Direct Sales Return Data", exchangeData);
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
-        "Item-Code": item.ItemCode,
+        "Item-Code": item.SKU || item.ItemCode,
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
