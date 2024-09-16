@@ -290,12 +290,12 @@ const PosHistory = () => {
       <div>
         <strong>VAT (15%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
-        ${AdjAmount}
+        15%
       </div>
       <div>
         <strong>Total Amount With VAT:</strong>
         <div class="arabic-label">المجموع</div>
-        ${AdjAmount}
+        ${AdjAmount * 1.15}
       </div>
       <div>
         <strong>Change Due:</strong>
@@ -467,7 +467,7 @@ const PosHistory = () => {
               <td>Transaction: ${TransactionCode}</td>
               <td>1</td>
               <td>${AdjAmount}</td>
-              <td>${PendingAmount}</td>
+              <td>${PendingAmount * 1.15}</td>
              </tr>        
             </tbody>
           </table>
