@@ -114,7 +114,7 @@ const F3TenderCashPopUp = ({
 
       // console.log("DSales Data", DSalesNoInvoiceData)
       // console.log("Header Data", invoiceHeaderData)
-      // console.log(dSalesNoInvoiceexchangeData)
+      console.log(dSalesNoInvoiceexchangeData)
 
       // console.log(selectedSalesReturnType)
       // console.log(searchInvoiceNumber)
@@ -536,7 +536,7 @@ const F3TenderCashPopUp = ({
   
     try {
       const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
-        "Item-Code": item.ItemCode,
+        "Item-Code": item.SKU,
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
