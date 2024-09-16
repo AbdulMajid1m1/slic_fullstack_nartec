@@ -1565,10 +1565,22 @@ const POS = () => {
                 .map(
                   (item) => `
                   <tr>
-                    <td>${item.SKU}</td>
-                    <td>${item.Qty}</td>
-                    <td>${item.ItemPrice}</td>
-                    <td>${item.Total}</td>
+                    <td style="border-bottom: none;">${item.SKU}</td>
+                    <td style="border-bottom: none;">${item.Qty}</td>
+                    <td style="border-bottom: none;">${item.ItemPrice}</td>
+                    <td style="border-bottom: none;">${item.Total}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" style="text-align: left; padding-left: 20px;">
+                      <div>
+                        <span style="direction: ltr; text-align: left; display: block;">
+                          ${item.Description.substring(0, item.Description.length / 2)}
+                        </span>
+                        <span style="direction: rtl; text-align: right; display: block;">
+                          ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                        </span>
+                      </div>
+                    </td>
                   </tr>
                 `
                 )
@@ -1725,7 +1737,7 @@ const POS = () => {
     setInvoiceData([]);
     setExchangeData([]);
     setInvoiceHeaderData([]);
-    // setData([]);
+    setData([]);
     setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
   };
