@@ -345,6 +345,12 @@ const POS = () => {
     }
   };
 
+
+  // handleDelete
+  const handleDSalesDelete = (index) => {
+    setDSalesNoInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
@@ -373,8 +379,17 @@ const POS = () => {
   const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] =
     useState(false);
   const handleShowExhangeItemPopup = (rowData) => {
-    setSelectedRowData(rowData); // Store the selected row data to pass to the popup
-    setIsExchangeItemPopupVisible(true);
+    if (selectedSalesReturnType === "DIRECT RETURN") {
+      toast.info("You don't select the Sales Return type return with exchange", {
+      });
+      setIsExchangeItemPopupVisible(false); 
+    } else {
+      setSelectedRowData(rowData);
+      setIsExchangeItemPopupVisible(true);
+    }
+
+    // setSelectedRowData(rowData); // Store the selected row data to pass to the popup
+    // setIsExchangeItemPopupVisible(true);
   };
 
   const [
@@ -2770,7 +2785,7 @@ const POS = () => {
                                 </li>
                                 <li>
                                   <button
-                                    onClick={() => handleDelete(index)}
+                                    onClick={() => handleDSalesDelete(index)}
                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
                                     <MdRemoveCircle className="text-secondary mr-2" />
