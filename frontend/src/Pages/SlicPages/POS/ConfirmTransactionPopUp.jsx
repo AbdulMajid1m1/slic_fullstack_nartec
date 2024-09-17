@@ -45,7 +45,7 @@ const ConfirmTransactionPopUp = ({
     } catch (error) {
       console.log(error);
       toast.error(
-        error?.response?.data?.error ||
+        error?.response?.data ||
           error?.response?.data?.message ||
           "Something went wrong!"
       );
@@ -82,7 +82,7 @@ const ConfirmTransactionPopUp = ({
     } catch (error) {
       console.log(error);
       toast.error(
-        error?.response?.data?.error ||
+        error?.response?.data ||
           error?.response?.data?.message ||
           "Something went wrong!"
       );
