@@ -1898,6 +1898,34 @@ const POS = () => {
     setTotalAmountWithVat(0);
   }, [selectedSalesType]);
 
+
+  // I checking the invoice number and customer code if customer code is found in this invoice number then input feild is prefilled
+  const handleInvoiceScan = async (invoiceHeaderData) => {
+    const scannedCustomerCode = invoiceHeaderData?.CustomerCode;
+
+    if (scannedCustomerCode) {
+      const matchingCustomer = customerNameWithDirectInvoice.find(
+        (customer) => customer.CUST_CODE === scannedCustomerCode
+      );
+
+      if (matchingCustomer) {
+        // Set the matched customer in the Autocomplete input
+        setSelectedCustomeNameWithDirectInvoice(matchingCustomer);
+      } else {
+        toast.error("No matching customer found. Please select manually.");
+        setSelectedCustomeNameWithDirectInvoice(null);
+      }
+    }
+  };
+
+  // Example of calling handleInvoiceScan when scanning an invoice
+  useEffect(() => {
+    if (invoiceHeaderData) {
+      handleInvoiceScan(invoiceHeaderData.invoiceHeader);
+    }
+  }, [invoiceHeaderData]);
+
+
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
