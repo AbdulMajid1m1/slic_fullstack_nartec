@@ -67,7 +67,7 @@ const F3TenderCashPopUp = ({
   const PaymentModels = sessionStorage.getItem("selectedPaymentModels");
   const paymentModes = JSON.parse(PaymentModels);
   const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
-  const examptReason = JSON.parse(ExamptionReason);
+  const examptReason = ExamptionReason ? JSON.parse(ExamptionReason) : "";
   
   
   useEffect(() => {
@@ -106,6 +106,7 @@ const F3TenderCashPopUp = ({
     }, []);
   
     // console.log(slicUserData?.SalesmanCode);
+    // console.log(examptReason)
     
     useEffect(() => {
       if (isVisible) {
@@ -132,6 +133,7 @@ const F3TenderCashPopUp = ({
 
       // console.log(selectedSalesReturnType)
       // console.log(searchInvoiceNumber)
+      // console.log(examptReason);
     }
   }, [isVisible, storeDatagridData]);
 
@@ -172,7 +174,7 @@ const F3TenderCashPopUp = ({
             Remarks: remarks,
             PosRefNo: invoiceNumber,
             ZATCAPaymentMode: paymentModes.code,
-            TaxExemptionReason: "",
+            TaxExemptionReason: examptReason?.name || "",
             SalesmanCode: slicUserData?.SalesmanCode,
             Item: items,
           },
@@ -249,7 +251,7 @@ const F3TenderCashPopUp = ({
 
         console.log(bankReceiptBody);
 
-        await ErpTeamRequest.post(
+        const bankRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
           bankReceiptBody,
           {
@@ -352,7 +354,7 @@ const F3TenderCashPopUp = ({
             Remarks: invoiceHeaderData?.Remarks,
             PosRefNo: invoiceHeaderData?.InvoiceNo,
             ZATCAPaymentMode: paymentModes.code,
-            TaxExemptionReason: "1",
+            TaxExemptionReason: examptReason?.name || "",
             SalesmanCode: slicUserData?.SalesmanCode,
             Item: SecondDataGridItem,
           },
@@ -401,7 +403,7 @@ const F3TenderCashPopUp = ({
               Remarks: invoiceHeaderData?.Remarks,
               PosRefNo: invoiceHeaderData?.InvoiceNo,
               ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: "0", // Invoice specific field
+              TaxExemptionReason: examptReason?.name || "", // Invoice specific field
               SalesmanCode: slicUserData?.SalesmanCode,
               Item: firstDataGridItem,
             },
@@ -482,7 +484,7 @@ const F3TenderCashPopUp = ({
             LANG: "ENG",
           };
 
-          await ErpTeamRequest.post(
+          const bankRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptBody,
             {
@@ -683,7 +685,7 @@ const F3TenderCashPopUp = ({
             Remarks: remarks,
             PosRefNo: invoiceNumber,
             ZATCAPaymentMode: paymentModes.code,
-            TaxExemptionReason: "1",
+            TaxExemptionReason: examptReason?.name || "",
             SalesmanCode: slicUserData?.SalesmanCode,
             Item: SecondDataGridItem,
           },
@@ -734,7 +736,7 @@ const F3TenderCashPopUp = ({
               Remarks: remarks,
               PosRefNo: invoiceNumber,
               ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: "0", // Invoice specific field
+              TaxExemptionReason: examptReason?.name || "", // Invoice specific field
               SalesmanCode: slicUserData?.SalesmanCode,
               Item: firstDataGridItem,
             },
