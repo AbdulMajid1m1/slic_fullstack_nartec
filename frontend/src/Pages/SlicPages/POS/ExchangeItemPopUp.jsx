@@ -26,7 +26,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
       const data = response?.data?.data;
       console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -100,6 +100,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
+                  DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,

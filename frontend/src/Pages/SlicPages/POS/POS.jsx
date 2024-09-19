@@ -121,7 +121,7 @@ const POS = () => {
       const data = response?.data?.data;
       // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -195,6 +195,7 @@ const POS = () => {
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
+                  DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
@@ -239,7 +240,7 @@ const POS = () => {
       const data = response?.data?.data;
       // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, id } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } = data;
 
         // call the second api later in their
         const secondApiBody = {
@@ -316,6 +317,7 @@ const POS = () => {
                   SKU: ItemCode,
                   Barcode: GTIN,
                   Description: EnglishName,
+                  DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
@@ -341,6 +343,12 @@ const POS = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+
+  // handleDelete
+  const handleDSalesDelete = (index) => {
+    setDSalesNoInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
   };
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
@@ -371,8 +379,17 @@ const POS = () => {
   const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] =
     useState(false);
   const handleShowExhangeItemPopup = (rowData) => {
-    setSelectedRowData(rowData); // Store the selected row data to pass to the popup
-    setIsExchangeItemPopupVisible(true);
+    if (selectedSalesReturnType === "DIRECT RETURN") {
+      toast.info("You don't select the Sales Return type return with exchange", {
+      });
+      setIsExchangeItemPopupVisible(false); 
+    } else {
+      setSelectedRowData(rowData);
+      setIsExchangeItemPopupVisible(true);
+    }
+
+    // setSelectedRowData(rowData); // Store the selected row data to pass to the popup
+    // setIsExchangeItemPopupVisible(true);
   };
 
   const [
@@ -1156,7 +1173,7 @@ const POS = () => {
             ${
               selectedSalesType === "DIRECT SALES INVOICE"
                 ? "Sales Invoice"
-                : "Return Slip Invoice"
+                : "CREDIT NOTE"
             }
           </div>
           
@@ -1229,10 +1246,22 @@ const POS = () => {
                    .map(
                      (item) => `
                     <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${item.SKU}</td>
+                      <td style="border-bottom: none;">${item.Qty}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: left; padding-left: 20px;">
+                        <div>
+                          <span style="direction: ltr; text-align: left; display: block;">
+                            ${item.Description.substring(0, item.Description.length / 2)}
+                          </span>
+                          <span style="direction: rtl; text-align: right; display: block;">
+                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                          </span>
+                        </div>
+                      </td>
                     </tr>
                   `
                    )
@@ -1241,23 +1270,47 @@ const POS = () => {
                ? DSalesNoInvoiceData.map(
                    (item) => `
                     <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${item.SKU}</td>
+                      <td style="border-bottom: none;">${item.Qty}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice}</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" style="text-align: left; padding-left: 20px;">
+                        <div>
+                          <span style="direction: ltr; text-align: left; display: block;">
+                            ${item.Description.substring(0, item.Description.length / 2)}
+                          </span>
+                          <span style="direction: rtl; text-align: right; display: block;">
+                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                          </span>
+                        </div>
+                      </td>
                     </tr>
                   `
                  ).join("")
                : data
                    .map(
                      (item) => `
-                    <tr>
-                      <td>${item.SKU}</td>
-                      <td>${item.Qty}</td>
-                      <td>${item.ItemPrice}</td>
-                      <td>${item.ItemPrice * item.Qty}</td>
-                    </tr>
-                  `
+                       <tr>
+                        <td style="border-bottom: none;">${item.SKU}</td>
+                        <td style="border-bottom: none;">${item.Qty}</td>
+                        <td style="border-bottom: none;">${item.ItemPrice}</td>
+                        <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" style="text-align: left; padding-left: 20px;">
+                          <div>
+                            <span style="direction: ltr; text-align: left; display: block;">
+                              ${item.Description.substring(0, item.Description.length / 2)}
+                            </span>
+                            <span style="direction: rtl; text-align: right; display: block;">
+                              ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                     `
                    )
                    .join("")
            }          
@@ -1527,10 +1580,22 @@ const POS = () => {
                 .map(
                   (item) => `
                   <tr>
-                    <td>${item.SKU}</td>
-                    <td>${item.Qty}</td>
-                    <td>${item.ItemPrice}</td>
-                    <td>${item.Total}</td>
+                    <td style="border-bottom: none;">${item.SKU}</td>
+                    <td style="border-bottom: none;">${item.Qty}</td>
+                    <td style="border-bottom: none;">${item.ItemPrice}</td>
+                    <td style="border-bottom: none;">${item.Total}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" style="text-align: left; padding-left: 20px;">
+                      <div>
+                        <span style="direction: ltr; text-align: left; display: block;">
+                          ${item.Description.substring(0, item.Description.length / 2)}
+                        </span>
+                        <span style="direction: rtl; text-align: right; display: block;">
+                          ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                        </span>
+                      </div>
+                    </td>
                   </tr>
                 `
                 )
@@ -1609,6 +1674,7 @@ const POS = () => {
               SKU: item.ItemSKU,
               Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
               Description: item.Remarks || "No description",
+              DescriptionArabic: item.Remarks || "No description",
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
@@ -1846,6 +1912,34 @@ const POS = () => {
     setTotalVat(0);
     setTotalAmountWithVat(0);
   }, [selectedSalesType]);
+
+
+  // I checking the invoice number and customer code if customer code is found in this invoice number then input feild is prefilled
+  const handleInvoiceScan = async (invoiceHeaderData) => {
+    const scannedCustomerCode = invoiceHeaderData?.CustomerCode;
+
+    if (scannedCustomerCode) {
+      const matchingCustomer = customerNameWithDirectInvoice.find(
+        (customer) => customer.CUST_CODE === scannedCustomerCode
+      );
+
+      if (matchingCustomer) {
+        // Set the matched customer in the Autocomplete input
+        setSelectedCustomeNameWithDirectInvoice(matchingCustomer);
+      } else {
+        toast.error("No matching customer found. Please select manually.");
+        setSelectedCustomeNameWithDirectInvoice(null);
+      }
+    }
+  };
+
+  // Example of calling handleInvoiceScan when scanning an invoice
+  useEffect(() => {
+    if (invoiceHeaderData) {
+      handleInvoiceScan(invoiceHeaderData.invoiceHeader);
+    }
+  }, [invoiceHeaderData]);
+
 
   return (
     <SideNav>
@@ -2691,7 +2785,7 @@ const POS = () => {
                                 </li>
                                 <li>
                                   <button
-                                    onClick={() => handleDelete(index)}
+                                    onClick={() => handleDSalesDelete(index)}
                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
                                     <MdRemoveCircle className="text-secondary mr-2" />
