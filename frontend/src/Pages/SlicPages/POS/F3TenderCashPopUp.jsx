@@ -63,16 +63,18 @@ const F3TenderCashPopUp = ({
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [token, setToken] = useState(null);
+  const [slicUserData, setSlicUserData] = useState(null);
   const PaymentModels = sessionStorage.getItem("selectedPaymentModels");
   const paymentModes = JSON.parse(PaymentModels);
   const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
   const examptReason = JSON.parse(ExamptionReason);
-
+  
+  
   useEffect(() => {
     // slic login api token get
     const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
     setToken(token);
-
+    
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
       const companyData = JSON.parse(storedCompanyData);
@@ -81,7 +83,7 @@ const F3TenderCashPopUp = ({
         // console.log(companyData);
       }
     }
-
+    
     const storedLocationData = sessionStorage.getItem("selectedLocation");
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
@@ -92,10 +94,22 @@ const F3TenderCashPopUp = ({
     }
   }, []);
 
-  useEffect(() => {
-    if (isVisible) {
-      // console.log("Popup Data:", storeDatagridData);
-      console.log("Invoice Data:", storeInvoiceDatagridData);
+
+   useEffect(() => {
+    // slic our user data
+    const slicUser = sessionStorage.getItem('slicUserData');
+    const adminData = JSON.parse(slicUser);
+    if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
+      setSlicUserData(adminData);
+      console.log(adminData)
+    }
+    }, []);
+  
+    
+    useEffect(() => {
+      if (isVisible) {
+        // console.log("Popup Data:", storeDatagridData);
+        console.log("Invoice Data:", storeInvoiceDatagridData);
       // console.log("exchange Button", isExchangeClick)
       // console.log("Exchange DSales Button", isExchangeDSalesClick)
       // console.log(selectedCustomerCode?.CUSTOMERCODE)
@@ -158,6 +172,7 @@ const F3TenderCashPopUp = ({
             PosRefNo: invoiceNumber,
             ZATCAPaymentMode: paymentModes.code,
             TaxExemptionReason: "",
+            SalesmanCode: slicUserData?.SalesmanCode,
             Item: items,
           },
         ],
@@ -337,6 +352,7 @@ const F3TenderCashPopUp = ({
             PosRefNo: invoiceHeaderData?.InvoiceNo,
             ZATCAPaymentMode: paymentModes.code,
             TaxExemptionReason: "1",
+            SalesmanCode: slicUserData?.SalesmanCode,
             Item: SecondDataGridItem,
           },
         ],
@@ -385,6 +401,7 @@ const F3TenderCashPopUp = ({
               PosRefNo: invoiceHeaderData?.InvoiceNo,
               ZATCAPaymentMode: paymentModes.code,
               TaxExemptionReason: "0", // Invoice specific field
+              SalesmanCode: slicUserData?.SalesmanCode,
               Item: firstDataGridItem,
             },
           ],
@@ -666,6 +683,7 @@ const F3TenderCashPopUp = ({
             PosRefNo: invoiceNumber,
             ZATCAPaymentMode: paymentModes.code,
             TaxExemptionReason: "1",
+            SalesmanCode: slicUserData?.SalesmanCode,
             Item: SecondDataGridItem,
           },
         ],
@@ -716,6 +734,7 @@ const F3TenderCashPopUp = ({
               PosRefNo: invoiceNumber,
               ZATCAPaymentMode: paymentModes.code,
               TaxExemptionReason: "0", // Invoice specific field
+              SalesmanCode: slicUserData?.SalesmanCode,
               Item: firstDataGridItem,
             },
           ],
