@@ -41,6 +41,7 @@ model TblUsers {
   UserLoginID     String? @db.VarChar(50)
   UserPassword    String? @db.VarChar(150)
   UserLoginStatus Int?    @default(0)
+  SalesmanCode    String? @db.VarChar(50)
 
   @@map("TblUsers")
 }
