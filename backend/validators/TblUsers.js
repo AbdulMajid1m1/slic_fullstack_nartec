@@ -1,9 +1,7 @@
 const { body } = require("express-validator");
 
 exports.auth = [
-  body("userLoginID")
-    .isEmail()
-    .withMessage("UserLoginID must be a valid email address"),
+  body("userLoginID"),
   // .normalizeEmail(),
   body("userPassword")
     .isString()
