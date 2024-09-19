@@ -19,13 +19,15 @@ async function getUserByLoginId(loginId) {
   }
 }
 
-async function createUser(userLoginID, userPassword) {
+async function createUser(userLoginID, userPassword, salesmanCode) {
   try {
     const hashedPassword = await bcrypt.hash(userPassword, 10);
     const newUser = await prisma.tblUsers.create({
       data: {
         UserLoginID: userLoginID,
         UserPassword: hashedPassword,
+        SalesmanCode: salesmanCode,
+        UserLoginStatus: 1 // Assuming 1 means active
       },
     });
     return newUser;
