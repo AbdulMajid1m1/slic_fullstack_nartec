@@ -100,11 +100,12 @@ const F3TenderCashPopUp = ({
     const slicUser = sessionStorage.getItem('slicUserData');
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
-      setSlicUserData(adminData);
-      console.log(adminData)
+      setSlicUserData(adminData?.data?.user);
+      // console.log(adminData?.data?.user)
     }
     }, []);
   
+    // console.log(slicUserData?.SalesmanCode);
     
     useEffect(() => {
       if (isVisible) {
