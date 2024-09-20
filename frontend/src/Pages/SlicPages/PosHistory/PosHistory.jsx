@@ -117,7 +117,7 @@ const PosHistory = () => {
     const totalSRWithVAT = totalSRAmount * 1.15;
     const remainingAmount = totalINWithVAT - totalSRWithVAT;
 
-    setTotalInvoiceAmount(totalINWithVAT);
+    setTotalInvoiceAmount(totalINWithVAT.toFixed(2));
     setExchangeAmount(totalSRWithVAT.toFixed(2));
     setRemainingAmount(remainingAmount.toFixed(2));
   };
