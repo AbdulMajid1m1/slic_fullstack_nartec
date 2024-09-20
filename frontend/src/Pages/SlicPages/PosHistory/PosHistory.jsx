@@ -244,15 +244,15 @@ const PosHistory = () => {
       const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
   
       const qrCodeDataFromApi = res?.data?.qrCodeData;
-      console.log(qrCodeDataFromApi);
+      // console.log(qrCodeDataFromApi);
       setZatcaQrcode(qrCodeDataFromApi);
   
       handlePrintSalesInvoice(selectedRow);
   
       toast.success("Invoice generated and ready to print!");
     } catch (err) {
-      console.log(err);
-      toast.error(err?.response?.data?.errors[0] || "An error occurred while generating the invoice");
+      // console.log(err);
+      toast.error(err?.response?.data?.errors[0]?.msg || "An error occurred while generating the invoice");
     }
   };  
   
@@ -279,6 +279,14 @@ const PosHistory = () => {
       year: 'numeric',
     });    
 
+    let salesInvoiceTitle = '';
+    const lastTwoTransactionCode = TransactionCode.slice(-2);
+
+    if (lastTwoTransactionCode === 'IN') {
+        salesInvoiceTitle = 'SALES INVOICE';
+    } else if (lastTwoTransactionCode === 'SR') {
+        salesInvoiceTitle = 'SALES RETURN';
+    }
 
     // Generate totals for exchange invoice
     const totalsContent = `
@@ -412,7 +420,7 @@ const PosHistory = () => {
             <div>Tel. Number: 013 8121066</div>
           </div>
 
-          <div class="sales-invoice-title">CREDIT NOTE</div>
+          <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>${CustomerName}</div>
