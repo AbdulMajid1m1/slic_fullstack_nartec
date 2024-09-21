@@ -52,10 +52,8 @@ const POS = () => {
   // useEffect(() => {
   //   const checkSession = async () => {
   //     try {
-  //       const response = await fetch(
-  //         "http://localhost:1100/api/whatsapp/checkSession"
-  //       );
-  //       const data = await response.json();
+  //       const response = await newRequest.get("/whatsapp/checkSession")
+  //       const data = response?.data;
 
   //       if (data.status === "failure" && data.qrCode) {
   //         setQrCode(data.qrCode);
@@ -1172,7 +1170,7 @@ const POS = () => {
             <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
-            <div>السجل التجاري#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
@@ -1344,7 +1342,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">This invoice is generated as per zatca</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
@@ -1532,12 +1530,13 @@ const POS = () => {
             <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
             <div>السجل التجاري#: 2050011041</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
 
-          <div class="sales-invoice-title">Exchange Slip Invoice</div>
+          <div class="sales-invoice-title">Sales Invoice</div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
@@ -1642,7 +1641,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">This invoice is generated as per zatca</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
@@ -1969,6 +1968,27 @@ const POS = () => {
       handleInvoiceScan(invoiceHeaderData.invoiceHeader);
     }
   }, [invoiceHeaderData]);
+
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleMobileChange = (e) => {
+    const value = e.target.value;
+    
+    if (value.length === 0 || value.startsWith("0")) {
+      setMobileNo(value);
+
+      // Validate if it's 10 digits long
+      if (value.length === 10) {
+        setErrorMessage(""); // Clear error if exactly 10 digits
+      } else if (value.length < 10 && value.length > 0) {
+        setErrorMessage("Mobile must be 10 digits long.");
+      } else {
+        setErrorMessage(""); // Clear the error for empty input
+      }
+    } else {
+      setErrorMessage("Mobile must start with 0.");
+    }
+  };
 
 
   return (
@@ -2327,7 +2347,8 @@ const POS = () => {
                   className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                   placeholder="Mobile"
                   value={mobileNo}
-                  onChange={(e) => setMobileNo(e.target.value)}
+                  // onChange={(e) => setMobileNo(e.target.value)}
+                  onChange={handleMobileChange}
                 />
               </div>
               {selectedSalesType === "DIRECT SALES RETURN" && (
@@ -2447,6 +2468,9 @@ const POS = () => {
                 onChange={(e) => setVat(e.target.value)}
               />
             </div>
+            {errorMessage && (
+              <p className="text-red-500 text-sm -mt-4">{errorMessage}</p>
+            )}
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
             <div className="mt-10 overflow-x-auto">

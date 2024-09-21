@@ -417,7 +417,7 @@ const PosHistory = () => {
             <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
-            <div>السجل التجاري#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
@@ -497,9 +497,9 @@ const PosHistory = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">This invoice is generated as per zatca</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
-      </html>
+      </html>j
     `;
     const printWindow = window.open("", "Print Window", "height=800,width=800");
     if (!printWindow) {
