@@ -49,24 +49,27 @@ const POS = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const checkSession = async () => {
-  //     try {
-  //       const response = await newRequest.get("/whatsapp/checkSession")
-  //       const data = response?.data;
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        // const response = await fetch(
+        //   "http://localhost:1100/api/whatsapp/checkSession"
+        // );
+        const reponse = await newRequest.get("/whatsapp/checkSession");
+        console.log(reponse);
+        const data = reponse.data;
+        if (data.status === "failure" && data.qrCode) {
+          setQrCode(data.qrCode);
+          console.log("QR code:", data.qrCode);
+          setShowPopup(true);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
 
-  //       if (data.status === "failure" && data.qrCode) {
-  //         setQrCode(data.qrCode);
-  //         console.log("QR code:", data.qrCode);
-  //         setShowPopup(true);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking session:", error);
-  //     }
-  //   };
-
-  //   checkSession();
-  // }, []);
+    checkSession();
+  }, []);
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -244,16 +247,18 @@ const POS = () => {
       const data = response?.data?.data;
       // console.log(data)
       if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } = data;
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } =
+          data;
 
         // call the second api later in their
         const secondApiBody = {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-            ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-            : selectedCustomerName?.CUSTOMERCODE,
+            P_CUST_CODE:
+              selectedSalesReturnType === "DIRECT RETURN"
+                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                : selectedCustomerName?.CUSTOMERCODE,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -349,10 +354,11 @@ const POS = () => {
     }
   };
 
-
   // handleDelete
   const handleDSalesDelete = (index) => {
-    setDSalesNoInvoiceData((prevData) => prevData.filter((_, i) => i !== index));
+    setDSalesNoInvoiceData((prevData) =>
+      prevData.filter((_, i) => i !== index)
+    );
   };
 
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
@@ -384,9 +390,11 @@ const POS = () => {
     useState(false);
   const handleShowExhangeItemPopup = (rowData) => {
     if (selectedSalesReturnType === "DIRECT RETURN") {
-      toast.info("You don't select the Sales Return type return with exchange", {
-      });
-      setIsExchangeItemPopupVisible(false); 
+      toast.info(
+        "You don't select the Sales Return type return with exchange",
+        {}
+      );
+      setIsExchangeItemPopupVisible(false);
     } else {
       setSelectedRowData(rowData);
       setIsExchangeItemPopupVisible(true);
@@ -437,7 +445,10 @@ const POS = () => {
       // Apply filtering based on selectedOption
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
-      } else if (selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE") {
+      } else if (
+        selectedSalesType === "DIRECT SALES RETURN" ||
+        selectedSalesType === "DSALES NO INVOICE"
+      ) {
         codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
       }
       // console.log(codes)
@@ -585,9 +596,12 @@ const POS = () => {
   const [dSalesNoInvoice, setDSalesNoInvoice] = useState(null);
 
   // Add state for HeadSysId for each sales type
-  const [directSalesInvoiceHeadSysId, setDirectSalesInvoiceHeadSysId] = useState(null);
-  const [directSalesReturnHeadSysId, setDirectSalesReturnHeadSysId] = useState(null);
-  const [dSalesNoInvoiceHeadSysId, setDSalesNoInvoiceHeadSysId] = useState(null);
+  const [directSalesInvoiceHeadSysId, setDirectSalesInvoiceHeadSysId] =
+    useState(null);
+  const [directSalesReturnHeadSysId, setDirectSalesReturnHeadSysId] =
+    useState(null);
+  const [dSalesNoInvoiceHeadSysId, setDSalesNoInvoiceHeadSysId] =
+    useState(null);
 
   useEffect(() => {
     if (directSalesInvoiceDocumentNo) {
@@ -602,7 +616,7 @@ const POS = () => {
     if (dSalesNoInvoice) {
       console.log("Updated DSales DocNo Number:", dSalesNoInvoice);
     }
-    if(directSalesInvoiceHeadSysId) {
+    if (directSalesInvoiceHeadSysId) {
       console.log("Updated HeadSysId for DSIN:", directSalesInvoiceHeadSysId);
     }
   }, [
@@ -692,7 +706,10 @@ const POS = () => {
           // ItemSysID: exchangeData[0]?.ItemCode,
           ItemSysID: exchangeData[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode:
+            selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
@@ -715,7 +732,10 @@ const POS = () => {
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode:
+            selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
@@ -747,7 +767,10 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode:
+            selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -769,7 +792,10 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedSalesReturnType === "DIRECT RETURN" ? selectedCustomeNameWithDirectInvoice?.CUST_CODE : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode:
+            selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
@@ -904,35 +930,35 @@ const POS = () => {
     }
   };
 
-
   const [zatchaQrcodeExchange, setZatchaQrcodeExchange] = useState(null);
   const handleZatcaInvoiceGenerator = async (e) => {
     setInvoiceLoader(true);
-  
+
     // Check if either of the buttons is clicked
     if (!isExchangeClick && !isExchangeDSalesClick) {
       toast.error("Please select a valid action to proceed.");
       setInvoiceLoader(false);
       return;
     }
-  
+
     let payload = {
       invoiceDate: todayDate,
       totalWithVat: totalAmountWithVat,
       vatTotal: Number(totalVat),
     };
-  
+
     try {
       const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       console.log(qrCodeDataFromApi);
       setZatchaQrcodeExchange(qrCodeDataFromApi);
-  
+
       toast.success("Invoice generated successfully!");
     } catch (err) {
       console.log(err);
       toast.error(
-        err?.response?.data?.errors[0] || "An error occurred while generating the invoice"
+        err?.response?.data?.errors[0] ||
+          "An error occurred while generating the invoice"
       );
     } finally {
       setInvoiceLoader(false);
@@ -1186,11 +1212,21 @@ const POS = () => {
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
             ${
-              selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+              selectedSalesType === "DIRECT SALES INVOICE" ||
+              selectedSalesType === "DSALES NO INVOICE"
                 ? customerName
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
+<<<<<<< HEAD
+            <div><span class="field-label">VAT#: </span>
+            ${
+              selectedSalesType === "DIRECT SALES INVOICE" ||
+              selectedSalesType === "DSALES NO INVOICE"
+                ? vat
+                : invoiceHeaderData?.invoiceHeader?.VatNumber
+            }
+=======
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${
@@ -1207,15 +1243,17 @@ const POS = () => {
                       : invoiceHeaderData?.invoiceHeader?.VatNumber
                   }
               </div>
+>>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
             </div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>
                  ${
-                  selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
-                    ? invoiceNumber
-                    : searchInvoiceNumber
-                }
+                   selectedSalesType === "DIRECT SALES INVOICE" ||
+                   selectedSalesType === "DSALES NO INVOICE"
+                     ? invoiceNumber
+                     : searchInvoiceNumber
+                 }
                 </div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
@@ -1265,16 +1303,24 @@ const POS = () => {
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
                       <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${
+                        item.ItemPrice * item.Qty
+                      }</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(0, item.Description.length / 2)}
+                            ${item.Description.substring(
+                              0,
+                              item.Description.length / 2
+                            )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                            ${item.DescriptionArabic.substring(
+                              0,
+                              item.DescriptionArabic.length / 2
+                            )}
                           </span>
                         </div>
                       </td>
@@ -1289,16 +1335,24 @@ const POS = () => {
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
                       <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                      <td style="border-bottom: none;">${
+                        item.ItemPrice * item.Qty
+                      }</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(0, item.Description.length / 2)}
+                            ${item.Description.substring(
+                              0,
+                              item.Description.length / 2
+                            )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                            ${item.DescriptionArabic.substring(
+                              0,
+                              item.DescriptionArabic.length / 2
+                            )}
                           </span>
                         </div>
                       </td>
@@ -1312,16 +1366,24 @@ const POS = () => {
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
                         <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${item.ItemPrice * item.Qty}</td>
+                        <td style="border-bottom: none;">${
+                          item.ItemPrice * item.Qty
+                        }</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
                           <div>
                             <span style="direction: ltr; text-align: left; display: block;">
-                              ${item.Description.substring(0, item.Description.length / 2)}
+                              ${item.Description.substring(
+                                0,
+                                item.Description.length / 2
+                              )}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
-                              ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                              ${item.DescriptionArabic.substring(
+                                0,
+                                item.DescriptionArabic.length / 2
+                              )}
                             </span>
                           </div>
                         </td>
@@ -1618,10 +1680,16 @@ const POS = () => {
                     <td colspan="4" style="text-align: left; padding-left: 20px;">
                       <div>
                         <span style="direction: ltr; text-align: left; display: block;">
-                          ${item.Description.substring(0, item.Description.length / 2)}
+                          ${item.Description.substring(
+                            0,
+                            item.Description.length / 2
+                          )}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
-                          ${item.DescriptionArabic.substring(0, item.DescriptionArabic.length / 2)}
+                          ${item.DescriptionArabic.substring(
+                            0,
+                            item.DescriptionArabic.length / 2
+                          )}
                         </span>
                       </div>
                     </td>
@@ -1670,7 +1738,6 @@ const POS = () => {
       );
     };
   };
-
 
   // Direct Sales Return InvoiceData Datagrid
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
@@ -1723,40 +1790,39 @@ const POS = () => {
     }
   };
 
-  
   const handleSearchInvoice = (e) => {
     e.preventDefault();
     handleGetInvoiceDetails(searchInvoiceNumber);
   };
-  
+
   // Sales return Calculation without exhange
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      
+
       invoiceData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
-      
+
       setNetWithOutExchange(totalNet);
       setTotalWithOutExchange(totalVat);
       setTotolAmountWithoutExchange(totalNet + totalVat);
     };
-    
+
     calculateTotals();
   }, [invoiceData]);
-  
+
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
     const originalQty = invoiceData[index].originalQty;
     const qty = Number(newQty);
     // console.log(originalQty)
-    
+
     if (qty > originalQty || qty < 1) return;
-    
+
     // Update the state with the new quantity
     const updatedInvoiceData = invoiceData.map((item, i) => {
       if (i === index) {
@@ -1770,7 +1836,7 @@ const POS = () => {
     });
     setInvoiceData(updatedInvoiceData);
   };
-  
+
   // handleDelete
   const handleDeleteInvoiceData = (index) => {
     const updatedInvoiceData = invoiceData.filter((_, i) => i !== index);
@@ -1797,32 +1863,35 @@ const POS = () => {
   const addExchangeData = (newData) => {
     setExchangeData((prevData) => {
       // Loop through the newData array to handle multiple scanned items
-      return newData.reduce((updatedData, newItem) => {
-        const existingItemIndex = updatedData.findIndex(
-          (item) => item.Barcode === newItem.Barcode
-        );
-  
-        if (existingItemIndex !== -1) {
-          // If the item exists, update the quantity and total
-          const updatedItem = {
-            ...updatedData[existingItemIndex],
-            Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
-            Total:
-              (updatedData[existingItemIndex].Qty + newItem.Qty) *
-              (newItem.ItemPrice + newItem.VAT),
-          };
-  
-          // Replace the existing item with the updated item
-          updatedData[existingItemIndex] = updatedItem;
-        } else {
-          // If the item is new, add it to the data array
-          updatedData.push(newItem);
-        }
-  
-        return updatedData;
-      }, [...prevData]); // Start with the current exchangeData
+      return newData.reduce(
+        (updatedData, newItem) => {
+          const existingItemIndex = updatedData.findIndex(
+            (item) => item.Barcode === newItem.Barcode
+          );
+
+          if (existingItemIndex !== -1) {
+            // If the item exists, update the quantity and total
+            const updatedItem = {
+              ...updatedData[existingItemIndex],
+              Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
+              Total:
+                (updatedData[existingItemIndex].Qty + newItem.Qty) *
+                (newItem.ItemPrice + newItem.VAT),
+            };
+
+            // Replace the existing item with the updated item
+            updatedData[existingItemIndex] = updatedItem;
+          } else {
+            // If the item is new, add it to the data array
+            updatedData.push(newItem);
+          }
+
+          return updatedData;
+        },
+        [...prevData]
+      ); // Start with the current exchangeData
     });
-  };  
+  };
 
   // exchange calculation
   useEffect(() => {
@@ -1847,37 +1916,38 @@ const POS = () => {
     }
   }, [exchangeData]);
 
-
-
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
     useState([]);
   const addDSalesExchangeData = (newData) => {
     setDSalesNoInvoiceexchangeData((prevData) => {
-      return newData.reduce((updatedData, newItem) => {
-        const existingItemIndex = updatedData.findIndex(
-          (item) => item.Barcode === newItem.Barcode
-        );
-  
-        if (existingItemIndex !== -1) {
-          const updatedItem = {
-            ...updatedData[existingItemIndex],
-            Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
-            Total:
-              (updatedData[existingItemIndex].Qty + newItem.Qty) *
-              (newItem.ItemPrice + newItem.VAT),
-          };
-  
-          updatedData[existingItemIndex] = updatedItem;
-        } else {
-          updatedData.push(newItem);
-        }
-  
-        return updatedData;
-      }, [...prevData]);
+      return newData.reduce(
+        (updatedData, newItem) => {
+          const existingItemIndex = updatedData.findIndex(
+            (item) => item.Barcode === newItem.Barcode
+          );
+
+          if (existingItemIndex !== -1) {
+            const updatedItem = {
+              ...updatedData[existingItemIndex],
+              Qty: updatedData[existingItemIndex].Qty + newItem.Qty,
+              Total:
+                (updatedData[existingItemIndex].Qty + newItem.Qty) *
+                (newItem.ItemPrice + newItem.VAT),
+            };
+
+            updatedData[existingItemIndex] = updatedItem;
+          } else {
+            updatedData.push(newItem);
+          }
+
+          return updatedData;
+        },
+        [...prevData]
+      );
     });
   };
-  
+
   // DSales No Invoice Calculation
   useEffect(() => {
     const calculateTotals = () => {
@@ -1942,7 +2012,6 @@ const POS = () => {
     setTotalAmountWithVat(0);
   }, [selectedSalesType]);
 
-
   // I checking the invoice number and customer code if customer code is found in this invoice number then input feild is prefilled
   const handleInvoiceScan = async (invoiceHeaderData) => {
     const scannedCustomerCode = invoiceHeaderData?.CustomerCode;
@@ -1969,6 +2038,8 @@ const POS = () => {
     }
   }, [invoiceHeaderData]);
 
+<<<<<<< HEAD
+=======
 
   const [errorMessage, setErrorMessage] = useState("");
   const handleMobileChange = (e) => {
@@ -1991,6 +2062,7 @@ const POS = () => {
   };
 
 
+>>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
@@ -2140,11 +2212,12 @@ const POS = () => {
                 readOnly
               />
             </div>
-          {/* </div>
+            {/* </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"> */}
             <div>
               <label className="block text-gray-700">Search Customer</label>
-              {selectedSalesType === "DIRECT SALES RETURN" || selectedSalesType === "DSALES NO INVOICE" ? (
+              {selectedSalesType === "DIRECT SALES RETURN" ||
+              selectedSalesType === "DSALES NO INVOICE" ? (
                 selectedSalesReturnType === "DIRECT RETURN" ? (
                   // Show the combo box for DIRECT RETURN
                   <Autocomplete
@@ -2601,7 +2674,9 @@ const POS = () => {
                             min="1"
                             max={row.originalQty}
                             value={row.Qty}
-                            onChange={(e) => handleQtyChange(index, e.target.value)}
+                            onChange={(e) =>
+                              handleQtyChange(index, e.target.value)
+                            }
                             className="w-full text-center border rounded p-1"
                           />
                         </td>
@@ -2627,7 +2702,9 @@ const POS = () => {
                                 </li>
                                 <li>
                                   <button
-                                    onClick={() => handleDeleteInvoiceData(index)}
+                                    onClick={() =>
+                                      handleDeleteInvoiceData(index)
+                                    }
                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
                                     <MdRemoveCircle className="text-secondary mr-2" />
@@ -2828,27 +2905,29 @@ const POS = () => {
                               Actions
                             </button>
                             {openDropdown === index && (
-                            <div className="absolute bg-white shadow-md border mt-2 rounded w-44 z-10 right-0">
-                              <ul className="list-none p-0 m-0">
-                                <li
-                                  onClick={() => handleItemClick("exchange Dsales")}
-                                  className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
-                                >
-                                  <FaExchangeAlt className="text-secondary mr-2" />
-                                  Exchange DSales
-                                </li>
-                                <li>
-                                  <button
-                                    onClick={() => handleDSalesDelete(index)}
-                                    className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
+                              <div className="absolute bg-white shadow-md border mt-2 rounded w-44 z-10 right-0">
+                                <ul className="list-none p-0 m-0">
+                                  <li
+                                    onClick={() =>
+                                      handleItemClick("exchange Dsales")
+                                    }
+                                    className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
                                   >
-                                    <MdRemoveCircle className="text-secondary mr-2" />
-                                    Remove
-                                  </button>
-                                </li>
-                              </ul>
-                            </div>
-                          )}
+                                    <FaExchangeAlt className="text-secondary mr-2" />
+                                    Exchange DSales
+                                  </li>
+                                  <li>
+                                    <button
+                                      onClick={() => handleDSalesDelete(index)}
+                                      className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
+                                    >
+                                      <MdRemoveCircle className="text-secondary mr-2" />
+                                      Remove
+                                    </button>
+                                  </li>
+                                </ul>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -3070,10 +3149,9 @@ const POS = () => {
               setDirectSalesReturnDocumentNo={setDirectSalesReturnDocumentNo}
               setDSalesNoInvoice={setDSalesNoInvoice}
               handleDocumentNoUpdate={handleDocumentNoUpdate}
-
               // return sales type
               selectedSalesReturnType={selectedSalesReturnType}
-              // search invoice number 
+              // search invoice number
               searchInvoiceNumber={searchInvoiceNumber}
             />
           )}
