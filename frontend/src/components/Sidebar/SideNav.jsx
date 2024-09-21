@@ -18,6 +18,9 @@ import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import logout from "../../Images/logout.png";
 import { toast } from "react-toastify";
+import i18ns from "../../i18n";
+import { I18nextProvider } from "react-i18next";
+import LanguageSwitcher from "../../switer";
 
 function SideNav({ children }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -378,6 +381,9 @@ function SideNav({ children }) {
                   </p>
                 </div>
                 <div className="flex justify-center items-center gap-3">
+                  <I18nextProvider i18n={i18ns}>
+                    <LanguageSwitcher />
+                  </I18nextProvider>
                   <p className="text-secondary font-sans">
                     {memberData?.data?.user?.UserLoginID}
                   </p>
