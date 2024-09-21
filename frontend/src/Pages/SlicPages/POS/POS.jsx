@@ -1218,15 +1218,6 @@ const POS = () => {
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
-<<<<<<< HEAD
-            <div><span class="field-label">VAT#: </span>
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE"
-                ? vat
-                : invoiceHeaderData?.invoiceHeader?.VatNumber
-            }
-=======
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${
@@ -1243,7 +1234,6 @@ const POS = () => {
                       : invoiceHeaderData?.invoiceHeader?.VatNumber
                   }
               </div>
->>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
             </div>
             <div class="customer-invoiceNumber">
               <div>
@@ -2038,8 +2028,6 @@ const POS = () => {
     }
   }, [invoiceHeaderData]);
 
-<<<<<<< HEAD
-=======
 
   const [errorMessage, setErrorMessage] = useState("");
   const handleMobileChange = (e) => {
@@ -2062,7 +2050,6 @@ const POS = () => {
   };
 
 
->>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
