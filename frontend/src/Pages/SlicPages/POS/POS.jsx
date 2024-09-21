@@ -79,6 +79,12 @@ const POS = () => {
   const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
   const handleItemClick = (action) => {
     setOpenDropdown(null);
+    // Check if the correct sales return type is selected
+    if (selectedSalesReturnType === "DIRECT RETURN") {
+      toast.info("You need to select 'RETURN WITH EXCHANGE' to perform this action.", {});
+      return;
+    }
+
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
@@ -89,7 +95,7 @@ const POS = () => {
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
   };
-
+  
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
@@ -1090,7 +1096,7 @@ const POS = () => {
         <head>
           <title>Sales Invoice</title>
           <style>
-            @page { size: 3in 10in; margin: 0; }
+            @page { size: 3in 11in; margin: 0; }
             body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
             .invoice-header, .invoice-footer {
               text-align: center;
@@ -1187,8 +1193,10 @@ const POS = () => {
           <div class="invoice-header">
             <img src="${sliclogo}" alt="SLIC Logo" width="120"/>
             <div>Saudi Leather Industries Factory Co.</div>
+            <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
@@ -1210,6 +1218,7 @@ const POS = () => {
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
+<<<<<<< HEAD
             <div><span class="field-label">VAT#: </span>
             ${
               selectedSalesType === "DIRECT SALES INVOICE" ||
@@ -1217,6 +1226,24 @@ const POS = () => {
                 ? vat
                 : invoiceHeaderData?.invoiceHeader?.VatNumber
             }
+=======
+            <div style="display: flex; justify-content: space-between;">
+              <div><span class="field-label">VAT#: </span>
+                ${
+                  selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+                    ? vat
+                    : invoiceHeaderData?.invoiceHeader?.VatNumber
+                }
+              </div>
+              <div class="arabic-label" style="text-align: right; direction: rtl;">
+                <span class="field-label">الرقم الضريبي#:</span>
+                  ${
+                    selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+                      ? vat
+                      : invoiceHeaderData?.invoiceHeader?.VatNumber
+                  }
+              </div>
+>>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
             </div>
             <div class="customer-invoiceNumber">
               <div>
@@ -1377,7 +1404,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">Thank you for shopping with us!</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
@@ -1465,7 +1492,7 @@ const POS = () => {
         <head>
           <title>Exchange Invoice</title>
           <style>
-            @page { size: 3in 10in; margin: 0; }
+            @page { size: 3in 11in; margin: 0; }
             body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
             .invoice-header, .invoice-footer {
               text-align: center;
@@ -1562,13 +1589,16 @@ const POS = () => {
           <div class="invoice-header">
             <img src="${sliclogo}" alt="SLIC Logo" width="120"/>
             <div>Saudi Leather Industries Factory Co.</div>
+            <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
+            <div>السجل التجاري#: 2050011041</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
 
-          <div class="sales-invoice-title">Exchange Slip Invoice</div>
+          <div class="sales-invoice-title">Sales Invoice</div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
@@ -1578,12 +1608,22 @@ const POS = () => {
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
             </div>
-            <div><span class="field-label">VAT#: </span>
-            ${
-              selectedSalesType === "DSALES NO INVOICE"
-                ? vat
-                : invoiceHeaderData?.invoiceHeader?.VatNumber
-            }
+            <div style="display: flex; justify-content: space-between;">
+              <div><span class="field-label">VAT#: </span>
+                ${
+                  selectedSalesType === "DSALES NO INVOICE"
+                    ? vat
+                    : invoiceHeaderData?.invoiceHeader?.VatNumber
+                }
+              </div>
+              <div class="arabic-label" style="text-align: right; direction: rtl;">
+                <span class="field-label">الرقم الضريبي#:</span>
+                  ${
+                    selectedSalesType === "DSALES NO INVOICE"
+                      ? vat
+                      : invoiceHeaderData?.invoiceHeader?.VatNumber
+                  }
+              </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
@@ -1669,7 +1709,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">Thank you for shopping with us!</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
@@ -1998,6 +2038,31 @@ const POS = () => {
     }
   }, [invoiceHeaderData]);
 
+<<<<<<< HEAD
+=======
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleMobileChange = (e) => {
+    const value = e.target.value;
+    
+    if (value.length === 0 || value.startsWith("0")) {
+      setMobileNo(value);
+
+      // Validate if it's 10 digits long
+      if (value.length === 10) {
+        setErrorMessage(""); // Clear error if exactly 10 digits
+      } else if (value.length < 10 && value.length > 0) {
+        setErrorMessage("Mobile must be 10 digits long.");
+      } else {
+        setErrorMessage(""); // Clear the error for empty input
+      }
+    } else {
+      setErrorMessage("Mobile must start with 0.");
+    }
+  };
+
+
+>>>>>>> bbf0e944e5a503b3401216c032bc8352e0f37bb9
   return (
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
@@ -2355,7 +2420,8 @@ const POS = () => {
                   className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                   placeholder="Mobile"
                   value={mobileNo}
-                  onChange={(e) => setMobileNo(e.target.value)}
+                  // onChange={(e) => setMobileNo(e.target.value)}
+                  onChange={handleMobileChange}
                 />
               </div>
               {selectedSalesType === "DIRECT SALES RETURN" && (
@@ -2475,6 +2541,9 @@ const POS = () => {
                 onChange={(e) => setVat(e.target.value)}
               />
             </div>
+            {errorMessage && (
+              <p className="text-red-500 text-sm -mt-4">{errorMessage}</p>
+            )}
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
             <div className="mt-10 overflow-x-auto">

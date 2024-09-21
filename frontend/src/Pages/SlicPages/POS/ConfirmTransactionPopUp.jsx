@@ -107,12 +107,27 @@ const ConfirmTransactionPopUp = ({
     }
   };
 
+  // const handleExamptionsTypesChange = (event, value) => {
+  //   setSelectedExamption(value);
+  //   if (value) {
+  //     sessionStorage.setItem("selectedExamptionReason", JSON.stringify(value));
+  //   }
+  // };
+
   const handleExamptionsTypesChange = (event, value) => {
     setSelectedExamption(value);
-    if (value) {
-      sessionStorage.setItem("selectedExamptionReason", JSON.stringify(value));
-    }
+    sessionStorage.setItem("selectedExamptionReason", JSON.stringify(value));
   };
+
+  // Ensure reset happens when the popup becomes visible or invisible
+  useEffect(() => {
+    if (isVisible) {
+      // Clear the selection when popup is closed
+      setSelectedExamption(null);
+      sessionStorage.removeItem("selectedExamptionReason");
+    }
+  }, [isVisible]);
+
 
     useEffect(() => {
       if (selectedPaymentModels) {
