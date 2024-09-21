@@ -6,6 +6,7 @@
 # Node modules
 node_modules/
 .wwebjs_auth/
+.wwebjs_cache/
 
 # Prisma Client
 node_modules/.prisma
