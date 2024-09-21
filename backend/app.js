@@ -21,7 +21,7 @@ const rolesRoutes = require("./routes/tblAppRoles");
 const invoiceRoutes = require("./routes/invoice");
 const exchangeInvoiceRoutes = require("./routes/TblSalesExchangeInvoicetmp");
 const whatsappRoutes = require("./routes/whatsappRoutes.js");
-
+const languageRoutes = require("./routes/languageRoute.js")
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -45,7 +45,7 @@ app.use("/api/invoice", invoiceRoutes);
 app.use("/api/exchangeInvoice", exchangeInvoiceRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use("/api/language",languageRoutes )
 app.use((req, res, next) => {
   const error = new CustomError(`No route found for ${req.originalUrl}`);
   error.statusCode = 404;
