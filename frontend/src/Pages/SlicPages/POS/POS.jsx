@@ -52,10 +52,8 @@ const POS = () => {
   // useEffect(() => {
   //   const checkSession = async () => {
   //     try {
-  //       const response = await fetch(
-  //         "http://localhost:1100/api/whatsapp/checkSession"
-  //       );
-  //       const data = await response.json();
+  //       const response = await newRequest.get("/whatsapp/checkSession")
+  //       const data = response?.data;
 
   //       if (data.status === "failure" && data.qrCode) {
   //         setQrCode(data.qrCode);
@@ -1344,7 +1342,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">This invoice is generated as per zatca</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
@@ -1537,7 +1535,7 @@ const POS = () => {
             <div>Tel. Number: 013 8121066</div>
           </div>
 
-          <div class="sales-invoice-title">Exchange Slip Invoice</div>
+          <div class="sales-invoice-title">Sales Invoice</div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
@@ -1642,7 +1640,7 @@ const POS = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">This invoice is generated as per zatca</div>
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
       </html>
     `;
