@@ -13,6 +13,9 @@ import SendIcon from "@mui/icons-material/Send";
 import SlicUserSignUpPopUp from "../SlicUserSignUp/SlicUserSignUpPopUp";
 import { RolesContext } from '../../../Contexts/FetchRolesContext'
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import LanguageSwitcher from "../../../switer";
+import { I18nextProvider } from "react-i18next";
+import i18ns from "../../../i18n";
 
 const SlicFirstScreen = () => {
   const [companies, setCompanies] = useState([]);
@@ -256,8 +259,11 @@ const SlicFirstScreen = () => {
 
   return (
     <div>
-      <div className="px-3 py-3 bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5">
-        SLIC - Saudi Leather Industries Company
+      <div className="px-3 py-3 bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5 flex justify-between">
+        <p>SLIC - Saudi Leather Industries Company</p>
+        <I18nextProvider i18n={i18ns}>
+          <LanguageSwitcher />
+        </I18nextProvider>
       </div>
       <div className="flex justify-center items-center h-auto mt-6 mb-6">
         <div className="3xl:h-[775px] 2xl:h-[775px] lg:h-[775px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl">
@@ -318,14 +324,20 @@ const SlicFirstScreen = () => {
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="sm:w-[90%] w-full flex flex-col justify-center items-center sm:p-4 bg-white h-[100%] mt-6 sm:mt-0">
+            <form
+              onSubmit={handleSubmit}
+              className="sm:w-[90%] w-full flex flex-col justify-center items-center sm:p-4 bg-white h-[100%] mt-6 sm:mt-0"
+            >
               <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3">
                 SLIC User Log in
               </h2>
 
               {/* Email */}
               <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="email" className="sm:text-2xl text-secondary text-lg font-sans">
+                <label
+                  htmlFor="email"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
                   Email
                 </label>
                 <div className="flex flex-col gap-2">
@@ -343,7 +355,10 @@ const SlicFirstScreen = () => {
 
               {/* Password */}
               <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="password" className="sm:text-2xl text-secondary text-lg font-sans">
+                <label
+                  htmlFor="password"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
                   Password
                 </label>
                 <div className="flex flex-col gap-2">
@@ -361,7 +376,10 @@ const SlicFirstScreen = () => {
 
               {/* Stock Location */}
               <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="stocklocation" className="sm:text-2xl text-secondary text-lg font-sans">
+                <label
+                  htmlFor="stocklocation"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
                   Stock Location
                 </label>
                 <div className="flex flex-col gap-2">
@@ -374,7 +392,9 @@ const SlicFirstScreen = () => {
                     disabled={!selectedShowroom}
                   >
                     <option value="" disabled selected>
-                      {selectedShowroom ? "Select Stock Location" : "Select Showroom First"}
+                      {selectedShowroom
+                        ? "Select Stock Location"
+                        : "Select Showroom First"}
                     </option>
                     {stockLocations.map((location, index) => (
                       <option key={index} value={location}>
@@ -419,7 +439,6 @@ const SlicFirstScreen = () => {
                 </span>
               </div>
             </form>
-
           </div>
 
           {/* Last Cards */}
@@ -494,11 +513,11 @@ const SlicFirstScreen = () => {
       </div>
 
       {isResetPasswordPopupVisible && (
-        <SlicUserSignUpPopUp 
-            isVisible={isResetPasswordPopupVisible} 
-             setVisibility={setIsResetPasswordPopupVisible}
-          />
-        )}
+        <SlicUserSignUpPopUp
+          isVisible={isResetPasswordPopupVisible}
+          setVisibility={setIsResetPasswordPopupVisible}
+        />
+      )}
     </div>
   );
 };
