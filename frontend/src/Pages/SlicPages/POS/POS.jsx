@@ -78,6 +78,12 @@ const POS = () => {
   const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
   const handleItemClick = (action) => {
     setOpenDropdown(null);
+    // Check if the correct sales return type is selected
+    if (selectedSalesReturnType === "DIRECT RETURN") {
+      toast.info("You need to select 'RETURN WITH EXCHANGE' to perform this action.", {});
+      return;
+    }
+
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
@@ -88,7 +94,7 @@ const POS = () => {
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
   };
-
+  
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
