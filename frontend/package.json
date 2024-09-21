@@ -24,7 +24,7 @@
     "i18next": "^23.7.16",
     "i18next-browser-languagedetector": "^7.2.0",
     "js-base64": "^3.7.7",
-    "jspdf": "^2.5.1",
+    "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.1",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",

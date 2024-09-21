@@ -17,6 +17,7 @@ import { MdRemoveCircleOutline } from "react-icons/md";
 import { MdRemoveCircle } from "react-icons/md";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
+import jsPDF from "jspdf";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -961,6 +962,9 @@ const POS = () => {
     }
   }, [data]);
 
+
+  const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
+
   // invoice generate
   const handlePrintSalesInvoice = async (qrCodeData) => {
     const newInvoiceNumber = generateInvoiceNumber();
@@ -968,6 +972,23 @@ const POS = () => {
 
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+
+
+    // Create a new PDF document
+    const doc = new jsPDF();
+
+    // Adding content to the PDF (customize as per your invoice format)
+    doc.text("Sales Invoice", 10, 10);
+    doc.text(`Invoice Number: ${newInvoiceNumber}`, 10, 20);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 30);
+    doc.addImage(qrCodeDataURL, "JPEG", 150, 10, 50, 50); // Adding the QR code
+
+    // Save the generated PDF for download
+    const pdfBlob = doc.output("blob");
+
+    // Save this PDF Blob in state for WhatsApp use later
+    setGeneratedPdfBlob(pdfBlob);
+
 
     let totalsContent;
 
@@ -1346,13 +1367,16 @@ const POS = () => {
         </body>
       </html>
     `;
-    const printWindow = window.open("", "Print Window", "height=800,width=800");
-    if (!printWindow) {
-      console.error(
-        "Failed to open the print window. It might be blocked by the browser."
-      );
-      return;
-    }
+    // const printWindow = window.open("", "Print Window", "height=800,width=800");
+    // if (!printWindow) {
+    //   console.error(
+    //     "Failed to open the print window. It might be blocked by the browser."
+    //   );
+    //   return;
+    // }
+    const pdfURL = URL.createObjectURL(pdfBlob);
+    const printWindow = window.open(pdfURL);
+    printWindow.focus();
 
     // Write the static HTML into the print window
     printWindow.document.write(html);
@@ -1380,6 +1404,31 @@ const POS = () => {
       // console.log(qrCodeData);
     };
   };
+
+
+  const sendWhatsAppInvoice = async () => {
+    console.log(generatedPdfBlob)
+    if (!generatedPdfBlob) {
+      toast.error("No invoice available to send.");
+      return;
+    }
+  
+    try {
+      const formData = new FormData();
+      formData.append("phoneNumber", "923069396743"); // Use dynamic phone number if needed
+      formData.append("attachment", new File([generatedPdfBlob], "Sales_Invoice.pdf")); // Use the generated PDF blob
+      formData.append("messageText", "Here is your invoice from SLIC");
+  
+      const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData);
+
+      console.log(response?.data)
+      toast.success("Invoice sent to WhatsApp successfully!");
+    } catch (error) {
+      toast.error("Error sending WhatsApp message");
+      console.error("Error:", error);
+    }
+  };
+  
 
   // exchange Item invoice
   const handlePrintExchangeInvoice = async (qrCodeData) => {
@@ -3092,6 +3141,7 @@ const POS = () => {
               selectedSalesType={selectedSalesType}
               isExchangeClick={isExchangeClick}
               isExchangeDSalesClick={isExchangeDSalesClick}
+              sendWhatsAppInvoice={sendWhatsAppInvoice}
             />
           )}
 
