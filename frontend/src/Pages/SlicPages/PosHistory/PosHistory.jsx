@@ -315,9 +315,9 @@ const PosHistory = () => {
     const html = `
       <html>
         <head>
-          <title>Sales Invoice</title>
+          <title>Pos History</title>
           <style>
-            @page { size: 3in 10in; margin: 0; }
+            @page { size: 3in 11in; margin: 0; }
             body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
             .invoice-header, .invoice-footer {
               text-align: center;
@@ -414,8 +414,10 @@ const PosHistory = () => {
           <div class="invoice-header">
             <img src="${sliclogo}" alt="SLIC Logo" width="120"/>
             <div>Saudi Leather Industries Factory Co.</div>
+            <div>شركة مصنع الجلود السعودية</div>
             <div>VAT#: 300456416500003</div>
             <div>CR#: 2050011041</div>
+            <div>السجل التجاري#: 2050011041</div>
             <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
             <div>Tel. Number: 013 8121066</div>
           </div>
@@ -424,8 +426,14 @@ const PosHistory = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>${CustomerName}</div>
-            <div><span class="field-label">VAT#: </span>
-              ${VatNumber}
+            <div style="display: flex; justify-content: space-between;">
+              <div><span class="field-label">VAT#: </span>
+                ${VatNumber}
+              </div>
+              <div class="arabic-label" style="text-align: right; direction: rtl;">
+                <span class="field-label">الرقم الضريبي#:</span>
+                  ${VatNumber}
+              </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
@@ -489,7 +497,7 @@ const PosHistory = () => {
             <canvas id="qrcode-canvas"></canvas>
           </div>
 
-          <div class="receipt-footer">Thank you for shopping with us!</div>
+          <div class="receipt-footer">This invoice is generated as per zatca</div>
         </body>
       </html>
     `;
