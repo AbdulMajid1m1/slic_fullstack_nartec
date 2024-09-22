@@ -92,9 +92,10 @@
 // };
 
 const axios = require("axios");
+const { SLIC_ERP_URL } = require("../config/envConfigs");
 
 exports.slicLogin = async (req, res) => {
-  const url = "https://slicapi.oneerpcloud.com/oneerpauth/api/login";
+  const url = SLIC_ERP_URL + "/oneerpauth/api/login";
   const { apiKey } = req.body;
 
   const data = {
@@ -121,7 +122,7 @@ exports.slicLogin = async (req, res) => {
 };
 
 exports.slicGetApi = async (req, res) => {
-  const url = "https://slicapi.oneerpcloud.com/oneerpreport/api/getapi";
+  const url = SLIC_ERP_URL + "/oneerpreport/api/getapi";
   const { authorization } = req.headers;
   const requestBody = req.body;
 
@@ -153,7 +154,7 @@ exports.slicGetApi = async (req, res) => {
 };
 
 exports.slicPostData = async (req, res) => {
-  const url = "https://slicapi.oneerpcloud.com/oneerpreport/api/postdata";
+  const url = SLIC_ERP_URL + "/oneerpreport/api/postdata";
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {

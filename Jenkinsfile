@@ -2,27 +2,40 @@ pipeline {
     agent any
 
     environment {
-        HOMEPATH = 'C:/Users/yourUserName'  // Replace with your Windows user directory
-
-        // Development environment variables
-        slic_dev_DATABASE_URL = 'sqlserver://173.249.56.16:1433;database=SLICDB;user=sa;password=its2514LOVE!;encrypt=true;trustServerCertificate=true;connectTimeout=30000;'
-        slic_dev_PORT = '1100'
-        slic_dev_JWT_SECRET = 'com.nartec.slic'
-
-        // Production environment variables
-        slic_prod_DATABASE_URL = 'sqlserver://173.249.56.16:1433;database=SLICDB;user=sa;password=its2514LOVE!;encrypt=true;trustServerCertificate=true;connectTimeout=30000;'
-        slic_prod_PORT = '1101'
-        slic_prod_JWT_SECRET = 'com.nartec.slic'
+    // This will set common environment variables, but branch-specific variables will be set dynamically
     }
 
     stages {
+        stage('Set Environment Variables') {
+            steps {
+                script {
+                    // Set environment variables based on the branch
+                    if (env.BRANCH_NAME == 'dev') {
+                        // Use Jenkins environment variables for development
+                        env.NODE_ENV = 'development'
+                        env.DATABASE_URL = "${env.slic_dev_DATABASE_URL}"
+                        env.PORT = "${env.slic_dev_PORT}"
+                        env.JWT_SECRET = "${env.slic_dev_JWT_SECRET}"
+                        env.SLIC_ERP_URL = 'https://slicuat05api.oneerpcloud.com'
+                    } else if (env.BRANCH_NAME == 'production') {
+                        // Use Jenkins environment variables for production
+                        env.NODE_ENV = 'production'
+                        env.DATABASE_URL = "${env.slic_prod_DATABASE_URL}"
+                        env.PORT = "${env.slic_prod_PORT}"
+                        env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
+                        env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
+                    } else {
+                        error "Unsupported branch: ${env.BRANCH_NAME}"
+                    }
+                    echo "Environment set for ${env.BRANCH_NAME} branch"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 script {
-                    // Log the branch name in the console
-                    echo "Current branch: ${env.BRANCH_NAME}"
-                    
-                    // Checkout based on the branch Jenkins is building
+                    echo "Checking out the branch: ${env.BRANCH_NAME}"
                     checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
                 }
             }
@@ -52,7 +65,6 @@ pipeline {
             }
         }
 
-        // List backend directory contents for debugging
         stage('List Backend Files') {
             steps {
                 dir('backend') {
@@ -65,22 +77,12 @@ pipeline {
             steps {
                 dir('backend') {
                     script {
-                        // Create environment-specific .env file based on branch
-                        if (env.BRANCH_NAME == 'dev') {
-                            writeFile file: '.env', text: """
-                                NODE_ENV=development
-                                DATABASE_URL=${slic_dev_DATABASE_URL}
-                                PORT=${slic_dev_PORT}
-                                JWT_SECRET=${slic_dev_JWT_SECRET}
-                            """
-                        } else if (env.BRANCH_NAME == 'production') {
-                            writeFile file: '.env', text: """
-                                NODE_ENV=production
-                                DATABASE_URL=${slic_prod_DATABASE_URL}
-                                PORT=${slic_prod_PORT}
-                                JWT_SECRET=${slic_prod_JWT_SECRET}
-                            """
-                        }
+                        writeFile file: '.env', text: """
+                            NODE_ENV=${env.NODE_ENV}
+                            DATABASE_URL=${env.DATABASE_URL}
+                            PORT=${env.PORT}
+                            JWT_SECRET=${env.JWT_SECRET}
+                        """
                     }
                 }
             }
@@ -104,7 +106,7 @@ pipeline {
                 dir('backend') {
                     script {
                         def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
-                        def port = env.BRANCH_NAME == 'dev' ? env.slic_dev_PORT : env.slic_prod_PORT
+                        def port = env.PORT
                         bat "pm2 start app.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
                     }
                 }
