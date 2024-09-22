@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-
     stages {
         stage('Set Environment Variables') {
             steps {
@@ -25,6 +24,7 @@ pipeline {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
                     echo "Environment set for ${env.BRANCH_NAME} branch"
+                    echo "DATABASE_URL=${env.DATABASE_URL}"  // Print the database URL to check if it's correctly set
                 }
             }
         }
