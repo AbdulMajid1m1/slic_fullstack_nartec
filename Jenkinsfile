@@ -6,7 +6,7 @@ pipeline {
         stage('Set Environment Variables') {
             steps {
                 script {
-                    // Set environment variables based on the branch
+                    // Set environment variables based on the branch.
                     if (env.BRANCH_NAME == 'dev') {
                         // Use Jenkins environment variables for development
                         env.NODE_ENV = 'development'
