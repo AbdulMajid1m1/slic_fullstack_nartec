@@ -4,6 +4,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice }) => {
   const [data, setData] = useState([]);
@@ -13,6 +14,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     console.log("Selected Row Data" , selectedRowData);
   }, [selectedRowData]);
 
+  const { t, i18n } = useTranslation();
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
   // Fetch barcode data from API
@@ -234,7 +236,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Exchange Item
+                    {t("Exchange Item")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
@@ -277,14 +279,18 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
 
               {/* Exchange Item in Heading */}
               <form onSubmit={handleGetBarcodes} className="flex items-center w-full mt-6">
-                <div className="w-full">
-                  <label className="block text-gray-700">Scan Barcode</label>
+                <div  className={`w-full ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}>
+                  <label className="block text-gray-700">{t("Scan Barcode")}</label>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
-                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                    placeholder="Enter Barcode"
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                    placeholder={t("Enter Barcode")}
                   />
                 </div>
                 <button
@@ -300,12 +306,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white">
                     <tr>
-                      <th className="px-4 py-2">Item Code</th>
-                      <th className="px-4 py-2">Item Size</th>
-                      <th className="px-4 py-2">Qty</th>
-                      <th className="px-4 py-2">Item Price</th>
-                      <th className="px-4 py-2">VAT (15%)</th>
-                      <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2">{t('Item Code')}</th>
+                      <th className="px-4 py-2">{t("Item Size")}</th>
+                      <th className="px-4 py-2">{t("Qty")}</th>
+                      <th className="px-4 py-2">{t("Item Price")}</th>
+                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("Total")}</th>
                     </tr>
                   </thead>
                   {isLoading ? (
@@ -343,7 +349,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   onClick={handleExchangeItems}
                   className="p-3 border rounded bg-secondary hover:bg-[#424e9b] text-white flex items-center justify-center"
                 >
-                  Submit and Save
+                  {t("Submit and Save")}
                 </button>
               </div>
             </div>

@@ -1,0 +1,9 @@
+require("dotenv").config();
+
+// import SLIC_ERP_URL from env
+
+const SLIC_ERP_URL = process.env.SLIC_ERP_URL;
+
+module.exports = {
+  SLIC_ERP_URL,
+};

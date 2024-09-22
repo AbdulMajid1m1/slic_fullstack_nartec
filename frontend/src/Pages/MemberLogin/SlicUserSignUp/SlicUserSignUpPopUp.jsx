@@ -5,8 +5,11 @@ import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
+  
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +56,7 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Create Account
+                    {t("Create Account")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -80,12 +83,12 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
               </div>
               <form onSubmit={handleSubmit} className="w-full overflow-y-auto">
                 {/* username */}
-                <div className="w-full sm:px-0 px-4 mb-6 mt-6">
+                <div  className={`w-full sm:px-0 px-4 mb-6 mt-6 ${  i18n.language === "ar" ? "text-end" : "text-start" }`}>
                   <label
                     htmlFor="email"
                     className="sm:text-2xl text-secondary text-lg font-sans"
                   >
-                    Email
+                    {t("Email")}
                   </label>
                   <div className="flex flex-col gap-6">
                     <input
@@ -94,17 +97,20 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your Email"
-                      className="p-2 border rounded-md border-secondary text-lg"
+                      placeholder={t("Enter your Email")}
+                      className={`p-2 border rounded-md border-secondary text-lg ${
+                        i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                     />
                   </div>
 
-                  <div className="mt-6">
+                  <div className={`mt-6 ${  i18n.language === "ar" ? "text-end" : "text-start" }`}
+                  >
                     <label
                       htmlFor="password"
                       className="sm:text-2xl text-secondary text-lg font-sans"
                     >
-                      Password
+                      {t("Password")}
                     </label>
                     <div className="flex flex-col gap-6">
                       <input
@@ -113,8 +119,10 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        className="p-2 border border-secondary rounded-md text-lg"
+                        placeholder={t("Enter your password")}
+                        className={`p-2 border rounded-md border-secondary text-lg ${
+                          i18n.language === "ar" ? "text-end" : "text-start"
+                        }`}
                       />
                       <Button
                         variant="contained"
@@ -134,7 +142,7 @@ const SlicUserSignUpPopUp = ({ isVisible, setVisibility }) => {
                           )
                         }
                       >
-                        Sign up
+                        {t("Sign up")}
                       </Button>
                     </div>
                   </div>

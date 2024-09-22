@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
+import { useTranslation } from "react-i18next";
 
 
 // Helper function to format date
@@ -12,6 +13,8 @@ const formatDate = (dateString) => {
 
 const MobileNumberPopUp = ({ isVisible, setVisibility, mobileNo, onSelectInvoice }) => {
   const [invoiceNumbers, setInvoiceNumbers] = useState([]);
+  
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   
   const handleCloseCreatePopup = () => {
@@ -60,7 +63,7 @@ const MobileNumberPopUp = ({ isVisible, setVisibility, mobileNo, onSelectInvoice
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Invoice Numbers for <span className="">{mobileNo}</span>
+                    {t("Invoice Numbers for")} <span className="">{mobileNo}</span>
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
@@ -111,8 +114,8 @@ const MobileNumberPopUp = ({ isVisible, setVisibility, mobileNo, onSelectInvoice
                     <table className="w-full table-auto border-collapse m-0">
                       <thead>
                         <tr className="bg-gray-200">
-                          <th className="border px-4 py-2 text-left">Transaction Date</th>
-                          <th className="border px-4 py-2 text-left">Invoice Number</th>
+                          <th className="border px-4 py-2 text-left">{t("Transaction Date")}</th>
+                          <th className="border px-4 py-2 text-left">{t("Invoice Number")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -129,7 +132,7 @@ const MobileNumberPopUp = ({ isVisible, setVisibility, mobileNo, onSelectInvoice
                       </tbody>
                     </table>
                   ) : (
-                    <p className="text-gray-500">No invoice numbers found for this mobile number.</p>
+                    <p  className={`text-gray-500 ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("No invoice numbers found for this mobile number.")}</p>
                   )}
                 </div>
               )}
