@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        HOMEPATH = 'C:/Users/yourUserName'  // Replace with your Windows user directory
+
         // Development environment variables
         slic_dev_DATABASE_URL = 'sqlserver://173.249.56.16:1433;database=SLICDB;user=sa;password=its2514LOVE!;encrypt=true;trustServerCertificate=true;connectTimeout=30000;'
         slic_dev_PORT = '1100'
@@ -17,9 +19,12 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
+                    // Log the branch name in the console
+                    echo "Current branch: ${env.BRANCH_NAME}"
+                    
                     // Checkout based on the branch Jenkins is building
-                    checkout scmGit(branches: [[name: '*/dev'], [name: '*/production']], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
-                    }
+                    checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
+                }
             }
         }
 
@@ -47,10 +52,20 @@ pipeline {
             }
         }
 
+        // List backend directory contents for debugging
+        stage('List Backend Files') {
+            steps {
+                dir('backend') {
+                    bat 'dir'  // Lists the contents of the backend directory
+                }
+            }
+        }
+
         stage('Create Environment File - Backend') {
             steps {
                 dir('backend') {
                     script {
+                        // Create environment-specific .env file based on branch
                         if (env.BRANCH_NAME == 'dev') {
                             writeFile file: '.env', text: """
                                 NODE_ENV=development
@@ -90,7 +105,7 @@ pipeline {
                     script {
                         def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
                         def port = env.BRANCH_NAME == 'dev' ? env.slic_dev_PORT : env.slic_prod_PORT
-                        bat "pm2 start server.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
+                        bat "pm2 start app.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
                     }
                 }
             }
