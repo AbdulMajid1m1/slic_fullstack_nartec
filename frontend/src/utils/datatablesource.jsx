@@ -835,4 +835,17 @@ export const posArchiveColumns = [
 ];
 
 
+export const LanguageDataColumn = (t, i18n) => [
+  {
+    field: "key",
+    headerName: t("Name[English]"),
+    width: 300,
+  },
+  {
+    field: "value",
+    headerName: t("Name[Arabic]"),
+    width: 300,
+  },
+];
+
 

@@ -7,12 +7,15 @@ import {
 import React, { useState, useEffect } from "react";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const ConfirmTransactionPopUp = ({
   isVisible,
   setVisibility,
   onSelectionsSaved,
 }) => {
+  
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
@@ -171,7 +174,7 @@ const ConfirmTransactionPopUp = ({
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Confirm Transactions
+                    {t("Confirm Transactions")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -238,9 +241,11 @@ const ConfirmTransactionPopUp = ({
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     {/* dropdown */}
-                    <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                    <div className={`w-full font-body sm:text-base text-sm flex flex-col gap-0 ${
+                        i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}>
                       <label htmlFor="startsize" className={`text-secondary`}>
-                        Payment Mode
+                        {t("Payment Mode")}
                       </label>
                       <select
                         id="locations"
@@ -248,7 +253,7 @@ const ConfirmTransactionPopUp = ({
                         className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                       >
                         <option value="" disabled selected>
-                          Select Payment Mode
+                          {t("Select Payment Mode")}
                         </option>
                         {locations.map((location) => (
                           <option key={location.code}>
@@ -258,9 +263,13 @@ const ConfirmTransactionPopUp = ({
                       </select>
                     </div>
 
-                    <div className="w-full font-body sm:text-base text-sm flex flex-col mt-6">
+                    <div
+                      className={`w-full font-body sm:text-base text-sm flex flex-col mt-6 ${
+                        i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
+                    >
                       <label htmlFor="SelectRoles" className={`text-secondary`}>
-                        Tax Exemption Reason
+                        {t("Tax Exemption Reason")}
                       </label>
                       <Autocomplete
                         id="SelectRoles"
@@ -275,8 +284,8 @@ const ConfirmTransactionPopUp = ({
                           <TextField
                             autoComplete="off"
                             {...params}
-                            label={"Select Reasons"}
-                            placeholder={"Select Roles"}
+                            label={t("Select Reasons")}
+                            placeholder={t("Select Roles")}
                             variant="outlined"
                           />
                         )}
@@ -297,7 +306,7 @@ const ConfirmTransactionPopUp = ({
                           ) : null
                         }
                       >
-                        Confirm
+                        {t("Confirm")}
                       </Button>
                     </div>
                   </div>

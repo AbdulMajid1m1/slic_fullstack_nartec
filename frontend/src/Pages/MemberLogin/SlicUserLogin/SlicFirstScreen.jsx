@@ -13,8 +13,13 @@ import SendIcon from "@mui/icons-material/Send";
 import SlicUserSignUpPopUp from "../SlicUserSignUp/SlicUserSignUpPopUp";
 import { RolesContext } from '../../../Contexts/FetchRolesContext'
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import LanguageSwitcher from "../../../switer";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import i18ns from "../../../i18n";
 
 const SlicFirstScreen = () => {
+  
+  const { t, i18n } = useTranslation();
   const [companies, setCompanies] = useState([]);
   const [locations, setLocations] = useState([]);
  
@@ -256,20 +261,43 @@ const SlicFirstScreen = () => {
 
   return (
     <div>
-      <div className="px-3 py-3 bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5">
-        SLIC - Saudi Leather Industries Company
+      <div
+        className={`px-3 py-3 bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5 flex justify-between ${
+          i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+        }`}
+      >
+        <p className="my-auto">
+          {t("SLIC - Saudi Leather Industries Company")}
+        </p>
+        <I18nextProvider i18n={i18ns}>
+          <LanguageSwitcher />
+        </I18nextProvider>
       </div>
-      <div className="flex justify-center items-center h-auto mt-6 mb-6">
-        <div className="3xl:h-[775px] 2xl:h-[775px] lg:h-[775px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl">
-          <div className="flex flex-col sm:flex-row items-center justify-between w-full sm:p-10 p-3">
-            <div className="flex flex-col items-start space-y-4 w-full">
+      <div className={`flex justify-center items-center h-auto mt-6 mb-6 `}>
+        <div
+          className={`3xl:h-[775px] 2xl:h-[775px] lg:h-[775px] h-auto w-[95%] pb-3 bg-[#e7f4f3] flex flex-col justify-start items-start border-2 border-primary rounded-md shadow-xl`}
+        >
+          <div
+            className={`flex flex-col items-center justify-between w-full sm:p-10 p-3 ${
+              i18n.language === "ar" ? "sm:flex-row-reverse" : "sm:flex-row"
+            }`}
+          >
+            <div
+              className={`flex flex-col  space-y-4 w-full ${
+                i18n.language === "ar" ? "items-end" : "items-start"
+              }`}
+            >
               <img src={sliclogo} alt="SLIC Logo" className="h-32 mb-4" />
-              <div className="w-full">
+              <div
+                className={`w-full ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
                 <label
                   className="block text-gray-700 text-sm font-bold mb-2"
                   htmlFor="company"
                 >
-                  Select Company
+                  {t("Select Company")}
                 </label>
                 <select
                   id="company"
@@ -277,19 +305,23 @@ const SlicFirstScreen = () => {
                   className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="" disabled>
-                    Select Company
+                    {t("Select Company")}
                   </option>
                   {companies.map((company) => (
                     <option>{company.COMP_NAME}</option>
                   ))}
                 </select>
               </div>
-              <div className="w-full">
+              <div
+                className={`w-full ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
                 <label
                   className="block text-gray-700 text-sm font-bold mb-2"
                   htmlFor="locations"
                 >
-                  Select Showroom
+                  {t("Select Showroom")}
                 </label>
                 <select
                   id="locations"
@@ -298,7 +330,7 @@ const SlicFirstScreen = () => {
                   className="block w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="" disabled>
-                    Select Showroom
+                    {t("Select Showroom")}
                   </option>
                   <option value="Factory Showroom">Factory Showroom</option>
                   <option value="Khobar Showroom">Khobar Showroom</option>
@@ -318,15 +350,25 @@ const SlicFirstScreen = () => {
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="sm:w-[90%] w-full flex flex-col justify-center items-center sm:p-4 bg-white h-[100%] mt-6 sm:mt-0">
+            <form
+              onSubmit={handleSubmit}
+              className="sm:w-[90%] w-full flex flex-col justify-center items-center sm:p-4 bg-white h-[100%] mt-6 sm:mt-0"
+            >
               <h2 className="text-secondary sm:text-2xl text-xl font-semibold font-sans mb-3">
-                SLIC User Log in
+                {t("SLIC User Log in")}
               </h2>
 
               {/* Email */}
-              <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="email" className="sm:text-2xl text-secondary text-lg font-sans">
-                  Email
+              <div
+                className={`w-full sm:px-0 px-4 mb-6 ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
+                <label
+                  htmlFor="email"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
+                  {t("Email")}
                 </label>
                 <div className="flex flex-col gap-2">
                   <input
@@ -335,16 +377,25 @@ const SlicFirstScreen = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your Email"
-                    className="p-2 border rounded-md border-secondary text-lg"
+                    placeholder={t("Enter your Email")}
+                    className={`p-2 border rounded-md border-secondary text-lg ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Password */}
-              <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="password" className="sm:text-2xl text-secondary text-lg font-sans">
-                  Password
+              <div
+                className={`w-full sm:px-0 px-4 mb-6 ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
+                <label
+                  htmlFor="password"
+                  className="sm:text-2xl text-secondary text-lg font-sans"
+                >
+                  {t("Password")}
                 </label>
                 <div className="flex flex-col gap-2">
                   <input
@@ -353,16 +404,27 @@ const SlicFirstScreen = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="p-2 border rounded-md border-secondary text-lg"
+                    placeholder={t("Enter your password")}
+                    className={`p-2 border rounded-md border-secondary text-lg ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Stock Location */}
-              <div className="w-full sm:px-0 px-4 mb-6">
-                <label htmlFor="stocklocation" className="sm:text-2xl text-secondary text-lg font-sans">
-                  Stock Location
+              <div
+                className={`w-full sm:px-0 px-4 mb-6 ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
+                <label
+                  htmlFor="stocklocation"
+                  className={`sm:text-2xl text-secondary text-lg font-sans ${
+                    i18n.language === "ar" ? "text-end" : "text-start"
+                  }`}
+                >
+                  {t("Stock Location")}
                 </label>
                 <div className="flex flex-col gap-2">
                   <select
@@ -370,11 +432,15 @@ const SlicFirstScreen = () => {
                     required
                     value={selectedStockLocation}
                     onChange={handleStockLocationChange}
-                    className="p-2 border rounded-md border-secondary text-lg"
+                    className={`p-2 border rounded-md border-secondary text-lg ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
                     disabled={!selectedShowroom}
                   >
                     <option value="" disabled selected>
-                      {selectedShowroom ? "Select Stock Location" : "Select Showroom First"}
+                      {selectedShowroom
+                        ? `${t("Select Stock Location")}`
+                        : `${t("Select Showroom First")}`}
                     </option>
                     {stockLocations.map((location, index) => (
                       <option key={index} value={location}>
@@ -405,87 +471,97 @@ const SlicFirstScreen = () => {
                     )
                   }
                 >
-                  Log in
+                  {t("Log in")}
                 </Button>
               </div>
 
               {/* Create Account Link */}
-              <div className="w-full sm:px-0 px-4 text-secondary text-lg font-sans">
+              <div
+                className={`w-full sm:px-0 px-4 text-secondary text-lg font-sans ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}
+              >
                 <span
                   onClick={handleShowResetPasswordPopup}
                   className="hover:text-primary hover:cursor-pointer transition-colors duration-300 ease-in-out"
                 >
-                  Create your Account
+                  {t("Create your Account")}
                 </span>
               </div>
             </form>
-
           </div>
 
           {/* Last Cards */}
           <div className="grid 3xl:grid-cols-3 2xl:grid-cols-3 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 sm:gap-6 gap-4 sm:px-6 px-2 mt-6">
             <div
               // onClick={() => navigate("/user-login")}
-              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+              className={`h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90 ${
+                i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+              }`}
             >
-              <div className="h-auto w-[35%]">
+              <div className={`h-auto w-[35%] flex ${i18n.language==='ar'?'justify-end':'justify-start'}`}>
                 <img
                   src={gtinmanagement}
                   className="h-auto w-auto object-contain"
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
-                  GTIN Management
+                  {t("GTIN Management")}
                 </h2>
                 <p className="text-sm font-light text-black font-sans">
-                  Manage GTINs to ensure product identification and data
-                  accuracy. View barcode ,print and creation,
+                  {t(
+                    "Manage GTINs to ensure product identification and data accuracy. View barcode ,print and creation,"
+                  )}
                 </p>
               </div>
             </div>
 
             <div
               // onClick={() => navigate("/user-login")}
-              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+              className={`h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90 ${
+                i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+              }`}
             >
-              <div className="h-auto w-[35%]">
+              <div className={`h-auto w-[35%] flex ${i18n.language==='ar'?'justify-end':'justify-start'}`}>
                 <img
                   src={supplychain}
                   className="h-auto w-auto object-contain"
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
-                  Supply Chain Application
+                  {t("Supply Chain Application")}
                 </h2>
                 <p className="text-sm font-light text-black font-sans">
-                  Optimize your supply chain with advanced applications for
-                  efficiency and transparency.
+                  {t(
+                    "Optimize your supply chain with advanced applications for efficiency and transparency."
+                  )}
                 </p>
               </div>
             </div>
 
             <div
               // onClick={() => navigate("/user-login")}
-              className="h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90"
+             className={`h-auto w-full flex justify-center items-center bg-white border-[2px] rounded-lg shadow-lg px-2 py-4 shadow-[#B4B2AE] cursor-pointer transition-transform transform hover:scale-90 ${i18n.language==='ar'?'flex-row-reverse':'flex-row'}`}
             >
-              <div className="h-auto w-[35%]">
+              <div className={`h-auto w-[35%] flex ${i18n.language==='ar'?'justify-end':'justify-start'}`}>
                 <img
                   src={pointofsale}
                   className="h-auto w-auto object-contain"
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
-                  Point of Sale System
+                  {t("Point of Sale System")}
                 </h2>
                 <p className="text-sm font-light text-black font-sans">
-                  Efficiently manage sales, inventory, and customer data with a
-                  robust Point of Sale System.
+                  {t(
+                    "Efficiently manage sales, inventory, and customer data with a robust Point of Sale System."
+                  )}
                 </p>
               </div>
             </div>
@@ -494,11 +570,11 @@ const SlicFirstScreen = () => {
       </div>
 
       {isResetPasswordPopupVisible && (
-        <SlicUserSignUpPopUp 
-            isVisible={isResetPasswordPopupVisible} 
-             setVisibility={setIsResetPasswordPopupVisible}
-          />
-        )}
+        <SlicUserSignUpPopUp
+          isVisible={isResetPasswordPopupVisible}
+          setVisibility={setIsResetPasswordPopupVisible}
+        />
+      )}
     </div>
   );
 };
