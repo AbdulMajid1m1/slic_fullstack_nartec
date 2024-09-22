@@ -178,6 +178,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
       if (availableStock >= item.Qty) {
         // console.log(item.Qty)
 
+        // Update data with only the FREE_STOCK value
+        const updatedData = data.map((d) => ({
+          ...d,
+          FreeStock: availableStock,
+        }));
+
         // I commented the createExchangeInvocie Api
         // const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
         //   EnglishName: item.Description,
@@ -194,10 +200,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         // i show the data based on user selection datagrid
         if (selectedSalesType === "DSALES NO INVOICE") {
           // addDSalesExchangeData(res?.data?.data);
-          addDSalesExchangeData(data);
+          addDSalesExchangeData(updatedData);
         } else {
           // addExchangeData(res?.data?.data);
-          addExchangeData(data);
+          addExchangeData(updatedData);
         }
 
         handleCloseCreatePopup();

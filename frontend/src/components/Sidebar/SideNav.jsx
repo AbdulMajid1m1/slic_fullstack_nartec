@@ -28,6 +28,7 @@ function SideNav({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMangeOpen, setIsMangeOpen] = useState(false);
   const [isMangeSliderOpen, setIsMangeSliderOpen] = useState(false);
+  const [settings, setSettings] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
   // console.log(memberData)
@@ -44,6 +45,10 @@ function SideNav({ children }) {
   };
   const handleToggleMangeSlider = () => {
     setIsMangeSliderOpen(!isMangeSliderOpen);
+  };
+
+  const handleToggleMangeSettings = () => {
+    setSettings(!settings);
   };
 
   const handleAllUsersClick = (e) => {
@@ -111,6 +116,23 @@ function SideNav({ children }) {
                         </div>
                       </Link>
                     </li>
+                  <li className="mt-3">
+                    <Link
+                      to="/products"
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={barcode}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Products View
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
                     <li className="mt-3">
                       <Link
                         to="/purchase-order"
@@ -231,6 +253,49 @@ function SideNav({ children }) {
                       </Link>
                     </li>
                     <li className="mt-3">
+                    <div
+                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer"
+                      onClick={handleToggleMangeSettings}
+                    >
+                      <div className="flex justify-center items-center gap-3">
+                        <img
+                          src={userprofile}
+                          alt="logo"
+                          className="w-10 h-10 object-cover"
+                        />
+                        <span className="text-secondary font-medium text-lg">
+                          Settings
+                        </span>
+                      </div>
+                      <span className="inline-block ml-auto sidenav-arrow">
+                        {settings ? <FaChevronUp /> : <FaChevronDown />}
+                      </span>
+                    </div>
+                    {settings && (
+                      <div className="pl-1 ml-3 transition border-gray-500 dropdown-section nested-menu">
+                        <ul className="text-sm">
+                          <li className="mt-3">
+                            <Link
+                              to="/whats-app"
+                              className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                            >
+                              <div className="flex justify-center items-center gap-3">
+                                <img
+                                  src={posicon}
+                                  alt="logo"
+                                  className="w-10 h-10 object-cover bg-blue-400 rounded-full"
+                                />
+                                <span className="text-secondary font-medium text-lg">
+                                  whatapp
+                                </span>
+                              </div>
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                  <li className="mt-3">
                       <div
                         className={`flex items-center py-1  text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer ${i18n.language === "ar" ? "flex-row-reverse pr-3 pl-4" : "flex-row pl-3 pr-4" }`}
                         onClick={handleToggleMange}
