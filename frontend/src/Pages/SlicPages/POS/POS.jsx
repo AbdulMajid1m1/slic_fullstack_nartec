@@ -15,9 +15,9 @@ import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
 import { FaExchangeAlt, FaTrash } from "react-icons/fa";
 import { MdRemoveCircleOutline } from "react-icons/md";
 import { MdRemoveCircle } from "react-icons/md";
+import html2pdf from "html2pdf.js";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
-import jsPDF from "jspdf";
 
 const POS = () => {
   const [data, setData] = useState([]);
@@ -50,27 +50,27 @@ const POS = () => {
     }
   };
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // const response = await fetch(
-        //   "http://localhost:1100/api/whatsapp/checkSession"
-        // );
-        const reponse = await newRequest.get("/whatsapp/checkSession");
-        console.log(reponse);
-        const data = reponse.data;
-        if (data.status === "failure" && data.qrCode) {
-          setQrCode(data.qrCode);
-          console.log("QR code:", data.qrCode);
-          setShowPopup(true);
-        }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const checkSession = async () => {
+  //     try {
+  //       // const response = await fetch(
+  //       //   "http://localhost:1100/api/whatsapp/checkSession"
+  //       // );
+  //       const reponse = await newRequest.get("/whatsapp/checkSession");
+  //       console.log(reponse);
+  //       const data = reponse.data;
+  //       if (data.status === "failure" && data.qrCode) {
+  //         setQrCode(data.qrCode);
+  //         console.log("QR code:", data.qrCode);
+  //         setShowPopup(true);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking session:", error);
+  //     }
+  //   };
 
-    checkSession();
-  }, []);
+  //   checkSession();
+  // }, []);
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -999,23 +999,6 @@ const POS = () => {
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
 
-
-    // Create a new PDF document
-    const doc = new jsPDF();
-
-    // Adding content to the PDF (customize as per your invoice format)
-    doc.text("Sales Invoice", 10, 10);
-    doc.text(`Invoice Number: ${newInvoiceNumber}`, 10, 20);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 30);
-    doc.addImage(qrCodeDataURL, "JPEG", 150, 10, 50, 50); // Adding the QR code
-
-    // Save the generated PDF for download
-    const pdfBlob = doc.output("blob");
-
-    // Save this PDF Blob in state for WhatsApp use later
-    setGeneratedPdfBlob(pdfBlob);
-
-
     let totalsContent;
 
     if (selectedSalesType === "DIRECT SALES INVOICE") {
@@ -1419,17 +1402,13 @@ const POS = () => {
         </body>
       </html>
     `;
-    // const printWindow = window.open("", "Print Window", "height=800,width=800");
-    // if (!printWindow) {
-    //   console.error(
-    //     "Failed to open the print window. It might be blocked by the browser."
-    //   );
-    //   return;
-    // }
-    const pdfURL = URL.createObjectURL(pdfBlob);
-    const printWindow = window.open(pdfURL);
-    printWindow.focus();
-
+    const printWindow = window.open("", "Print Window", "height=800,width=800");
+    if (!printWindow) {
+      console.error(
+        "Failed to open the print window. It might be blocked by the browser."
+      );
+      return;
+    }
     // Write the static HTML into the print window
     printWindow.document.write(html);
     printWindow.document.close();
@@ -1455,33 +1434,53 @@ const POS = () => {
       // setIsOpenOtpPopupVisible(false);
       // console.log(qrCodeData);
     };
+
+
+     // Generate PDF from the same HTML content for WhatsApp
+     const pdfOptions = {
+      margin: 0,
+      filename: 'sales_invoice.pdf',
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: { 
+        scale: 2,  // Increase scale to ensure higher fidelity
+        useCORS: true  // Ensure CORS handling for images like logos
+      },
+      jsPDF: { unit: 'in', format: [4, 13], orientation: 'portrait' }
+    };
+    const pdfBlob = await html2pdf().from(html).set(pdfOptions).outputPdf('blob');
+
+    setGeneratedPdfBlob(pdfBlob);
   };
 
 
   const sendWhatsAppInvoice = async () => {
-    console.log(generatedPdfBlob)
     if (!generatedPdfBlob) {
-      toast.error("No invoice available to send.");
-      return;
+      await handlePrintSalesInvoice(); // Assuming that this function generates the PDF
     }
-  
-    try {
-      const formData = new FormData();
-      formData.append("phoneNumber", "923069396743"); // Use dynamic phone number if needed
-      formData.append("attachment", new File([generatedPdfBlob], "Sales_Invoice.pdf")); // Use the generated PDF blob
-      formData.append("messageText", "Here is your invoice from SLIC");
-  
-      const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData);
 
-      console.log(response?.data)
-      toast.success("Invoice sent to WhatsApp successfully!");
-    } catch (error) {
-      toast.error("Error sending WhatsApp message");
-      console.error("Error:", error);
-    }
+    try {
+        const formData = new FormData();
+        formData.append("phoneNumber", mobileNo);
+        const pdfFile = new File([generatedPdfBlob], "Sales_Invoice.pdf", { type: "application/pdf" });
+        formData.append("attachment", pdfFile);
+        formData.append("messageText", "Here is your invoice from SLIC");
+
+        const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        
+        console.log(response?.data)
+        toast.success("Invoice sent to WhatsApp successfully!");
+      } catch (error) {
+          toast.error("Error sending WhatsApp message");
+          console.error("Error:", error);
+      }
   };
   
 
+  const [generatedPdfForExchange, setGeneratedPdfForExchange] = useState(null);
   // exchange Item invoice
   const handlePrintExchangeInvoice = async (qrCodeData) => {
     if (!isExchangeClick && !isExchangeDSalesClick) return;
@@ -2815,6 +2814,7 @@ const POS = () => {
                       <th className="px-4 py-2">Barcode</th>
                       <th className="px-4 py-2">Description</th>
                       <th className="px-4 py-2">Item Size</th>
+                      <th className="px-4 py-2">Available Stock Qty</th>
                       <th className="px-4 py-2">Qty</th>
                       <th className="px-4 py-2">Item Price</th>
                       <th className="px-4 py-2">VAT (15%)</th>
@@ -2833,6 +2833,7 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.Barcode}</td>
                         <td className="border px-4 py-2">{item.Description}</td>
                         <td className="border px-4 py-2">{item.ItemSize}</td>
+                        <td className="border px-4 py-2">{item?.FreeStock}</td>
                         <td className="border px-4 py-2">{item?.Qty}</td>
                         <td className="border px-4 py-2">{item.ItemPrice}</td>
                         <td className="border px-4 py-2">{item.VAT}</td>
@@ -2904,6 +2905,7 @@ const POS = () => {
                       <th className="px-4 py-2">Barcode</th>
                       <th className="px-4 py-2">Description</th>
                       <th className="px-4 py-2">Item Size</th>
+                      <th className="px-4 py-2">Available Stock Qty</th>
                       <th className="px-4 py-2">Qty</th>
                       <th className="px-4 py-2">Item Price</th>
                       <th className="px-4 py-2">VAT (15%)</th>
@@ -2929,6 +2931,7 @@ const POS = () => {
                             {row.Description}
                           </td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
+                          <td className="border px-4 py-2">{item?.FreeStock}</td>
                           <td className="border px-4 py-2">{row.Qty}</td>
                           <td className="border px-4 py-2">{row.ItemPrice}</td>
                           <td className="border px-4 py-2">{row.VAT}</td>
@@ -3135,6 +3138,8 @@ const POS = () => {
                 >
                   F3 - Tender Cash
                 </button>
+                {/* <button onClick={handlePrintSalesInvoice}>Print</button>
+                <button onClick={sendWhatsAppInvoice}>whatsApp Send</button> */}
               </div>
             </div>
           </div>
