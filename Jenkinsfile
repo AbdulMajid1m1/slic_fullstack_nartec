@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    environment {
-    // This will set common environment variables, but branch-specific variables will be set dynamically
-    }
+    // environment {
+    // // This will set common environment variables, but branch-specific variables will be set dynamically.
+    // }
 
     stages {
         stage('Set Environment Variables') {
