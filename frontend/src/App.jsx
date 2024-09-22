@@ -20,6 +20,8 @@ import TransactionCodes from "./Pages/SlicPages/MasterData/TransactionCodes/Tran
 import CustomerCodes from "./Pages/SlicPages/MasterData/CustomerCodes/CustomerCodes.jsx";
 import PosHistory from "./Pages/SlicPages/PosHistory/PosHistory.jsx";
 import PosArchive from "./Pages/SlicPages/PosArchive/PosArchive.jsx";
+import WhatsAppSetting from "./Pages/SlicPages/WhatsAppSetting/WhatsAppSetting.jsx";
+import Products from "./Pages/SlicPages/Products/Products.jsx";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,8 @@ const App = () => {
                   }
                 />
                 {/* <Route path="users" element={<Users />} /> */}
+                <Route path="whats-app" element={<WhatsAppSetting />} />
+                <Route path="products" element={<Products />} />
                 <Route
                   path="roles"
                   element={

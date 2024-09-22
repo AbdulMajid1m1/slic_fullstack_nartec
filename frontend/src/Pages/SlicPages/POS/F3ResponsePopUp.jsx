@@ -9,6 +9,7 @@ const F3ResponsePopUp = ({
   selectedSalesType,
   isExchangeClick,
   isExchangeDSalesClick,
+  sendWhatsAppInvoice
 }) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
@@ -160,6 +161,13 @@ const F3ResponsePopUp = ({
                               Print Exchange Receipt
                             </button>
                           )}
+
+                          <button
+                            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
+                            onClick={sendWhatsAppInvoice} // Call the WhatsApp function when clicked
+                          >
+                            Send Invoice to WhatsApp
+                          </button>
                         </div>
                       </div>
                     ) 
