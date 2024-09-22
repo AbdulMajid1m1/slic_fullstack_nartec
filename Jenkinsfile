@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -19,8 +18,7 @@ pipeline {
             steps {
                 script {
                     // Checkout based on the branch Jenkins is building
-                    // checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'yourCredentialsId', url: 'https://github.com/your_repo_url_here']])
-                    checkout scmGit(branches: [[name: '*/dev'], [name: '*/production']], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
+                    checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
                 }
             }
         }
@@ -28,7 +26,7 @@ pipeline {
         stage('Install Dependencies - Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -36,7 +34,7 @@ pipeline {
         stage('Build - Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
@@ -44,7 +42,7 @@ pipeline {
         stage('Install Dependencies - Backend') {
             steps {
                 dir('backend') {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -77,10 +75,10 @@ pipeline {
             steps {
                 script {
                     def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
-                    def processStatus = sh(script: 'pm2 list', returnStdout: true).trim()
+                    def processStatus = bat(script: 'pm2 list', returnStdout: true).trim()
                     if (processStatus.contains(appName)) {
-                        sh "pm2 stop ${appName} || exit 0"
-                        sh "pm2 delete ${appName} || exit 0"
+                        bat "pm2 stop ${appName} || exit 0"
+                        bat "pm2 delete ${appName} || exit 0"
                     }
                 }
             }
@@ -92,7 +90,7 @@ pipeline {
                     script {
                         def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
                         def port = env.BRANCH_NAME == 'dev' ? env.slic_dev_PORT : env.slic_prod_PORT
-                        sh "pm2 start server.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
+                        bat "pm2 start server.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
                     }
                 }
             }
