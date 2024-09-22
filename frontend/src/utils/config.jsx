@@ -2,7 +2,7 @@
 // let mainUrl = 'http://gs1ksa.org:8080';
 // let mainUrl = 'https://slicapp.online:8082';
 
-// ... For Development .. //
+// ... For Development ... //
 let mainUrl = "https://uat.slicapp.online";
 
 // ... for PRODUCTION ... //
