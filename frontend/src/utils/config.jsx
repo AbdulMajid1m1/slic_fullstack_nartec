@@ -5,7 +5,7 @@
 // ... For Development .. //
 // let mainUrl = "https://uat.slicapp.online";
 
-// ... for PRODUCTION ... //
+// ... for PRODUCTION .... //
 let mainUrl = 'https://slicapp.online';
 
 export const backendUrl = mainUrl;
