@@ -18,8 +18,8 @@ pipeline {
             steps {
                 script {
                     // Checkout based on the branch Jenkins is building
-                    checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
-                }
+                    checkout scmGit(branches: [[name: '*/dev'], [name: '*/production']], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
+                    }
             }
         }
 
