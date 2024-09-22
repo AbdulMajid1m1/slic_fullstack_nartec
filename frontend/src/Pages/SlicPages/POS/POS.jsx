@@ -990,6 +990,7 @@ const POS = () => {
 
 
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
+  const [isReceiptPrinted, setIsReceiptPrinted] = useState(false);
 
   // invoice generate
   const handlePrintSalesInvoice = async (qrCodeData) => {
@@ -1418,7 +1419,7 @@ const POS = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
       // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
       // Generate the QR code using the `qrcode` library
-      QRCode.toCanvas(
+       QRCode.toCanvas(
         qrCodeCanvas,
         qrCodeData,
         { width: 380 },
@@ -1428,6 +1429,7 @@ const POS = () => {
             // Trigger the print dialog after the QR code is rendered
             printWindow.print();
             printWindow.close();
+            setIsReceiptPrinted(true);
           }
         }
       );
@@ -1453,17 +1455,26 @@ const POS = () => {
   };
 
 
+  const [directInvoiceWhatsAppLoader, setDirectInvoiceWhatsAppLoader] = useState(false);
   const sendWhatsAppInvoice = async () => {
-    if (!generatedPdfBlob) {
-      await handlePrintSalesInvoice(); // Assuming that this function generates the PDF
+    // console.log(isReceiptPrinted)
+    if (!isReceiptPrinted) {
+      toast.error("Please print the receipt first!");
+      return;
     }
+
+    if (!generatedPdfBlob) {
+      toast.error("No invoice available to send.");
+    }
+
+    setDirectInvoiceWhatsAppLoader(true);
 
     try {
         const formData = new FormData();
         formData.append("phoneNumber", mobileNo);
         const pdfFile = new File([generatedPdfBlob], "Sales_Invoice.pdf", { type: "application/pdf" });
         formData.append("attachment", pdfFile);
-        formData.append("messageText", "Here is your invoice from SLIC");
+        formData.append("messageText", "SLIC invoice");
 
         const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData, {
             headers: {
@@ -1473,8 +1484,10 @@ const POS = () => {
         
         console.log(response?.data)
         toast.success("Invoice sent to WhatsApp successfully!");
+        setDirectInvoiceWhatsAppLoader(false);
       } catch (error) {
           toast.error("Error sending WhatsApp message");
+          setDirectInvoiceWhatsAppLoader(false);
           console.error("Error:", error);
       }
   };
@@ -2079,22 +2092,33 @@ const POS = () => {
 
   const [errorMessage, setErrorMessage] = useState("");
   const handleMobileChange = (e) => {
-    const value = e.target.value;
-    
-    if (value.length === 0 || value.startsWith("0")) {
-      setMobileNo(value);
+    const value = e.target.value; 
+    setMobileNo(value);
 
-      // Validate if it's 10 digits long
-      if (value.length === 10) {
-        setErrorMessage(""); // Clear error if exactly 10 digits
-      } else if (value.length < 10 && value.length > 0) {
-        setErrorMessage("Mobile must be 10 digits long.");
-      } else {
-        setErrorMessage(""); // Clear the error for empty input
-      }
+    // Validate if the mobile number is exactly 10 digits long
+    if (value.length === 10) {
+      setErrorMessage("");
+    } else if (value.length < 10 && value.length > 0) {
+      setErrorMessage("Mobile must be 10 digits long.");
     } else {
-      setErrorMessage("Mobile must start with 0.");
+      setErrorMessage("");
     }
+
+    // if (value.length === 0 || value.startsWith("0")) {
+    //   setMobileNo(value);
+
+    //   // Validate if it's 10 digits long
+    //   if (value.length === 10) {
+    //     setErrorMessage(""); // Clear error if exactly 10 digits
+    //   } else if (value.length < 10 && value.length > 0) {
+    //     setErrorMessage("Mobile must be 10 digits long.");
+    //   } else {
+    //     setErrorMessage(""); // Clear the error for empty input
+    //   }
+    // } 
+    // else {
+    //   setErrorMessage("Mobile must start with 0.");
+    // }
   };
 
 
@@ -3212,6 +3236,8 @@ const POS = () => {
               isExchangeClick={isExchangeClick}
               isExchangeDSalesClick={isExchangeDSalesClick}
               sendWhatsAppInvoice={sendWhatsAppInvoice}
+              setDirectInvoiceWhatsAppLoader={directInvoiceWhatsAppLoader}
+              isReceiptPrinted={isReceiptPrinted}
             />
           )}
 

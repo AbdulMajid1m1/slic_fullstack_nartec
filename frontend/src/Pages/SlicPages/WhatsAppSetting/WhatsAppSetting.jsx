@@ -38,9 +38,21 @@ const WhatsAppSetting = () => {
     }
   }
   
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     fetchWhatsAppData();
+  //   },5000)
+  // }, [])
   useEffect(() => {
-    fetchWhatsAppData();
-  }, [])
+    const timeoutId = setTimeout(() => {
+      fetchWhatsAppData();
+    }, 5000);
+  
+    return () => {
+      clearTimeout(timeoutId); // Clean up the timeout if the component unmounts
+    };
+  }, []);
+  
 
 
  // connect to whatsApp Api
@@ -81,7 +93,10 @@ const WhatsAppSetting = () => {
 
   const handleClosePopup = () => {
     setShowPopup(false);
-    fetchWhatsAppData();
+
+    setTimeout(() => {
+      fetchWhatsAppData();
+    }, 5000)
   };
 
   return (

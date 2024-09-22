@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const F3ResponsePopUp = ({
   isVisible,
@@ -9,7 +11,9 @@ const F3ResponsePopUp = ({
   selectedSalesType,
   isExchangeClick,
   isExchangeDSalesClick,
-  sendWhatsAppInvoice
+  sendWhatsAppInvoice,
+  setDirectInvoiceWhatsAppLoader,
+  isReceiptPrinted
 }) => {
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
@@ -126,53 +130,64 @@ const F3ResponsePopUp = ({
               </div>
               <div className="w-full overflow-y-auto">
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
-                  <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                    {validationErrors ? (
-                      <div>
-                        {Object.keys(validationErrors).map((key, index) => (
-                          <div
-                            key={index}
-                            className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5"
-                          >
-                            <label
-                              htmlFor={key}
-                              className="text-secondary border-b border-gray-300 font-semibold"
+                  <div className="lg:mt-0 md:mt-3 mt-6">
+                    {
+                      validationErrors ? (
+                        <div>
+                          {Object.keys(validationErrors).map((key, index) => (
+                            <div
+                              key={index}
+                              className="w-full font-body sm:text-base text-sm flex flex-wrap gap-3 mt-5"
                             >
-                              {key}:
-                            </label>
-                            <p className="text-secondary border-b border-gray-300">
-                              {validationErrors[key]}
-                            </p>
+                              <label
+                                htmlFor={key}
+                                className="text-secondary border-b border-gray-300 font-semibold"
+                              >
+                                {key}:
+                              </label>
+                              <p className="text-secondary border-b border-gray-300">
+                                {validationErrors[key]}
+                              </p>
+                            </div>
+                          ))}
+                          <div className="mt-5 flex justify-between items-center">
+                            <div className="flex flex-col gap-3">
+                              <button
+                                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                                onClick={() => handlePrintSalesInvoice()}
+                              >
+                                Print Receipt
+                              </button>
+                              <Button
+                                variant="contained"
+                                style={{ backgroundColor: "#021F69", color: "white" }}
+                                onClick={sendWhatsAppInvoice}
+                                className="ml-2"
+                                endIcon={
+                                  setDirectInvoiceWhatsAppLoader ? (
+                                    <CircularProgress
+                                      size={24}
+                                      color="inherit"
+                                    />
+                                  ) : null
+                                }
+                                // disabled={!isReceiptPrinted}
+                              >
+                                Send Invoice to WhatsApp
+                              </Button>
+                            </div>
+
+                            {showPrintExchangeReceipt && (
+                              <button
+                                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                                onClick={() => handlePrintExchangeInvoice()}
+                              >
+                                Print Exchange Receipt
+                              </button>
+                            )}
                           </div>
-                        ))}
-                        <div className="mt-5 flex justify-between items-center">
-                          <button
-                            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-                            onClick={() => handlePrintSalesInvoice()}
-                          >
-                            Print Receipt
-                          </button>
-
-                          {showPrintExchangeReceipt && (
-                            <button
-                              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-                              onClick={() => handlePrintExchangeInvoice()}
-                            >
-                              Print Exchange Receipt
-                            </button>
-                          )}
-
-                          <button
-                            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
-                            onClick={sendWhatsAppInvoice} // Call the WhatsApp function when clicked
-                          >
-                            Send Invoice to WhatsApp
-                          </button>
                         </div>
-                      </div>
-                    ) 
-                    : (
-                      null
+                      ) : null
                       // <div>
                       //   <div className="w-full font-body sm:text-lg text-sm flex flex-wrap gap-3">
                       //     <label
@@ -241,7 +256,7 @@ const F3ResponsePopUp = ({
                       //     </p>
                       //   </div>
                       // </div>
-                    )}
+                    }
                   </div>
                 </div>
               </div>
