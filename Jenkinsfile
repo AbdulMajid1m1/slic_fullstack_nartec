@@ -14,9 +14,9 @@ pipeline {
                         env.PORT = "${env.slic_dev_PORT}"
                         env.JWT_SECRET = "${env.slic_dev_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicuat05api.oneerpcloud.com'
-                    } else if (env.BRANCH_NAME == 'production') {
-                        // Use Jenkins environment variables for production
-                        env.NODE_ENV = 'production'
+                    } else if (env.BRANCH_NAME == 'master') {
+                        // Use Jenkins environment variables for master
+                        env.NODE_ENV = 'master'
                         env.DATABASE_URL = "${env.slic_prod_DATABASE_URL}"
                         env.PORT = "${env.slic_prod_PORT}"
                         env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
