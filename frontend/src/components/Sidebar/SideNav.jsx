@@ -19,10 +19,12 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import logout from "../../Images/logout.png";
 import { toast } from "react-toastify";
 import i18ns from "../../i18n";
-import { I18nextProvider } from "react-i18next";
+import { I18nextProvider, useTranslation } from "react-i18next";
 import LanguageSwitcher from "../../switer";
 
 function SideNav({ children }) {
+
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMangeOpen, setIsMangeOpen] = useState(false);
   const [isMangeSliderOpen, setIsMangeSliderOpen] = useState(false);
@@ -36,7 +38,7 @@ function SideNav({ children }) {
     setIsOpen(!isOpen);
   };
 
-  
+
   const handleToggleMange = () => {
     setIsMangeOpen(!isMangeOpen);
   };
@@ -58,9 +60,9 @@ function SideNav({ children }) {
         <div className="body-content" x-data="{ open: true }">
           <div className="relative lg:block navbar-menu">
             <nav
-              className={`fixed top-0 transition-all bg-primary lg:mt-0 mt-16 left-0 bottom-0 flex flex-col shadow bg-primary-sidebar overflow-hidden z-50 ${
-                isOpen ? "w-[280px]" : "w-0"
-              }`}
+              className={`fixed top-0 transition-all bg-primary lg:mt-0 mt-16  bottom-0 flex flex-col shadow bg-primary-sidebar overflow-hidden z-50 ${
+                i18n.language === "ar" ? "right-0" : "left-0"
+              } ${isOpen ? "w-[280px]" : "w-0"}`}
               id="sidenav"
             >
               <div className="flex justify-center items-center w-full px-4 pt-4 pb-0 border-b border-gray-300 ">
@@ -78,16 +80,16 @@ function SideNav({ children }) {
                     <li>
                       <Link
                         to="/gtin-management"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={dashboard}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Dashboard
+                            {t("Dashboard")}
                           </span>
                         </div>
                       </Link>
@@ -95,16 +97,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/gtin"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={barcode}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Products
+                            {t("Products")}
                           </span>
                         </div>
                       </Link>
@@ -112,16 +114,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/purchase-order"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={Purchase}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Purchase Orders
+                            {t("Purchase Orders")}
                           </span>
                         </div>
                       </Link>
@@ -129,16 +131,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/sales-order"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={salesorders}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Sales Orders
+                            {t("Sales Orders")}
                           </span>
                         </div>
                       </Link>
@@ -146,9 +148,9 @@ function SideNav({ children }) {
                     {/* <li className="mt-3">
                     <Link
                       to="/direct-invoice"
-                      className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                     className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                     >
-                      <div className="flex justify-center items-center gap-3">
+                      <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                         <img
                           src={directinvoice}
                           alt="logo"
@@ -163,16 +165,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/user-profile"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={userprofile}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            User Profile
+                            {t("User Profile")}
                           </span>
                         </div>
                       </Link>
@@ -180,16 +182,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/pos"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={posicon}
                             alt="logo"
                             className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            POS
+                            {t("POS")}
                           </span>
                         </div>
                       </Link>
@@ -197,16 +199,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/pos-history"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={POShistory}
                             alt="logo"
                             className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            POS History
+                            {t("POS History")}
                           </span>
                         </div>
                       </Link>
@@ -214,55 +216,55 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/pos-archive"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={POSArchive}
                             alt="logo"
                             className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            POS Archive
+                            {t("POS Archive")}
                           </span>
                         </div>
                       </Link>
                     </li>
                     <li className="mt-3">
                       <div
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer"
+                        className={`flex items-center py-1  text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer ${i18n.language === "ar" ? "flex-row-reverse pr-3 pl-4" : "flex-row pl-3 pr-4" }`}
                         onClick={handleToggleMange}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={userprofile}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Master Data
+                            {t("Master Data")}
                           </span>
                         </div>
-                        <span className="inline-block ml-auto sidenav-arrow">
+                        <span className={`inline-block  sidenav-arrow ${i18n.language === "ar" ? "mr-auto" : "ml-auto" }`}>
                           {isMangeOpen ? <FaChevronUp /> : <FaChevronDown />}
                         </span>
                       </div>
                       {isMangeOpen && (
-                        <div className="pl-1 ml-3 transition border-gray-500 dropdown-section nested-menu">
+                        <div className={` transition border-gray-500 dropdown-section nested-menu ${i18n.language === "ar" ? "pr-1 mr-3" : "pl-1 ml-3" }`}>
                           <ul className="text-sm">
                             <li className="mt-3">
                               <Link
                                 to="/users"
-                                className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                               className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                               >
-                                <div className="flex justify-center items-center gap-3">
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                                   <img
                                     src={posicon}
                                     alt="logo"
                                     className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Users
+                                    {t("Users")}
                                   </span>
                                 </div>
                               </Link>
@@ -270,16 +272,16 @@ function SideNav({ children }) {
                             <li className="mt-3">
                               <Link
                                 to="/roles"
-                                className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                               className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                               >
-                                <div className="flex justify-center items-center gap-3">
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                                   <img
                                     src={posicon}
                                     alt="logo"
                                     className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Roles
+                                    {t("Roles")}
                                   </span>
                                 </div>
                               </Link>
@@ -287,16 +289,16 @@ function SideNav({ children }) {
                             <li className="mt-3">
                               <Link
                                 to="/Language/Dynamic"
-                                className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                               className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                               >
-                                <div className="flex justify-center items-center gap-3">
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                                   <img
                                     src={posicon}
                                     alt="logo"
                                     className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Language
+                                    {t("Language")}
                                   </span>
                                 </div>
                               </Link>
@@ -304,16 +306,16 @@ function SideNav({ children }) {
                             <li className="mt-3">
                               <Link
                                 to="/transaction-codes"
-                                className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                                className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                               >
-                                <div className="flex justify-center items-center gap-3">
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                                   <img
                                     src={transactioncodes}
                                     alt="logo"
                                     className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Transaction Codes
+                                    {t("Transaction Codes")}
                                   </span>
                                 </div>
                               </Link>
@@ -321,16 +323,16 @@ function SideNav({ children }) {
                             <li className="mt-3">
                               <Link
                                 to="/customer-codes"
-                                className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                               className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                               >
-                                <div className="flex justify-center items-center gap-3">
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                                   <img
                                     src={customercodes}
                                     alt="logo"
                                     className="w-10 h-10 object-cover bg-blue-400 rounded-full"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Customer Codes
+                                    {t("Customer Codes")}
                                   </span>
                                 </div>
                               </Link>
@@ -342,16 +344,16 @@ function SideNav({ children }) {
                     <li className="mt-3">
                       <Link
                         to="/"
-                        className="flex items-center py-1 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100"
+                       className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
                       >
-                        <div className="flex justify-center items-center gap-3">
+                        <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                           <img
                             src={logout}
                             alt="logo"
                             className="w-10 h-10 object-cover"
                           />
                           <span className="text-secondary font-medium text-lg">
-                            Log-out
+                            {t("Log-out")}
                           </span>
                         </div>
                       </Link>
@@ -364,23 +366,29 @@ function SideNav({ children }) {
         </div>
         {/* top nav */}
         <div
-          className={`mx-auto transition-all content-wrapper ${
-            isOpen ? "lg:ml-[280px]" : "lg:ml-0"
+          className={`mx-auto transition-all content-wrapper  ${
+            isOpen ? `${i18n.language==='ar'?'lg:mr-[280px]':'lg:ml-[280px]'}` : "lg:ml-0"
           }`}
           id="dash"
         >
           <section className="sticky top-0 z-40 px-3 py-0 bg-primary shadow text-gray-100 lg:px-5">
             <nav className="relative">
-              <div className="flex justify-between items-center flex-wrap">
-                <div className="flex justify-start items-center">
+              <div className={`flex justify-between items-center ${i18n.language==='ar'?'flex-row-reverse':'flex-row'} `}>
+                <div className={`flex items-center ${i18n.language==='ar'?'justify-end flex-row-reverse':'justify-start flex-row'}`}>
                   <button onClick={toggleSideNav} className="px-2 py-5 ">
                     <RxHamburgerMenu className="text-secondary h-auto w-6" />
                   </button>
                   <p className="text-secondary font-sans font-bold">
-                    GTIN Management
+                    {t("GTIN Management")}
                   </p>
                 </div>
-                <div className="flex justify-center items-center gap-3">
+                <div
+                  className={`flex justify-center items-center gap-3 ${
+                    i18n.language === "ar"
+                      ? "sm:flex-row-reverse"
+                      : "sm:flex-row"
+                  }`}
+                >
                   <I18nextProvider i18n={i18ns}>
                     <LanguageSwitcher />
                   </I18nextProvider>
