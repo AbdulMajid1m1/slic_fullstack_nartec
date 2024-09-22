@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const F3ResponsePopUp = ({
   isVisible,
@@ -11,6 +12,7 @@ const F3ResponsePopUp = ({
   isExchangeDSalesClick,
   sendWhatsAppInvoice
 }) => {
+    const { t, i18n } = useTranslation();
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
   const [documentNo, setDocumentNo] = useState("");
@@ -61,7 +63,7 @@ const F3ResponsePopUp = ({
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Message
+                    {t("Message")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -150,7 +152,7 @@ const F3ResponsePopUp = ({
                             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
                             onClick={() => handlePrintSalesInvoice()}
                           >
-                            Print Receipt
+                            {t("Print Receipt")}
                           </button>
 
                           {showPrintExchangeReceipt && (
@@ -158,7 +160,7 @@ const F3ResponsePopUp = ({
                               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
                               onClick={() => handlePrintExchangeInvoice()}
                             >
-                              Print Exchange Receipt
+                              {t("Print Exchange Receipt")}
                             </button>
                           )}
 
@@ -166,7 +168,7 @@ const F3ResponsePopUp = ({
                             className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
                             onClick={sendWhatsAppInvoice} // Call the WhatsApp function when clicked
                           >
-                            Send Invoice to WhatsApp
+                            {t("Send Invoice to WhatsApp")}
                           </button>
                         </div>
                       </div>

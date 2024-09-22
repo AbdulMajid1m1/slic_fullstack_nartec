@@ -241,9 +241,11 @@ const ConfirmTransactionPopUp = ({
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     {/* dropdown */}
-                    <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                    <div className={`w-full font-body sm:text-base text-sm flex flex-col gap-0 ${
+                        i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}>
                       <label htmlFor="startsize" className={`text-secondary`}>
-                        {t('Payment Mode')}
+                        {t("Payment Mode")}
                       </label>
                       <select
                         id="locations"
@@ -261,7 +263,11 @@ const ConfirmTransactionPopUp = ({
                       </select>
                     </div>
 
-                    <div className="w-full font-body sm:text-base text-sm flex flex-col mt-6">
+                    <div
+                      className={`w-full font-body sm:text-base text-sm flex flex-col mt-6 ${
+                        i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
+                    >
                       <label htmlFor="SelectRoles" className={`text-secondary`}>
                         {t("Tax Exemption Reason")}
                       </label>
@@ -278,8 +284,8 @@ const ConfirmTransactionPopUp = ({
                           <TextField
                             autoComplete="off"
                             {...params}
-                            label={"Select Reasons"}
-                            placeholder={"Select Roles"}
+                            label={t("Select Reasons")}
+                            placeholder={t("Select Roles")}
                             variant="outlined"
                           />
                         )}
