@@ -41,7 +41,7 @@ exports.getAll = async (req, res, next) => {
 
 //     // Configuration for the external API request
 //     const externalApiUrl =
-//       "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
+//       "https://slicapi.oneerpcloud.com/oneerpreport/api/getapi";
 //     const requestBody = {
 //       filter: {
 //         P_TXN_TYPE: "LTRFO",
@@ -127,7 +127,7 @@ exports.sync = async (req, res, next) => {
 
     // Configuration for the external API request
     const externalApiUrl =
-      "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
+      "https://slicapi.oneerpcloud.com/oneerpreport/api/getapi";
     const requestBody = {
       filter: { P_TXN_TYPE: "LTRFO" },
       M_COMP_CODE: "SLIC",
