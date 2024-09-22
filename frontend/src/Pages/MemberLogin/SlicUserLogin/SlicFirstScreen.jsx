@@ -506,7 +506,7 @@ const SlicFirstScreen = () => {
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
                   {t("GTIN Management")}
                 </h2>
@@ -531,7 +531,7 @@ const SlicFirstScreen = () => {
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
                   {t("Supply Chain Application")}
                 </h2>
@@ -554,7 +554,7 @@ const SlicFirstScreen = () => {
                   alt=""
                 />
               </div>
-              <div className="h-auto w-[65%] flex flex-col gap-1 px-2">
+              <div className={`h-auto w-[65%] flex flex-col gap-1 px-2 ${i18n.language==='ar'?'text-end':'text-start'}`}>
                 <h2 className="text-xl font-semibold text-secondary font-sans">
                   {t("Point of Sale System")}
                 </h2>

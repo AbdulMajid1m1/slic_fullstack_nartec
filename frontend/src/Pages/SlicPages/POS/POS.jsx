@@ -17,8 +17,10 @@ import { MdRemoveCircleOutline } from "react-icons/md";
 import { MdRemoveCircle } from "react-icons/md";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
+import { useTranslation } from "react-i18next";
 
 const POS = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [qrCode, setQrCode] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -95,7 +97,7 @@ const POS = () => {
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
   };
-  
+
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
@@ -215,7 +217,7 @@ const POS = () => {
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
+            "An error occurred while calling the second API"
           );
         }
         // barcode state empty once response is true
@@ -339,7 +341,7 @@ const POS = () => {
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
+            "An error occurred while calling the second API"
           );
         }
         // barcode state empty once response is true
@@ -924,7 +926,7 @@ const POS = () => {
       console.log(err);
       toast.error(
         err?.response?.data?.errors[0] ||
-          "An error occurred while generating the invoice"
+        "An error occurred while generating the invoice"
       );
       setInvoiceLoader(false);
     }
@@ -958,7 +960,7 @@ const POS = () => {
       console.log(err);
       toast.error(
         err?.response?.data?.errors[0] ||
-          "An error occurred while generating the invoice"
+        "An error occurred while generating the invoice"
       );
     } finally {
       setInvoiceLoader(false);
@@ -1202,48 +1204,43 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE"
-                ? "Sales Invoice"
-                : "CREDIT NOTE"
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE"
+        ? "Sales Invoice"
+        : "CREDIT NOTE"
+      }
           </div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${
-                  selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
-                    ? vat
-                    : invoiceHeaderData?.invoiceHeader?.VatNumber
-                }
+                ${selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${
-                    selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                  }
+                  ${selectedSalesType === "DIRECT SALES INVOICE" || selectedSalesType === "DSALES NO INVOICE"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>
-                 ${
-                   selectedSalesType === "DIRECT SALES INVOICE" ||
-                   selectedSalesType === "DSALES NO INVOICE"
-                     ? invoiceNumber
-                     : searchInvoiceNumber
-                 }
+                 ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE"
+        ? invoiceNumber
+        : searchInvoiceNumber
+      }
                 </div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
@@ -1284,104 +1281,100 @@ const POS = () => {
             </thead>
 
            <tbody>
-           ${
-             selectedSalesType === "DIRECT SALES RETURN"
-               ? invoiceData
-                   .map(
-                     (item) => `
+           ${selectedSalesType === "DIRECT SALES RETURN"
+        ? invoiceData
+          .map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
                       <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty
+              }</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
                             ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                0,
+                item.Description.length / 2
+              )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                0,
+                item.DescriptionArabic.length / 2
+              )}
                           </span>
                         </div>
                       </td>
                     </tr>
                   `
-                   )
-                   .join("")
-               : selectedSalesType === "DSALES NO INVOICE"
-               ? DSalesNoInvoiceData.map(
-                   (item) => `
+          )
+          .join("")
+        : selectedSalesType === "DSALES NO INVOICE"
+          ? DSalesNoInvoiceData.map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
                       <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${item.ItemPrice * item.Qty
+              }</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
                             ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                0,
+                item.Description.length / 2
+              )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                0,
+                item.DescriptionArabic.length / 2
+              )}
                           </span>
                         </div>
                       </td>
                     </tr>
                   `
-                 ).join("")
-               : data
-                   .map(
-                     (item) => `
+          ).join("")
+          : data
+            .map(
+              (item) => `
                        <tr>
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
                         <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${
-                          item.ItemPrice * item.Qty
-                        }</td>
+                        <td style="border-bottom: none;">${item.ItemPrice * item.Qty
+                }</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
                           <div>
                             <span style="direction: ltr; text-align: left; display: block;">
                               ${item.Description.substring(
-                                0,
-                                item.Description.length / 2
-                              )}
+                  0,
+                  item.Description.length / 2
+                )}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
                               ${item.DescriptionArabic.substring(
-                                0,
-                                item.DescriptionArabic.length / 2
-                              )}
+                  0,
+                  item.DescriptionArabic.length / 2
+                )}
                             </span>
                           </div>
                         </td>
                       </tr>
                      `
-                   )
-                   .join("")
-           }          
+            )
+            .join("")
+      }          
             </tbody>
           </table>
           <div class="total-section">
@@ -1592,27 +1585,24 @@ const POS = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DSALES NO INVOICE"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DSALES NO INVOICE"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${
-                  selectedSalesType === "DSALES NO INVOICE"
-                    ? vat
-                    : invoiceHeaderData?.invoiceHeader?.VatNumber
-                }
+                ${selectedSalesType === "DSALES NO INVOICE"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${
-                    selectedSalesType === "DSALES NO INVOICE"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                  }
+                  ${selectedSalesType === "DSALES NO INVOICE"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
             </div>
             <div class="customer-invoiceNumber">
@@ -1658,8 +1648,8 @@ const POS = () => {
 
             <tbody>
               ${exchangeDataToUse
-                .map(
-                  (item) => `
+        .map(
+          (item) => `
                   <tr>
                     <td style="border-bottom: none;">${item.SKU}</td>
                     <td style="border-bottom: none;">${item.Qty}</td>
@@ -1671,22 +1661,22 @@ const POS = () => {
                       <div>
                         <span style="direction: ltr; text-align: left; display: block;">
                           ${item.Description.substring(
-                            0,
-                            item.Description.length / 2
-                          )}
+            0,
+            item.Description.length / 2
+          )}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
                           ${item.DescriptionArabic.substring(
-                            0,
-                            item.DescriptionArabic.length / 2
-                          )}
+            0,
+            item.DescriptionArabic.length / 2
+          )}
                         </span>
                       </div>
                     </td>
                   </tr>
                 `
-                )
-                .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -2032,7 +2022,7 @@ const POS = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const handleMobileChange = (e) => {
     const value = e.target.value;
-    
+
     if (value.length === 0 || value.startsWith("0")) {
       setMobileNo(value);
 
@@ -2054,31 +2044,33 @@ const POS = () => {
     <SideNav>
       <div className="p-4 bg-gray-100 min-h-screen">
         <div className="bg-white p-6 shadow-md">
-          <div className="px-3 py-3 flex justify-between bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5">
+          <div className={`px-3 py-3 flex justify-between bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+            }`}>
             <span>
               {selectedSalesType === "DIRECT SALES INVOICE"
-                ? "Sales Entry Form (Direct Invoice)"
-                : "Sales Entry Form (Direct Sales Return)"}
+                ? `${t("Sales Entry Form (Direct Invoice)")}`
+                : `${t("Sales Entry Form (Direct Sales Return)")}`}
             </span>
             <p className="text-end">{currentTime}</p>
           </div>
 
-          <div className="mb-4 mt-4 flex justify-between">
+          <div className={`mb-4 mt-4 flex justify-between ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+            }`}>
             <h2 className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
               {selectedSalesType === "DIRECT SALES INVOICE"
-                ? "NEW SALE"
-                : "SALES RETURN"}
+                ? `${t("NEW SALE")}`
+                : `${t("SALES RETURN")}`}
             </h2>
             <p className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
-              Cashier :{" "}
+              {t("Cashier")} :{" "}
               {`${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             {/* Trasnaction Code Combo box */}
             <div>
-              <label htmlFor="transactionId" className="block text-gray-700">
-                Transactions Codes *
+              <label htmlFor="transactionId" className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                {t("Transactions Codes")} *
               </label>
               <Autocomplete
                 id="transactionId"
@@ -2116,7 +2108,7 @@ const POS = () => {
                       style: { color: "white" },
                     }}
                     className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                    placeholder={"Search Transaction Codes"}
+                    placeholder={t("Search Transaction Codes")}
                     required
                   />
                 )}
@@ -2133,41 +2125,41 @@ const POS = () => {
 
             {/* Sale Selection */}
             <div>
-              <label className="block text-gray-700">Sale Type *</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Sale Type")} *</label>
               <select
                 className="w-full mt-1 p-2 border rounded border-gray-400"
                 value={selectedSalesType}
                 onChange={(e) => setSelectedSalesType(e.target.value)}
               >
                 <option value="DIRECT SALES INVOICE">
-                  DIRECT SALES INVOICE
+                  {t("DIRECT SALES INVOICE")}
                 </option>
-                <option value="DIRECT SALES RETURN">DIRECT SALES RETURN</option>
-                <option value="DSALES NO INVOICE">DSALES NO INVOICE</option>
+                <option value="DIRECT SALES RETURN">{t("DIRECT SALES RETURN")}</option>
+                <option value="DSALES NO INVOICE">{t("DSALES NO INVOICE")}</option>
               </select>
             </div>
 
             {/* Select Return or Exchange */}
             {(selectedSalesType === "DIRECT SALES RETURN" ||
               selectedSalesType === "DSALES NO INVOICE") && (
-              <div>
-                <label className="block text-gray-700">
-                  Sale Return Type *
-                </label>
-                <select
-                  className="w-full mt-1 p-2 border rounded border-gray-400"
-                  value={selectedSalesReturnType}
-                  onChange={(e) => setSelectedSalesReturnType(e.target.value)}
-                >
-                  <option value="DIRECT RETURN">DIRECT RETURN</option>
-                  <option value="RETRUN WITH EXCHANGE">
-                    RETURN WITH EXCHANGE
-                  </option>
-                </select>
-              </div>
-            )}
+                <div>
+                  <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                    {t("Sale Return Type")} *
+                  </label>
+                  <select
+                    className="w-full mt-1 p-2 border rounded border-gray-400"
+                    value={selectedSalesReturnType}
+                    onChange={(e) => setSelectedSalesReturnType(e.target.value)}
+                  >
+                    <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
+                    <option value="RETRUN WITH EXCHANGE">
+                      {t("RETURN WITH EXCHANGE")}
+                    </option>
+                  </select>
+                </div>
+              )}
             <div>
-              <label className="block text-gray-700">Sales Locations *</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Sales Locations")} *</label>
               <input
                 className={
                   selectedSalesType === "DIRECT SALES RETURN"
@@ -2183,7 +2175,7 @@ const POS = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700">Invoice #</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Invoice")} #</label>
               <input
                 type="text"
                 value={
@@ -2202,9 +2194,9 @@ const POS = () => {
             {/* </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"> */}
             <div>
-              <label className="block text-gray-700">Search Customer</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Search Customer")}</label>
               {selectedSalesType === "DIRECT SALES RETURN" ||
-              selectedSalesType === "DSALES NO INVOICE" ? (
+                selectedSalesType === "DSALES NO INVOICE" ? (
                 selectedSalesReturnType === "DIRECT RETURN" ? (
                   // Show the combo box for DIRECT RETURN
                   <Autocomplete
@@ -2243,7 +2235,7 @@ const POS = () => {
                           style: { color: "white" },
                         }}
                         className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={"Search Customer ID"}
+                        placeholder={t("Search Customer ID")}
                         required
                       />
                     )}
@@ -2288,7 +2280,7 @@ const POS = () => {
                           style: { color: "white" },
                         }}
                         className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={"Search Customer ID"}
+                        placeholder={t("Search Customer ID")}
                         required
                       />
                     )}
@@ -2341,7 +2333,7 @@ const POS = () => {
                         style: { color: "white" },
                       }}
                       className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={"Search Customer ID"}
+                      placeholder={t("Search Customer ID")}
                       required
                     />
                   )}
@@ -2357,32 +2349,33 @@ const POS = () => {
               )}
             </div>
             <div>
-              <label className="block text-gray-700">Delivery *</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Delivery")} *</label>
               <input
                 type="text"
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.DeliveryLocationCode ||
-                      ""
+                    ""
                     : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
                 className={
-                  selectedSalesType === "DIRECT SALES RETURN"
+                  `${selectedSalesType === "DIRECT SALES RETURN"
                     ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"}
+                    ${ i18n.language === "ar" ? "text-end" : "text-start" }`
                 }
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
             <div>
-              <label className="block text-gray-700">Customer Name*</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Customer Name")}*</label>
               <input
                 type="text"
                 onChange={(e) => setCustomerName(e.target.value)}
                 className={
-                  selectedSalesType === "DIRECT SALES RETURN"
+                  `${selectedSalesType === "DIRECT SALES RETURN"
                     ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"}  ${ i18n.language === "ar" ? "text-end" : "text-start" }`
                 }
                 placeholder="Walk-in customer"
                 value={
@@ -2393,7 +2386,8 @@ const POS = () => {
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
-            <div className="flex items-center">
+            <div 
+                 className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
               <div
                 className={
                   selectedSalesType === "DIRECT SALES RETURN"
@@ -2401,11 +2395,11 @@ const POS = () => {
                     : "w-full -mt-3"
                 }
               >
-                <label className="block text-gray-700">Mobile *</label>
+                <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Mobile")} *</label>
                 <input
                   type="number"
-                  className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                  placeholder="Mobile"
+                  className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                  placeholder={t("Mobile")}
                   value={mobileNo}
                   // onChange={(e) => setMobileNo(e.target.value)}
                   onChange={handleMobileChange}
@@ -2421,16 +2415,16 @@ const POS = () => {
               )}
             </div>
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
-              <form onSubmit={handleGetBarcodes} className="flex items-center">
+              <form onSubmit={handleGetBarcodes} className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
                 <div className="w-full">
-                  <label className="block text-gray-700">Scan Barcode</label>
+                  <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Scan Barcode")}</label>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                    placeholder="Enter Barcode"
+                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                    placeholder={t("Enter Barcode")}
                   />
                 </div>
                 <button
@@ -2443,19 +2437,19 @@ const POS = () => {
             ) : selectedSalesType === "DSALES NO INVOICE" ? (
               <form
                 onSubmit={handleGetNoInvoiceBarcodes}
-                className="flex items-center"
+                className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}
               >
                 <div className="w-full">
-                  <label className="block text-gray-700">
-                    Scan Barcode (No Invoice)
+                  <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                    {t("Scan Barcode (No Invoice)")}
                   </label>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                    placeholder="Enter Barcode (No Invoice)"
+                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                    placeholder={t("Enter Barcode (No Invoice)")}
                   />
                 </div>
                 <button
@@ -2468,17 +2462,17 @@ const POS = () => {
             ) : (
               <form
                 onSubmit={handleSearchInvoice}
-                className="flex items-center"
+               className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}
               >
                 <div className="w-full">
-                  <label className="block text-gray-700">Scan Invoice</label>
+                  <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Scan Invoice")}</label>
                   <input
                     type="text"
                     value={searchInvoiceNumber}
                     onChange={(e) => setSearchInvoiceNumber(e.target.value)}
                     required
-                    placeholder="Enter Invoice Number"
-                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                    placeholder={t("Enter Invoice Number")}
+                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
                   />
                 </div>
                 <button
@@ -2491,7 +2485,7 @@ const POS = () => {
             )}
 
             <div>
-              <label className="block text-gray-700">Remarks *</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Remarks")} *</label>
               <input
                 type="text"
                 value={
@@ -2499,18 +2493,17 @@ const POS = () => {
                     ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
                     : remarks
                 }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
-                }`}
-                placeholder="Remarks"
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
+                  }  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                placeholder={t("Remarks")}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 onChange={(e) => setRemarks(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-gray-700">VAT #</label>
+              <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("VAT")} #</label>
               <input
                 type="text"
                 value={
@@ -2518,13 +2511,12 @@ const POS = () => {
                     ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
                     : vat
                 }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
-                }`}
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
+                  }  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                placeholder="VAT"
+                placeholder={t("VAT")}
                 onChange={(e) => setVat(e.target.value)}
               />
             </div>
@@ -2537,15 +2529,15 @@ const POS = () => {
               <table className="table-auto w-full">
                 <thead className="bg-secondary text-white truncate">
                   <tr>
-                    <th className="px-4 py-2">SKU</th>
-                    <th className="px-4 py-2">Barcode</th>
-                    <th className="px-4 py-2">Description</th>
-                    <th className="px-4 py-2">Item Size</th>
-                    <th className="px-4 py-2">Qty</th>
-                    <th className="px-4 py-2">Item Price</th>
-                    <th className="px-4 py-2">VAT (15%)</th>
-                    <th className="px-4 py-2">Total</th>
-                    <th className="px-4 py-2">Action</th>
+                    <th className="px-4 py-2">{t("SKU")}</th>
+                    <th className="px-4 py-2">{t("Barcode")}</th>
+                    <th className="px-4 py-2">{t("Description")}</th>
+                    <th className="px-4 py-2">{t("Item Size")}</th>
+                    <th className="px-4 py-2">{t("Qty")}</th>
+                    <th className="px-4 py-2">{t("Item Price")}</th>
+                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("Total")}</th>
+                    <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
                 </thead>
                 {isLoading ? (
@@ -2578,42 +2570,42 @@ const POS = () => {
                   </tbody>
                 )}
               </table>
-              <div className="flex justify-end">
+              <div  className={`flex  ${i18n.language === "ar" ? "justify-start" : "justify-end" }`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Net Without VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total Amount With VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
                   </div>
@@ -2627,15 +2619,15 @@ const POS = () => {
               <table className="table-auto w-full text-center">
                 <thead className="bg-secondary text-white truncate">
                   <tr>
-                    <th className="px-4 py-2">SKU</th>
-                    <th className="px-4 py-2">Invoice No</th>
-                    <th className="px-4 py-2">Description</th>
-                    <th className="px-4 py-2">Item Size</th>
-                    <th className="px-4 py-2">Qty</th>
-                    <th className="px-4 py-2">Item Price</th>
-                    <th className="px-4 py-2">VAT (15%)</th>
-                    <th className="px-4 py-2">Total</th>
-                    <th className="px-4 py-2">Action</th>
+                    <th className="px-4 py-2">{t("SKU")}</th>
+                    <th className="px-4 py-2">{t("Invoice No")}</th>
+                    <th className="px-4 py-2">{t("Description")}</th>
+                    <th className="px-4 py-2">{t("Item Size")}</th>
+                    <th className="px-4 py-2">{t("Qty")}</th>
+                    <th className="px-4 py-2">{t("Item Price")}</th>
+                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("Total")}</th>
+                    <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
                 </thead>
                 {invoiceDataLoader ? (
@@ -2675,7 +2667,7 @@ const POS = () => {
                             onClick={() => handleActionClick(index)}
                             className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
                           >
-                            Actions
+                            {t("Actions")}
                           </button>
                           {openDropdown === index && (
                             <div className="absolute bg-white shadow-md border mt-2 rounded w-40 z-10 right-0">
@@ -2685,7 +2677,7 @@ const POS = () => {
                                   className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
                                 >
                                   <FaExchangeAlt className="text-secondary mr-2" />
-                                  Exchange Item
+                                  {t("Exchange Item")}
                                 </li>
                                 <li>
                                   <button
@@ -2695,7 +2687,7 @@ const POS = () => {
                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                   >
                                     <MdRemoveCircle className="text-secondary mr-2" />
-                                    Remove
+                                    {t("Remove")}
                                   </button>
                                 </li>
                               </ul>
@@ -2708,42 +2700,42 @@ const POS = () => {
                 )}
               </table>
               {/* Total show without exchange */}
-              <div className="flex justify-end">
+              <div className={`flex  ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Net Without VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithOutVatExchange}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalWithOutExchange}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total Amount With VAT:
+                    <div className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`} >
+                        {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totolAmountWithoutExchange}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
                   </div>
@@ -2756,21 +2748,21 @@ const POS = () => {
           {exchangeData.length > 0 && (
             <div className="mt-10">
               <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
-                Exchange Items
+                {t("Exchange Items")}
               </button>
               <div className="overflow-x-auto">
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white truncate">
                     <tr>
-                      <th className="px-4 py-2">SKU</th>
-                      <th className="px-4 py-2">Barcode</th>
-                      <th className="px-4 py-2">Description</th>
-                      <th className="px-4 py-2">Item Size</th>
-                      <th className="px-4 py-2">Qty</th>
-                      <th className="px-4 py-2">Item Price</th>
-                      <th className="px-4 py-2">VAT (15%)</th>
-                      <th className="px-4 py-2">Total</th>
-                      <th className="px-4 py-2 text-center">Action</th>
+                      <th className="px-4 py-2">{t("SKU")}</th>
+                      <th className="px-4 py-2">{t("Barcode")}</th>
+                      <th className="px-4 py-2">{t("Description")}</th>
+                      <th className="px-4 py-2">{t("Item Size")}</th>
+                      <th className="px-4 py-2">{t("Qty")}</th>
+                      <th className="px-4 py-2">{t("Item Price")}</th>
+                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("Total")}</th>
+                      <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2800,42 +2792,42 @@ const POS = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="flex justify-end items-center">
+              <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Net Without VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <label className="block text-gray-700 font-bold">
-                        Total Amount With VAT:
+                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                        className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                       />
                     </div>
                   </div>
@@ -2851,15 +2843,15 @@ const POS = () => {
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white truncate">
                     <tr>
-                      <th className="px-4 py-2">SKU</th>
-                      <th className="px-4 py-2">Barcode</th>
-                      <th className="px-4 py-2">Description</th>
-                      <th className="px-4 py-2">Item Size</th>
-                      <th className="px-4 py-2">Qty</th>
-                      <th className="px-4 py-2">Item Price</th>
-                      <th className="px-4 py-2">VAT (15%)</th>
-                      <th className="px-4 py-2">Total</th>
-                      <th className="px-4 py-2">Action</th>
+                        <th className="px-4 py-2">{t("SKU")}</th>
+                    <th className="px-4 py-2">{t("Barcode")}</th>
+                    <th className="px-4 py-2">{t("Description")}</th>
+                    <th className="px-4 py-2">{t("Item Size")}</th>
+                    <th className="px-4 py-2">{t("Qty")}</th>
+                    <th className="px-4 py-2">{t("Item Price")}</th>
+                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("Total")}</th>
+                    <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
                   </thead>
                   {isLoading ? (
@@ -2889,7 +2881,7 @@ const POS = () => {
                               onClick={() => handleActionClick(index)}
                               className="bg-blue-700 text-white px-4 py-2 rounded-md font-bold transform hover:scale-95"
                             >
-                              Actions
+                              {t("Actions")}
                             </button>
                             {openDropdown === index && (
                               <div className="absolute bg-white shadow-md border mt-2 rounded w-44 z-10 right-0">
@@ -2901,7 +2893,7 @@ const POS = () => {
                                     className="hover:bg-gray-100 cursor-pointer px-4 py-2 flex items-center truncate"
                                   >
                                     <FaExchangeAlt className="text-secondary mr-2" />
-                                    Exchange DSales
+                                    {t("Exchange DSales")}
                                   </li>
                                   <li>
                                     <button
@@ -2909,7 +2901,7 @@ const POS = () => {
                                       className="w-full flex items-center px-4 py-2 hover:bg-gray-100"
                                     >
                                       <MdRemoveCircle className="text-secondary mr-2" />
-                                      Remove
+                                      {t("Remove")}
                                     </button>
                                   </li>
                                 </ul>
@@ -2921,42 +2913,42 @@ const POS = () => {
                     </tbody>
                   )}
                 </table>
-                <div className="flex justify-end items-center">
+                <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
                   <div className="bg-white p-4 rounded shadow-md w-[50%]">
                     <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center">
-                        <label className="block text-gray-700 font-bold">
-                          Net Without VAT:
+                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                          {t("Net Without VAT")}:
                         </label>
                         <input
                           type="text"
                           value={netWithOutVatDSalesNoInvoice}
                           readOnly
-                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                         />
                       </div>
 
-                      <div className="flex justify-between items-center">
-                        <label className="block text-gray-700 font-bold">
-                          Total VAT:
+                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                           {t("Total VAT")}:
                         </label>
                         <input
                           type="text"
                           value={totalWithOutVatDSalesNoInvoice}
                           readOnly
-                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                         />
                       </div>
 
-                      <div className="flex justify-between items-center">
-                        <label className="block text-gray-700 font-bold">
-                          Total Amount With VAT:
+                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                          {t("Total Amount With VAT")}:
                         </label>
                         <input
                           type="text"
                           value={totolAmountWithoutVatDSalesNoInvoice}
                           readOnly
-                          className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                         />
                       </div>
                     </div>
@@ -2967,21 +2959,21 @@ const POS = () => {
               {dSalesNoInvoiceexchangeData.length > 0 && (
                 <div className="mt-10">
                   <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
-                    Exchange Item DSales No Invoice
+                    {t("Exchange Item DSales No Invoice")}
                   </button>
                   <div className="overflow-x-auto">
                     <table className="table-auto w-full">
                       <thead className="bg-secondary text-white truncate">
                         <tr>
-                          <th className="px-4 py-2">SKU</th>
-                          <th className="px-4 py-2">Barcode</th>
-                          <th className="px-4 py-2">Description</th>
-                          <th className="px-4 py-2">Item Size</th>
-                          <th className="px-4 py-2">Qty</th>
-                          <th className="px-4 py-2">Item Price</th>
-                          <th className="px-4 py-2">VAT (15%)</th>
-                          <th className="px-4 py-2">Total</th>
-                          <th className="px-4 py-2 text-center">Action</th>
+                            <th className="px-4 py-2">{t("SKU")}</th>
+                    <th className="px-4 py-2">{t("Barcode")}</th>
+                    <th className="px-4 py-2">{t("Description")}</th>
+                    <th className="px-4 py-2">{t("Item Size")}</th>
+                    <th className="px-4 py-2">{t("Qty")}</th>
+                    <th className="px-4 py-2">{t("Item Price")}</th>
+                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("Total")}</th>
+                    <th className="px-4 py-2">{t("Action")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3015,42 +3007,42 @@ const POS = () => {
                       </tbody>
                     </table>
                   </div>
-                  <div className="flex justify-end items-center">
+                  <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`} >
                     <div className="bg-white p-4 rounded shadow-md w-[50%]">
                       <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Net Without VAT:
+                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                            {t("Net Without VAT")}:
                           </label>
                           <input
                             type="text"
                             value={netWithVat}
                             readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                           />
                         </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total VAT:
+                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                           {t("Total VAT")}:
                           </label>
                           <input
                             type="text"
                             value={totalVat}
                             readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                           />
                         </div>
 
-                        <div className="flex justify-between items-center">
-                          <label className="block text-gray-700 font-bold">
-                            Total Amount With VAT:
+                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                            {t("Total Amount With VAT")}:
                           </label>
                           <input
                             type="text"
                             value={totalAmountWithVat}
                             readOnly
-                            className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
                           />
                         </div>
                       </div>
@@ -3066,25 +3058,23 @@ const POS = () => {
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
                 <button
                   onClick={handleShowConfirmTransactionPopup}
-                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
-                    isConfirmDisabled
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-500"
-                  }`}
+                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${isConfirmDisabled
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500"
+                    }`}
                   disabled={isConfirmDisabled}
                 >
-                  Confirm Transactions
+                  {t("Confirm Transactions")}
                 </button>
                 <button
                   onClick={handleShowCreatePopup}
-                  className={`${
-                    isTenderCashEnabled
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-gray-400 cursor-not-allowed"
-                  } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
+                  className={`${isTenderCashEnabled
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-gray-400 cursor-not-allowed"
+                    } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
                   disabled={!isTenderCashEnabled}
                 >
-                  F3 - Tender Cash
+                 {t("F3 - Tender Cash")}
                 </button>
               </div>
             </div>
