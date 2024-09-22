@@ -1429,12 +1429,12 @@ const POS = () => {
     };
 
 
-     // Generate PDF from the same HTML content for WhatsApp
-     const pdfOptions = {
+    // Generate PDF from the same HTML content for WhatsApp
+    const pdfOptions = {
       margin: 0,
       filename: 'sales_invoice.pdf',
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { 
+      html2canvas: {
         scale: 2,  // Increase scale to ensure higher fidelity
         useCORS: true  // Ensure CORS handling for images like logos
       },
@@ -1452,26 +1452,26 @@ const POS = () => {
     }
 
     try {
-        const formData = new FormData();
-        formData.append("phoneNumber", mobileNo);
-        const pdfFile = new File([generatedPdfBlob], "Sales_Invoice.pdf", { type: "application/pdf" });
-        formData.append("attachment", pdfFile);
-        formData.append("messageText", "Here is your invoice from SLIC");
+      const formData = new FormData();
+      formData.append("phoneNumber", mobileNo);
+      const pdfFile = new File([generatedPdfBlob], "Sales_Invoice.pdf", { type: "application/pdf" });
+      formData.append("attachment", pdfFile);
+      formData.append("messageText", "Here is your invoice from SLIC");
 
-        const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        
-        console.log(response?.data)
-        toast.success("Invoice sent to WhatsApp successfully!");
-      } catch (error) {
-          toast.error("Error sending WhatsApp message");
-          console.error("Error:", error);
-      }
+      const response = await newRequest.post("/whatsapp/sendWhatsAppMessage", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log(response?.data)
+      toast.success("Invoice sent to WhatsApp successfully!");
+    } catch (error) {
+      toast.error("Error sending WhatsApp message");
+      console.error("Error:", error);
+    }
   };
-  
+
 
   const [generatedPdfForExchange, setGeneratedPdfForExchange] = useState(null);
   // exchange Item invoice
@@ -2410,7 +2410,7 @@ const POS = () => {
                   `${selectedSalesType === "DIRECT SALES RETURN"
                     ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
                     : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"}
-                    ${ i18n.language === "ar" ? "text-end" : "text-start" }`
+                    ${i18n.language === "ar" ? "text-end" : "text-start"}`
                 }
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
@@ -2423,7 +2423,7 @@ const POS = () => {
                 className={
                   `${selectedSalesType === "DIRECT SALES RETURN"
                     ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"}  ${ i18n.language === "ar" ? "text-end" : "text-start" }`
+                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"}  ${i18n.language === "ar" ? "text-end" : "text-start"}`
                 }
                 placeholder="Walk-in customer"
                 value={
@@ -2434,8 +2434,8 @@ const POS = () => {
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
-            <div 
-                 className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+            <div
+              className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
               <div
                 className={
                   selectedSalesType === "DIRECT SALES RETURN"
@@ -2446,7 +2446,7 @@ const POS = () => {
                 <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Mobile")} *</label>
                 <input
                   type="number"
-                  className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                  className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                   placeholder={t("Mobile")}
                   value={mobileNo}
                   // onChange={(e) => setMobileNo(e.target.value)}
@@ -2463,7 +2463,7 @@ const POS = () => {
               )}
             </div>
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
-              <form onSubmit={handleGetBarcodes} className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+              <form onSubmit={handleGetBarcodes} className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
                 <div className="w-full">
                   <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Scan Barcode")}</label>
                   <input
@@ -2471,7 +2471,7 @@ const POS = () => {
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                     placeholder={t("Enter Barcode")}
                   />
                 </div>
@@ -2485,7 +2485,7 @@ const POS = () => {
             ) : selectedSalesType === "DSALES NO INVOICE" ? (
               <form
                 onSubmit={handleGetNoInvoiceBarcodes}
-                className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}
               >
                 <div className="w-full">
                   <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
@@ -2496,7 +2496,7 @@ const POS = () => {
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                     placeholder={t("Enter Barcode (No Invoice)")}
                   />
                 </div>
@@ -2510,7 +2510,7 @@ const POS = () => {
             ) : (
               <form
                 onSubmit={handleSearchInvoice}
-               className={`flex items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}
               >
                 <div className="w-full">
                   <label className={`block text-gray-700 ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>{t("Scan Invoice")}</label>
@@ -2520,7 +2520,7 @@ const POS = () => {
                     onChange={(e) => setSearchInvoiceNumber(e.target.value)}
                     required
                     placeholder={t("Enter Invoice Number")}
-                     className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                   />
                 </div>
                 <button
@@ -2544,7 +2544,7 @@ const POS = () => {
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
                   ? "bg-gray-200"
                   : "bg-green-200"
-                  }  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                  }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 placeholder={t("Remarks")}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 onChange={(e) => setRemarks(e.target.value)}
@@ -2562,7 +2562,7 @@ const POS = () => {
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
                   ? "bg-gray-200"
                   : "bg-green-200"
-                  }  ${ i18n.language === "ar" ? "text-end" : "text-start" }`}
+                  }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 placeholder={t("VAT")}
                 onChange={(e) => setVat(e.target.value)}
@@ -2618,42 +2618,42 @@ const POS = () => {
                   </tbody>
                 )}
               </table>
-              <div  className={`flex  ${i18n.language === "ar" ? "justify-start" : "justify-end" }`}>
+              <div className={`flex  ${i18n.language === "ar" ? "justify-start" : "justify-end"}`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
                   </div>
@@ -2748,42 +2748,42 @@ const POS = () => {
                 )}
               </table>
               {/* Total show without exchange */}
-              <div className={`flex  ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
+              <div className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithOutVatExchange}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalWithOutExchange}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`} >
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`} >
                         {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totolAmountWithoutExchange}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
                   </div>
@@ -2806,7 +2806,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Barcode")}</th>
                       <th className="px-4 py-2">{t("Description")}</th>
                       <th className="px-4 py-2">{t("Item Size")}</th>
-                      <th className="px-4 py-2">Available Stock Qty</th>
+                      <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
                       <th className="px-4 py-2">{t("VAT (15%)")}</th>
@@ -2842,42 +2842,42 @@ const POS = () => {
                   </tbody>
                 </table>
               </div>
-              <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
+              <div className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Net Without VAT")}:
                       </label>
                       <input
                         type="text"
                         value={netWithVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Total VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
 
-                    <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                      <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                    <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                      <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                         {t("Total Amount With VAT")}:
                       </label>
                       <input
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                         className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                       />
                     </div>
                   </div>
@@ -2893,16 +2893,16 @@ const POS = () => {
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white truncate">
                     <tr>
-                        <th className="px-4 py-2">{t("SKU")}</th>
-                    <th className="px-4 py-2">{t("Barcode")}</th>
-                    <th className="px-4 py-2">{t("Description")}</th>
-                    <th className="px-4 py-2">{t("Item Size")}</th>
-                      <th className="px-4 py-2">Available Stock Qty</th>
-                    <th className="px-4 py-2">{t("Qty")}</th>
-                    <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
-                    <th className="px-4 py-2">{t("Total")}</th>
-                    <th className="px-4 py-2">{t("Action")}</th>
+                      <th className="px-4 py-2">{t("SKU")}</th>
+                      <th className="px-4 py-2">{t("Barcode")}</th>
+                      <th className="px-4 py-2">{t("Description")}</th>
+                      <th className="px-4 py-2">{t("Item Size")}</th>
+                      <th className="px-4 py-2">{t("Available Stock Qty")}</th>
+                      <th className="px-4 py-2">{t("Qty")}</th>
+                      <th className="px-4 py-2">{t("Item Price")}</th>
+                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("Total")}</th>
+                      <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
                   </thead>
                   {isLoading ? (
@@ -2965,42 +2965,42 @@ const POS = () => {
                     </tbody>
                   )}
                 </table>
-                <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`}>
+                <div className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
                   <div className="bg-white p-4 rounded shadow-md w-[50%]">
                     <div className="flex flex-col gap-4">
-                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                      <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                           {t("Net Without VAT")}:
                         </label>
                         <input
                           type="text"
                           value={netWithOutVatDSalesNoInvoice}
                           readOnly
-                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                         />
                       </div>
 
-                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
-                           {t("Total VAT")}:
+                      <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                          {t("Total VAT")}:
                         </label>
                         <input
                           type="text"
                           value={totalWithOutVatDSalesNoInvoice}
                           readOnly
-                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                         />
                       </div>
 
-                      <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                        <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                      <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                        <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                           {t("Total Amount With VAT")}:
                         </label>
                         <input
                           type="text"
                           value={totolAmountWithoutVatDSalesNoInvoice}
                           readOnly
-                           className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                         />
                       </div>
                     </div>
@@ -3017,15 +3017,15 @@ const POS = () => {
                     <table className="table-auto w-full">
                       <thead className="bg-secondary text-white truncate">
                         <tr>
-                            <th className="px-4 py-2">{t("SKU")}</th>
-                    <th className="px-4 py-2">{t("Barcode")}</th>
-                    <th className="px-4 py-2">{t("Description")}</th>
-                    <th className="px-4 py-2">{t("Item Size")}</th>
-                    <th className="px-4 py-2">{t("Qty")}</th>
-                    <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
-                    <th className="px-4 py-2">{t("Total")}</th>
-                    <th className="px-4 py-2">{t("Action")}</th>
+                          <th className="px-4 py-2">{t("SKU")}</th>
+                          <th className="px-4 py-2">{t("Barcode")}</th>
+                          <th className="px-4 py-2">{t("Description")}</th>
+                          <th className="px-4 py-2">{t("Item Size")}</th>
+                          <th className="px-4 py-2">{t("Qty")}</th>
+                          <th className="px-4 py-2">{t("Item Price")}</th>
+                          <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                          <th className="px-4 py-2">{t("Total")}</th>
+                          <th className="px-4 py-2">{t("Action")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3059,42 +3059,42 @@ const POS = () => {
                       </tbody>
                     </table>
                   </div>
-                  <div className={`flex items-center ${ i18n.language === "ar" ? " justify-start" : "justify-end" }`} >
+                  <div className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"}`} >
                     <div className="bg-white p-4 rounded shadow-md w-[50%]">
                       <div className="flex flex-col gap-4">
-                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                             {t("Net Without VAT")}:
                           </label>
                           <input
                             type="text"
                             value={netWithVat}
                             readOnly
-                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                           />
                         </div>
 
-                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
-                           {t("Total VAT")}:
+                        <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                            {t("Total VAT")}:
                           </label>
                           <input
                             type="text"
                             value={totalVat}
                             readOnly
-                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                           />
                         </div>
 
-                        <div  className={`flex justify-between items-center ${ i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                          <label className={`block text-gray-700 font-bold ${i18n.language==='ar'? "direction-rtl":'text-start direction-ltr'}`}>
+                        <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                          <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
                             {t("Total Amount With VAT")}:
                           </label>
                           <input
                             type="text"
                             value={totalAmountWithVat}
                             readOnly
-                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${ i18n.language === "ar" ? " text-start" : "text-end" }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"}`}
                           />
                         </div>
                       </div>
@@ -3105,7 +3105,7 @@ const POS = () => {
             </>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${i18n.language === "ar" ? "direction-rtl" : "direction-ltr"}`}>
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
                 <button
@@ -3126,7 +3126,7 @@ const POS = () => {
                     } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
                   disabled={!isTenderCashEnabled}
                 >
-                 {t("F3 - Tender Cash")}
+                  {t("F3 - Tender Cash")}
                 </button>
                 {/* <button onClick={handlePrintSalesInvoice}>Print</button>
                 <button onClick={sendWhatsAppInvoice}>whatsApp Send</button> */}
