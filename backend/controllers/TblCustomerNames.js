@@ -48,7 +48,7 @@ exports.syncCustomers = async (req, res, next) => {
 
     // Configuration for the external API request
     const externalApiUrl =
-      "https://slicuat05api.oneerpcloud.com/oneerpreport/api/getapi";
+      "https://slicapi.oneerpcloud.com/oneerpreport/api/getapi";
     const requestBody = {
       filter: {},
       M_COMP_CODE: "SLIC",
