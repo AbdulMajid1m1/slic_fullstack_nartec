@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --port 3085",
-    "build": "vite build && copyfiles -f ./web.config ./dist/ && copyfiles -u 1 \"./dist/**/*\" ../Backend/public/",
+    "build": "vite build && copyfiles -f ./web.config ./dist/ && copyfiles -u 1 \"./dist/**/*\" ../backend/public/",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
