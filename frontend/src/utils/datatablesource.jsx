@@ -567,15 +567,15 @@ export const salesOrderDetailsColumn = (t)=> [
 ]
 
 
-export const usersColumn = [
+export const usersColumn = (t)=> [
   {
     field: "UserLoginID",
-    headerName: "User Login ID",
+    headerName: t("User Login ID"),
     width: 280,
   },
   {
     field: "UserLoginStatus",
-    headerName: "User Login Status",
+    headerName: t("User Login Status"),
     renderCell: (params) => {
       const style = {
         backgroundColor: params.value === 1 ? "green" : "red",
@@ -590,7 +590,7 @@ export const usersColumn = [
   },
   {
     field: "UserPassword",
-    headerName: "User Password",
+    headerName: t("User Password"),
     width: 180,
   },
 ];
@@ -651,36 +651,36 @@ export const posColumn = [
 
 
 
-export const transactionCodesColumn = [
+export const transactionCodesColumn = (t)=> [
   {
     field: "TXN_CODE",
-    headerName: "Transaction Code",
+    headerName: t("Transaction Code"),
     width: 220,
   },
   {
     field: "TXN_NAME",
-    headerName: "Transaction Name",
+    headerName: t("Transaction Name"),
     renderCell: GTINCell,
     width: 280,
   },
   {
     field: "TXN_TYPE",
-    headerName: "Transaction Type",
+    headerName: t("Transaction Type"),
     width: 280,
   },
 ]
 
 
 
-export const customerCodesColumn = [
+export const customerCodesColumn = (t)=> [
   {
     field: "CUST_CODE",
-    headerName: "Customer Code",
+    headerName: t("Customer Code"),
     width: 220,
   },
   {
     field: "CUST_NAME",
-    headerName: "Customer Name",
+    headerName: t("Customer Name"),
     renderCell: GTINCell,
     width: 320,
   },
@@ -688,95 +688,95 @@ export const customerCodesColumn = [
 
 
 
-export const posHistoryInvoiceColumns = [
+export const posHistoryInvoiceColumns = (t)=> [
   {
     field: "Rec_Num",
-    headerName: "Record Number",
+    headerName: t("Record Number"),
     width: 150,
   },
   {
     field: "TblSysNoID",
-    headerName: "Table System ID",
+    headerName: t("Table System ID"),
     width: 150,
   },
   {
     field: "SNo",
-    headerName: "Serial Number",
+    headerName: t("Serial Number"),
     width: 150,
   },
   {
     field: "DeliveryLocationCode",
-    headerName: "Delivery Location Code",
+    headerName: t("Delivery Location Code"),
     width: 180,
   },
   {
     field: "ItemSysID",
-    headerName: "Item System ID",
+    headerName: t("Item System ID"),
     width: 150,
   },
   {
     field: "InvoiceNo",
-    headerName: "Invoice No",
+    headerName: t("Invoice No"),
     width: 180,
   },
   {
     field: "DocNo",
-    headerName: "Document No",
+    headerName: t("Document No"),
     width: 180,
   },
   {
     field: "AdjAmount",
-    headerName: "Adjustment Amount",
+    headerName: t("Adjustment Amount"),
     width: 180,
   },
   {
     field: "PendingAmount",
-    headerName: "Pending Amount",
+    headerName: t("Pending Amount"),
     width: 180,
   },
   {
     field: "Head_SYS_ID",
-    headerName: "Head System ID",
+    headerName: t("Head System ID"),
     width: 180,
   },
   {
     field: "TransactionCode",
-    headerName: "Transaction Code",
+    headerName: t("Transaction Code"),
     width: 150,
   },
   {
     field: "CustomerCode",
-    headerName: "Customer Code",
+    headerName: t("Customer Code"),
     width: 180,
   },
   {
     field: "SalesLocationCode",
-    headerName: "Sales Location Code",
+    headerName: t("Sales Location Code"),
     width: 180,
   },
   {
     field: "Remarks",
-    headerName: "Remarks",
+    headerName: t("Remarks"),
     width: 250,
   },
   {
     field: "TransactionType",
-    headerName: "Transaction Type",
+    headerName: t("Transaction Type"),
     width: 150,
   },
   {
     field: "UserID",
-    headerName: "User ID",
+    headerName: t("User ID"),
     width: 150,
   },
   {
     field: "MobileNo",
-    headerName: "Mobile No",
+    headerName: t("Mobile No"),
     width: 150,
   },
   {
     field: "TransactionDate",
-    headerName: "Transaction Date",
+    headerName: t("Transaction Date"),
     width: 200,
   },
 ];

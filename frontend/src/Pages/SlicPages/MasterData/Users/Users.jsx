@@ -15,8 +15,11 @@ import { toast } from "react-toastify";
 import newRequest from "../../../../utils/userRequest";
 import Swal from "sweetalert2";
 import UpdateUserPopUp from "./UpdateUserPopUp";
+import { useTranslation } from "react-i18next";
 
 const Users = () => {
+  
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
@@ -79,12 +82,12 @@ const Users = () => {
   const handleDelete = (row) => {
     console.log(row);
     Swal.fire({
-      title: `${'Are you sure to delete this record?'}!`,
-      text: `${'You will not be able to recover this Products'}!`,
-      icon: 'warning',
+       title: `${t("Are you sure to delete this record?")}!`,
+      text: `${t("You will not be able to recover this Products!")}`,
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: `${'Yes Delete'}!`,
-      cancelButtonText: `${'No, keep it'}!`,
+      confirmButtonText: `${t("Yes Delete!")}`,
+      cancelButtonText: `${t("No, keep it!")}`,
       confirmButtonColor: '#1E3B8B',
       cancelButtonColor: '#FF0032',
     }).then((result) => {
@@ -133,7 +136,7 @@ const Users = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"Users"} />
+          <RightDashboardHeader title={t("Users")} />
         </div>
 
         <div className="h-auto w-full">
@@ -151,11 +154,11 @@ const Users = () => {
               </Button>
             </div> */}
 
-            <div style={{marginTop: '-15px'}}>
+            <div style={{ marginTop: "-15px" }}>
               <DataTable
                 data={data}
-                title={"Users"}
-                columnsName={usersColumn}
+                title={t("Users")}
+                columnsName={usersColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerListId"
@@ -163,7 +166,7 @@ const Users = () => {
                 checkboxSelection="disabled"
                 dropDownOptions={[
                   {
-                    label: "Edit",
+                    label: t("Edit"),
                     icon: (
                       <EditIcon
                         fontSize="small"
@@ -174,7 +177,7 @@ const Users = () => {
                     action: handleShowUpdatePopup,
                   },
                   {
-                    label: "Delete",
+                    label: t("Delete"),
                     icon: (
                       <DeleteIcon
                         fontSize="small"
@@ -188,7 +191,6 @@ const Users = () => {
               />
             </div>
           </div>
-
 
           {isUpdatePopupVisible && (
             <UpdateUserPopUp
