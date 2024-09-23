@@ -4030,8 +4030,8 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Barcode")}</th>
                           <th className="px-4 py-2">{t("Description")}</th>
                           <th className="px-4 py-2">{t("Item Size")}</th>
+                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>      
                           <th className="px-4 py-2">{t("Qty")}</th>
-                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
                           <th className="px-4 py-2">{t("VAT (15%)")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
