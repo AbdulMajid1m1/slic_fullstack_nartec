@@ -123,6 +123,19 @@ const POS = () => {
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
+  const [slicUserData, setSlicUserData] = useState(null);
+  useEffect(() => {
+    // slic our user data
+    const slicUser = sessionStorage.getItem('slicUserData');
+    const adminData = JSON.parse(slicUser);
+    if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
+      setSlicUserData(adminData?.data?.user);
+      // console.log(adminData?.data?.user)
+    }
+  }, []);
+
+  // console.log(slicUserData?.SalesmanCode);
+
   // Fetch barcode data from API
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
@@ -662,7 +675,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
@@ -685,7 +698,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           ItemSKU: item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
@@ -719,7 +732,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
@@ -745,7 +758,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           // ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
           ItemSKU: isExchangeClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
@@ -780,7 +793,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           MobileNo: mobileNo,
           TransactionDate: todayDate,
           VatNumber: vat,
@@ -805,7 +818,7 @@ const POS = () => {
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
-          UserID: "SYSADMIN",
+          UserID: slicUserData?.UserLoginID,
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
@@ -1827,6 +1840,8 @@ const POS = () => {
   };
 
   const [generatedPdfForExchange, setGeneratedPdfForExchange] = useState(null);
+  const [isReceiptPrintedExchange, setIsReceiptPrintedExchange] = useState(false);
+
   // exchange Item invoice
   const handlePrintExchangeInvoice = async (qrCodeData) => {
     if (!isExchangeClick && !isExchangeDSalesClick) return;
@@ -1835,6 +1850,8 @@ const POS = () => {
 
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+
+    const qrCodeDatazatcaExchange = await QRCode.toDataURL(`${qrCodeData}`);
 
     // Use exchange data or DSales exchange data based on the exchange type
     const exchangeDataToUse = isExchangeClick
@@ -2115,13 +2132,314 @@ const POS = () => {
           if (error) console.error(error);
           else {
             // Trigger the print dialog after the QR code is rendered
+            setIsReceiptPrintedExchange(true);
             printWindow.print();
             printWindow.close();
           }
         }
       );
     };
+
+
+    const whatsAppExchangehtml = `
+      <html>
+        <head>
+          <title>Exchange Invoice</title>
+          <style>
+            @page { size: 3in 11in; margin: 0; }
+            body { font-family: Arial, sans-serif; font-size: 15px; padding: 5px; }
+            .invoice-header, .invoice-footer {
+              text-align: center;
+              font-size: 15px;
+              margin-bottom: 5px;
+            }
+            .invoice-header {
+              font-weight: bold;
+            }
+            .invoice-logo {
+              margin-left: 125px;
+            }
+            .invoice-section {
+              margin: 10px 0;
+              font-size: 15px;
+            }
+            .sales-invoice-title {
+              text-align: center;
+              font-size: 16px;
+              font-weight: bold;
+              margin-top: 5px;
+              margin-bottom: 10px;
+            }
+            .table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10px 0;
+            }
+            .table th,
+            .table td {
+              text-align: center; /* Center align for more symmetry */
+              padding: 5px;
+              border-bottom: 1px solid black;
+              font-size: 15px;
+            }
+
+            .table th div {
+              display: flex;
+              justify-content: space-between;
+              font-size: 15px;
+            }
+
+            .table th div span {
+              font-family: 'Arial', sans-serif;
+              text-align: center;
+            }
+            .total-section {
+              font-size: 15px;
+              padding: 15px;
+              line-height: 1.5;
+              text-align: left;
+            }
+            .left-side {
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            }
+            .left-side div {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .arabic-label {
+              text-align: right;
+              direction: rtl;
+              margin-left: 10px;
+              font-family: 'Arial', sans-serif;
+              width: auto;
+            }
+            .qr-section-whatsapp {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              margin-top: 80px;
+            }
+            .receipt-footer {
+              margin-top: 20px;
+              text-align: center;
+              font-weight: bold;
+              font-size: 14px;
+            }
+            .customer-info div {
+              margin-bottom: 6px; /* Add space between each div */
+              padding-left: 5px;
+              padding-right: 5px;
+            }
+            .field-label {
+              font-weight: bold;
+            }
+            .customer-invoiceNumber {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .customer-invocieQrcode {
+              margin-top: -5px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-header">
+            <img class="invoice-logo" src="${sliclogo}" alt="SLIC Logo" width="120"/>
+            <div>Saudi Leather Industries Factory Co.</div>
+            <div>شركة مصنع الجلود السعودية</div>
+            <div>VAT#: 300456416500003</div>
+            <div>CR#: 2050011041</div>
+            <div>CR#: ٢٠٥٠٠١١٠٤١</div>
+            <div>السجل التجاري#: 2050011041</div>
+            <div>Unit No 1, Dammam 34334 - 3844, Saudi Arabia</div>
+            <div>Tel. Number: 013 8121066</div>
+          </div>
+
+          <div class="sales-invoice-title">Sales Invoice</div>
+          
+          <div class="customer-info">
+            <div><span class="field-label">Customer: </span>
+            ${
+              selectedSalesType === "DSALES NO INVOICE"
+                ? customerName
+                : invoiceHeaderData?.invoiceHeader?.CustomerName
+            }
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <div><span class="field-label">VAT#: </span>
+                ${
+                  selectedSalesType === "DSALES NO INVOICE"
+                    ? vat
+                    : invoiceHeaderData?.invoiceHeader?.VatNumber
+                }
+              </div>
+              <div class="arabic-label" style="text-align: right; direction: rtl;">
+                <span class="field-label">الرقم الضريبي#:</span>
+                  ${
+                    selectedSalesType === "DSALES NO INVOICE"
+                      ? vat
+                      : invoiceHeaderData?.invoiceHeader?.VatNumber
+                  }
+              </div>
+            </div>
+            <div class="customer-invoiceNumber">
+              <div>
+                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Date: </span>${currentTime}</div>
+              </div>
+              <div class="customer-invocieQrcode">
+                <img src="${qrCodeDataURL}" alt="QR Code" height="75" width="100" />
+              </div>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>بيان</span>
+                    <span>Description</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>الكمية</span>
+                    <span>Qty</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>السعر</span>
+                    <span>Price</span>
+                  </div>
+                </th>
+                <th>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span>المجموع</span>
+                    <span>Total</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${exchangeDataToUse
+                .map(
+                  (item) => `
+                  <tr>
+                    <td style="border-bottom: none;">${item.SKU}</td>
+                    <td style="border-bottom: none;">${item.Qty}</td>
+                    <td style="border-bottom: none;">${item.ItemPrice}</td>
+                    <td style="border-bottom: none;">${item.Total}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" style="text-align: left; padding-left: 20px;">
+                      <div>
+                        <span style="direction: ltr; text-align: left; display: block;">
+                          ${item.Description.substring(
+                            0,
+                            item.Description.length / 2
+                          )}
+                        </span>
+                        <span style="direction: rtl; text-align: right; display: block;">
+                          ${item.DescriptionArabic.substring(
+                            0,
+                            item.DescriptionArabic.length / 2
+                          )}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                `
+                )
+                .join("")}
+            </tbody>
+          </table>
+          <div class="total-section">
+            <div class="left-side">
+               ${totalsContent}
+            </div>
+          </div>
+
+          <div class="qr-section-whatsapp">
+            <img src="${qrCodeDatazatcaExchange}" alt="QR Code" height="225" width="300" />
+          </div>
+
+          <div class="receipt-footer">This invoice is generated as per ZATCA</div>
+        </body>
+      </html>
+    `;
+
+    // Generate PDF from the same HTML content for WhatsApp
+    const pdfOptions = {
+      margin: 0,
+      filename: "sales_invoice.pdf",
+      image: { type: "jpeg", quality: 1.0 },
+      html2canvas: {
+        scale: 2, // Increase scale to ensure higher fidelity
+        useCORS: true, // Ensure CORS handling for images like logos
+      },
+      jsPDF: { unit: "in", format: [4, 16], orientation: "portrait" },
+    };
+    const pdfBlob = await html2pdf().from(whatsAppExchangehtml).set(pdfOptions).outputPdf("blob");
+
+    setGeneratedPdfForExchange(pdfBlob);
   };
+
+
+
+  const [exhchangeWhatsAppInvoiceLoader, setExhchangeWhatsAppInvoiceLoader] =
+    useState(false);
+  const sendWhatsAppExchangeInvoice = async () => {
+    // console.log(isReceiptPrinted)
+    if (!isReceiptPrintedExchange) {
+      toast.error("Please print the receipt first!");
+      return;
+    }
+
+    if (!generatedPdfForExchange) {
+      toast.error("No invoice available to send.");
+    }
+
+    setExhchangeWhatsAppInvoiceLoader(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("phoneNumber", mobileNo);
+      const pdfFile = new File([generatedPdfForExchange], "Sales_Invoice.pdf", {
+        type: "application/pdf",
+      });
+      formData.append("attachment", pdfFile);
+      formData.append("messageText", "SLIC Exchange invoice");
+
+      const response = await newRequest.post(
+        "/whatsapp/sendWhatsAppMessage",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response?.data);
+      toast.success("Invoice sent to WhatsApp successfully!");
+      setExhchangeWhatsAppInvoiceLoader(false);
+    } catch (error) {
+      toast.error("Error sending WhatsApp message");
+      setExhchangeWhatsAppInvoiceLoader(false);
+      console.error("Error:", error);
+    }
+  };
+
+
+
 
   // Direct Sales Return InvoiceData Datagrid
   const [searchInvoiceNumber, setSearchInvoiceNumber] = useState("");
@@ -2231,7 +2549,7 @@ const POS = () => {
     setInvoiceData([]);
     setExchangeData([]);
     setInvoiceHeaderData([]);
-    // setData([]);
+    setData([]);
     setDSalesNoInvoiceData([]);
     setDSalesNoInvoiceexchangeData([]);
   };
@@ -3934,6 +4252,9 @@ const POS = () => {
               sendWhatsAppInvoice={sendWhatsAppInvoice}
               setDirectInvoiceWhatsAppLoader={directInvoiceWhatsAppLoader}
               isReceiptPrinted={isReceiptPrinted}
+
+              sendWhatsAppExchangeInvoice={sendWhatsAppExchangeInvoice}
+              exhchangeWhatsAppInvoiceLoader={exhchangeWhatsAppInvoiceLoader}
             />
           )}
 

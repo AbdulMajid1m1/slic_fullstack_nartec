@@ -13,7 +13,9 @@ const F3ResponsePopUp = ({
   isExchangeDSalesClick,
   sendWhatsAppInvoice,
   setDirectInvoiceWhatsAppLoader,
-  isReceiptPrinted
+  isReceiptPrinted,
+  sendWhatsAppExchangeInvoice,
+  exhchangeWhatsAppInvoiceLoader
 }) => {
     // const { t, i18n } = useTranslation();
   const [transaction, setTransaction] = useState("");
@@ -131,7 +133,7 @@ const F3ResponsePopUp = ({
                 </div>
               </div>
               <div className="w-full overflow-y-auto">
-                <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
+                <div className="mt-5">
                   <div className="lg:mt-0 md:mt-3 mt-6">
                     {
                       validationErrors ? (
@@ -152,7 +154,7 @@ const F3ResponsePopUp = ({
                               </p>
                             </div>
                           ))}
-                          <div className="mt-5 flex justify-between items-center">
+                          <div className="mt-5 flex justify-between items-center gap-3">
                             <div className="flex flex-col gap-3">
                               <button
                                 className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
@@ -180,12 +182,38 @@ const F3ResponsePopUp = ({
                             </div>
 
                             {showPrintExchangeReceipt && (
-                              <button
-                                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-                                onClick={() => handlePrintExchangeInvoice()}
-                              >
-                                Print Exchange Receipt
-                              </button>
+                              // <button
+                              //   className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                              //   onClick={() => handlePrintExchangeInvoice()}
+                              // >
+                              //   Print Exchange Receipt
+                              // </button>
+
+                              <div className="flex flex-col gap-3">
+                                <button
+                                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                                  onClick={() => handlePrintExchangeInvoice()}
+                                >
+                                  Print Exchange Receipt
+                                </button>
+                                <Button
+                                  variant="contained"
+                                  style={{ backgroundColor: "#021F69", color: "white" }}
+                                  onClick={sendWhatsAppExchangeInvoice}
+                                  className="ml-2"
+                                  endIcon={
+                                    exhchangeWhatsAppInvoiceLoader ? (
+                                      <CircularProgress
+                                        size={24}
+                                        color="inherit"
+                                      />
+                                    ) : null
+                                  }
+                                  // disabled={!isReceiptPrinted}
+                                >
+                                  Send Exchange Invoice to WhatsApp
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </div>
