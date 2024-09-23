@@ -145,11 +145,11 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      // console.log(data)
+
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
-        // call the second api later in their
+        // Call the second API
         const secondApiBody = {
           filter: {
             P_COMP_CODE: "SLIC",
@@ -174,7 +174,7 @@ const POS = () => {
             }
           );
           const secondApiData = secondApiResponse?.data;
-          console.log(secondApiData);
+          // console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
@@ -182,39 +182,34 @@ const POS = () => {
           const itemRates = secondApiData.map(
             (item) => item?.PRICELIST?.PLI_RATE
           );
-          // Store the array of rates under the respective ItemCode
+
           storedData[ItemCode] = itemRates;
-          // storedData[ItemCode] = secondApiData;
 
           sessionStorage.setItem(
             "secondApiResponses",
             JSON.stringify(storedData)
           );
 
-          // const itemPrice = secondApiData[0].ItemRate?.RATE;
-          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
           const vat = itemPrice * 0.15;
           const total = itemPrice + vat;
-          console.log(itemPrice);
 
+          // Set data in state
           setData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
             );
 
             if (existingItemIndex !== -1) {
-              // If the item already exists, just update the Qty and Total
               const updatedData = [...prevData];
               updatedData[existingItemIndex] = {
                 ...updatedData[existingItemIndex],
-                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Qty: updatedData[existingItemIndex].Qty + 1,
                 Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
               };
               return updatedData;
             } else {
-              // If the item is new, add it to the data array
               return [
                 ...prevData,
                 {
@@ -231,13 +226,63 @@ const POS = () => {
               ];
             }
           });
+
+          // Now, call the stock status API after second API success
+          const stockStatusBody = {
+            filter: {
+              M_COMP_CODE: "SLIC",
+              P_LOCN_CODE: selectedLocation?.stockLocation,
+              P_ITEM_CODE: ItemCode,
+              P_GRADE_1: ProductSize,
+              P_GRADE_2: "NA",
+            },
+            M_COMP_CODE: "SLIC",
+            M_USER_ID: "SYSADMIN",
+            APICODE: "STOCKSTATUS",
+            M_LANG_CODE: "ENG",
+          };
+
+          try {
+            const stockStatusResponse = await ErpTeamRequest.post(
+              "/slicuat05api/v1/getApi",
+              stockStatusBody,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            const stockData = stockStatusResponse?.data;
+            // console.log(stockData);
+
+            // Check the available stock
+            const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
+
+            // Update the grid with available stock info
+            setData((prevData) =>
+              prevData.map((item) =>
+                item.SKU === ItemCode
+                  ? { ...item, AvailableStock: availableStock }
+                  : item
+              )
+            );
+
+          } catch (stockStatusError) {
+            toast.error(
+              stockStatusError?.response?.data?.message ||
+                "An error occurred while fetching stock status"
+            );
+          }
+
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
               "An error occurred while calling the second API"
           );
         }
-        // barcode state empty once response is true
+
+        // Clear the barcode state after the response
         setBarcode("");
       } else {
         setData([]);
@@ -1333,10 +1378,7 @@ const POS = () => {
                             )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                            ${item.DescriptionArabic}
                           </span>
                         </div>
                       </td>
@@ -1365,10 +1407,7 @@ const POS = () => {
                             )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                            ${item.DescriptionArabic}
                           </span>
                         </div>
                       </td>
@@ -1396,10 +1435,7 @@ const POS = () => {
                               )}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
-                              ${item.DescriptionArabic.substring(
-                                0,
-                                item.DescriptionArabic.length / 2
-                              )}
+                              ${item.DescriptionArabic}
                             </span>
                           </div>
                         </td>
@@ -1684,10 +1720,7 @@ const POS = () => {
                             )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                            ${item.DescriptionArabic}
                           </span>
                         </div>
                       </td>
@@ -1716,10 +1749,7 @@ const POS = () => {
                             )}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
-                            ${item.DescriptionArabic.substring(
-                              0,
-                              item.DescriptionArabic.length / 2
-                            )}
+                            ${item.DescriptionArabic}
                           </span>
                         </div>
                       </td>
@@ -1747,10 +1777,7 @@ const POS = () => {
                               )}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
-                              ${item.DescriptionArabic.substring(
-                                0,
-                                item.DescriptionArabic.length / 2
-                              )}
+                              ${item.DescriptionArabic}
                             </span>
                           </div>
                         </td>
@@ -2087,10 +2114,7 @@ const POS = () => {
                           )}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
-                          ${item.DescriptionArabic.substring(
-                            0,
-                            item.DescriptionArabic.length / 2
-                          )}
+                          ${item.DescriptionArabic}
                         </span>
                       </div>
                     </td>
@@ -2348,10 +2372,7 @@ const POS = () => {
                           )}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
-                          ${item.DescriptionArabic.substring(
-                            0,
-                            item.DescriptionArabic.length / 2
-                          )}
+                          ${item.DescriptionArabic}
                         </span>
                       </div>
                     </td>
@@ -3403,6 +3424,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Barcode")}</th>
                     <th className="px-4 py-2">{t("Description")}</th>
                     <th className="px-4 py-2">{t("Item Size")}</th>
+                    <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
                     <th className="px-4 py-2">{t("VAT (15%)")}</th>
@@ -3426,6 +3448,7 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.Barcode}</td>
                         <td className="border px-4 py-2">{row.Description}</td>
                         <td className="border px-4 py-2">{row.ItemSize}</td>
+                        <td className="border px-4 py-2">{row.AvailableStock}</td>
                         <td className="border px-4 py-2">{row.Qty}</td>
                         <td className="border px-4 py-2">{row.ItemPrice}</td>
                         <td className="border px-4 py-2">{row.VAT}</td>
@@ -3839,7 +3862,6 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Barcode")}</th>
                       <th className="px-4 py-2">{t("Description")}</th>
                       <th className="px-4 py-2">{t("Item Size")}</th>
-                      <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
                       <th className="px-4 py-2">{t("VAT (15%)")}</th>
@@ -3865,9 +3887,6 @@ const POS = () => {
                             {row.Description}
                           </td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
-                          <td className="border px-4 py-2">
-                            {item?.FreeStock}
-                          </td>
                           <td className="border px-4 py-2">{row.Qty}</td>
                           <td className="border px-4 py-2">{row.ItemPrice}</td>
                           <td className="border px-4 py-2">{row.VAT}</td>
@@ -4012,6 +4031,7 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Description")}</th>
                           <th className="px-4 py-2">{t("Item Size")}</th>
                           <th className="px-4 py-2">{t("Qty")}</th>
+                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
                           <th className="px-4 py-2">{t("VAT (15%)")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
@@ -4032,6 +4052,9 @@ const POS = () => {
                             </td>
                             <td className="border px-4 py-2">
                               {item.ItemSize}
+                            </td>
+                            <td className="border px-4 py-2">
+                              {item?.FreeStock}
                             </td>
                             <td className="border px-4 py-2">{item?.Qty}</td>
                             <td className="border px-4 py-2">
