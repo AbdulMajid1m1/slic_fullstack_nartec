@@ -3862,7 +3862,6 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Barcode")}</th>
                       <th className="px-4 py-2">{t("Description")}</th>
                       <th className="px-4 py-2">{t("Item Size")}</th>
-                      <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
                       <th className="px-4 py-2">{t("VAT (15%)")}</th>
@@ -3888,9 +3887,6 @@ const POS = () => {
                             {row.Description}
                           </td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
-                          <td className="border px-4 py-2">
-                            {item?.FreeStock}
-                          </td>
                           <td className="border px-4 py-2">{row.Qty}</td>
                           <td className="border px-4 py-2">{row.ItemPrice}</td>
                           <td className="border px-4 py-2">{row.VAT}</td>
@@ -4035,6 +4031,7 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Description")}</th>
                           <th className="px-4 py-2">{t("Item Size")}</th>
                           <th className="px-4 py-2">{t("Qty")}</th>
+                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
                           <th className="px-4 py-2">{t("VAT (15%)")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
@@ -4055,6 +4052,9 @@ const POS = () => {
                             </td>
                             <td className="border px-4 py-2">
                               {item.ItemSize}
+                            </td>
+                            <td className="border px-4 py-2">
+                              {item?.FreeStock}
                             </td>
                             <td className="border px-4 py-2">{item?.Qty}</td>
                             <td className="border px-4 py-2">
