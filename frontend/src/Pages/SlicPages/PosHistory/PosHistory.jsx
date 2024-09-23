@@ -46,6 +46,19 @@ const PosHistory = () => {
     }
   }, []);
 
+  const [slicUserData, setSlicUserData] = useState(null);
+  useEffect(() => {
+    // slic our user data
+    const slicUser = sessionStorage.getItem('slicUserData');
+    const adminData = JSON.parse(slicUser);
+    if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
+      setSlicUserData(adminData?.data?.user);
+      // console.log(adminData?.data?.user)
+    }
+  }, []);
+
+  // console.log(slicUserData?.SalesmanCode);
+
  
   const fetchCustomerCodes = async () => {
     if (!cutOfDate) {
@@ -165,7 +178,7 @@ const PosHistory = () => {
         },
       ],
       COMPANY: "SLIC",
-      USERID: "SYSADMIN",
+      USERID: slicUserData?.UserLoginID,
       APICODE: "BANKRCPTVOUCHERBULK",
       LANG: "ENG",
     };

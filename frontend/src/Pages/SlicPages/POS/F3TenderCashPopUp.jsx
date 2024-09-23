@@ -4,6 +4,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import newRequest from "../../../utils/userRequest";
+import { useTranslation } from "react-i18next";
 
 const F3TenderCashPopUp = ({
   isVisible,
@@ -49,6 +50,8 @@ const F3TenderCashPopUp = ({
   searchInvoiceNumber,
   handleZatcaInvoiceGenerator,
 }) => {
+
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
   const [cashAmount, setCashAmount] = useState("");
@@ -68,13 +71,13 @@ const F3TenderCashPopUp = ({
   const paymentModes = JSON.parse(PaymentModels);
   const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
   const examptReason = ExamptionReason ? JSON.parse(ExamptionReason) : "";
-  
-  
+
+
   useEffect(() => {
     // slic login api token get
     const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
     setToken(token);
-    
+
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
       const companyData = JSON.parse(storedCompanyData);
@@ -83,7 +86,7 @@ const F3TenderCashPopUp = ({
         // console.log(companyData);
       }
     }
-    
+
     const storedLocationData = sessionStorage.getItem("selectedLocation");
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
@@ -95,23 +98,23 @@ const F3TenderCashPopUp = ({
   }, []);
 
 
-   useEffect(() => {
+  useEffect(() => {
     // slic our user data
     const slicUser = sessionStorage.getItem('slicUserData');
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
-      // console.log(adminData?.data?.user)
+      console.log(adminData?.data?.user)
     }
-    }, []);
-  
-    // console.log(slicUserData?.SalesmanCode);
-    // console.log(examptReason)
-    
-    useEffect(() => {
-      if (isVisible) {
-        // console.log("Popup Data:", storeDatagridData);
-        console.log("Invoice Data:", storeInvoiceDatagridData);
+  }, []);
+
+  // console.log(slicUserData?.SalesmanCode);
+  // console.log(examptReason)
+
+  useEffect(() => {
+    if (isVisible) {
+      // console.log("Popup Data:", storeDatagridData);
+      console.log("Invoice Data:", storeInvoiceDatagridData);
       // console.log("exchange Button", isExchangeClick)
       // console.log("Exchange DSales Button", isExchangeDSalesClick)
       // console.log(selectedCustomerCode?.CUSTOMERCODE)
@@ -181,7 +184,7 @@ const F3TenderCashPopUp = ({
         ],
 
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "INVOICE",
         LANG: "ENG",
       };
@@ -244,7 +247,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "BANKRECEIPTVOUCHER",
           LANG: "ENG",
         };
@@ -305,8 +308,8 @@ const F3TenderCashPopUp = ({
       // console.error("Error archiving invoice:", err);
       toast.error(
         err?.response?.data?.error ||
-          err?.response?.data?.message ||
-          "Error In Archived The Data"
+        err?.response?.data?.message ||
+        "Error In Archived The Data"
       );
     }
   };
@@ -360,7 +363,7 @@ const F3TenderCashPopUp = ({
           },
         ],
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
@@ -409,7 +412,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "INVOICE",
           LANG: "ENG",
         };
@@ -479,7 +482,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -577,7 +580,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -691,7 +694,7 @@ const F3TenderCashPopUp = ({
           },
         ],
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
@@ -742,7 +745,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "INVOICE",
           LANG: "ENG",
         };
@@ -813,7 +816,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -905,7 +908,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -1018,7 +1021,7 @@ const F3TenderCashPopUp = ({
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    F3 Tender Cash - {selectedSalesType}
+                    {t("F3 Tender Cash")} - {selectedSalesType}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -1089,24 +1092,24 @@ const F3TenderCashPopUp = ({
                       <div className="min-w-[300px] min-h-[100px]">
                         {/* Header */}
                         <div className="grid grid-cols-3 gap-2 bg-gray-200 p-2 rounded-t-lg">
-                          <p className="text-sm">Item Code</p>
-                          <p className="text-sm">Size</p>
-                          <p className="text-sm">Item Price</p>
+                          <p className="text-sm">{t("Item Code")}</p>
+                          <p className="text-sm">{t("Size")}</p>
+                          <p className="text-sm">{t("Item Price")}</p>
                         </div>
 
                         {selectedSalesType === "DIRECT SALES RETURN"
                           ? storeInvoiceDatagridData?.map((item, index) => (
-                              <div
-                                key={index}
-                                className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
-                              >
-                                <p className="text-sm">{item.SKU}</p>
-                                <p className="text-sm">{item.ItemSize}</p>
-                                <p className="text-sm">{item.ItemPrice}</p>
-                              </div>
-                            ))
+                            <div
+                              key={index}
+                              className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                            >
+                              <p className="text-sm">{item.SKU}</p>
+                              <p className="text-sm">{item.ItemSize}</p>
+                              <p className="text-sm">{item.ItemPrice}</p>
+                            </div>
+                          ))
                           : selectedSalesType === "DSALES NO INVOICE"
-                          ? DSalesNoInvoiceData?.map((item, index) => (
+                            ? DSalesNoInvoiceData?.map((item, index) => (
                               <div
                                 key={index}
                                 className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
@@ -1116,7 +1119,7 @@ const F3TenderCashPopUp = ({
                                 <p className="text-sm">{item.ItemPrice}</p>
                               </div>
                             ))
-                          : storeDatagridData?.map((item, index) => (
+                            : storeDatagridData?.map((item, index) => (
                               <div
                                 key={index}
                                 className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
@@ -1132,7 +1135,7 @@ const F3TenderCashPopUp = ({
                     {/* Gross Amount Display */}
                     <div className="mt-4">
                       <p className="text-sm font-sans text-red-500">
-                        Gross Amount with 15% VAT: SAR {grossAmount}
+                        {t("Gross Amount with 15% VAT")}: SAR {grossAmount}
                       </p>
                     </div>
                     <div className="mt-10">
@@ -1171,7 +1174,7 @@ const F3TenderCashPopUp = ({
                           ) : null
                         }
                       >
-                        Print
+                        {t("Print")}
                       </Button>
                     </div>
                   </form>
@@ -1186,14 +1189,17 @@ const F3TenderCashPopUp = ({
                         {selectedSalesType === "DIRECT SALES INVOICE" && (
                           <>
                             {paymentModes.code === "4" ||
-                            paymentModes.code === "5" ? (
+                              paymentModes.code === "5" ? (
                               <>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Cash</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Cash")}</p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder={
                                       paymentModes.name || "Payment Mode"
                                     }
@@ -1202,29 +1208,37 @@ const F3TenderCashPopUp = ({
                                 </div>
                                 {/* Total Amount in the middle */}
                                 <div className="mb-3">
-                                  <p className="font-semibold">Total Amount</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Total Amount")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Total Amount"
                                   />
                                 </div>
                                 {/* Change for credit/debit is always 0 */}
                                 <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Change")}</p>
                                   <input
                                     type="text"
                                     value={0}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Change"
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">
-                                    Bank Approval Code
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Bank Approval Code")}
                                   </p>
                                   <input
                                     type="text"
@@ -1232,7 +1246,10 @@ const F3TenderCashPopUp = ({
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)
                                     }
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Enter Bank Approval Code"
                                   />
                                 </div>
@@ -1241,32 +1258,40 @@ const F3TenderCashPopUp = ({
                               <>
                                 {/* Cash Payment */}
                                 <div className="mb-3">
-                                  <p className="font-semibold">Cash</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Cash")}</p>
                                   <input
                                     type="text"
                                     value={cashAmount}
                                     onChange={(e) =>
                                       setCashAmount(e.target.value)
                                     }
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder={
                                       paymentModes.name || "Payment Mode"
                                     }
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Total Amount</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Total Amount")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Total Amount"
                                   />
                                 </div>
                                 {/* Change for cash payment */}
                                 <div className="mb-3">
-                                  <p className="font-semibold">Change</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Change")}</p>
                                   <input
                                     type="text"
                                     value={
@@ -1274,7 +1299,10 @@ const F3TenderCashPopUp = ({
                                       Number(totalAmountWithVat)
                                     }
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Change"
                                   />
                                 </div>
@@ -1291,12 +1319,13 @@ const F3TenderCashPopUp = ({
                             {/* {(paymentModes.code === "4" || paymentModes.code === "5") ? (
                               <>
                               <div className="mb-3">
-                                <p className="font-semibold">Exchange Amount</p>
+                                <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>Exchange Amount</p>
                                 <input
                                   type="text"
                                   value={grossAmount}
                                   readOnly
-                                  className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                   className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar" ? "text-end" : "text-start"
+                                    }`}
                                   placeholder="Total Amount"
                                 />
                               </div>
@@ -1304,11 +1333,15 @@ const F3TenderCashPopUp = ({
                             ) : (
                               <>
                                 <div className="mb-3">
-                                 <p className="font-semibold">Total Amount</p>
+                                 <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>Total Amount</p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutExchange}
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                      className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
                                     placeholder={paymentModes.name || "Payment Mode"}
                                     readOnly
                                   />
@@ -1317,13 +1350,20 @@ const F3TenderCashPopUp = ({
                             )} */}
                             {!isExchangeClick && (
                               <div className="mb-3">
-                                <p className="font-semibold">Return Amount</p>
+                                <p
+                                  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}
+                                >
+                                  {t("Return Amount")}
+                                </p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutExchange}
-                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                    }`}
                                   placeholder={
-                                    paymentModes.name || "Payment Mode"
+                                    paymentModes.name || `${t("Payment Mode")}`
                                   }
                                   readOnly
                                 />
@@ -1333,39 +1373,53 @@ const F3TenderCashPopUp = ({
                             {isExchangeClick && (
                               <>
                                 <div className="mb-3">
-                                  <p className="font-semibold">
-                                    Exchange Amount
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Exchange Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={grossAmount}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Total Amount"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Total Amount")}
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Return Amount</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Return Amount")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutExchange}
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder={
-                                      paymentModes.name || "Payment Mode"
+                                      paymentModes.name ||
+                                      `${t("Payment Mode")}`
                                     }
                                     readOnly
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Difference</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Difference")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={
                                       grossAmount - totolAmountWithoutExchange
                                     }
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Difference"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Difference")}
                                   />
                                 </div>
                               </>
@@ -1373,21 +1427,24 @@ const F3TenderCashPopUp = ({
                             {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
                             {(paymentModes.code === "4" ||
                               paymentModes.code === "5") && (
-                              <div className="mb-3">
-                                <p className="font-semibold">
-                                  Bank Approval Code
-                                </p>
-                                <input
-                                  type="text"
-                                  value={bankApprovedCode}
-                                  onChange={(e) =>
-                                    setBankApprovedCode(e.target.value)
-                                  }
-                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                                  placeholder="Enter Bank Approval Code"
-                                />
-                              </div>
-                            )}
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Bank Approval Code")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={bankApprovedCode}
+                                    onChange={(e) =>
+                                      setBankApprovedCode(e.target.value)
+                                    }
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Enter Bank Approval Code")}
+                                  />
+                                </div>
+                              )}
                           </>
                         )}
 
@@ -1396,11 +1453,15 @@ const F3TenderCashPopUp = ({
                             {/* {(paymentModes.code === "4" || paymentModes.code === "5") ? (
                               <>
                                 <div className="mb-3">
-                                 <p className="font-semibold">Total Amount</p>
+                                 <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>Total Amount</p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutVatDSalesNoInvoice}
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                      className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
                                     placeholder={paymentModes.name || "Payment Mode"}
                                     readOnly
                                   />
@@ -1409,12 +1470,13 @@ const F3TenderCashPopUp = ({
                             ) : (
                               <>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Return Amount</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>Return Amount</p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutVatDSalesNoInvoice}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                     className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar" ? "text-end" : "text-start"
+                                    }`}
                                     placeholder="Total Amount"
                                   />
                                 </div>
@@ -1423,13 +1485,18 @@ const F3TenderCashPopUp = ({
 
                             {!isExchangeDSalesClick && (
                               <div className="mb-3">
-                                <p className="font-semibold">Return Amount</p>
+                                <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  {t("Return Amount")}
+                                </p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutVatDSalesNoInvoice}
-                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                    }`}
                                   placeholder={
-                                    paymentModes.name || "Payment Mode"
+                                    paymentModes.name || `${t("Payment Mode")}`
                                   }
                                   readOnly
                                 />
@@ -1439,31 +1506,42 @@ const F3TenderCashPopUp = ({
                             {isExchangeDSalesClick && (
                               <>
                                 <div className="mb-3">
-                                  <p className="font-semibold">
-                                    Exchange Amount
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Exchange Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={grossAmount}
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
-                                    placeholder="Total Amount"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Total Amount")}
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Return Amount</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Return Amount")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutVatDSalesNoInvoice}
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder={
-                                      paymentModes.name || "Payment Mode"
+                                      paymentModes.name ||
+                                      `${t("Payment Mode")}`
                                     }
                                     readOnly
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p className="font-semibold">Difference</p>
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Difference")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={
@@ -1471,7 +1549,10 @@ const F3TenderCashPopUp = ({
                                       totolAmountWithoutVatDSalesNoInvoice
                                     }
                                     readOnly
-                                    className="w-full border border-gray-300 px-2 py-2 rounded-md bg-[#E3EDEF]"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
                                     placeholder="Difference"
                                   />
                                 </div>
@@ -1480,21 +1561,24 @@ const F3TenderCashPopUp = ({
                             {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
                             {(paymentModes.code === "4" ||
                               paymentModes.code === "5") && (
-                              <div className="mb-3">
-                                <p className="font-semibold">
-                                  Bank Approval Code
-                                </p>
-                                <input
-                                  type="text"
-                                  value={bankApprovedCode}
-                                  onChange={(e) =>
-                                    setBankApprovedCode(e.target.value)
-                                  }
-                                  className="w-full border border-gray-300 px-2 py-2 rounded-md"
-                                  placeholder="Enter Bank Approval Code"
-                                />
-                              </div>
-                            )}
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Bank Approval Code")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={bankApprovedCode}
+                                    onChange={(e) =>
+                                      setBankApprovedCode(e.target.value)
+                                    }
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Enter Bank Approval Code")}
+                                  />
+                                </div>
+                              )}
                           </>
                         )}
                       </div>

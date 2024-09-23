@@ -16,6 +16,14 @@ code {
   max-height: 170px;
 }
 
+.direction-rtl {
+  direction: rtl;
+}
+
+.direction-ltr {
+  direction: ltr;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
