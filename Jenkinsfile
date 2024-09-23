@@ -20,6 +20,7 @@ pipeline {
                         env.PORT = "${env.slic_prod_PORT}"
                         env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
+                
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
