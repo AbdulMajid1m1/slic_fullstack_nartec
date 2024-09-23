@@ -1833,7 +1833,7 @@ const POS = () => {
       toast.success("Invoice sent to WhatsApp successfully!");
       setDirectInvoiceWhatsAppLoader(false);
     } catch (error) {
-      toast.error("Error sending WhatsApp message");
+      toast.error(error?.response?.data?.error || "Error sending WhatsApp message");
       setDirectInvoiceWhatsAppLoader(false);
       console.error("Error:", error);
     }
@@ -2432,7 +2432,7 @@ const POS = () => {
       toast.success("Invoice sent to WhatsApp successfully!");
       setExhchangeWhatsAppInvoiceLoader(false);
     } catch (error) {
-      toast.error("Error sending WhatsApp message");
+      toast.error(error?.response?.data?.error || "Error sending WhatsApp message");
       setExhchangeWhatsAppInvoiceLoader(false);
       console.error("Error:", error);
     }
