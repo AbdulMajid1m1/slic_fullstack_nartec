@@ -552,7 +552,7 @@ const DataTable = ({
         }
       >
         <div className="datatableTitle">
-          <div className="left-div flex justify-between flex-wrap w-full">
+          <div className={`left-div flex justify-between flex-wrap w-full  ${i18n.language==='ar'?'flex-row-reverse':'flex-row'}`}>
 
             {/* if global search is true than show search bar instead of title */}
             {/* {globalSearch ? (
@@ -568,14 +568,14 @@ const DataTable = ({
             ) : <span>{title}</span>
             } */}
 
-            <span>{title}</span>
+            <span  className={`${i18n.language==='ar'?'text-end':'text-start'}`}>{title}</span>
             {globalSearch && (
               <span>
                 <input
                   type="text"
                   placeholder={`${t('SEARCH')}`}
                   name="SHIPMENTID"
-                  className="searchInput"
+                  className={`searchInput  ${i18n.language==='ar'?'text-end':'text-start'}`}
                   onChange={handleGlobalSearch}
                 />
               </span>

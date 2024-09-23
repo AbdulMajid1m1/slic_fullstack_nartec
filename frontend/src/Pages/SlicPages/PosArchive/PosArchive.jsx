@@ -7,8 +7,10 @@ import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useTranslation } from "react-i18next";
 
 const PosArchive = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [secondGridData, setSecondGridData] = useState([]);
@@ -77,8 +79,8 @@ const PosArchive = () => {
           >
             <DataTable
               data={data}
-              title={"POS Archive"}
-              columnsName={posArchiveColumns}
+              title={t("POS Archive")}
+              columnsName={posArchiveColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -87,7 +89,7 @@ const PosArchive = () => {
               actionColumnVisibility={false}
               dropDownOptions={[
                 {
-                  label: "Edit",
+                  label: t("Edit"),
                   icon: (
                     <EditIcon
                       fontSize="small"
@@ -98,7 +100,7 @@ const PosArchive = () => {
                   //   action: handleShowUpdatePopup,
                 },
                 {
-                  label: "Delete",
+                  label: t("Delete"),
                   icon: (
                     <DeleteIcon
                       fontSize="small"
@@ -117,9 +119,9 @@ const PosArchive = () => {
         <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
           <DataTable
             data={filteredData}
-            title={"POS Archive Details"}
+            title={t("POS Archive Details")}
             secondaryColor="secondary"
-            columnsName={posArchiveColumns}
+            columnsName={posArchiveColumns(t)}
             backButton={true}
             checkboxSelection="disabled"
             actionColumnVisibility={false}

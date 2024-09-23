@@ -21,8 +21,10 @@ import AddGTINPopUp from "./AddGTINPopUp";
 import UpdateGTINPopUp from "./UpdateGTINPopUp";
 import { QRCodeSVG } from "qrcode.react";
 import ViewGTINPopUp from "./ViewGTINPopUp";
+import { useTranslation } from "react-i18next";
 
 const GTIN = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
@@ -199,12 +201,12 @@ const GTIN = () => {
   const handleDelete = (row) => {
     console.log(row);
     Swal.fire({
-      title: `${'Are you sure to delete this record?'}!`,
-      text: `${'You will not be able to recover this Products'}!`,
+      title: `${t('Are you sure to delete this record?')}!`,
+      text: `${t('You will not be able to recover this Products!')}`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: `${'Yes Delete'}!`,
-      cancelButtonText: `${'No, keep it'}!`,
+      confirmButtonText: `${t('Yes Delete!')}`,
+      cancelButtonText: `${t('No, keep it!')}`,
       confirmButtonColor: '#1E3B8B',
       cancelButtonColor: '#FF0032',
     }).then((result) => {
@@ -214,7 +216,7 @@ const GTIN = () => {
             const response = await newRequest.delete("/itemCodes/v1/itemCode/" + row?.GTIN);
             if (response) {
               // await refetch();
-              resolve(response?.data?.message || 'Products deleted successfully');
+              resolve(response?.data?.message || `${t('Products deleted successfully')}`);
               const updatedData = data.filter(item => item.GTIN !== row.GTIN);
               setData(updatedData);
             } else {
@@ -258,13 +260,13 @@ const GTIN = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"GTIN Barcode"} />
+          <RightDashboardHeader title={t("GTIN Barcode")} />
         </div>
 
         <div className="h-auto w-full">
           <div className="h-auto w-full p-0 bg-white shadow-xl rounded-md pb-10">
             <div
-              className={`flex justify-end items-center flex-wrap gap-2 py-7 px-5`}
+              className={`flex  items-center flex-wrap gap-2 py-7 px-5 ${i18n.language==='ar'?'justify-start':'justify-end'}`}
             >
               <Button
                 variant="contained"
@@ -272,7 +274,7 @@ const GTIN = () => {
                 style={{ backgroundColor: "#CFDDE0", color: "#1D2F90" }}
                 startIcon={<PiBarcodeDuotone />}
               >
-                Generate New Barcode
+                {t("Generate New Barcode")}
               </Button>
 
               <Button
@@ -287,7 +289,7 @@ const GTIN = () => {
                 className="bg-[#B6BAD6]"
                 startIcon={<MdPrint />}
               >
-                Print Products
+                {t("Print Products")}
               </Button>
 
               <Button
@@ -297,15 +299,15 @@ const GTIN = () => {
                 className="bg-[#B6BAD6]"
                 startIcon={<FcPrint />}
               >
-                Print FG Products
+                {t("Print FG Products")}
               </Button>
             </div>
 
             <div style={{marginTop: '-15px'}}>
               <DataTable
                 data={data}
-                title={"Products List"}
-                columnsName={GtinColumn}
+                title={t("Products List")}
+                columnsName={GtinColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerListId"
@@ -314,7 +316,7 @@ const GTIN = () => {
                 // checkboxSelection="disabled"
                 dropDownOptions={[
                   {
-                    label: "View",
+                    label: t("View"),
                     icon: (
                       <VisibilityIcon
                         fontSize="small"
@@ -325,7 +327,7 @@ const GTIN = () => {
                     action: handleShowViewPopup,
                   },
                   {
-                    label: "Edit",
+                    label: t("Edit"),
                     icon: (
                       <EditIcon
                         fontSize="small"
@@ -336,7 +338,7 @@ const GTIN = () => {
                     action: handleShowUpdatePopup,
                   },
                   {
-                    label: "Delete",
+                    label: t("Delete"),
                     icon: (
                       <DeleteIcon
                         fontSize="small"

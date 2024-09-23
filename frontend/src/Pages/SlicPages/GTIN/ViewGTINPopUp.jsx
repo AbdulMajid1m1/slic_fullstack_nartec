@@ -8,8 +8,10 @@ import "./AddGTIN.css";
 import Barcode from "react-barcode";
 import { QRCodeSVG } from "qrcode.react";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import { useTranslation } from "react-i18next";
 
 const ViewGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  const { t, i18n } = useTranslation();
   const [barcode, setBarcode] = useState("");
   const [itemCode, setItemCode] = useState("");
   const [quantity, setQuantiity] = useState("");
@@ -98,7 +100,7 @@ const ViewGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    View Products Barcodes
+                    {t("View Products Barcodes")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -161,32 +163,32 @@ const ViewGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               </div>
               {/* <form onSubmit={handleAddGTIN} className="w-full overflow-y-auto"> */}
               <div className="w-full overflow-y-auto">
-                <div className="flex justify-between items-center flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
+              <div className={`flex justify-between flex-col  sm:gap-3 gap-3 mt-5 ${i18n.language==='ar'? 'sm:flex-row-reverse':'sm:flex-row'}`}>
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                           className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}
                         >
-                          Description
+                          {t("Description")}
                         </label>
                         <textarea
                           type="text"
                           id="englishName"
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Enter Description"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter Description")}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                    <div className={`flex justify-center items-center sm:gap-3 gap-3  ${i18n.language==='ar'?'direction-rtl':'direction-ltr'}`}>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <p>Price: <span className="font-sans font-bold">{itemPrice}</span></p>
-                        <p>Available Stock: <span className="font-sans font-bold">{quantity}</span></p>
+                        <p>{t("Price")}: <span className="font-sans font-bold">{itemPrice}</span></p>
+                        <p>{t('Available Stock')}: <span className="font-sans font-bold">{quantity}</span></p>
                       </div>
                     </div>
                   </div>
