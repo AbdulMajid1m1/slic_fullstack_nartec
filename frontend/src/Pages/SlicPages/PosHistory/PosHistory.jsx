@@ -161,7 +161,7 @@ const PosHistory = () => {
       data: [
         {
           Company: "SLIC",
-          UserId: slicUserData?.UserLoginID,
+          UserId: "SYSADMIN",
           Department: "011",
           TransactionCode: "BRV",
           Division: "100",
@@ -178,7 +178,7 @@ const PosHistory = () => {
         },
       ],
       COMPANY: "SLIC",
-      USERID: "SYSADMIN",
+      USERID: slicUserData?.UserLoginID,
       APICODE: "BANKRCPTVOUCHERBULK",
       LANG: "ENG",
     };

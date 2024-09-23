@@ -155,7 +155,7 @@ const F3TenderCashPopUp = ({
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
-        UserId: slicUserData?.UserLoginID,
+        UserId: "SYSADMIN",
       }));
 
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
@@ -171,7 +171,7 @@ const F3TenderCashPopUp = ({
             // "CustomerCode": "EX100003",
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
-            UserId: slicUserData?.UserLoginID,
+            UserId: "SYSADMIN",
             CustomerName: customerName,
             MobileNo: mobileNo,
             Remarks: remarks,
@@ -184,7 +184,7 @@ const F3TenderCashPopUp = ({
         ],
 
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "INVOICE",
         LANG: "ENG",
       };
@@ -228,7 +228,7 @@ const F3TenderCashPopUp = ({
           data: [
             {
               Company: "SLIC",
-              UserId: slicUserData?.UserLoginID,
+              UserId: "SYSADMIN",
               Department: "011",
               TransactionCode: "BRV",
               Division: "100",
@@ -247,7 +247,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "BANKRECEIPTVOUCHER",
           LANG: "ENG",
         };
@@ -323,7 +323,7 @@ const F3TenderCashPopUp = ({
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
-        UserId: slicUserData?.UserLoginID,
+        UserId: "SYSADMIN",
       }));
 
       const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
@@ -331,7 +331,7 @@ const F3TenderCashPopUp = ({
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
-        UserId: slicUserData?.UserLoginID,
+        UserId: "SYSADMIN",
       }));
 
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
@@ -351,7 +351,7 @@ const F3TenderCashPopUp = ({
                 : selectedCustomerCode?.CUSTOMERCODE,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
-            UserId: slicUserData?.UserLoginID,
+            UserId: "SYSADMIN",
             CustomerName: invoiceHeaderData?.CustomerCode,
             MobileNo: invoiceHeaderData?.MobileNo,
             Remarks: invoiceHeaderData?.Remarks,
@@ -363,7 +363,7 @@ const F3TenderCashPopUp = ({
           },
         ],
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
@@ -400,7 +400,7 @@ const F3TenderCashPopUp = ({
                   : selectedCustomerCode?.CUSTOMERCODE,
               SalesLocationCode: selectedLocation?.stockLocation,
               DeliveryLocationCode: selectedLocation?.stockLocation,
-              UserId: slicUserData?.UserLoginID,
+              UserId: "SYSADMIN",
               CustomerName: invoiceHeaderData?.CustomerCode,
               MobileNo: invoiceHeaderData?.MobileNo,
               Remarks: invoiceHeaderData?.Remarks,
@@ -412,7 +412,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "INVOICE",
           LANG: "ENG",
         };
@@ -454,7 +454,7 @@ const F3TenderCashPopUp = ({
             data: [
               {
                 Company: "SLIC",
-                UserId: slicUserData?.UserLoginID,
+                UserId: "SYSADMIN",
                 Department: "011",
                 TransactionCode: "BRV",
                 Division: "100",
@@ -482,7 +482,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -558,7 +558,7 @@ const F3TenderCashPopUp = ({
             data: [
               {
                 Company: "SLIC",
-                UserId: slicUserData?.UserLoginID,
+                UserId: "SYSADMIN",
                 Department: "011",
                 TransactionCode: "BRV",
                 Division: "100",
@@ -580,7 +580,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -654,7 +654,7 @@ const F3TenderCashPopUp = ({
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
-        UserId: slicUserData?.UserLoginID,
+        UserId: "SYSADMIN",
       }));
 
       const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
@@ -662,7 +662,7 @@ const F3TenderCashPopUp = ({
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
         Rate: `${item?.ItemPrice}`,
-        UserId: slicUserData?.UserLoginID,
+        UserId: "SYSADMIN",
       }));
 
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
@@ -682,7 +682,7 @@ const F3TenderCashPopUp = ({
                 : selectedCustomerCode?.CUSTOMERCODE,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
-            UserId: slicUserData?.UserLoginID,
+            UserId: "SYSADMIN",
             CustomerName: customerName,
             MobileNo: mobileNo,
             Remarks: remarks,
@@ -694,7 +694,7 @@ const F3TenderCashPopUp = ({
           },
         ],
         COMPANY: "SLIC",
-        USERID: "SYSADMIN",
+        USERID: slicUserData?.UserLoginID,
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
@@ -733,7 +733,7 @@ const F3TenderCashPopUp = ({
                   : selectedCustomerCode?.CUSTOMERCODE,
               SalesLocationCode: selectedLocation?.stockLocation,
               DeliveryLocationCode: selectedLocation?.stockLocation,
-              UserId: slicUserData?.UserLoginID,
+              UserId: "SYSADMIN",
               CustomerName: customerName,
               MobileNo: mobileNo,
               Remarks: remarks,
@@ -745,7 +745,7 @@ const F3TenderCashPopUp = ({
             },
           ],
           COMPANY: "SLIC",
-          USERID: "SYSADMIN",
+          USERID: slicUserData?.UserLoginID,
           APICODE: "INVOICE",
           LANG: "ENG",
         };
@@ -787,7 +787,7 @@ const F3TenderCashPopUp = ({
             data: [
               {
                 Company: "SLIC",
-                UserId: slicUserData?.UserLoginID,
+                UserId: "SYSADMIN",
                 Department: "011",
                 TransactionCode: "BRV",
                 Division: "100",
@@ -816,7 +816,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
@@ -886,7 +886,7 @@ const F3TenderCashPopUp = ({
             data: [
               {
                 Company: "SLIC",
-                UserId: slicUserData?.UserLoginID,
+                UserId: "SYSADMIN",
                 Department: "011",
                 TransactionCode: "BRV",
                 Division: "100",
@@ -908,7 +908,7 @@ const F3TenderCashPopUp = ({
               },
             ],
             COMPANY: "SLIC",
-            USERID: "SYSADMIN",
+            USERID: slicUserData?.UserLoginID,
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
