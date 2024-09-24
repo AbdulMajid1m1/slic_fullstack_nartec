@@ -241,61 +241,83 @@ const PosHistory = () => {
     
   };  
 
-  const [zatcaQrcode, setZatcaQrcode] = useState(null);
+  // const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (selectedRow) => {
     const {
       createdAt,
       AdjAmount,
-      VatNumber,
+      InvoiceNo,
     } = selectedRow;
-
+  
     try {
+      // Step 1: Make the new API call to get the invoice details using InvoiceNo
+      const invoiceResponse = await newRequest.get(`/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}`);
+  
+      const invoiceData = invoiceResponse?.data?.data;
+      
+      // console.log("Fetched invoice data:", invoiceData);
+
+      const { invoiceDetails } = invoiceData;
+    
+      let totalGrossAmount = 0;
+      let totalVAT = 0;
+
+      // Loop through invoiceDetails and calculate gross, VAT, and total amounts
+      invoiceDetails.forEach((item) => {
+        const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
+        const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        totalGrossAmount += itemGross;
+        totalVAT += itemVAT;
+      });
+
+      const totalAmountWithVAT = totalGrossAmount + totalVAT;
+  
       const payload = {
         invoiceDate: createdAt,
-        totalWithVat: AdjAmount,
-        vatTotal: Number(AdjAmount),
+        totalWithVat: totalAmountWithVAT,
+        vatTotal: totalVAT,
       };
-
+  
       const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
-  
       const qrCodeDataFromApi = res?.data?.qrCodeData;
-      // console.log(qrCodeDataFromApi);
-      setZatcaQrcode(qrCodeDataFromApi);
+      // setZatcaQrcode(qrCodeDataFromApi);
   
-      handlePrintSalesInvoice(selectedRow);
-  
+      // Now pass the invoice data to handle the printing logic
+      // handlePrintSalesInvoice(selectedRow, invoiceData);
+      if (qrCodeDataFromApi) {
+        // Now pass the invoice data to handle the printing logic
+        handlePrintSalesInvoice(selectedRow, invoiceData, qrCodeDataFromApi);
+      } else {
+        throw new Error('QR code data not generated properly.');
+      }
+
       toast.success("Invoice generated and ready to print!");
     } catch (err) {
-      // console.log(err);
       toast.error(err?.response?.data?.errors[0]?.msg || "An error occurred while generating the invoice");
     }
-  };  
+  };
+  
   
   // invoice generate
-  const handlePrintSalesInvoice = async (selectedRow) => {
+  const handlePrintSalesInvoice = async (selectedRow, invoiceData, qrCodeDataFromApi) => {
     
     const {
       InvoiceNo,
-      AdjAmount,
-      PendingAmount,
-      TransactionCode,
-      DocNo,
-      CustomerName,
-      VatNumber,
-      TransactionDate,
     } = selectedRow;
+
+    const { invoiceHeader, invoiceDetails } = invoiceData;
  
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${InvoiceNo}`);
     
-    const formattedDate = new Date(TransactionDate).toLocaleDateString('en-US', {
+    const formattedDate = new Date(invoiceHeader?.TransactionDate).toLocaleDateString('en-US', {
       month: '2-digit',
       day: '2-digit',
       year: 'numeric',
     });    
 
     let salesInvoiceTitle = '';
-    const lastTwoTransactionCode = TransactionCode.slice(-2);
+    const lastTwoTransactionCode = invoiceHeader?.TransactionCode.slice(-2);
 
     if (lastTwoTransactionCode === 'IN') {
         salesInvoiceTitle = 'SALES INVOICE';
@@ -303,22 +325,38 @@ const PosHistory = () => {
         salesInvoiceTitle = 'SALES RETURN';
     }
 
+    // Calculate total VAT
+    let totalGrossAmount = 0;
+    let totalVAT = 0;
+    let totalAmountWithVAT = 0;
+
+    // Loop through invoiceDetails and calculate gross, VAT, and total amounts
+    invoiceDetails.forEach((item) => {
+      const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
+      const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+      totalGrossAmount += itemGross;
+      totalVAT += itemVAT;
+    });
+
+    totalAmountWithVAT = totalGrossAmount + totalVAT; // Total amount including VAT
+
+
     // Generate totals for exchange invoice
     const totalsContent = `
       <div>
         <strong>Gross:</strong>
         <div class="arabic-label">(ريال) المجموع</div>
-        ${AdjAmount}
+        ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
         <strong>VAT (15%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
-        15%
+        ${totalVAT.toFixed(2)}
       </div>
       <div>
         <strong>Total Amount With VAT:</strong>
         <div class="arabic-label">المجموع</div>
-        ${AdjAmount * 1.15}
+        ${totalAmountWithVAT.toFixed(2)}
       </div>
       <div>
         <strong>Change Due:</strong>
@@ -440,14 +478,14 @@ const PosHistory = () => {
           <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${CustomerName}</div>
+            <div><span class="field-label">Customer: </span>${invoiceHeader?.CustomerName}</div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${VatNumber}
+                ${invoiceHeader?.VatNumber}
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${VatNumber}
+                  ${invoiceHeader?.VatNumber}
               </div>
             </div>
             <div class="customer-invoiceNumber">
@@ -494,12 +532,30 @@ const PosHistory = () => {
             </thead>
 
            <tbody>
-             <tr>
-              <td>Transaction: ${TransactionCode}</td>
-              <td>1</td>
-              <td>${AdjAmount}</td>
-              <td>${PendingAmount * 1.15}</td>
-             </tr>        
+           ${invoiceDetails.map(
+              (item) => `
+                <tr>
+                  <td style="border-bottom: none;">${item.ItemSKU}</td>
+                  <td style="border-bottom: none;">${item.ItemQry}</td>
+                  <td style="border-bottom: none;">${item.ItemPrice}</td>
+                  <td style="border-bottom: none;">${item.ItemPrice * 1.15}</td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="text-align: left; padding-left: 20px;">
+                    <div>
+                      <span style="direction: ltr; text-align: left; display: block;">
+                        ${item.Remarks.substring(
+                          0,
+                          item.Remarks.length / 2
+                          )}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              `
+              )
+              .join("")
+            }
             </tbody>
           </table>
           <div class="total-section">
@@ -514,7 +570,7 @@ const PosHistory = () => {
 
           <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
-      </html>j
+      </html>
     `;
     const printWindow = window.open("", "Print Window", "height=800,width=800");
     if (!printWindow) {
@@ -535,7 +591,7 @@ const PosHistory = () => {
       // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
-        zatcaQrcode,
+        qrCodeDataFromApi,
         { width: 380 },
         function (error) {
           if (error) console.error(error);
