@@ -11,8 +11,10 @@ import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import { QRCodeSVG } from "qrcode.react";
 import ViewGTINPopUp from "./ViewGTINPopUp";
+import { useTranslation } from "react-i18next";
 
 const Products = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
@@ -175,7 +177,7 @@ const Products = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"Products Barcode View"} />
+          <RightDashboardHeader title={t("Products Barcode View")} />
         </div>
 
         <div className="h-auto w-full">
@@ -183,8 +185,8 @@ const Products = () => {
             <div style={{marginTop: '-15px'}}>
               <DataTable
                 data={data}
-                title={"Products List View"}
-                columnsName={GtinColumn}
+                title={t("Products List View")}
+                columnsName={GtinColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerListId"
@@ -193,7 +195,7 @@ const Products = () => {
                 // checkboxSelection="disabled"
                 dropDownOptions={[
                   {
-                    label: "View",
+                    label: t("View"),
                     icon: (
                       <VisibilityIcon
                         fontSize="small"

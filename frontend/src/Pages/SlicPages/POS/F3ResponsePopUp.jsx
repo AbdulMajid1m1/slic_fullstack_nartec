@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTranslation } from "react-i18next";
 
 const F3ResponsePopUp = ({
   isVisible,
@@ -17,7 +18,7 @@ const F3ResponsePopUp = ({
   sendWhatsAppExchangeInvoice,
   exhchangeWhatsAppInvoiceLoader
 }) => {
-    // const { t, i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
   const [transaction, setTransaction] = useState("");
   const [success, setSuccess] = useState("");
   const [documentNo, setDocumentNo] = useState("");
@@ -68,8 +69,8 @@ const F3ResponsePopUp = ({
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    {/* {t("Message")} */}
-                    Message
+                    {t("Message")}
+                    {/* Message */}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button
@@ -160,7 +161,7 @@ const F3ResponsePopUp = ({
                                 className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
                                 onClick={() => handlePrintSalesInvoice()}
                               >
-                                Print Receipt
+                                {t("Print Receipt")}
                               </button>
                               <Button
                                 variant="contained"
@@ -177,7 +178,7 @@ const F3ResponsePopUp = ({
                                 }
                                 // disabled={!isReceiptPrinted}
                               >
-                                Send Invoice to WhatsApp
+                                {t("Send Invoice to WhatsApp")}
                               </Button>
                             </div>
 
@@ -194,7 +195,7 @@ const F3ResponsePopUp = ({
                                   className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
                                   onClick={() => handlePrintExchangeInvoice()}
                                 >
-                                  Print Exchange Receipt
+                                  {t("Print Exchange Receipt")}
                                 </button>
                                 <Button
                                   variant="contained"
@@ -211,7 +212,7 @@ const F3ResponsePopUp = ({
                                   }
                                   // disabled={!isReceiptPrinted}
                                 >
-                                  Send Exchange Invoice to WhatsApp
+                                  {t("Send Exchange Invoice to WhatsApp")}
                                 </Button>
                               </div>
                             )}

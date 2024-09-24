@@ -8,8 +8,10 @@ import RightDashboardHeader from "../../../../components/RightDashboardHeader/Ri
 import DataTable from "../../../../components/Datatable/Datatable";
 import { DataTableContext } from "../../../../Contexts/DataTableContext";
 import ErpTeamRequest from "../../../../utils/ErpTeamRequest";
+import { useTranslation } from "react-i18next";
 
 const CustomerCodes = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [headerBtnLoading, setHeaderBtnLoading] = useState(false);
@@ -76,15 +78,15 @@ const CustomerCodes = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"Customer Codes"} />
+          <RightDashboardHeader title={t("Customer Codes")} />
         </div>
         <div className="h-auto w-full">
           <div className="h-auto w-full p-0 bg-white shadow-xl rounded-md pb-10">
-            <div style={{marginTop: '-15px'}}>
+            <div style={{ marginTop: "-15px" }}>
               <DataTable
                 data={data}
-                title={"Customer Codes"}
-                columnsName={customerCodesColumn}
+                title={t("Customer Codes")}
+                columnsName={customerCodesColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerCodesId"
@@ -92,22 +94,24 @@ const CustomerCodes = () => {
                 checkboxSelection="disabled"
                 actionColumnVisibility={false}
                 headerButtonVisibility={true}
-                buttonTitle={"Sync Customer Codes"}
+                buttonTitle={t("Sync Customer Codes")}
                 buttonFunction={handleProductSync}
                 headerBtnLoading={headerBtnLoading}
-                dropDownOptions={[
-                //   {
-                //     label: "Delete",
-                //     icon: (
-                //       <DeleteIcon
-                //         fontSize="small"
-                //         color="action"
-                //         style={{ color: "rgb(37 99 235)" }}
-                //       />
-                //     ),
-                //     action: handleDelete,
-                //   },
-                ]}
+                dropDownOptions={
+                  [
+                    //   {
+                    //     label: "Delete",
+                    //     icon: (
+                    //       <DeleteIcon
+                    //         fontSize="small"
+                    //         color="action"
+                    //         style={{ color: "rgb(37 99 235)" }}
+                    //       />
+                    //     ),
+                    //     action: handleDelete,
+                    //   },
+                  ]
+                }
               />
             </div>
           </div>

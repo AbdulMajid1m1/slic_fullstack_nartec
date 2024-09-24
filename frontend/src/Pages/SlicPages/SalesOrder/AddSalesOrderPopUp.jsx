@@ -4,8 +4,10 @@ import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
+import { useTranslation } from "react-i18next";
 
 const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  const { t, i18n } = useTranslation();
   const [soNumber, setSoNumber] = useState("");
   const [soCustName, setSoCustName] = useState(0);
   const [soLocnCode, setSoLocnCode] = useState("");
@@ -65,11 +67,12 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Add Sales Orders
+                    {t("Add Sales Orders")}
                   </h2>
                   <div className="flex items-center space-x-3">
-                    <button className="text-white hover:text-gray-300 focus:outline-none"
-                        onClick={handleCloseCreatePopup}
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -86,8 +89,9 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                         />
                       </svg>
                     </button>
-                    <button className="text-white hover:text-gray-300 focus:outline-none"
-                        onClick={handleCloseCreatePopup}
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -126,34 +130,49 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                   </div>
                 </div>
               </div>
-              <form onSubmit={handleAddSalesOrder} className="w-full overflow-y-auto">
+              <form
+                onSubmit={handleAddSalesOrder}
+                className="w-full overflow-y-auto"
+              >
                 <div className="flex justify-between flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
-                          So Number
+                        <label
+                          htmlFor="itemCode"
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
+                        >
+                          {t("So Number")}
                         </label>
                         <input
                           type="text"
                           id="itemCode"
                           value={soNumber}
                           onChange={(e) => setSoNumber(e.target.value)}
-                          placeholder="Enter So Number"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter So Number")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="quantity" className={`text-secondary`}>
-                          So Cust Name
+                        <label
+                          htmlFor="quantity"
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
+                        >
+                          {t("So Cust Name")}
                         </label>
                         <input
                           type="text"
                           id="quantity"
                           value={soCustName}
                           onChange={(e) => setSoCustName(e.target.value)}
-                          placeholder="Enter So Cust Name"
+                          placeholder={t("Enter So Cust Name")}
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3 bg-gray-100`}
                         />
                       </div>
@@ -163,31 +182,42 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                         >
-                          So Locn Code
+                          {t("So Locn Code")}
                         </label>
                         <input
                           type="text"
                           id="englishName"
                           value={soLocnCode}
                           onChange={(e) => setSoLocnCode(e.target.value)}
-                          placeholder="Enter So Locn Code"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter So Locn Code")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
-                          Del Locn
+                        <label
+                          htmlFor="startsize"
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
+                        >
+                          {t("Del Locn")}
                         </label>
                         <input
                           type="text"
                           id="startsize"
                           value={delLocn}
                           onChange={(e) => setDelLocn(e.target.value)}
-                          placeholder="Enter "
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter Del Locn")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
@@ -195,8 +225,13 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="endsize" className={`text-secondary`}>
-                          Status
+                        <label
+                          htmlFor="endsize"
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
+                        >
+                          {t("Status")}
                         </label>
                         <select
                           id="endsize"
@@ -204,22 +239,29 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           onChange={(e) => setStatus(e.target.value)}
                           className={`border w-full rounded-md border-secondary p-2 mb-3`}
                         >
-                          <option value="">-select status-</option>
-                          <option value="Pending">Pending</option>
-                          <option value="Approved">Approved</option>
+                          <option value="">-{t("select status")}-</option>
+                          <option value="Pending">{t("Pending")}</option>
+                          <option value="Approved">{t("Approved")}</option>
                         </select>
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
-                          Head System ID
+                        <label
+                          htmlFor="startsize"
+                          className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
+                        >
+                          {t("Head System ID")}
                         </label>
                         <input
                           type="text"
                           id="startsize"
                           value={headSysId}
                           onChange={(e) => setHeadSysId(e.target.value)}
-                          placeholder="Enter Head System ID"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Head System ID")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
@@ -240,7 +282,7 @@ const AddSalesOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           )
                         }
                       >
-                        Add Sales Order
+                        {t("Add Sales Order")}
                       </Button>
                     </div>
                   </div>
