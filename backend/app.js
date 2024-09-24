@@ -22,6 +22,8 @@ const invoiceRoutes = require("./routes/invoice");
 const exchangeInvoiceRoutes = require("./routes/TblSalesExchangeInvoicetmp");
 const whatsappRoutes = require("./routes/whatsappRoutes.js");
 const languageRoutes = require("./routes/languageRoute.js");
+const path = require("path");
+
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -30,7 +32,8 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from the "public" directory
-app.use(express.static("public"));
+// app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Add your routes...
 app.use("/api/itemCodes", itemCodesRoutes);
@@ -49,11 +52,6 @@ app.use("/api/exchangeInvoice", exchangeInvoiceRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
-app.use((req, res, next) => {
-  const error = new CustomError(`No route found for ${req.originalUrl}`);
-  error.statusCode = 404;
-  next(error);
-});
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -72,8 +70,18 @@ app.use((error, req, res, next) => {
   res.status(status).json(response(status, success, message, data));
 });
 
+// app.get("*", (req, res) => {
+//   res.sendFile(__dirname + "/public/index.html");
+// });
+
 app.get("*", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+});
+
+app.use((req, res, next) => {
+  const error = new CustomError(`No route found for ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
 });
 
 app.listen(port, function () {

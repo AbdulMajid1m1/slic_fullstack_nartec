@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-
     stages {
         stage('Set Environment Variables') {
             steps {
@@ -21,10 +20,12 @@ pipeline {
                         env.PORT = "${env.slic_prod_PORT}"
                         env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
+                
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
                     echo "Environment set for ${env.BRANCH_NAME} branch"
+                    echo "DATABASE_URL=${env.DATABASE_URL}"  // Print the database URL to check if it's correctly set
                 }
             }
         }
