@@ -16,8 +16,10 @@ import {
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
+import { useTranslation } from "react-i18next";
 
 const PosHistory = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -556,10 +558,18 @@ const PosHistory = () => {
         <div className="flex justify-center items-center">
           <div className="h-auto w-full">
             <div className="h-auto w-full bg-white shadow-xl rounded-md">
-              <div className="sm:flex p-4 gap-2 w-full">
+              <div
+                className={`sm:flex p-4 gap-2 w-full ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
                 <div className="flex flex-col w-full">
-                  <label className="font-sans font-semibold text-sm text-secondary">
-                    Cut Of Date
+                  <label
+                    className={`font-sans font-semibold text-sm text-secondary ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                  >
+                    {t("Cut Of Date")}
                   </label>
                   <input
                     value={cutOfDate}
@@ -570,8 +580,12 @@ const PosHistory = () => {
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label className="font-sans font-semibold text-sm text-secondary">
-                    Customer Codes
+                  <label
+                    className={`font-sans font-semibold text-sm text-secondary ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                  >
+                    {t("Customer Codes")}
                   </label>
                   <Autocomplete
                     id="customerCodeId"
@@ -583,7 +597,7 @@ const PosHistory = () => {
                       <TextField
                         {...params}
                         className="bg-gray-50 border border-gray-300 text-black text-xs rounded-sm"
-                        placeholder="Select any Customer Code"
+                        placeholder={t("Select any Customer Code")}
                         required
                       />
                     )}
@@ -606,7 +620,7 @@ const PosHistory = () => {
                       ) : null
                     }
                   >
-                    Generate Receipt
+                    {t("Generate Receipt")}
                   </Button>
                 </div>
               </div>
@@ -623,8 +637,8 @@ const PosHistory = () => {
           >
             <DataTable
               data={data}
-              title={"POS History"}
-              columnsName={posHistoryInvoiceColumns}
+              title={t("POS History")}
+              columnsName={posHistoryInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -633,7 +647,7 @@ const PosHistory = () => {
               // actionColumnVisibility={false}
               dropDownOptions={[
                 {
-                  label: "Print Receipts",
+                  label: t("Print Receipts"),
                   icon: (
                     <EditIcon
                       fontSize="small"
@@ -641,49 +655,50 @@ const PosHistory = () => {
                       style={{ color: "rgb(37 99 235)" }}
                     />
                   ),
-                    action: handleInvoiceGenerator,
+                  action: handleInvoiceGenerator,
                 },
               ]}
               uniqueId="posHistoryId"
             />
           </div>
         </div>
-        <div className="flex justify-end mt-3">
+        <div className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
           <div className="bg-white p-4 rounded shadow-md sm:w-[60%] w-full">
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Total Invoice Amount WithVAT(15%):
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Total Invoice Amount WithVAT(15%)")}:
                 </label>
                 <input
                   type="text"
                   value={totalInvoiceAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100 w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
+                  
                 />
               </div>
 
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Exchange Amount
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Exchange Amount")}
                 </label>
                 <input
                   type="text"
                   value={exchangeAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${i18n.language === "ar" ? "text-start" : "text-end"}`}
                 />
               </div>
 
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Remaining Amount
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Remaining Amount")}
                 </label>
                 <input
                   type="text"
                   value={remainingAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
                 />
               </div>
             </div>

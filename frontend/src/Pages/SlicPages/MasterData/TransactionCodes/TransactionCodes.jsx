@@ -8,8 +8,10 @@ import RightDashboardHeader from "../../../../components/RightDashboardHeader/Ri
 import DataTable from "../../../../components/Datatable/Datatable";
 import { DataTableContext } from "../../../../Contexts/DataTableContext";
 import ErpTeamRequest from "../../../../utils/ErpTeamRequest";
+import { useTranslation } from "react-i18next";
 
 const TransactionCodes = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [headerBtnLoading, setHeaderBtnLoading] = useState(false);
@@ -77,15 +79,15 @@ const TransactionCodes = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"Transaction Codes"} />
+          <RightDashboardHeader title={t("Transaction Codes")} />
         </div>
         <div className="h-auto w-full">
           <div className="h-auto w-full p-0 bg-white shadow-xl rounded-md pb-10">
             <div style={{marginTop: '-15px'}}>
               <DataTable
                 data={data}
-                title={"Transaction Codes"}
-                columnsName={transactionCodesColumn}
+                title={t("Transaction Codes")}
+                columnsName={transactionCodesColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="transactionCodesId"
@@ -93,7 +95,7 @@ const TransactionCodes = () => {
                 checkboxSelection="disabled"
                 actionColumnVisibility={false}
                 headerButtonVisibility={true}
-                buttonTitle={"Sync Products"}
+                buttonTitle={t("Sync Products")}
                 buttonFunction={handleProductSync}
                 headerBtnLoading={headerBtnLoading}
                 dropDownOptions={[

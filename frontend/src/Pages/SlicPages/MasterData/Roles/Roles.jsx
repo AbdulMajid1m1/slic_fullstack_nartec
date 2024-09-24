@@ -11,8 +11,10 @@ import { toast } from "react-toastify";
 import newRequest from "../../../../utils/userRequest";
 import AssignRolesPopUp from "./AssignRolesPopUp";
 import RemoveRolesPopUp from "./RemoveRolesPopUp";
+import { useTranslation } from "react-i18next";
 
 const Roles = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
@@ -79,7 +81,7 @@ const Roles = () => {
     <div>
       <SideNav>
         <div>
-          <RightDashboardHeader title={"Assign Roles to User"} />
+          <RightDashboardHeader title={t("Assign Roles to User")} />
         </div>
 
         <div className="h-auto w-full">
@@ -100,8 +102,8 @@ const Roles = () => {
             <div style={{marginTop: '-15px'}}>
               <DataTable
                 data={data}
-                title={"Assign Roles"}
-                columnsName={usersColumn}
+                title={t("Assign Roles")}
+                columnsName={usersColumn(t)}
                 loading={isLoading}
                 secondaryColor="secondary"
                 uniqueId="customerListId"
@@ -109,7 +111,7 @@ const Roles = () => {
                 checkboxSelection="disabled"
                 dropDownOptions={[
                   {
-                    label: "Assign Roles",
+                    label: t("Assign Roles"),
                     icon: (
                       <AssignmentTurnedInIcon
                         fontSize="small"
@@ -120,7 +122,7 @@ const Roles = () => {
                     action: handleShowUpdatePopup,
                   },
                   {
-                    label: "Remove Roles",
+                    label: t("Remove Roles"),
                     icon: (
                       <RemoveCircleIcon
                         fontSize="small"

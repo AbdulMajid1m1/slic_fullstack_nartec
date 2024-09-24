@@ -5,8 +5,10 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
 import { Autocomplete, TextField } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [rolesTypes, setRolesTypes] = useState([]);
@@ -101,7 +103,7 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Assign Roles
+                    {t("Assign Roles")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -167,23 +169,29 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
-                          User Email
+                        <label htmlFor="itemCode" className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}>
+                          {t("User Email")}
                         </label>
                         <input
                           type="text"
                           id="itemCode"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="Enter Email"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter your Email")}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
                     </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="SelectRoles" className={`text-secondary`}>
-                          User Roles 
+                        <label htmlFor="SelectRoles" className={`text-secondary ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}>
+                          {t("User Roles")} 
                         </label>
                         <Autocomplete
                             multiple
@@ -197,7 +205,7 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
                             <TextField
                                 autoComplete="off"
                                 {...params}
-                                label={'Select Roles'}
+                                label={t('Select Roles')}
                                 placeholder={'Select Roles'}
                                 variant='outlined'
                                 
@@ -205,14 +213,14 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
                             )}
                             required
                         />
-                        <div className=''>
+                        <div className={`${i18n.language === "ar" ? "direction-rtl" : "direction-ltr" }`}>
                             <label>
                             <input
                                 type='checkbox'
                                 checked={selectAll}
                                 onChange={handleSelectAllChange}
                             />
-                            Select All
+                            {t("Select All")}
                             </label>
                         </div>
                       </div>
@@ -232,7 +240,7 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
                           )
                         }
                       >
-                        Update Changes
+                        {t("Update Changes")}
                       </Button>
                     </div>
                   </div>

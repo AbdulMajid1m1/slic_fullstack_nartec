@@ -7,8 +7,10 @@ import SendIcon from "@mui/icons-material/Send";
 import "./AddGTIN.css";
 import Barcode from "react-barcode";
 import { QRCodeSVG } from "qrcode.react";
+import { useTranslation } from "react-i18next";
 
 const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  const { t, i18n } = useTranslation();
   const [barcode, setBarcode] = useState("");
   const [itemCode, setItemCode] = useState("");
   const [quantity, setQuantiity] = useState("");
@@ -84,7 +86,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Update Products Barcodes
+                    {t("Update Products Barcodes")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -146,11 +148,11 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                 </div>
               </div>
               <form onSubmit={handleAddGTIN} className="w-full overflow-y-auto">
-                <div className="flex justify-between items-center flex-col sm:flex-row sm:gap-3 gap-3 mt-5">
+              <div className={`flex justify-between flex-col  sm:gap-3 gap-3 mt-5 ${i18n.language==='ar'? 'sm:flex-row-reverse':'sm:flex-row'}`}>
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     {/* <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
+                        <label htmlFor="itemCode"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           Item Code
                         </label>
                         <input
@@ -159,12 +161,12 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           value={itemCode}
                           onChange={(e) => setItemCode(e.target.value)}
                           placeholder="Enter item Code"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="quantity" className={`text-secondary`}>
+                        <label htmlFor="quantity"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           Quantity
                         </label>
                         <input
@@ -173,7 +175,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           value={quantity}
                           onChange={(e) => setQuantiity(e.target.value)}
                           placeholder="Enter Quantity"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
@@ -183,17 +185,17 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                         className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}
                         >
-                          Description
+                          {t("Description")}
                         </label>
                         <textarea
                           type="text"
                           id="englishName"
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Enter Description"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter Description")}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
@@ -201,7 +203,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
+                        <label htmlFor="startsize"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           Size
                         </label>
                         <input
@@ -210,12 +212,12 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           value={startSize}
                           onChange={(e) => setStartSize(e.target.value)}
                           placeholder="Enter Size"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div> */}
                       {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="endsize" className={`text-secondary`}>
+                        <label htmlFor="endsize"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           End Size
                         </label>
                         <input
@@ -224,7 +226,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           placeholder="Enter End Size"
                           value={endSize}
                           onChange={(e) => setEndSize(e.target.value)}
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div> */}
@@ -245,7 +247,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           )
                         }
                       >
-                        Update Changes
+                        {t("Update Changes")}
                       </Button>
                     </div>
                   </div>

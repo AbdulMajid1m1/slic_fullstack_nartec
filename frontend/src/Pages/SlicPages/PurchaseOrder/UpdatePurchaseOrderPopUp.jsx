@@ -4,8 +4,11 @@ import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
+import { useTranslation } from "react-i18next";
 
 const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  
+  const { t, i18n } = useTranslation();
   const [poNumber, setPoNumber] = useState("");
   const [poDate, setPoDate] = useState(0);
   const [supplierName, setSupplierName] = useState("");
@@ -78,7 +81,7 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Update Sales Order
+                    {t("Update Sales Order")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -144,29 +147,29 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
-                          Purchase Order Number
+                        <label htmlFor="itemCode" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                           {t("Purchase Order Number")}
                         </label>
                         <input
                           type="text"
                           id="itemCode"
                           value={poNumber}
                           onChange={(e) => setPoNumber(e.target.value)}
-                          placeholder="Enter Purchase Order Number"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter Purchase Order Number")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="quantity" className={`text-secondary`}>
-                          Purchase Order Date
+                        <label htmlFor="quantity" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Purchase Order Date")}
                         </label>
                         <input
                           type="date"
                           id="quantity"
                           value={poDate}
                           onChange={(e) => setPoDate(e.target.value)}
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3 bg-gray-100`}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3 bg-gray-100 ${i18n.language==='ar'?'text-end':'text-start'}`}
                         />
                       </div>
                     </div>
@@ -175,17 +178,17 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                          className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}
                         >
-                          Supplier Name
+                          {t("Supplier Name")}
                         </label>
                         <input
                           type="text"
                           id="englishName"
                           value={supplierName}
                           onChange={(e) => setSupplierName(e.target.value)}
-                          placeholder="Enter Supplier Name"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                           placeholder={t("Enter Supplier Name")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
@@ -193,8 +196,8 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="startsize" className={`text-secondary`}>
-                          PO Status
+                        <label htmlFor="startsize" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("PO Status")}
                         </label>
                         <select
                           id="startsize"
@@ -202,22 +205,22 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
                           onChange={(e) => setPoStatus(e.target.value)}
                           className={`border w-full rounded-md border-secondary p-2 mb-3`}
                         >
-                          <option value="">Select PO Status</option>
-                          <option value="Active">Active</option>
-                          <option value="inActive">InActive</option>
+                          <option value="">{t("Select PO Status")}</option>
+                          <option value="Active">{t("Active")}</option>
+                          <option value="inActive">{t('InActive')}</option>
                         </select>
                       </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="endsize" className={`text-secondary`}>
-                          Head SYS ID
+                        <label htmlFor="endsize" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Head SYS ID")}
                         </label>
                         <input
                           type="text"
                           id="endsize"
                           value={headSysId}
                           onChange={(e) => setHeadSysId(e.target.value)}
-                          placeholder="Enter Head SYS ID"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                         placeholder={t("Enter Head SYS ID")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
                       </div>
@@ -238,7 +241,7 @@ const UpdatePurchaseOrderPopUp = ({ isVisible, setVisibility, refreshGTINData })
                           )
                         }
                       >
-                        Save Changes
+                        {t("Save Changes")}
                       </Button>
                     </div>
                   </div>
