@@ -538,7 +538,7 @@ const PosHistory = () => {
                   <td style="border-bottom: none;">${item.ItemSKU}</td>
                   <td style="border-bottom: none;">${item.ItemQry}</td>
                   <td style="border-bottom: none;">${item.ItemPrice}</td>
-                  <td style="border-bottom: none;">${item.ItemPrice * 1.15}</td>
+                  <td style="border-bottom: none;">${(item.ItemPrice * 1.15).toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align: left; padding-left: 20px;">
