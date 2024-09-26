@@ -5,10 +5,10 @@
 // let mainUrl = 'https://slicapp.online:8082';
 
 // ... For Development .. //
-let mainUrl = "https://uat.slicapp.online";
+// let mainUrl = "https://uat.slicapp.online";
 
 // ... for PRODUCTION .... //
-// let mainUrl = 'https://slicapp.online';
+let mainUrl = 'https://slicapp.online';
 
 export const backendUrl = mainUrl;
 export const baseUrl = `${mainUrl}/api`;
