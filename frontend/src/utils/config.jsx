@@ -7,8 +7,8 @@
 // ... For Development .. //
 let mainUrl = "https://uat.slicapp.online";
 
-// ... for PRODUCTION ... //
-// let mainUrl = 'https://slicapp.onine';
+// ... for PRODUCTION .... //
+// let mainUrl = 'https://slicapp.online';
 
 export const backendUrl = mainUrl;
 export const baseUrl = `${mainUrl}/api`;

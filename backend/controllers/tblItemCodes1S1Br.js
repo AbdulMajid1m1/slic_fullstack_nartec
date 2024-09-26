@@ -192,7 +192,7 @@ exports.putItemCode = async (req, res, next) => {
     };
 
     // Save the updated item code data
-    const updatedItemCode = await ItemCodeModel.update(GTIN, updatedData);
+    const updatedItemCode = await ItemCodeModel.update(existingItemCode.id, updatedData);
 
     if (!updatedItemCode) {
       const error = new CustomError(`Couldn't update item code`);
