@@ -15,6 +15,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const [itemCode, setItemCode] = useState("");
   const [quantity, setQuantiity] = useState("");
   const [description, setDescription] = useState("");
+  const [arabicDescription, setArabicDescription] = useState("");
   const [startSize, setStartSize] = useState("");
   const [endSize, setEndSize] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
     setItemCode(updateProductsData?.ItemCode || "");
     setQuantiity(1 || "");
     setDescription(updateProductsData?.EnglishName || "");
+    setArabicDescription(updateProductsData?.ArabicName || "");
     setStartSize(updateProductsData?.ProductSize || "");
     setEndSize(updateProductsData?.EndSize || "");
     setBarcode(updateProductsData?.GTIN || "");
@@ -51,7 +53,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
         // itemCode: itemCode,
         // quantity: quantity,
         description: description,
-        // startSize: startSize,
+        startSize: startSize,
+        ArabicName: arabicDescription,
         // endSize: endSize,
       };
 
@@ -201,8 +204,26 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                       </div>
                     </div>
 
+                    <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label
+                          htmlFor="arabicName"
+                         className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}
+                        >
+                          {t("Arabic Description")}
+                        </label>
+                        <textarea
+                          type="text"
+                          id="arabicName"
+                          value={arabicDescription}
+                          onChange={(e) => setArabicDescription(e.target.value)}
+                          placeholder={t("Enter Arabic Description")}
+                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
+                      </div>
+
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="startsize"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           Size
                         </label>
@@ -215,7 +236,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                            className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
-                      </div> */}
+                      </div>
                       {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="endsize"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           End Size

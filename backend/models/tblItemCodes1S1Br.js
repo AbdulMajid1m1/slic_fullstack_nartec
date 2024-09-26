@@ -1,4 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 class ItemCodeModel {
@@ -16,23 +16,23 @@ class ItemCodeModel {
       ? {
           where: {
             OR: [
-              { GTIN: { contains: search, mode: "insensitive" } },
-              { ItemCode: { contains: search, mode: "insensitive" } },
-              { EnglishName: { contains: search, mode: "insensitive" } },
-              { ArabicName: { contains: search, mode: "insensitive" } },
-              { LotNo: { contains: search, mode: "insensitive" } },
-              { sERIALnUMBER: { contains: search, mode: "insensitive" } },
-              { WHLocation: { contains: search, mode: "insensitive" } },
-              { BinLocation: { contains: search, mode: "insensitive" } },
+              { GTIN: { contains: search, mode: 'insensitive' } },
+              { ItemCode: { contains: search, mode: 'insensitive' } },
+              { EnglishName: { contains: search, mode: 'insensitive' } },
+              { ArabicName: { contains: search, mode: 'insensitive' } },
+              { LotNo: { contains: search, mode: 'insensitive' } },
+              { sERIALnUMBER: { contains: search, mode: 'insensitive' } },
+              { WHLocation: { contains: search, mode: 'insensitive' } },
+              { BinLocation: { contains: search, mode: 'insensitive' } },
               {
-                QRCodeInternational: { contains: search, mode: "insensitive" },
+                QRCodeInternational: { contains: search, mode: 'insensitive' },
               },
-              { ModelName: { contains: search, mode: "insensitive" } },
-              { ProductType: { contains: search, mode: "insensitive" } },
-              { BrandName: { contains: search, mode: "insensitive" } },
-              { PackagingType: { contains: search, mode: "insensitive" } },
-              { ProductUnit: { contains: search, mode: "insensitive" } },
-              { ProductSize: { contains: search, mode: "insensitive" } },
+              { ModelName: { contains: search, mode: 'insensitive' } },
+              { ProductType: { contains: search, mode: 'insensitive' } },
+              { BrandName: { contains: search, mode: 'insensitive' } },
+              { PackagingType: { contains: search, mode: 'insensitive' } },
+              { ProductUnit: { contains: search, mode: 'insensitive' } },
+              { ProductSize: { contains: search, mode: 'insensitive' } },
             ],
           },
         }
@@ -65,7 +65,7 @@ class ItemCodeModel {
   static async findAll() {
     const itemCodes = await prisma.tblItemCodes1S1Br.findMany({
       orderBy: {
-        Created_at: "desc", // or 'desc' for descending order
+        Created_at: 'desc', // or 'desc' for descending order
       },
     });
     return itemCodes;
@@ -93,9 +93,9 @@ class ItemCodeModel {
     });
   }
 
-  static async update(gtin, data) {
+  static async update(id, data) {
     return await prisma.tblItemCodes1S1Br.update({
-      where: { GTIN: gtin.toString() },
+      where: { id: id.toString() },
       data,
     });
   }
