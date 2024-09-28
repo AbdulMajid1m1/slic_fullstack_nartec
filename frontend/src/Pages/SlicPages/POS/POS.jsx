@@ -576,7 +576,8 @@ const POS = () => {
 
       // Filter customers whose CUST_CODE starts with "CL"
       const filteredCustomers = allCustomers.filter((customer) =>
-        customer.CUST_CODE.startsWith("CL")
+        // customer.CUST_CODE.startsWith("CL")
+        customer.CUST_CODE.startsWith("CL") || customer.CUST_CODE.startsWith("EX")
       );
       // console.log(filteredCustomers);
       setCustomerNameWithDirectInvoice(filteredCustomers);
