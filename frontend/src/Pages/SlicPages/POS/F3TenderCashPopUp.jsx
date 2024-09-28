@@ -314,9 +314,320 @@ const F3TenderCashPopUp = ({
     }
   };
 
+  // const handleSubmitDirectSalesReturn = async () => {
+  //   setLoading(true);
+  //   console.log("Direct Sales Return Data", exchangeData);
+  //   try {
+  //     const firstDataGridItem = exchangeData.map((item) => ({
+  //       "Item-Code": item.SKU || item.ItemCode,
+  //       Size: item.ItemSize,
+  //       Qty: `${item.Qty}`,
+  //       Rate: `${item?.ItemPrice}`,
+  //       UserId: "SYSADMIN",
+  //     }));
+
+  //     const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
+  //       "Item-Code": item.SKU,
+  //       Size: item.ItemSize,
+  //       Qty: `${item.Qty}`,
+  //       Rate: `${item?.ItemPrice}`,
+  //       UserId: "SYSADMIN",
+  //     }));
+
+  //     const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+  //     const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+
+  //     // Body for the sales return (EXSR)
+  //     const salesReturnBody = {
+  //       _keyword_: "salesreturn",
+  //       "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //       data: [
+  //         {
+  //           Company: "SLIC",
+  //           TransactionCode: selectTransactionCode,
+  //           CustomerCode:
+  //             selectedSalesReturnType === "DIRECT RETURN"
+  //               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //               : selectedCustomerCode?.CUSTOMERCODE,
+  //           SalesLocationCode: selectedLocation?.stockLocation,
+  //           DeliveryLocationCode: selectedLocation?.stockLocation,
+  //           UserId: "SYSADMIN",
+  //           CustomerName: invoiceHeaderData?.CustomerCode,
+  //           MobileNo: invoiceHeaderData?.MobileNo,
+  //           Remarks: invoiceHeaderData?.Remarks,
+  //           PosRefNo: invoiceHeaderData?.InvoiceNo,
+  //           ZATCAPaymentMode: paymentModes.code,
+  //           TaxExemptionReason: examptReason?.name || "",
+  //           SalesmanCode: slicUserData?.SalesmanCode,
+  //           Item: SecondDataGridItem,
+  //         },
+  //       ],
+  //       COMPANY: "SLIC",
+  //       USERID: slicUserData?.UserLoginID,
+  //       APICODE: "SALESRETURN",
+  //       LANG: "ENG",
+  //     };
+
+  //     if (isExchangeClick) {
+  //       // Exchange scenario: Call both Sales Return and Invoice APIs
+  //       const exsrRes = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesReturnBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Sales Return Response (EXSR):", exsrRes?.data);
+
+  //       const exsrDocumentNo = exsrRes?.data?.message?.["Document No"];
+  //       if (!exsrDocumentNo) {
+  //         toast.error("Error in Sales Return API: Missing Document No");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       // Body for the invoice (EXIN)
+  //       const salesInvoiceBody = {
+  //         _keyword_: "Invoice",
+  //         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //         data: [
+  //           {
+  //             Company: "SLIC",
+  //             TransactionCode: modifiedTransactionCode,
+  //             CustomerCode:
+  //               selectedSalesReturnType === "DIRECT RETURN"
+  //                 ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                 : selectedCustomerCode?.CUSTOMERCODE,
+  //             SalesLocationCode: selectedLocation?.stockLocation,
+  //             DeliveryLocationCode: selectedLocation?.stockLocation,
+  //             UserId: "SYSADMIN",
+  //             CustomerName: invoiceHeaderData?.CustomerCode,
+  //             MobileNo: invoiceHeaderData?.MobileNo,
+  //             Remarks: invoiceHeaderData?.Remarks,
+  //             PosRefNo: invoiceHeaderData?.InvoiceNo,
+  //             ZATCAPaymentMode: paymentModes.code,
+  //             TaxExemptionReason: examptReason?.name || "", // Invoice specific field
+  //             SalesmanCode: slicUserData?.SalesmanCode,
+  //             Item: firstDataGridItem,
+  //           },
+  //         ],
+  //         COMPANY: "SLIC",
+  //         USERID: slicUserData?.UserLoginID,
+  //         APICODE: "INVOICE",
+  //         LANG: "ENG",
+  //       };
+
+  //       // Call the Invoice API (EXIN)
+  //       const exinRes = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesInvoiceBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Invoice Response (EXIN):", exinRes?.data);
+
+  //       const exinDocumentNo = exinRes?.data?.message["Document No"];
+
+  //       if (!exinDocumentNo) {
+  //         toast.error("Error in Invoice API: Missing Document No");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       const documentNo = exinRes?.data?.message["Document No"];
+  //       const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+  //       if (documentNo || headSysId) {
+  //         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
+  //       }
+
+  //       insertInvoiceRecord(documentNo);
+
+  //       // after the Success response of return ERP api i call our own Archive Api
+  //       await handleArchiveInvoice();
+
+  //       // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
+  //         const bankReceiptBody = {
+  //           _keyword_: "BANKRCPTEX",
+  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //           data: [
+  //             {
+  //               Company: "SLIC",
+  //               UserId: "SYSADMIN",
+  //               Department: "011",
+  //               TransactionCode: "BRV",
+  //               Division: "100",
+  //               BankApproverCode: bankApprovedCode,
+  //               CashCardFlag: "CARD",
+  //               ReceiptAmt: totalAmountWithVat - totolAmountWithoutExchange,
+  //               CustomerId:
+  //                 selectedSalesReturnType === "DIRECT RETURN"
+  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                   : selectedCustomerCode?.CUSTOMERCODE,
+  //               MatchingTransactions: [
+  //                 {
+  //                   DocNo: exinDocumentNo,
+  //                   TransactionCode: modifiedTransactionCode,
+  //                   PendingAmount: totalAmountWithVat,
+  //                   AdjAmount: totalAmountWithVat,
+  //                 },
+  //                 {
+  //                   DocNo: exsrDocumentNo,
+  //                   TransactionCode: selectTransactionCode,
+  //                   PendingAmount: totolAmountWithoutExchange,
+  //                   AdjAmount: totolAmountWithoutExchange,
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //           COMPANY: "SLIC",
+  //           USERID: slicUserData?.UserLoginID,
+  //           APICODE: "BANKRECEIPTVOUCHER",
+  //           LANG: "ENG",
+  //         };
+
+  //         const bankRes = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/postData",
+  //           bankReceiptBody,
+  //           {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }
+  //         );
+
+  //         console.log("Bank Receipt processed for Exchange");
+
+  //         const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+
+  //         // If bankDocumentNo is missing, show an error and stop
+  //         if (!bankDocumentNo) {
+  //           toast.error("Error in Bank API: Missing Document No");
+  //           setLoading(false);
+  //           return;
+  //         }
+  //       } else {
+  //         console.log("No Bank API call for Exchange (Non-card/cash payment)");
+  //       }
+
+  //       showOtpPopup(exsrRes?.data);
+  //       handleCloseCreatePopup();
+  //       handleInvoiceGenerator();
+  //       handleZatcaInvoiceGenerator();
+  //       setLoading(false);
+  //     } else {
+  //       // Non-exchange scenario: Only call Sales Return API
+  //       const res = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesReturnBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Sales Return Response:", res?.data);
+
+  //       const documentNo = res?.data?.message["Document No"];
+  //       const headSysId = res?.data?.message["Ref-No/SysID"];
+  //       if (!documentNo) {
+  //         toast.error("Error in Sales Return API: Missing Document No");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       if (documentNo || headSysId) {
+  //         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
+  //       }
+
+  //       // insertInvoiceRecord(documentNo);
+
+  //       // Our Api
+  //       await handleArchiveInvoice();
+
+  //       showOtpPopup(res?.data);
+  //       handleCloseCreatePopup();
+  //       // handleClearData();
+  //       // handleClearInvoiceData();
+  //       handleInvoiceGenerator();
+  //       setLoading(false);
+
+  //       // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
+  //         const documentNo = res?.data?.message["Document No"];
+  //         const bankReceiptDI = {
+  //           _keyword_: "BANKRCPTDI",
+  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //           data: [
+  //             {
+  //               Company: "SLIC",
+  //               UserId: "SYSADMIN",
+  //               Department: "011",
+  //               TransactionCode: "BRV",
+  //               Division: "100",
+  //               BankApproverCode: bankApprovedCode,
+  //               CashCardFlag: "CARD",
+  //               ReceiptAmt: totolAmountWithoutExchange,
+  //               CustomerId:
+  //                 selectedSalesReturnType === "DIRECT RETURN"
+  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                   : selectedCustomerCode?.CUSTOMERCODE,
+  //               MatchingTransactions: [
+  //                 {
+  //                   DocNo: documentNo,
+  //                   TransactionCode: selectTransactionCode,
+  //                   PendingAmount: totolAmountWithoutExchange,
+  //                   AdjAmount: totolAmountWithoutExchange,
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //           COMPANY: "SLIC",
+  //           USERID: slicUserData?.UserLoginID,
+  //           APICODE: "BANKRECEIPTVOUCHER",
+  //           LANG: "ENG",
+  //         };
+
+  //         const bankRes = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/postData",
+  //           bankReceiptDI,
+  //           {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }
+  //         );
+
+  //         const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+
+  //         // If bankDocumentNo is missing, show an error and stop
+  //         if (!bankDocumentNo) {
+  //           toast.error("Error in Bank API: Missing Document No");
+  //           setLoading(false);
+  //           return;
+  //         }
+
+  //         // Complete the process
+  //         showOtpPopup(bankRes?.data);
+  //         handleCloseCreatePopup();
+  //         // handleClearData();
+  //         // handleClearInvoiceData();
+  //         handleInvoiceGenerator();
+  //         setLoading(false);
+  //         console.log(
+  //           "Bank Receipt processed for Direct Sales Return Debit/Credit"
+  //         );
+  //       } else {
+  //         console.log("Direct Sales Return - Cash (No Bank API Call)");
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //     toast.error(err?.response?.data?.message || "Something went wrong");
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const handleSubmitDirectSalesReturn = async () => {
     setLoading(true);
     console.log("Direct Sales Return Data", exchangeData);
+  
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
         "Item-Code": item.SKU || item.ItemCode,
@@ -325,7 +636,7 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-
+  
       const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
@@ -333,10 +644,10 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-
+  
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
-
+  
       // Body for the sales return (EXSR)
       const salesReturnBody = {
         _keyword_: "salesreturn",
@@ -367,26 +678,9 @@ const F3TenderCashPopUp = ({
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
-
+  
       if (isExchangeClick) {
-        // Exchange scenario: Call both Sales Return and Invoice APIs
-        const exsrRes = await ErpTeamRequest.post(
-          "/slicuat05api/v1/postData",
-          salesReturnBody,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        console.log("Sales Return Response (EXSR):", exsrRes?.data);
-
-        const exsrDocumentNo = exsrRes?.data?.message?.["Document No"];
-        if (!exsrDocumentNo) {
-          toast.error("Error in Sales Return API: Missing Document No");
-          setLoading(false);
-          return;
-        }
-
-        // Body for the invoice (EXIN)
+        // Step 1: Call the Invoice API (EXIN)
         const salesInvoiceBody = {
           _keyword_: "Invoice",
           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
@@ -406,7 +700,7 @@ const F3TenderCashPopUp = ({
               Remarks: invoiceHeaderData?.Remarks,
               PosRefNo: invoiceHeaderData?.InvoiceNo,
               ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: examptReason?.name || "", // Invoice specific field
+              TaxExemptionReason: examptReason?.name || "",
               SalesmanCode: slicUserData?.SalesmanCode,
               Item: firstDataGridItem,
             },
@@ -416,8 +710,7 @@ const F3TenderCashPopUp = ({
           APICODE: "INVOICE",
           LANG: "ENG",
         };
-
-        // Call the Invoice API (EXIN)
+  
         const exinRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
           salesInvoiceBody,
@@ -426,27 +719,53 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Invoice Response (EXIN):", exinRes?.data);
-
+  
         const exinDocumentNo = exinRes?.data?.message["Document No"];
-
-        if (!exinDocumentNo) {
-          toast.error("Error in Invoice API: Missing Document No");
+        const exinHeadSysId = exinRes?.data?.message["Ref-No/SysID"];
+        const exinTransactionCode = exinRes?.data?.message["Transaction Code"];
+  
+        if (!exinDocumentNo || !exinHeadSysId) {
+          toast.error("Error in Invoice API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-
-        const documentNo = exinRes?.data?.message["Document No"];
-        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
-        if (documentNo || headSysId) {
-          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
-        }
-
-        insertInvoiceRecord(documentNo);
+  
+        // Call insertInvoiceRecord for the EXIN response
+        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+  
+        // Call handleDocumentNoUpdate for EXIN
+        handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
 
         // after the Success response of return ERP api i call our own Archive Api
         await handleArchiveInvoice();
-
-        // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+  
+        // Step 2: Call the Sales Return API (EXSR)
+        const exsrRes = await ErpTeamRequest.post(
+          "/slicuat05api/v1/postData",
+          salesReturnBody,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Sales Return Response (EXSR):", exsrRes?.data);
+  
+        const exsrDocumentNo = exsrRes?.data?.message["Document No"];
+        const exsrHeadSysId = exsrRes?.data?.message["Ref-No/SysID"];
+        const exsrTransactionCode = exsrRes?.data?.message["Transaction Code"];
+  
+        if (!exsrDocumentNo || !exsrHeadSysId) {
+          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          setLoading(false);
+          return;
+        }
+  
+        // Call insertInvoiceRecord for the EXSR response
+        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+  
+        // Call handleDocumentNoUpdate for EXSR
+        handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+  
+        // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -486,7 +805,7 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-
+  
           const bankRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptBody,
@@ -494,12 +813,11 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-
+  
           console.log("Bank Receipt processed for Exchange");
-
+  
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-
-          // If bankDocumentNo is missing, show an error and stop
+  
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
@@ -508,7 +826,8 @@ const F3TenderCashPopUp = ({
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
-
+  
+        // Final steps
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
         handleInvoiceGenerator();
@@ -524,34 +843,28 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response:", res?.data);
-
+  
         const documentNo = res?.data?.message["Document No"];
         const headSysId = res?.data?.message["Ref-No/SysID"];
-        if (!documentNo) {
-          toast.error("Error in Sales Return API: Missing Document No");
+        const transactionCode = res?.data?.message["Transaction Code"];
+  
+        if (!documentNo || !headSysId) {
+          toast.error("Error in Sales Return API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-
-        if (documentNo || headSysId) {
-          handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
-        }
-
-        // insertInvoiceRecord(documentNo);
+  
+        // Call insertInvoiceRecord
+        insertInvoiceRecord(documentNo, headSysId, transactionCode);
+  
+        // Call handleDocumentNoUpdate
+        handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
 
         // Our Api
         await handleArchiveInvoice();
-
-        showOtpPopup(res?.data);
-        handleCloseCreatePopup();
-        // handleClearData();
-        // handleClearInvoiceData();
-        handleInvoiceGenerator();
-        setLoading(false);
-
-        // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+  
+        // Call Bank API if paymentModes.code is 4 or 5
         if (paymentModes.code === "4" || paymentModes.code === "5") {
-          const documentNo = res?.data?.message["Document No"];
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
             "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
@@ -584,7 +897,7 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-
+  
           const bankRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptDI,
@@ -592,36 +905,32 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-
+  
+          console.log(
+            "Bank Receipt processed for Direct Sales Return Debit/Credit"
+          );
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-
-          // If bankDocumentNo is missing, show an error and stop
+  
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
             return;
           }
-
-          // Complete the process
-          showOtpPopup(bankRes?.data);
-          handleCloseCreatePopup();
-          // handleClearData();
-          // handleClearInvoiceData();
-          handleInvoiceGenerator();
-          setLoading(false);
-          console.log(
-            "Bank Receipt processed for Direct Sales Return Debit/Credit"
-          );
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
+  
+        showOtpPopup(res?.data);
+        handleCloseCreatePopup();
+        handleInvoiceGenerator();
+        setLoading(false);
       }
     } catch (err) {
       console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
-  };
+  };  
 
   // Archive Api I call their
   // const handleDSalesArchiveInvoice = async () => {
@@ -645,9 +954,323 @@ const F3TenderCashPopUp = ({
   // };
 
   // DSALES no Invoice
+  // const handleSubmitDSalesInvoice = async () => {
+  //   setLoading(true);
+
+  //   try {
+  //     const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
+  //       "Item-Code": item.SKU,
+  //       Size: item.ItemSize,
+  //       Qty: `${item.Qty}`,
+  //       Rate: `${item?.ItemPrice}`,
+  //       UserId: "SYSADMIN",
+  //     }));
+
+  //     const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
+  //       "Item-Code": item.SKU,
+  //       Size: item.ItemSize,
+  //       Qty: `${item.Qty}`,
+  //       Rate: `${item?.ItemPrice}`,
+  //       UserId: "SYSADMIN",
+  //     }));
+
+  //     const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+  //     const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+
+  //     // Body for the sales return (EXSR)
+  //     const salesReturnBody = {
+  //       _keyword_: "salesreturn",
+  //       "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //       data: [
+  //         {
+  //           Company: "SLIC",
+  //           TransactionCode: `${selectTransactionCode}`,
+  //           CustomerCode:
+  //             selectedSalesReturnType === "DIRECT RETURN"
+  //               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //               : selectedCustomerCode?.CUSTOMERCODE,
+  //           SalesLocationCode: selectedLocation?.stockLocation,
+  //           DeliveryLocationCode: selectedLocation?.stockLocation,
+  //           UserId: "SYSADMIN",
+  //           CustomerName: customerName,
+  //           MobileNo: mobileNo,
+  //           Remarks: remarks,
+  //           PosRefNo: invoiceNumber,
+  //           ZATCAPaymentMode: paymentModes.code,
+  //           TaxExemptionReason: examptReason?.name || "",
+  //           SalesmanCode: slicUserData?.SalesmanCode,
+  //           Item: SecondDataGridItem,
+  //         },
+  //       ],
+  //       COMPANY: "SLIC",
+  //       USERID: slicUserData?.UserLoginID,
+  //       APICODE: "SALESRETURN",
+  //       LANG: "ENG",
+  //     };
+
+  //     console.log("Sales Return", salesReturnBody);
+
+  //     if (isExchangeDSalesClick) {
+  //       // Exchange scenario: Call both Sales Return and Invoice APIs
+  //       const exsrRes = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesReturnBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Sales Return Response (EXSR):", exsrRes?.data);
+
+  //       const exsrDocumentNo = exsrRes?.data?.message["Document No"];
+  //       if (!exsrDocumentNo) {
+  //         toast.error("Error in Sales Return API: Missing Document No");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       const documentNo = exsrRes?.data?.message["Document No"];
+  //       const headSysId = exsrRes?.data?.message["Ref-No/SysID"];
+  //       if (documentNo || headSysId) {
+  //         handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
+  //       }
+
+  //       insertInvoiceRecord(documentNo);
+
+  //       // Body for the invoice (EXIN)
+  //       const salesInvoiceBody = {
+  //         _keyword_: "Invoice",
+  //         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //         data: [
+  //           {
+  //             Company: "SLIC",
+  //             TransactionCode: `${modifiedTransactionCode}`,
+  //             CustomerCode:
+  //               selectedSalesReturnType === "DIRECT RETURN"
+  //                 ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                 : selectedCustomerCode?.CUSTOMERCODE,
+  //             SalesLocationCode: selectedLocation?.stockLocation,
+  //             DeliveryLocationCode: selectedLocation?.stockLocation,
+  //             UserId: "SYSADMIN",
+  //             CustomerName: customerName,
+  //             MobileNo: mobileNo,
+  //             Remarks: remarks,
+  //             PosRefNo: invoiceNumber,
+  //             ZATCAPaymentMode: paymentModes.code,
+  //             TaxExemptionReason: examptReason?.name || "", // Invoice specific field
+  //             SalesmanCode: slicUserData?.SalesmanCode,
+  //             Item: firstDataGridItem,
+  //           },
+  //         ],
+  //         COMPANY: "SLIC",
+  //         USERID: slicUserData?.UserLoginID,
+  //         APICODE: "INVOICE",
+  //         LANG: "ENG",
+  //       };
+
+  //       console.log("Sales Invoice", salesInvoiceBody);
+
+  //       // Call the Invoice API (EXIN)
+  //       const exinRes = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesInvoiceBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Invoice Response (EXIN):", exinRes?.data);
+
+  //       // Get document numbers for both EXSR and EXIN
+  //       const exinDocumentNo = exinRes?.data?.message["Document No"];
+
+  //       if (!exinDocumentNo) {
+  //         toast.error("Error in Invoice API: Missing Document No");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       // const documentNo = exinRes?.data?.message["Document No"];
+  //       // const headSysId = exinRes?.data?.message["Ref-No/SysID"];
+  //       // if (documentNo || headSysId) {
+  //       //   handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
+  //       // }
+
+  //       // insertInvoiceRecord(documentNo);
+
+  //       // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
+  //         const bankReceiptBody = {
+  //           _keyword_: "BANKRCPTEX",
+  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //           data: [
+  //             {
+  //               Company: "SLIC",
+  //               UserId: "SYSADMIN",
+  //               Department: "011",
+  //               TransactionCode: "BRV",
+  //               Division: "100",
+  //               BankApproverCode: bankApprovedCode,
+  //               CashCardFlag: "CARD",
+  //               ReceiptAmt:
+  //                 totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
+  //               CustomerId:
+  //                 selectedSalesReturnType === "DIRECT RETURN"
+  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                   : selectedCustomerCode?.CUSTOMERCODE,
+  //               MatchingTransactions: [
+  //                 {
+  //                   DocNo: exinDocumentNo,
+  //                   TransactionCode: modifiedTransactionCode,
+  //                   PendingAmount: totalAmountWithVat,
+  //                   AdjAmount: totalAmountWithVat,
+  //                 },
+  //                 {
+  //                   DocNo: exsrDocumentNo,
+  //                   TransactionCode: selectTransactionCode,
+  //                   PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
+  //                   AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //           COMPANY: "SLIC",
+  //           USERID: slicUserData?.UserLoginID,
+  //           APICODE: "BANKRECEIPTVOUCHER",
+  //           LANG: "ENG",
+  //         };
+
+  //         console.log("Bank Api", bankReceiptBody);
+
+  //         const bankApiResponse = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/postData",
+  //           bankReceiptBody,
+  //           {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }
+  //         );
+
+  //         console.log("Bank Receipt processed for Exchange");
+  //         const bankDocumentNo =
+  //           bankApiResponse?.data?.message?.["Document No"];
+
+  //         // If bankDocumentNo is missing, show an error and stop
+  //         if (!bankDocumentNo) {
+  //           toast.error("Error in Bank API: Missing Document No");
+  //           setLoading(false);
+  //           return;
+  //         }
+  //       } else {
+  //         console.log("No Bank API call for Exchange (Non-card/cash payment)");
+  //       }
+
+  //       showOtpPopup(exsrRes?.data);
+  //       handleCloseCreatePopup();
+  //       handleInvoiceGenerator();
+  //       handleZatcaInvoiceGenerator();
+  //       setLoading(false);
+  //     } else {
+  //       // Non-exchange scenario: Only call Sales Return API
+  //       const res = await ErpTeamRequest.post(
+  //         "/slicuat05api/v1/postData",
+  //         salesReturnBody,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         }
+  //       );
+  //       console.log("Sales Return Response:", res?.data);
+
+  //       const documentNo = res?.data?.message["Document No"];
+  //       const headSysId = res?.data?.message["Ref-No/SysID"];
+
+  //       if (!documentNo || !headSysId) {
+  //         toast.error(
+  //           "Error in Sales Return API: Missing Document No or SysID"
+  //         );
+  //         setLoading(false);
+  //         return;
+  //       }
+  //       if (documentNo || headSysId) {
+  //         handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
+  //       }
+
+  //       insertInvoiceRecord(documentNo);
+
+  //       // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
+  //         const documentNo = res?.data?.message["Document No"];
+  //         const bankReceiptDI = {
+  //           _keyword_: "BANKRCPTDI",
+  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //           data: [
+  //             {
+  //               Company: "SLIC",
+  //               UserId: "SYSADMIN",
+  //               Department: "011",
+  //               TransactionCode: "BRV",
+  //               Division: "100",
+  //               BankApproverCode: bankApprovedCode,
+  //               CashCardFlag: "CARD",
+  //               ReceiptAmt: totolAmountWithoutVatDSalesNoInvoice,
+  //               CustomerId:
+  //                 selectedSalesReturnType === "DIRECT RETURN"
+  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+  //                   : selectedCustomerCode?.CUSTOMERCODE,
+  //               MatchingTransactions: [
+  //                 {
+  //                   DocNo: documentNo,
+  //                   TransactionCode: selectTransactionCode,
+  //                   PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
+  //                   AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //           COMPANY: "SLIC",
+  //           USERID: slicUserData?.UserLoginID,
+  //           APICODE: "BANKRECEIPTVOUCHER",
+  //           LANG: "ENG",
+  //         };
+
+  //         const bankApiRes = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/postData",
+  //           bankReceiptDI,
+  //           {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }
+  //         );
+
+  //         console.log(
+  //           "Bank Receipt processed for Direct Sales Return Debit/Credit"
+  //         );
+  //         const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
+
+  //         // If bankDocumentNo is missing, show an error and stop
+  //         if (!bankDocumentNo) {
+  //           toast.error("Error in Bank API: Missing Document No");
+  //           setLoading(false);
+  //           return;
+  //         }
+
+  //       } else {
+  //         console.log("Direct Sales Return - Cash (No Bank API Call)");
+  //       }
+  //       // Complete the process
+  //       showOtpPopup(res?.data);
+  //       handleCloseCreatePopup();
+  //       // handleClearData();
+  //       // handleClearInvoiceData();
+  //       handleInvoiceGenerator();
+  //       setLoading(false);
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //     toast.error(err?.response?.data?.message || "Something went wrong");
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmitDSalesInvoice = async () => {
     setLoading(true);
-
+  
     try {
       const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
         "Item-Code": item.SKU,
@@ -656,7 +1279,7 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-
+  
       const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
@@ -664,10 +1287,10 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-
+  
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
-
+  
       // Body for the sales return (EXSR)
       const salesReturnBody = {
         _keyword_: "salesreturn",
@@ -698,61 +1321,40 @@ const F3TenderCashPopUp = ({
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
-
-      console.log("Sales Return", salesReturnBody);
-
-      if (isExchangeDSalesClick) {
-        // Exchange scenario: Call both Sales Return and Invoice APIs
-        const exsrRes = await ErpTeamRequest.post(
-          "/slicuat05api/v1/postData",
-          salesReturnBody,
+  
+      // Body for the invoice (EXIN)
+      const salesInvoiceBody = {
+        _keyword_: "Invoice",
+        "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
+        data: [
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        console.log("Sales Return Response (EXSR):", exsrRes?.data);
-
-        const exsrDocumentNo = exsrRes?.data?.message["Document No"];
-        if (!exsrDocumentNo) {
-          toast.error("Error in Sales Return API: Missing Document No");
-          setLoading(false);
-          return;
-        }
-
-        // Body for the invoice (EXIN)
-        const salesInvoiceBody = {
-          _keyword_: "Invoice",
-          "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-          data: [
-            {
-              Company: "SLIC",
-              TransactionCode: `${modifiedTransactionCode}`,
-              CustomerCode:
-                selectedSalesReturnType === "DIRECT RETURN"
-                  ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                  : selectedCustomerCode?.CUSTOMERCODE,
-              SalesLocationCode: selectedLocation?.stockLocation,
-              DeliveryLocationCode: selectedLocation?.stockLocation,
-              UserId: "SYSADMIN",
-              CustomerName: customerName,
-              MobileNo: mobileNo,
-              Remarks: remarks,
-              PosRefNo: invoiceNumber,
-              ZATCAPaymentMode: paymentModes.code,
-              TaxExemptionReason: examptReason?.name || "", // Invoice specific field
-              SalesmanCode: slicUserData?.SalesmanCode,
-              Item: firstDataGridItem,
-            },
-          ],
-          COMPANY: "SLIC",
-          USERID: slicUserData?.UserLoginID,
-          APICODE: "INVOICE",
-          LANG: "ENG",
-        };
-
-        console.log("Sales Invoice", salesInvoiceBody);
-
-        // Call the Invoice API (EXIN)
+            Company: "SLIC",
+            TransactionCode: `${modifiedTransactionCode}`,
+            CustomerCode:
+              selectedSalesReturnType === "DIRECT RETURN"
+                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                : selectedCustomerCode?.CUSTOMERCODE,
+            SalesLocationCode: selectedLocation?.stockLocation,
+            DeliveryLocationCode: selectedLocation?.stockLocation,
+            UserId: "SYSADMIN",
+            CustomerName: customerName,
+            MobileNo: mobileNo,
+            Remarks: remarks,
+            PosRefNo: invoiceNumber,
+            ZATCAPaymentMode: paymentModes.code,
+            TaxExemptionReason: examptReason?.name || "",
+            SalesmanCode: slicUserData?.SalesmanCode,
+            Item: firstDataGridItem,
+          },
+        ],
+        COMPANY: "SLIC",
+        USERID: slicUserData?.UserLoginID,
+        APICODE: "INVOICE",
+        LANG: "ENG",
+      };
+  
+      if (isExchangeDSalesClick) {
+        // Step 1: Call the Invoice API (EXIN)
         const exinRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
           salesInvoiceBody,
@@ -761,25 +1363,50 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Invoice Response (EXIN):", exinRes?.data);
-
-        // Get document numbers for both EXSR and EXIN
+  
         const exinDocumentNo = exinRes?.data?.message["Document No"];
-
-        if (!exinDocumentNo) {
-          toast.error("Error in Invoice API: Missing Document No");
+        const exinHeadSysId = exinRes?.data?.message["Ref-No/SysID"];
+        const exinTransactionCode = exinRes?.data?.message["Transaction Code"];
+  
+        if (!exinDocumentNo || !exinHeadSysId) {
+          toast.error("Error in Invoice API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-
-        const documentNo = exinRes?.data?.message["Document No"];
-        const headSysId = exinRes?.data?.message["Ref-No/SysID"];
-        if (documentNo || headSysId) {
-          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
+  
+        // Call insertInvoiceRecord for the EXIN response
+        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+  
+        // Call handleDocumentNoUpdate for EXIN
+        handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+  
+        // Step 2: Call the Sales Return API (EXSR)
+        const exsrRes = await ErpTeamRequest.post(
+          "/slicuat05api/v1/postData",
+          salesReturnBody,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Sales Return Response (EXSR):", exsrRes?.data);
+  
+        const exsrDocumentNo = exsrRes?.data?.message["Document No"];
+        const exsrHeadSysId = exsrRes?.data?.message["Ref-No/SysID"];
+        const exsrTransactionCode = exsrRes?.data?.message["Transaction Code"];
+  
+        if (!exsrDocumentNo || !exsrHeadSysId) {
+          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          setLoading(false);
+          return;
         }
-
-        insertInvoiceRecord(documentNo);
-
-        // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
+  
+        // Call insertInvoiceRecord for the EXSR response
+        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+  
+        // Call handleDocumentNoUpdate for EXSR
+        handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+  
+        // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -820,9 +1447,9 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-
+  
           console.log("Bank Api", bankReceiptBody);
-
+  
           const bankApiResponse = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptBody,
@@ -830,12 +1457,10 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-
+  
           console.log("Bank Receipt processed for Exchange");
-          const bankDocumentNo =
-            bankApiResponse?.data?.message?.["Document No"];
-
-          // If bankDocumentNo is missing, show an error and stop
+          const bankDocumentNo = bankApiResponse?.data?.message?.["Document No"];
+  
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
@@ -844,12 +1469,12 @@ const F3TenderCashPopUp = ({
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
-
+  
         showOtpPopup(exsrRes?.data);
-        handleCloseCreatePopup();
         handleInvoiceGenerator();
         handleZatcaInvoiceGenerator();
         setLoading(false);
+
       } else {
         // Non-exchange scenario: Only call Sales Return API
         const res = await ErpTeamRequest.post(
@@ -860,26 +1485,25 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response:", res?.data);
-
+  
         const documentNo = res?.data?.message["Document No"];
         const headSysId = res?.data?.message["Ref-No/SysID"];
-
+        const transactionCode = res?.data?.message["Transaction Code"];
+  
         if (!documentNo || !headSysId) {
-          toast.error(
-            "Error in Sales Return API: Missing Document No or SysID"
-          );
+          toast.error("Error in Sales Return API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-        if (documentNo || headSysId) {
-          handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
-        }
-
-        insertInvoiceRecord(documentNo);
-
-        // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
+  
+        // Call insertInvoiceRecord
+        insertInvoiceRecord(documentNo, headSysId, transactionCode);
+  
+        // Call handleDocumentNoUpdate
+        handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
+  
+        // Call Bank API if paymentModes.code is 4 or 5
         if (paymentModes.code === "4" || paymentModes.code === "5") {
-          const documentNo = res?.data?.message["Document No"];
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
             "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
@@ -900,7 +1524,7 @@ const F3TenderCashPopUp = ({
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
-                    TransactionCode: selectTransactionCode,
+                    TransactionCode: transactionCode,
                     PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
                     AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
                   },
@@ -912,7 +1536,7 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-
+  
           const bankApiRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptDI,
@@ -920,37 +1544,33 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-
+  
           console.log(
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
-
-          // If bankDocumentNo is missing, show an error and stop
+  
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
             return;
           }
-
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
-        // Complete the process
+  
         showOtpPopup(res?.data);
-        handleCloseCreatePopup();
-        // handleClearData();
-        // handleClearInvoiceData();
         handleInvoiceGenerator();
-        setLoading(false);
       }
+  
+      setLoading(false);
     } catch (err) {
       console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
-  };
-
+  };  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
