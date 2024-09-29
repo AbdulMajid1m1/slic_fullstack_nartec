@@ -174,20 +174,48 @@ exports.updateInvoiceTemp = async (req, res, next) => {
   }
 };
 
+
+
 exports.invoiceHeadersAndLineItems = async (req, res, next) => {
   try {
-    const { InvoiceNo } = req.query;
+    // Define the Joi schema
+    const schema = Joi.object({
+      InvoiceNo: Joi.string().required().messages({
+        'any.required': 'InvoiceNo is required',
+        'string.empty': 'InvoiceNo cannot be empty',
+      }),
+      TransactionCode: Joi.string()
+        .valid('IN', 'SR')
+        .optional()
+        .messages({
+          'any.only': "TransactionCode must be either 'IN' or 'SR'",
+        }),
+    });
 
-    if (!InvoiceNo) {
-      const error = new CustomError("InvoiceNo is required");
-      error.statusCode = 400;
-      throw error;
+    // Validate the request query against the schema
+    const { error, value } = schema.validate(req.query);
+
+    if (error) {
+      const validationError = new CustomError(error.details[0].message);
+      validationError.statusCode = 400;
+      throw validationError;
     }
 
-    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByField(
-      "InvoiceNo",
-      InvoiceNo
-    );
+    const { InvoiceNo, TransactionCode } = value;
+
+    // Construct filter for querying the invoice
+    const filter = {
+      InvoiceNo: InvoiceNo,
+    };
+
+    // Apply regex filter for 'IN' or 'SR' if TransactionCode is provided
+    if (TransactionCode) {
+      filter.TransactionCode = {
+        endsWith: TransactionCode, // Prisma syntax for filtering based on suffix
+      };
+    }
+
+    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByFilter(filter);
 
     if (!invoiceHeader) {
       const error = new CustomError("Invoice headers not found");
@@ -195,10 +223,8 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
       throw error;
     }
 
-    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByField(
-      "InvoiceNo",
-      invoiceHeader.InvoiceNo
-    );
+    // Use the same filter to get invoice details
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFilter(filter);
 
     res.status(200).json(
       response(200, true, "Invoice headers & line items found successfully", {
@@ -240,6 +266,63 @@ exports.getInvoicesByMobileNo = async (req, res, next) => {
   }
 };
 
+// exports.saveInvoice = async (req, res, next) => {
+//   try {
+//     const { master, details } = req.body;
+
+//     // Validate that master is an object and details is an array
+//     if (!master || !details || !Array.isArray(details)) {
+//       const error = new CustomError(
+//         "Invalid data format. 'master' should be an object and 'details' should be an array."
+//       );
+//       error.statusCode = 400;
+//       throw error;
+//     }
+
+//     // Check if the master invoice with the given InvoiceNo already exists
+//     let existingMaster = await POSInvoiceMaster.getSingleInvoiceMasterByField(
+//       "InvoiceNo",
+//       master.InvoiceNo
+//     );
+
+//     let newMaster;
+//     if (existingMaster) {
+//       // Update the existing master invoice
+//       newMaster = await POSInvoiceMaster.updateInvoiceMaster(
+//         existingMaster.id,
+//         master
+//       );
+//     } else {
+//       // Create a new master invoice
+//       newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
+//     }
+
+//     // Create or update each detail item associated with the master invoice
+//     const detailPromises = details.map(async (detail) => {
+//       const detailData = { ...detail, Head_SYS_ID: newMaster.Head_SYS_ID };
+
+//       if (detail.id) {
+//         return await POSInvoiceDetails.updateInvoiceDetails(
+//           detail.id,
+//           detailData
+//         );
+//       } else {
+//         return await POSInvoiceDetails.createInvoiceDetails(detailData);
+//       }
+//     });
+
+//     const newDetails = await Promise.all(detailPromises);
+
+//     res.status(201).json(
+//       response(201, true, "Invoice saved successfully", {
+//         invoiceMaster: newMaster,
+//         invoiceDetails: newDetails,
+//       })
+//     );
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 exports.saveInvoice = async (req, res, next) => {
   try {
     const { master, details } = req.body;
@@ -253,36 +336,13 @@ exports.saveInvoice = async (req, res, next) => {
       throw error;
     }
 
-    // Check if the master invoice with the given InvoiceNo already exists
-    let existingMaster = await POSInvoiceMaster.getSingleInvoiceMasterByField(
-      "InvoiceNo",
-      master.InvoiceNo
-    );
+    // Create a new master invoice
+    const newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
 
-    let newMaster;
-    if (existingMaster) {
-      // Update the existing master invoice
-      newMaster = await POSInvoiceMaster.updateInvoiceMaster(
-        existingMaster.id,
-        master
-      );
-    } else {
-      // Create a new master invoice
-      newMaster = await POSInvoiceMaster.createInvoiceMaster(master);
-    }
-
-    // Create or update each detail item associated with the master invoice
+    // Create each detail item associated with the master invoice
     const detailPromises = details.map(async (detail) => {
       const detailData = { ...detail, Head_SYS_ID: newMaster.Head_SYS_ID };
-
-      if (detail.id) {
-        return await POSInvoiceDetails.updateInvoiceDetails(
-          detail.id,
-          detailData
-        );
-      } else {
-        return await POSInvoiceDetails.createInvoiceDetails(detailData);
-      }
+      return await POSInvoiceDetails.createInvoiceDetails(detailData);
     });
 
     const newDetails = await Promise.all(detailPromises);
@@ -654,7 +714,9 @@ exports.getPOSInvoiceMaster = async (req, res) => {
 
     // Convert TransactionDate filter to a valid Date object
     if (filterConditions.TransactionDate) {
-      filterConditions.TransactionDate = new Date(filterConditions.TransactionDate);
+      filterConditions.TransactionDate = new Date(
+        filterConditions.TransactionDate
+      );
     }
 
     // If cutoffDate is provided, add it to the filter conditions
@@ -683,7 +745,6 @@ exports.getPOSInvoiceMaster = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 exports.getPOSInvoiceMasterArchive = async (req, res) => {
   try {
@@ -892,16 +953,17 @@ exports.getCustomersWithPendingReceipts = async (req, res, next) => {
   }
 };
 
-
-
 exports.updateReceiptStatus = async (req, res) => {
   try {
     // Define Joi schema for validation
     const schema = Joi.object({
-      ids: Joi.array().items(Joi.string().required()).min(1).required()
+      ids: Joi.array()
+        .items(Joi.string().required())
+        .min(1)
+        .required()
         .messages({
-          'array.min': 'At least one id is required',
-          'any.required': 'IDs are required',
+          "array.min": "At least one id is required",
+          "any.required": "IDs are required",
         }),
     });
 
@@ -929,7 +991,7 @@ exports.updateReceiptStatus = async (req, res) => {
     // Check if any records were updated
     if (updateResult.count === 0) {
       return res.status(404).json({
-        message: 'No records found to update',
+        message: "No records found to update",
       });
     }
 
@@ -938,6 +1000,6 @@ exports.updateReceiptStatus = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error: ' + error.message });
+    return res.status(500).json({ message: "Server error: " + error.message });
   }
 };

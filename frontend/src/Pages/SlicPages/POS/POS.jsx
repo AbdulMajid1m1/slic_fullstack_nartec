@@ -705,7 +705,7 @@ const POS = () => {
     }
   };
 
-  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId) => {
+  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId, transactionCode) => {
     try {
       let invoiceAllData;
 
@@ -766,11 +766,12 @@ const POS = () => {
         const master = {
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          Head_SYS_ID: newHeadSysId,
+          Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
           ItemSysID: exchangeData[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: transactionCode,
           CustomerCode:
             selectedSalesReturnType === "DIRECT RETURN"
               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -796,7 +797,8 @@ const POS = () => {
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: transactionCode,
           CustomerCode:
             selectedSalesReturnType === "DIRECT RETURN"
               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -828,10 +830,11 @@ const POS = () => {
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
-          Head_SYS_ID: newHeadSysId,
+          Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: DSalesNoInvoiceData[0]?.SKU,
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: transactionCode,
           CustomerCode:
             selectedSalesReturnType === "DIRECT RETURN"
               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -856,7 +859,7 @@ const POS = () => {
           ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: "",
-          TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: transactionCode,
           CustomerCode:
             selectedSalesReturnType === "DIRECT RETURN"
               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -2475,7 +2478,8 @@ const POS = () => {
 
     try {
       const response = await newRequest.get(
-        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
+        // `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}&TransactionCode=IN`
       );
       const data = response?.data?.data;
       setInvoiceHeaderData(data);

@@ -75,17 +75,15 @@ class POSInvoiceMaster {
     }
   }
 
-  static async getSingleInvoiceMasterByField(field, value) {
+  static async getSingleInvoiceMasterByFilter(filter) {
     try {
-      const masters = await prisma.tblPOSInvoiceMaster.findFirst({
-        where: {
-          [field]: value,
-        },
+      const master = await prisma.tblPOSInvoiceMaster.findFirst({
+        where: filter,
       });
-      return masters;
+      return master;
     } catch (error) {
-      console.error(`Error fetching invoice master by ${field}:`, error);
-      throw new Error(`Error fetching invoice master by ${field}`);
+      console.error(`Error fetching invoice master by filter:`, error);
+      throw new Error(`Error fetching invoice master by filter`);
     }
   }
   static async getInvoiceMasterByInvoiceNo(invoiceNo) {

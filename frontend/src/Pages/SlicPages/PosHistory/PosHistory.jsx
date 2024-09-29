@@ -247,11 +247,18 @@ const PosHistory = () => {
       createdAt,
       AdjAmount,
       InvoiceNo,
+      TransactionCode,
     } = selectedRow;
   
     try {
-      // Step 1: Make the new API call to get the invoice details using InvoiceNo
-      const invoiceResponse = await newRequest.get(`/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}`);
+
+      const dynamicTransactionCode = TransactionCode ? TransactionCode.slice(-2) : '';
+      console.log(dynamicTransactionCode);
+
+      const invoiceResponse = await newRequest.get(
+        // `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}&TransactionCode=${dynamicTransactionCode}`
+      );
   
       const invoiceData = invoiceResponse?.data?.data;
       
