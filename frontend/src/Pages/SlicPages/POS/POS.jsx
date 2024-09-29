@@ -760,7 +760,10 @@ const POS = () => {
         };
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
         // Check if isExchangeClick is true, if so use exchangeData, otherwise use invoiceData
-        const dataToUse = isExchangeClick ? exchangeData : invoiceData;
+        // const dataToUse = isExchangeClick ? exchangeData : invoiceData;
+
+        // Check the last two digits of the transactionCode to decide which data to use
+        const dataToUse = transactionCode.slice(-2) === "IN" ? exchangeData : invoiceData;
 
         // Construct the master and details data for Sales Return
         const master = {
@@ -824,9 +827,13 @@ const POS = () => {
           details,
         };
       } else if (selectedSalesType === "DSALES NO INVOICE") {
-        const dataToUseDSales = isExchangeDSalesClick
-          ? dSalesNoInvoiceexchangeData
-          : DSalesNoInvoiceData;
+        // const dataToUseDSales = isExchangeDSalesClick
+        //   ? dSalesNoInvoiceexchangeData
+        //   : DSalesNoInvoiceData;
+
+        // Check the last two digits of the transactionCode to decide which data to use
+        const dataToUseDSales = transactionCode.slice(-2) === "IN" ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
+
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
