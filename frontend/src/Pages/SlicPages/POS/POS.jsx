@@ -2478,7 +2478,8 @@ const POS = () => {
 
     try {
       const response = await newRequest.get(
-        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
+        // `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}&TransactionCode=IN`
       );
       const data = response?.data?.data;
       setInvoiceHeaderData(data);
