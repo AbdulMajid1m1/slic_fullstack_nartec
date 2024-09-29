@@ -37,7 +37,7 @@ const POS = () => {
     "DIRECT SALES INVOICE"
   );
   const [selectedSalesReturnType, setSelectedSalesReturnType] =
-    useState("DIRECT RETURN");
+    useState("RETRUN WITH EXCHANGE");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedRowData, setSelectedRowData] = useState(null);
 
