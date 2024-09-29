@@ -176,7 +176,7 @@ exports.updateInvoiceTemp = async (req, res, next) => {
 
 exports.invoiceHeadersAndLineItems = async (req, res, next) => {
   try {
-    const { InvoiceNo } = req.query;
+    const { InvoiceNo, TransactionCode } = req.query;
 
     if (!InvoiceNo) {
       const error = new CustomError("InvoiceNo is required");
@@ -184,10 +184,16 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
       throw error;
     }
 
-    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByField(
-      "InvoiceNo",
-      InvoiceNo
-    );
+    // Construct filter for querying the invoice
+    const filter = {
+      InvoiceNo: InvoiceNo,
+    };
+
+    if (TransactionCode) {
+      filter.TransactionCode = TransactionCode;
+    }
+
+    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByFilter(filter);
 
     if (!invoiceHeader) {
       const error = new CustomError("Invoice headers not found");
