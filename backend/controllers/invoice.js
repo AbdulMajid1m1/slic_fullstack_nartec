@@ -223,10 +223,8 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
       throw error;
     }
 
-    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByField(
-      "InvoiceNo",
-      invoiceHeader.InvoiceNo
-    );
+    // Use the same filter to get invoice details
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFilter(filter);
 
     res.status(200).json(
       response(200, true, "Invoice headers & line items found successfully", {
