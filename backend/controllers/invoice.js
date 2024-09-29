@@ -174,20 +174,48 @@ exports.updateInvoiceTemp = async (req, res, next) => {
   }
 };
 
+
+
 exports.invoiceHeadersAndLineItems = async (req, res, next) => {
   try {
-    const { InvoiceNo } = req.query;
+    // Define the Joi schema
+    const schema = Joi.object({
+      InvoiceNo: Joi.string().required().messages({
+        'any.required': 'InvoiceNo is required',
+        'string.empty': 'InvoiceNo cannot be empty',
+      }),
+      TransactionCode: Joi.string()
+        .valid('IN', 'SR')
+        .optional()
+        .messages({
+          'any.only': "TransactionCode must be either 'IN' or 'SR'",
+        }),
+    });
 
-    if (!InvoiceNo) {
-      const error = new CustomError("InvoiceNo is required");
-      error.statusCode = 400;
-      throw error;
+    // Validate the request query against the schema
+    const { error, value } = schema.validate(req.query);
+
+    if (error) {
+      const validationError = new CustomError(error.details[0].message);
+      validationError.statusCode = 400;
+      throw validationError;
     }
 
-    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByField(
-      "InvoiceNo",
-      InvoiceNo
-    );
+    const { InvoiceNo, TransactionCode } = value;
+
+    // Construct filter for querying the invoice
+    const filter = {
+      InvoiceNo: InvoiceNo,
+    };
+
+    // Apply regex filter for 'IN' or 'SR' if TransactionCode is provided
+    if (TransactionCode) {
+      filter.TransactionCode = {
+        endsWith: TransactionCode, // Prisma syntax for filtering based on suffix
+      };
+    }
+
+    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByFilter(filter);
 
     if (!invoiceHeader) {
       const error = new CustomError("Invoice headers not found");
@@ -195,10 +223,8 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
       throw error;
     }
 
-    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByField(
-      "InvoiceNo",
-      invoiceHeader.InvoiceNo
-    );
+    // Use the same filter to get invoice details
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFilter(filter);
 
     res.status(200).json(
       response(200, true, "Invoice headers & line items found successfully", {
