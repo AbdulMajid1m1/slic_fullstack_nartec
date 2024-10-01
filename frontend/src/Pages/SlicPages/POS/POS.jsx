@@ -3119,7 +3119,7 @@ const POS = () => {
                   {t("DSALES NO INVOICE")}
                 </option>
                 <option value="BTOC CUSTOMER">
-                  {t("BTOC CUSTOMER")}
+                  {t("B2C CUSTOMER")}
                 </option>
               </select>
             </div>
