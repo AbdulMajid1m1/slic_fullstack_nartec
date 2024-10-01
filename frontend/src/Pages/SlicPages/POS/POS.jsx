@@ -1036,7 +1036,7 @@ const POS = () => {
           CustomerCode: selectedBtocCustomer?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
-          TransactionType: "BTOC CUSTOMER",
+          TransactionType: "B2C CUSTOMER",
           UserID: slicUserData?.UserLoginID,
           MobileNo: mobileNo,
           TransactionDate: todayDate,
@@ -1058,7 +1058,7 @@ const POS = () => {
           CustomerCode: selectedBtocCustomer?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
-          TransactionType: "BTOC CUSTOMER",
+          TransactionType: "B2C CUSTOMER",
           UserID: slicUserData?.UserLoginID,
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           // ItemUnit: "PCS",
@@ -3376,7 +3376,7 @@ const POS = () => {
                       : "text-start direction-ltr"
                   }`}
                 >
-                  {t("Search Btoc Customer")}
+                  {t("Search B2C Customer")}
                 </label>
               <Autocomplete
                 id="field1"
@@ -3415,7 +3415,7 @@ const POS = () => {
                       style: { color: "white" },
                     }}
                     className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                    placeholder={t("Search Btoc Customer ID")}
+                    placeholder={t("Search B2C Customer ID")}
                     required
                   />
                 )}
