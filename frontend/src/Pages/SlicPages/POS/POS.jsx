@@ -632,7 +632,8 @@ const POS = () => {
         codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
       } else if (
         selectedSalesType === "DIRECT SALES RETURN" ||
-        selectedSalesType === "DSALES NO INVOICE"
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
       ) {
         codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
       }
