@@ -73,6 +73,7 @@ const PosHistory = () => {
         `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
       );
       const customerCodes = response?.data?.customerCodes || [];
+      console.log("history", customerCodes);
       setInvoiceList(customerCodes);
       setIsLoading(false);
     } catch (err) {
@@ -310,6 +311,7 @@ const PosHistory = () => {
     
     const {
       InvoiceNo,
+      DocNo,
     } = selectedRow;
 
     const { invoiceHeader, invoiceDetails } = invoiceData;
@@ -329,7 +331,7 @@ const PosHistory = () => {
     if (lastTwoTransactionCode === 'IN') {
         salesInvoiceTitle = 'SALES INVOICE';
     } else if (lastTwoTransactionCode === 'SR') {
-        salesInvoiceTitle = 'SALES RETURN';
+        salesInvoiceTitle = 'CREDIT NOTE';
     }
 
     // Calculate total VAT
@@ -366,9 +368,9 @@ const PosHistory = () => {
         ${totalAmountWithVAT.toFixed(2)}
       </div>
       <div>
-        <strong>Change Due:</strong>
+        <strong>Document No.:</strong>
         <div class="arabic-label">المتبقي</div>
-        0.00
+        ${DocNo}
       </div>
     `;
 
