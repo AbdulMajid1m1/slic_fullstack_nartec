@@ -24,7 +24,7 @@ const PosHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState([]);
-  const [selectedInvoice, setSelectedInvoice] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [cutOfDate, setCutOfDate] = useState(""); // Cut of Date
   const navigate = useNavigate();
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -102,7 +102,7 @@ const PosHistory = () => {
   };
 
   const handleSelectAllInvoice = (event, value) => {
-    setSelectedInvoice(value);
+    setSelectedInvoice(value || null);
     console.log(value);
     if (value) {
       // Trigger POS Invoice Master API call based on selected customer code

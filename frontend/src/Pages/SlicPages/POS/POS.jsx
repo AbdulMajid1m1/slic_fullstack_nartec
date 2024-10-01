@@ -418,6 +418,122 @@ const POS = () => {
     }
   };
 
+
+  // Btoc Customer Function
+  const handleGetBtocCustomerBarcodes = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await newRequest.get(
+        `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+      );
+      const data = response?.data?.data;
+      // console.log(data)
+      if (data) {
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } =
+          data;
+
+        // call the second api later in their
+        const secondApiBody = {
+          filter: {
+            P_COMP_CODE: "SLIC",
+            P_ITEM_CODE: ItemCode,
+            P_CUST_CODE: selectedBtocCustomer?.CUST_CODE,
+            P_GRADE_CODE_1: ProductSize,
+          },
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "PRICELIST",
+          M_LANG_CODE: "ENG",
+        };
+
+        try {
+          const secondApiResponse = await ErpTeamRequest.post(
+            "/slicuat05api/v1/getApi",
+            secondApiBody,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const secondApiData = secondApiResponse?.data;
+          console.log(secondApiData);
+
+          let storedData = sessionStorage.getItem("secondApiResponses");
+          storedData = storedData ? JSON.parse(storedData) : {};
+
+          const itemRates = secondApiData.map(
+            (item) => item?.PRICELIST?.PLI_RATE
+          );
+          // Store the array of rates under the respective ItemCode
+          storedData[ItemCode] = itemRates;
+          // storedData[ItemCode] = secondApiData;
+
+          sessionStorage.setItem(
+            "secondApiResponses",
+            JSON.stringify(storedData)
+          );
+
+          // const itemPrice = secondApiData[0].ItemRate?.RATE;
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
+          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+          const vat = itemPrice * 0.15;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
+
+          setDSalesNoInvoiceData((prevData) => {
+            const existingItemIndex = prevData.findIndex(
+              (item) => item.Barcode === GTIN
+            );
+
+            if (existingItemIndex !== -1) {
+              // If the item already exists, just update the Qty and Total
+              const updatedData = [...prevData];
+              updatedData[existingItemIndex] = {
+                ...updatedData[existingItemIndex],
+                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Total:
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+              };
+              return updatedData;
+            } else {
+              // If the item is new, add it to the data array
+              return [
+                ...prevData,
+                {
+                  id: id,
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  DescriptionArabic: ArabicName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: vat,
+                  Total: total,
+                },
+              ];
+            }
+          });
+        } catch (secondApiError) {
+          toast.error(
+            secondApiError?.response?.data?.message ||
+              "An error occurred while calling the second API"
+          );
+        }
+        // barcode state empty once response is true
+        setBarcode("");
+      } else {
+        setDSalesNoInvoiceData([]);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // handleDelete
   const handleDSalesDelete = (index) => {
     setDSalesNoInvoiceData((prevData) =>
@@ -569,6 +685,10 @@ const POS = () => {
     selectedCustomeNameWithDirectInvoice,
     setSelectedCustomeNameWithDirectInvoice,
   ] = useState("");
+
+  // BTOC CUSTOMER state
+  const [btocCustomer, setBtocCustomer] = useState([]);
+  const [selectedBtocCustomer, setSelectedBtocCustomer] = useState("");
   const fetchCustomerNames = async () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
@@ -581,6 +701,9 @@ const POS = () => {
       );
       // console.log(filteredCustomers);
       setCustomerNameWithDirectInvoice(filteredCustomers);
+
+      // btoc customer
+      setBtocCustomer(filteredCustomers);
     } catch (err) {
       // console.log(err);
       toast.error(err?.response?.data?.message || "Something went Wrong");
@@ -590,6 +713,12 @@ const POS = () => {
   const handleSearchCustomerNameWithDirectInvoice = (event, value) => {
     // console.log(value);
     setSelectedCustomeNameWithDirectInvoice(value);
+  };
+
+  // btoc customer handle function
+  const handleBtocCustomer = (event, value) => {
+    console.log(value);
+    setSelectedBtocCustomer(value);
   };
 
   useEffect(() => {
@@ -888,6 +1017,62 @@ const POS = () => {
           master,
           details,
         };
+      } else if (selectedSalesType === "BTOC CUSTOMER") {
+        // const dataToUseDSales = isExchangeDSalesClick
+        //   ? dSalesNoInvoiceexchangeData
+        //   : DSalesNoInvoiceData;
+
+        // Check the last two digits of the transactionCode to decide which data to use
+        const dataToUseDSales = transactionCode.slice(-2) === "IN" ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
+
+        // Construct the master and details data for DSALES NO INVOICE
+        const master = {
+          InvoiceNo: invoiceNumber,
+          Head_SYS_ID: `${newHeadSysId}`,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
+          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
+          TransactionCode: transactionCode,
+          CustomerCode: selectedBtocCustomer?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
+          Remarks: remarks,
+          TransactionType: "BTOC CUSTOMER",
+          UserID: slicUserData?.UserLoginID,
+          MobileNo: mobileNo,
+          TransactionDate: todayDate,
+          VatNumber: vat,
+          CustomerName: customerName,
+          DocNo: newDocumentNo,
+          PendingAmount: netWithVat,
+          AdjAmount: netWithVat,
+        };
+        const details = dataToUseDSales.map((item, index) => ({
+          Rec_Num: index + 1,
+          TblSysNoID: 1000 + index,
+          SNo: index + 1,
+          DeliveryLocationCode: selectedLocation?.stockLocation,
+          ItemSysID: item.SKU || item.ItemCode,
+          InvoiceNo: invoiceNumber,
+          Head_SYS_ID: "",
+          TransactionCode: transactionCode,
+          CustomerCode: selectedBtocCustomer?.CUST_CODE,
+          SalesLocationCode: selectedLocation?.stockLocation,
+          Remarks: item.Description,
+          TransactionType: "BTOC CUSTOMER",
+          UserID: slicUserData?.UserLoginID,
+          ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
+          // ItemUnit: "PCS",
+          ItemSize: item.ItemSize,
+          ITEMRATE: item.ItemPrice,
+          ItemPrice: item.ItemPrice,
+          ItemQry: item.Qty,
+          TransactionDate: todayDate,
+        }));
+
+        invoiceAllData = {
+          master,
+          details,
+        };
       }
 
       // Call the API to save the invoice or return record
@@ -1133,7 +1318,7 @@ const POS = () => {
           0.00
         </div>
       `;
-    } else if (selectedSalesType === "DSALES NO INVOICE") {
+    } else if (selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER") {
       totalsContent = `
         <div>
           <strong>Gross:</strong>
@@ -1293,7 +1478,8 @@ const POS = () => {
             <div><span class="field-label">Customer: </span>
             ${
               selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE"
+              selectedSalesType === "DSALES NO INVOICE" || 
+              selectedSalesType === "BTOC CUSTOMER"
                 ? customerName
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
@@ -1302,7 +1488,8 @@ const POS = () => {
               <div><span class="field-label">VAT#: </span>
                 ${
                   selectedSalesType === "DIRECT SALES INVOICE" ||
-                  selectedSalesType === "DSALES NO INVOICE"
+                  selectedSalesType === "DSALES NO INVOICE" || 
+                  selectedSalesType === "BTOC CUSTOMER"
                     ? vat
                     : invoiceHeaderData?.invoiceHeader?.VatNumber
                 }
@@ -1311,7 +1498,8 @@ const POS = () => {
                 <span class="field-label">الرقم الضريبي#:</span>
                   ${
                     selectedSalesType === "DIRECT SALES INVOICE" ||
-                    selectedSalesType === "DSALES NO INVOICE"
+                    selectedSalesType === "DSALES NO INVOICE" ||
+                    selectedSalesType === "BTOC CUSTOMER"
                       ? vat
                       : invoiceHeaderData?.invoiceHeader?.VatNumber
                   }
@@ -1322,7 +1510,8 @@ const POS = () => {
                 <div><span class="field-label">Receipt: </span>
                  ${
                    selectedSalesType === "DIRECT SALES INVOICE" ||
-                   selectedSalesType === "DSALES NO INVOICE"
+                   selectedSalesType === "DSALES NO INVOICE" || 
+                   selectedSalesType === "BTOC CUSTOMER"
                      ? invoiceNumber
                      : searchInvoiceNumber
                  }
@@ -1397,7 +1586,7 @@ const POS = () => {
                   `
                    )
                    .join("")
-               : selectedSalesType === "DSALES NO INVOICE"
+               : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                ? DSalesNoInvoiceData.map(
                    (item) => `
                     <tr>
@@ -1635,7 +1824,8 @@ const POS = () => {
             <div><span class="field-label">Customer: </span>
             ${
               selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE"
+              selectedSalesType === "DSALES NO INVOICE" || 
+              selectedSalesType === "BTOC CUSTOMER"
                 ? customerName
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
@@ -1644,19 +1834,21 @@ const POS = () => {
                 <div><span class="field-label">VAT#: </span>
                   ${
                     selectedSalesType === "DIRECT SALES INVOICE" ||
-                      selectedSalesType === "DSALES NO INVOICE"
-                        ? vat
-                        : invoiceHeaderData?.invoiceHeader?.VatNumber
-                      }
+                    selectedSalesType === "DSALES NO INVOICE" ||
+                    selectedSalesType === "BTOC CUSTOMER"
+                      ? vat
+                      : invoiceHeaderData?.invoiceHeader?.VatNumber
+                    }
                 </div>
                 <div class="arabic-label" style="text-align: right; direction: rtl;">
                   <span class="field-label">الرقم الضريبي#:</span>
                     ${
                       selectedSalesType === "DIRECT SALES INVOICE" ||
-                        selectedSalesType === "DSALES NO INVOICE"
-                          ? vat
-                          : invoiceHeaderData?.invoiceHeader?.VatNumber
-                        }
+                      selectedSalesType === "DSALES NO INVOICE" ||
+                      selectedSalesType === "BTOC CUSTOMER"
+                        ? vat
+                        : invoiceHeaderData?.invoiceHeader?.VatNumber
+                      }
                   </div>
                 </div>
                 <div class="customer-invoiceNumber">
@@ -1664,9 +1856,10 @@ const POS = () => {
                     <div><span class="field-label">Receipt: </span>
                     ${
                       selectedSalesType === "DIRECT SALES INVOICE" ||
-                        selectedSalesType === "DSALES NO INVOICE"
-                          ? invoiceNumber
-                          : searchInvoiceNumber
+                      selectedSalesType === "DSALES NO INVOICE" ||
+                      selectedSalesType === "BTOC CUSTOMER"
+                        ? invoiceNumber
+                        : searchInvoiceNumber
                       }
                   </div>
                   <div><span class="field-label">Date: </span>${currentTime}</div>
@@ -1739,7 +1932,7 @@ const POS = () => {
                   `
                    )
                    .join("")
-               : selectedSalesType === "DSALES NO INVOICE"
+               : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                ? DSalesNoInvoiceData.map(
                    (item) => `
                     <tr>
@@ -2042,7 +2235,7 @@ const POS = () => {
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
             ${
-              selectedSalesType === "DSALES NO INVOICE"
+              selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                 ? customerName
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
@@ -2050,7 +2243,7 @@ const POS = () => {
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${
-                  selectedSalesType === "DSALES NO INVOICE"
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                     ? vat
                     : invoiceHeaderData?.invoiceHeader?.VatNumber
                 }
@@ -2058,7 +2251,7 @@ const POS = () => {
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
                   ${
-                    selectedSalesType === "DSALES NO INVOICE"
+                    selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                       ? vat
                       : invoiceHeaderData?.invoiceHeader?.VatNumber
                   }
@@ -2300,7 +2493,7 @@ const POS = () => {
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
             ${
-              selectedSalesType === "DSALES NO INVOICE"
+              selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                 ? customerName
                 : invoiceHeaderData?.invoiceHeader?.CustomerName
             }
@@ -2308,7 +2501,7 @@ const POS = () => {
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${
-                  selectedSalesType === "DSALES NO INVOICE"
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                     ? vat
                     : invoiceHeaderData?.invoiceHeader?.VatNumber
                 }
@@ -2316,7 +2509,7 @@ const POS = () => {
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
                   ${
-                    selectedSalesType === "DSALES NO INVOICE"
+                    selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
                       ? vat
                       : invoiceHeaderData?.invoiceHeader?.VatNumber
                   }
@@ -2925,12 +3118,16 @@ const POS = () => {
                 <option value="DSALES NO INVOICE">
                   {t("DSALES NO INVOICE")}
                 </option>
+                <option value="BTOC CUSTOMER">
+                  {t("BTOC CUSTOMER")}
+                </option>
               </select>
             </div>
 
             {/* Select Return or Exchange */}
             {(selectedSalesType === "DIRECT SALES RETURN" ||
-              selectedSalesType === "DSALES NO INVOICE") && (
+               selectedSalesType === "DSALES NO INVOICE" ||
+                selectedSalesType === "BTOC CUSTOMER") && (
               <div>
                 <label
                   className={`block text-gray-700 ${
@@ -3015,8 +3212,9 @@ const POS = () => {
                 {t("Search Customer")}
               </label>
               {selectedSalesType === "DIRECT SALES RETURN" ||
-              selectedSalesType === "DSALES NO INVOICE" ? (
-                selectedSalesReturnType === "DIRECT RETURN" ? (
+                selectedSalesType === "DSALES NO INVOICE" || 
+                 selectedSalesType === "BTOC CUSTOMER" ? (
+                  selectedSalesReturnType === "DIRECT RETURN" ? (
                   // Show the combo box for DIRECT RETURN
                   <Autocomplete
                     id="field1"
@@ -3167,6 +3365,71 @@ const POS = () => {
                 />
               )}
             </div>
+
+            {/* BTOC Customer */}
+            {selectedSalesType === "BTOC CUSTOMER" && (
+              <div>
+                <label
+                  className={`block text-gray-700 ${
+                    i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                  }`}
+                >
+                  {t("Search Btoc Customer")}
+                </label>
+              <Autocomplete
+                id="field1"
+                options={btocCustomer}
+                // getOptionLabel={(option) => option?.CUST_CODE || ""}
+                getOptionLabel={(option) =>
+                  option && option.CUST_CODE && option.CUST_NAME
+                    ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                    : ""
+                }
+                onChange={handleBtocCustomer}
+                value={
+                  btocCustomer.find(
+                    (option) =>
+                      option?.CUST_CODE ===
+                        selectedBtocCustomer?.CUST_CODE
+                  ) || null
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.CUST_CODE === value?.CUST_CODE
+                }
+                onInputChange={(event, value) => {
+                  if (!value) {
+                    setSelectedBtocCustomer(""); // Clear selection
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    InputProps={{
+                      ...params.InputProps,
+                      className: "text-white",
+                    }}
+                    InputLabelProps={{
+                      ...params.InputLabelProps,
+                      style: { color: "white" },
+                    }}
+                    className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                    placeholder={t("Search Btoc Customer ID")}
+                    required
+                  />
+                )}
+                classes={{
+                  endAdornment: "text-white",
+                }}
+                sx={{
+                  "& .MuiAutocomplete-endAdornment": {
+                    color: "white",
+                  },
+                }}
+              />
+             </div>
+            )}  
             <div>
               <label
                 className={`block text-gray-700 ${
@@ -3323,6 +3586,42 @@ const POS = () => {
                       i18n.language === "ar" ? "text-end" : "text-start"
                     }`}
                     placeholder={t("Enter Barcode (No Invoice)")}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 p-2 mt-7 border rounded bg-secondary hover:bg-primary text-white flex items-center justify-center"
+                >
+                  <IoBarcodeSharp size={20} />
+                </button>
+              </form>
+            ) : selectedSalesType === "BTOC CUSTOMER" ? (
+              <form
+                // i call the btoc customer function 
+                onSubmit={handleGetBtocCustomerBarcodes}
+                className={`flex items-center ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                <div className="w-full">
+                  <label
+                    className={`block text-gray-700 ${
+                      i18n.language === "ar"
+                        ? "direction-rtl"
+                        : "text-start direction-ltr"
+                    }`}
+                  >
+                    {t("Scan Barcode (Btoc Customer)")}
+                  </label>
+                  <input
+                    type="text"
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    required
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                    placeholder={t("Enter Barcode (Btoc Customer)")}
                   />
                 </div>
                 <button
@@ -3864,7 +4163,7 @@ const POS = () => {
           )}
 
           {/* DSALES NO INVOICE */}
-          {selectedSalesType === "DSALES NO INVOICE" && (
+          {(selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER") && (
             <>
               <div className="mt-10">
                 <table className="table-auto w-full">
@@ -4032,7 +4331,10 @@ const POS = () => {
               {dSalesNoInvoiceexchangeData.length > 0 && (
                 <div className="mt-10">
                   <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
-                    {t("Exchange Item DSales No Invoice")}
+                  {selectedSalesType === "DSALES NO INVOICE"
+                    ? t("Exchange Item DSales No Invoice")
+                    : t("Exchange Item BTOC Customer")}
+                    {/* {t("Exchange Item DSales No Invoice")} */}
                   </button>
                   <div className="overflow-x-auto">
                     <table className="table-auto w-full">

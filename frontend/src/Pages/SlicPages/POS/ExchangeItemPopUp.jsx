@@ -140,7 +140,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     const item = data[0]; // Assuming you are dealing with a single item at a time
     console.log(item);
     
-    const locationCode = selectedSalesType === "DSALES NO INVOICE" 
+    const locationCode = selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
     ? dsalesLocationCode
     : invoiceHeaderData;
   
@@ -200,7 +200,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         // addExchangeData(res?.data?.data);
 
         // i show the data based on user selection datagrid
-        if (selectedSalesType === "DSALES NO INVOICE") {
+        if (selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER") {
           // addDSalesExchangeData(res?.data?.data);
           addDSalesExchangeData(updatedData);
         } else {

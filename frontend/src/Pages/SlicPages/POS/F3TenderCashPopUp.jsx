@@ -1593,6 +1593,9 @@ const F3TenderCashPopUp = ({
     } else if (selectedSalesType === "DSALES NO INVOICE") {
       await handleSubmitDSalesInvoice();
       // insertInvoiceRecord();
+    } else if (selectedSalesType === "BTOC CUSTOMER") {
+      await handleSubmitDSalesInvoice();
+      // insertInvoiceRecord();
     }
   };
 
@@ -2103,6 +2106,108 @@ const F3TenderCashPopUp = ({
                               </>
                             )} */}
 
+                            {!isExchangeDSalesClick && (
+                              <div className="mb-3">
+                                <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  {t("Return Amount")}
+                                </p>
+                                <input
+                                  type="text"
+                                  value={totolAmountWithoutVatDSalesNoInvoice}
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                    }`}
+                                  placeholder={
+                                    paymentModes.name || `${t("Payment Mode")}`
+                                  }
+                                  readOnly
+                                />
+                              </div>
+                            )}
+
+                            {isExchangeDSalesClick && (
+                              <>
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Exchange Amount")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={grossAmount}
+                                    readOnly
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Total Amount")}
+                                  />
+                                </div>
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Return Amount")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={totolAmountWithoutVatDSalesNoInvoice}
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={
+                                      paymentModes.name ||
+                                      `${t("Payment Mode")}`
+                                    }
+                                    readOnly
+                                  />
+                                </div>
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Difference")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={
+                                      grossAmount -
+                                      totolAmountWithoutVatDSalesNoInvoice
+                                    }
+                                    readOnly
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder="Difference"
+                                  />
+                                </div>
+                              </>
+                            )}
+                            {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
+                            {(paymentModes.code === "4" ||
+                              paymentModes.code === "5") && (
+                                <div className="mb-3">
+                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                    {t("Bank Approval Code")}
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={bankApprovedCode}
+                                    onChange={(e) =>
+                                      setBankApprovedCode(e.target.value)
+                                    }
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                      }`}
+                                    placeholder={t("Enter Bank Approval Code")}
+                                  />
+                                </div>
+                              )}
+                          </>
+                        )}
+
+
+                        {selectedSalesType === "BTOC CUSTOMER" && (
+                          <>
                             {!isExchangeDSalesClick && (
                               <div className="mb-3">
                                 <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
