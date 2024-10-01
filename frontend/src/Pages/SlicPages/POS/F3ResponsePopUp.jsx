@@ -55,7 +55,8 @@ const F3ResponsePopUp = ({
 
   const showPrintExchangeReceipt =
     (selectedSalesType === "DIRECT SALES RETURN" && isExchangeClick) ||
-    (selectedSalesType === "DSALES NO INVOICE" && isExchangeDSalesClick);
+    // (selectedSalesType === "DSALES NO INVOICE" && isExchangeDSalesClick);
+    ((selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER") && isExchangeDSalesClick);
 
   return (
     <div>
