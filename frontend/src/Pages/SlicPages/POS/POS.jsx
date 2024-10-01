@@ -855,7 +855,7 @@ const POS = () => {
           CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
-          TransactionType: "SALE",
+          TransactionType: "SALE INVOICE",
           UserID: slicUserData?.UserLoginID,
           MobileNo: mobileNo,
           TransactionDate: todayDate,
@@ -878,7 +878,7 @@ const POS = () => {
           CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
-          TransactionType: "SALE",
+          TransactionType: "SALE INVOICE",
           UserID: slicUserData?.UserLoginID,
           ItemSKU: item.SKU,
           ItemUnit: "PCS",
@@ -894,11 +894,14 @@ const POS = () => {
           details,
         };
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
-        // Check if isExchangeClick is true, if so use exchangeData, otherwise use invoiceData
-        // const dataToUse = isExchangeClick ? exchangeData : invoiceData;
-
         // Check the last two digits of the transactionCode to decide which data to use
         const dataToUse = transactionCode.slice(-2) === "IN" ? exchangeData : invoiceData;
+        
+        // Determine the values for PendingAmount and AdjAmount based on transactionCode
+        const amountToUse = transactionCode.slice(-2) === "IN" ? netWithVat : netWithOutVatExchange;
+
+        // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
+        const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
         // Construct the master and details data for Sales Return
         const master = {
@@ -907,7 +910,7 @@ const POS = () => {
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
-          ItemSysID: exchangeData[0]?.SKU,
+          ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
           CustomerCode:
@@ -922,8 +925,8 @@ const POS = () => {
           TransactionDate: todayDate,
           CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
           DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
+          PendingAmount: amountToUse,
+          AdjAmount: amountToUse,
         };
 
         const details = dataToUse.map((item, index) => ({
@@ -934,7 +937,7 @@ const POS = () => {
           ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo:
             invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          Head_SYS_ID: "",
+          Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
           CustomerCode:
@@ -962,19 +965,21 @@ const POS = () => {
           details,
         };
       } else if (selectedSalesType === "DSALES NO INVOICE") {
-        // const dataToUseDSales = isExchangeDSalesClick
-        //   ? dSalesNoInvoiceexchangeData
-        //   : DSalesNoInvoiceData;
-
         // Check the last two digits of the transactionCode to decide which data to use
         const dataToUseDSales = transactionCode.slice(-2) === "IN" ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
+
+        // Determine the values for PendingAmount and AdjAmount based on transactionCode
+        const amountToUse = transactionCode.slice(-2) === "IN" ? netWithVat : netWithOutVatDSalesNoInvoice;
+
+        // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
+        const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
           CustomerCode:
@@ -990,8 +995,8 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
+          PendingAmount: amountToUse,
+          AdjAmount: amountToUse,
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -1000,7 +1005,7 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceNumber,
-          Head_SYS_ID: "",
+          Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           CustomerCode:
             selectedSalesReturnType === "DIRECT RETURN"
@@ -1024,22 +1029,27 @@ const POS = () => {
           details,
         };
       } else if (selectedSalesType === "BTOC CUSTOMER") {
-        // const dataToUseDSales = isExchangeDSalesClick
-        //   ? dSalesNoInvoiceexchangeData
-        //   : DSalesNoInvoiceData;
-
         // Check the last two digits of the transactionCode to decide which data to use
         const dataToUseDSales = transactionCode.slice(-2) === "IN" ? dSalesNoInvoiceexchangeData : DSalesNoInvoiceData;
+
+        // Determine the values for PendingAmount and AdjAmount based on transactionCode
+        const amountToUse = transactionCode.slice(-2) === "IN" ? netWithVat : netWithOutVatDSalesNoInvoice;
+
+        // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
+        const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          ItemSysID: DSalesNoInvoiceData[0]?.SKU,
+          ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          CustomerCode: selectedBtocCustomer?.CUST_CODE,
+          CustomerCode: 
+          selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "B2C CUSTOMER",
@@ -1049,8 +1059,8 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
+          PendingAmount: amountToUse,
+          AdjAmount: amountToUse,
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -1059,9 +1069,12 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
           InvoiceNo: invoiceNumber,
-          Head_SYS_ID: "",
+          Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
-          CustomerCode: selectedBtocCustomer?.CUST_CODE,
+          CustomerCode: 
+          selectedSalesReturnType === "DIRECT RETURN"
+              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              : selectedCustomerName?.CUSTOMERCODE,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "B2C CUSTOMER",
@@ -3149,7 +3162,10 @@ const POS = () => {
                   value={selectedSalesReturnType}
                   onChange={(e) => setSelectedSalesReturnType(e.target.value)}
                 >
-                  <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
+                  {/* <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option> */}
+                  {selectedSalesType !== "BTOC CUSTOMER" && (
+                    <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
+                  )}
                   <option value="RETRUN WITH EXCHANGE">
                     {t("RETURN WITH EXCHANGE")}
                   </option>
