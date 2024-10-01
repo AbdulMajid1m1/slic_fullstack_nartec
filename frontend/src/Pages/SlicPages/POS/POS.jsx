@@ -422,6 +422,11 @@ const POS = () => {
   // Btoc Customer Function
   const handleGetBtocCustomerBarcodes = async (e) => {
     e.preventDefault();
+
+    if(!selectedBtocCustomer) {
+      toast.error("Please select a B2C Customer");
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await newRequest.get(
