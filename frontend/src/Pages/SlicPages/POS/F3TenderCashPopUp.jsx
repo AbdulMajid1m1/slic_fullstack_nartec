@@ -111,6 +111,19 @@ const F3TenderCashPopUp = ({
   // console.log(slicUserData?.SalesmanCode);
   // console.log(examptReason)
 
+
+  const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
+  // Function to determine the correct customer code based on transaction type
+  const getCustomerCode = () => {
+    // If the transaction code belongs to the EX/AX group, use selectedCustomerCode (fetched based on location and transaction)
+    if (EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)) {
+      return selectedCustomerCode?.CUSTOMERCODE;
+    }
+    // Otherwise, use selectedCustomeNameWithDirectInvoice (fetched from the general customer API)
+    return selectedCustomeNameWithDirectInvoice?.CUST_CODE;
+  };
+
+
   useEffect(() => {
     if (isVisible) {
       // console.log("Popup Data:", storeDatagridData);
@@ -159,6 +172,7 @@ const F3TenderCashPopUp = ({
       }));
 
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
+      const customerCode = getCustomerCode(); // Get the correct customer code
 
       const salesInvoiceBody = {
         keyword: "Invoice",
@@ -167,8 +181,8 @@ const F3TenderCashPopUp = ({
           {
             Company: "SLIC",
             TransactionCode: `${selectTransactionCode}`,
-            CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
-            // "CustomerCode": "EX100003",
+            // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+            CustomerCode: customerCode,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
             UserId: "SYSADMIN",
@@ -647,6 +661,7 @@ const F3TenderCashPopUp = ({
   
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
+      const customerCode = getCustomerCode();
   
       // Body for the sales return (EXSR)
       const salesReturnBody = {
@@ -656,14 +671,15 @@ const F3TenderCashPopUp = ({
           {
             Company: "SLIC",
             TransactionCode: selectTransactionCode,
-            CustomerCode:
-              selectedSalesReturnType === "DIRECT RETURN"
-                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                : selectedCustomerCode?.CUSTOMERCODE,
+            // CustomerCode:
+            //   selectedSalesReturnType === "DIRECT RETURN"
+            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+            //     : selectedCustomerCode?.CUSTOMERCODE,
+            CustomerCode: customerCode,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
             UserId: "SYSADMIN",
-            CustomerName: invoiceHeaderData?.CustomerCode,
+            CustomerName: invoiceHeaderData?.CustomerName,
             MobileNo: invoiceHeaderData?.MobileNo,
             Remarks: invoiceHeaderData?.Remarks,
             PosRefNo: invoiceHeaderData?.InvoiceNo,
@@ -688,14 +704,15 @@ const F3TenderCashPopUp = ({
             {
               Company: "SLIC",
               TransactionCode: modifiedTransactionCode,
-              CustomerCode:
-                selectedSalesReturnType === "DIRECT RETURN"
-                  ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                  : selectedCustomerCode?.CUSTOMERCODE,
+              // CustomerCode:
+              //   selectedSalesReturnType === "DIRECT RETURN"
+              //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+              //     : selectedCustomerCode?.CUSTOMERCODE,
+              CustomerCode: customerCode,
               SalesLocationCode: selectedLocation?.stockLocation,
               DeliveryLocationCode: selectedLocation?.stockLocation,
               UserId: "SYSADMIN",
-              CustomerName: invoiceHeaderData?.CustomerCode,
+              CustomerName: invoiceHeaderData?.CustomerName,
               MobileNo: invoiceHeaderData?.MobileNo,
               Remarks: invoiceHeaderData?.Remarks,
               PosRefNo: invoiceHeaderData?.InvoiceNo,
@@ -780,10 +797,11 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: totalAmountWithVat - totolAmountWithoutExchange,
-                CustomerId:
-                  selectedSalesReturnType === "DIRECT RETURN"
-                    ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    : selectedCustomerCode?.CUSTOMERCODE,
+                // CustomerId:
+                //   selectedSalesReturnType === "DIRECT RETURN"
+                //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                //     : selectedCustomerCode?.CUSTOMERCODE,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
@@ -878,10 +896,11 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: totolAmountWithoutExchange,
-                CustomerId:
-                  selectedSalesReturnType === "DIRECT RETURN"
-                    ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    : selectedCustomerCode?.CUSTOMERCODE,
+                // CustomerId:
+                //   selectedSalesReturnType === "DIRECT RETURN"
+                //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                //     : selectedCustomerCode?.CUSTOMERCODE,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
@@ -1290,7 +1309,8 @@ const F3TenderCashPopUp = ({
   
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
-  
+      const customerCode = getCustomerCode();
+
       // Body for the sales return (EXSR)
       const salesReturnBody = {
         _keyword_: "salesreturn",
@@ -1299,10 +1319,11 @@ const F3TenderCashPopUp = ({
           {
             Company: "SLIC",
             TransactionCode: `${selectTransactionCode}`,
-            CustomerCode:
-              selectedSalesReturnType === "DIRECT RETURN"
-                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                : selectedCustomerCode?.CUSTOMERCODE,
+            // CustomerCode:
+            //   selectedSalesReturnType === "DIRECT RETURN"
+            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+            //     : selectedCustomerCode?.CUSTOMERCODE,
+            CustomerCode: customerCode,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
             UserId: "SYSADMIN",
@@ -1330,10 +1351,11 @@ const F3TenderCashPopUp = ({
           {
             Company: "SLIC",
             TransactionCode: `${modifiedTransactionCode}`,
-            CustomerCode:
-              selectedSalesReturnType === "DIRECT RETURN"
-                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                : selectedCustomerCode?.CUSTOMERCODE,
+            // CustomerCode:
+            //   selectedSalesReturnType === "DIRECT RETURN"
+            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+            //     : selectedCustomerCode?.CUSTOMERCODE,
+            CustomerCode: customerCode,
             SalesLocationCode: selectedLocation?.stockLocation,
             DeliveryLocationCode: selectedLocation?.stockLocation,
             UserId: "SYSADMIN",
@@ -1422,10 +1444,11 @@ const F3TenderCashPopUp = ({
                 CashCardFlag: "CARD",
                 ReceiptAmt:
                   totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
-                CustomerId:
-                  selectedSalesReturnType === "DIRECT RETURN"
-                    ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    : selectedCustomerCode?.CUSTOMERCODE,
+                // CustomerId:
+                //   selectedSalesReturnType === "DIRECT RETURN"
+                //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                //     : selectedCustomerCode?.CUSTOMERCODE,
+                CustomerCode: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
@@ -1517,10 +1540,11 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: totolAmountWithoutVatDSalesNoInvoice,
-                CustomerId:
-                  selectedSalesReturnType === "DIRECT RETURN"
-                    ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    : selectedCustomerCode?.CUSTOMERCODE,
+                // CustomerId:
+                //   selectedSalesReturnType === "DIRECT RETURN"
+                //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                //     : selectedCustomerCode?.CUSTOMERCODE,
+                CustomerCode: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,

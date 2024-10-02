@@ -136,9 +136,167 @@ const POS = () => {
 
   // console.log(slicUserData?.SalesmanCode);
 
+
+  // transaction Codes Api
+  const [transactionCodes, setTransactionCodes] = useState([]);
+  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
+  const fetchTransactionCodes = async () => {
+    try {
+      // const response = await newRequest.get(
+      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      // );
+      // console.log(response.data?.data);
+      // setTransactionCodes(response.data?.data);
+
+      const response = await newRequest.get(
+        `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
+      );
+      let codes = response.data?.data || [];
+
+      // Apply filtering based on selectedOption
+      if (selectedSalesType === "DIRECT SALES INVOICE") {
+        codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
+      } else if (
+        selectedSalesType === "DIRECT SALES RETURN" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+      ) {
+        codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
+      }
+      // console.log(codes)
+      setTransactionCodes(codes);
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
+
+  const handleTransactionCodes = (event, value) => {
+    // console.log(value)
+    setSelectedTransactionCode(value ? value : "");
+  };
+
+  useEffect(() => {
+    if (selectedLocation?.stockLocation) {
+      fetchTransactionCodes();
+    }
+  }, [selectedLocation, selectedSalesType]);
+
+
+  // fetch All Customer Names api
+  const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
+  const [searchCustomerName, setSearchCustomerName] = useState([]);
+  const [selectedCustomerName, setSelectedCustomerName] = useState("");
+  const fetchCustomerBasedonTransaction = async () => {
+    try {
+      const response = await newRequest.get(
+        `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
+      );
+      const allCustomers = response?.data?.data;
+      console.log(allCustomers)
+
+      setSearchCustomerName(allCustomers);
+    } catch (err) {
+      // console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
+
+  const handleSearchCustomerName = (event, value) => {
+    console.log(value);
+    setSelectedCustomerName(value);
+  };
+
+  // useEffect(() => {
+  //   if (selectedTransactionCode?.TXN_CODE) {
+  //     fetchCustomerBasedonTransaction();
+  //   }
+  // }, [selectedTransactionCode?.TXN_CODE]);
+
+  const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] =
+    useState([]);
+  const [
+    selectedCustomeNameWithDirectInvoice,
+    setSelectedCustomeNameWithDirectInvoice,
+  ] = useState("");
+
+  // BTOC CUSTOMER state
+  const [btocCustomer, setBtocCustomer] = useState([]);
+  const [selectedBtocCustomer, setSelectedBtocCustomer] = useState("");
+  const fetchCustomerNames = async () => {
+    try {
+      const response = await newRequest.get("/customerNames/v1/all");
+      const allCustomers = response?.data?.data;
+
+      // Filter customers whose CUST_CODE starts with "CL"
+      const filteredCustomers = allCustomers.filter((customer) =>
+        // customer.CUST_CODE.startsWith("CL")
+        customer.CUST_CODE.startsWith("CL") || customer.CUST_CODE.startsWith("EX")
+      );
+      // console.log(filteredCustomers);
+      setCustomerNameWithDirectInvoice(filteredCustomers);
+
+      // btoc customer
+      setBtocCustomer(filteredCustomers);
+    } catch (err) {
+      // console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
+
+  const handleSearchCustomerNameWithDirectInvoice = (event, value) => {
+    // console.log(value);
+    setSelectedCustomeNameWithDirectInvoice(value);
+  };
+
+  // btoc customer handle function
+  const handleBtocCustomer = (event, value) => {
+    console.log(value);
+    setSelectedBtocCustomer(value);
+  };
+
+
+  useEffect(() => {
+    if (selectedTransactionCode?.TXN_CODE) {
+      // Check if the transaction code is one of the EX/AX ones that requires validation
+      if (EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)) {
+        // Fetch customers based on the location and transaction code
+        fetchCustomerBasedonTransaction();
+      } else {
+        // Fetch general customer names
+        fetchCustomerNames();
+      }
+    }
+  }, [selectedTransactionCode?.TXN_CODE]);
+  
+  // useEffect(() => {
+  //   fetchCustomerNames();
+  // }, []);
+
+
+
   // Fetch barcode data from API
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
+
+    // Dynamically determine the CustomerCode based on the selected transaction code
+    const customerCode =
+    EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+      ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+      : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+    
+    // console.log("direct sales invoice ", customerCode)
+    if (!selectedTransactionCode?.TXN_CODE) {
+      toast.error("Please select a transaction code first.");
+      setIsExchangeItemPopupVisible(false);
+      return;
+    }
+    if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+      toast.error("Please select a customer code first.");
+      setIsExchangeItemPopupVisible(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await newRequest.get(
@@ -154,7 +312,8 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+            // P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+            P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -303,6 +462,24 @@ const POS = () => {
   const [DSalesNoInvoiceData, setDSalesNoInvoiceData] = useState([]);
   const handleGetNoInvoiceBarcodes = async (e) => {
     e.preventDefault();
+
+    // Dynamically determine the CustomerCode based on the selected transaction code
+    const customerCode =
+    EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+      ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+      : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+
+    if (!selectedTransactionCode?.TXN_CODE) {
+      toast.error("Please select a transaction code first.");
+      setIsExchangeItemPopupVisible(false);
+      return;
+    }
+    if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+      toast.error("Please select a customer code first.");
+      setIsExchangeItemPopupVisible(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await newRequest.get(
@@ -319,10 +496,11 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE:
-              selectedSalesReturnType === "DIRECT RETURN"
-                ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                : selectedCustomerName?.CUSTOMERCODE,
+            // P_CUST_CODE:
+            //   selectedSalesReturnType === "DIRECT RETURN"
+            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+            //     : selectedCustomerName?.CUSTOMERCODE,
+            P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -422,7 +600,7 @@ const POS = () => {
   // Btoc Customer Function
   const handleGetBtocCustomerBarcodes = async (e) => {
     e.preventDefault();
-
+    
     if(!selectedBtocCustomer) {
       toast.error("Please select a B2C Customer");
       return;
@@ -574,16 +752,31 @@ const POS = () => {
   const [isExchangeItemPopupVisible, setIsExchangeItemPopupVisible] =
     useState(false);
   const handleShowExhangeItemPopup = (rowData) => {
-    if (selectedSalesReturnType === "DIRECT RETURN") {
-      toast.info(
-        "You don't select the Sales Return type return with exchange",
-        {}
-      );
+    if (!selectedTransactionCode?.TXN_CODE) {
+      toast.error("Please select a transaction code first.");
       setIsExchangeItemPopupVisible(false);
-    } else {
-      setSelectedRowData(rowData);
-      setIsExchangeItemPopupVisible(true);
+      return;
     }
+  
+    if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+      toast.error("Please select a customer code first.");
+      setIsExchangeItemPopupVisible(false);
+      return;
+    }
+
+    setSelectedRowData(rowData);
+    setIsExchangeItemPopupVisible(true);
+
+    // if (selectedSalesReturnType === "DIRECT RETURN") {
+    //   toast.info(
+    //     "You don't select the Sales Return type return with exchange",
+    //     {}
+    //   );
+    //   setIsExchangeItemPopupVisible(false);
+    // } else {
+    //   setSelectedRowData(rowData);
+    //   setIsExchangeItemPopupVisible(true);
+    // }
 
     // setSelectedRowData(rowData); // Store the selected row data to pass to the popup
     // setIsExchangeItemPopupVisible(true);
@@ -611,126 +804,7 @@ const POS = () => {
     setData([]);
   };
 
-  // transaction Codes Api
-  const [transactionCodes, setTransactionCodes] = useState([]);
-  const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
-  const fetchTransactionCodes = async () => {
-    try {
-      // const response = await newRequest.get(
-      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      // );
-      // console.log(response.data?.data);
-      // setTransactionCodes(response.data?.data);
-
-      const response = await newRequest.get(
-        `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
-      );
-      let codes = response.data?.data || [];
-
-      // Apply filtering based on selectedOption
-      if (selectedSalesType === "DIRECT SALES INVOICE") {
-        codes = codes.filter((code) => !code.TXN_CODE.includes("SR"));
-      } else if (
-        selectedSalesType === "DIRECT SALES RETURN" ||
-        selectedSalesType === "DSALES NO INVOICE" ||
-        selectedSalesType === "BTOC CUSTOMER"
-      ) {
-        codes = codes.filter((code) => !code.TXN_CODE.includes("IN"));
-      }
-      // console.log(codes)
-      setTransactionCodes(codes);
-    } catch (err) {
-      console.log(err);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
-
-  const handleTransactionCodes = (event, value) => {
-    // console.log(value)
-    setSelectedTransactionCode(value ? value : "");
-  };
-
-  useEffect(() => {
-    if (selectedLocation?.stockLocation) {
-      fetchTransactionCodes();
-    }
-  }, [selectedLocation, selectedSalesType]);
-
-  // fetch All Customer Names api
-  const [searchCustomerName, setSearchCustomerName] = useState([]);
-  const [selectedCustomerName, setSelectedCustomerName] = useState("");
-  const fetchCustomerBasedonTransaction = async () => {
-    try {
-      const response = await newRequest.get(
-        `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
-      );
-      const allCustomers = response?.data?.data;
-      // console.log(allCustomers)
-
-      setSearchCustomerName(allCustomers);
-    } catch (err) {
-      // console.log(err);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
-
-  const handleSearchCustomerName = (event, value) => {
-    console.log(value);
-    setSelectedCustomerName(value);
-  };
-
-  useEffect(() => {
-    if (selectedTransactionCode?.TXN_CODE) {
-      fetchCustomerBasedonTransaction();
-    }
-  }, [selectedTransactionCode?.TXN_CODE]);
-
-  const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] =
-    useState([]);
-  const [
-    selectedCustomeNameWithDirectInvoice,
-    setSelectedCustomeNameWithDirectInvoice,
-  ] = useState("");
-
-  // BTOC CUSTOMER state
-  const [btocCustomer, setBtocCustomer] = useState([]);
-  const [selectedBtocCustomer, setSelectedBtocCustomer] = useState("");
-  const fetchCustomerNames = async () => {
-    try {
-      const response = await newRequest.get("/customerNames/v1/all");
-      const allCustomers = response?.data?.data;
-
-      // Filter customers whose CUST_CODE starts with "CL"
-      const filteredCustomers = allCustomers.filter((customer) =>
-        // customer.CUST_CODE.startsWith("CL")
-        customer.CUST_CODE.startsWith("CL") || customer.CUST_CODE.startsWith("EX")
-      );
-      // console.log(filteredCustomers);
-      setCustomerNameWithDirectInvoice(filteredCustomers);
-
-      // btoc customer
-      setBtocCustomer(filteredCustomers);
-    } catch (err) {
-      // console.log(err);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
-
-  const handleSearchCustomerNameWithDirectInvoice = (event, value) => {
-    // console.log(value);
-    setSelectedCustomeNameWithDirectInvoice(value);
-  };
-
-  // btoc customer handle function
-  const handleBtocCustomer = (event, value) => {
-    console.log(value);
-    setSelectedBtocCustomer(value);
-  };
-
-  useEffect(() => {
-    fetchCustomerNames();
-  }, []);
-
+  
   // picked current date and time
   const [currentTime, setCurrentTime] = useState("");
   const [todayDate, setTodayDate] = useState("");
@@ -844,6 +918,12 @@ const POS = () => {
     try {
       let invoiceAllData;
 
+      // Dynamically determine the CustomerCode based on the selected transaction code
+      const customerCode =
+      EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+        ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+        : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -852,7 +932,8 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "SALE INVOICE",
@@ -873,9 +954,10 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU,
           InvoiceNo: invoiceNumber,
-          Head_SYS_ID: "",
+          Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "SALE INVOICE",
@@ -913,10 +995,11 @@ const POS = () => {
           ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          CustomerCode:
-            selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "RETURN",
@@ -940,10 +1023,11 @@ const POS = () => {
           Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          CustomerCode:
-            selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
@@ -982,10 +1066,11 @@ const POS = () => {
           ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          CustomerCode:
-            selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "DSALES NO INVOICE",
@@ -1007,10 +1092,11 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
-          CustomerCode:
-            selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "DSALES NO INVOICE",
@@ -1046,10 +1132,11 @@ const POS = () => {
           ItemSysID: masterItemSysID,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          CustomerCode: 
-          selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode: 
+          // selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
           TransactionType: "B2C CUSTOMER",
@@ -1071,10 +1158,11 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
-          CustomerCode: 
-          selectedSalesReturnType === "DIRECT RETURN"
-              ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-              : selectedCustomerName?.CUSTOMERCODE,
+          // CustomerCode: 
+          // selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
+          CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "B2C CUSTOMER",
@@ -1102,21 +1190,6 @@ const POS = () => {
       console.log("invoice body", invoiceAllData);
       console.log("Record saved successfully:", saveInvoiceResponse.data);
 
-      // if (isExchangeClick) {
-      //   const resArchive = await newRequest.post("/invoice/v1/archiveInvoice", {
-      //     InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo,
-      //   });
-      //   console.log(resArchive.data);
-      // }
-
-      // if (isExchangeDSalesClick) {
-      //   const resArchive = await newRequest.post("/invoice/v1/archiveInvoice", {
-      //     InvoiceNo: invoiceNumber,
-      //   });
-      //   console.log(resArchive.data);
-      // }
-
-      // resetState();
       toast.success(
         saveInvoiceResponse?.data?.message || "Invoice saved successfully"
       );
@@ -3144,7 +3217,7 @@ const POS = () => {
             </div>
 
             {/* Select Return or Exchange */}
-            {(selectedSalesType === "DIRECT SALES RETURN" ||
+            {/* {(selectedSalesType === "DIRECT SALES RETURN" ||
                selectedSalesType === "DSALES NO INVOICE" ||
                 selectedSalesType === "BTOC CUSTOMER") && (
               <div>
@@ -3162,7 +3235,6 @@ const POS = () => {
                   value={selectedSalesReturnType}
                   onChange={(e) => setSelectedSalesReturnType(e.target.value)}
                 >
-                  {/* <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option> */}
                   {selectedSalesType !== "BTOC CUSTOMER" && (
                     <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
                   )}
@@ -3171,7 +3243,7 @@ const POS = () => {
                   </option>
                 </select>
               </div>
-            )}
+            )} */}
             <div>
               <label
                 className={`block text-gray-700 ${
@@ -3233,7 +3305,7 @@ const POS = () => {
               >
                 {t("Search Customer")}
               </label>
-              {selectedSalesType === "DIRECT SALES RETURN" ||
+              {/* {selectedSalesType === "DIRECT SALES RETURN" ||
                 selectedSalesType === "DSALES NO INVOICE" || 
                  selectedSalesType === "BTOC CUSTOMER" ? (
                   selectedSalesReturnType === "DIRECT RETURN" ? (
@@ -3385,10 +3457,105 @@ const POS = () => {
                     },
                   }}
                 />
+              )} */}
+              {EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE) ? (
+                // Show the combo box for transactions EXIN, AXIN, EXSR, AXSR (location-based customer names)
+                <Autocomplete
+                  id="field1"
+                  options={searchCustomerName.filter((customer) => customer.CUSTOMERCODE.startsWith("EX"))} // Filter EX customers only
+                  getOptionLabel={(option) =>
+                    option && option.CUSTOMERCODE && option.TXN_NAME
+                      ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
+                      : ""
+                  }
+                  onChange={handleSearchCustomerName}
+                  value={searchCustomerName.find(
+                    (option) => option?.CUSTOMERCODE === selectedCustomerName?.CUSTOMERCODE
+                  ) || null}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUSTOMERCODE === value?.CUSTOMERCODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedCustomerName(""); // Clear selection when input is cleared
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={t("Search Customer ID")}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
+              ) : (
+                // Show the general dropdown for other transactions
+                <Autocomplete
+                  id="field1"
+                  options={customerNameWithDirectInvoice}
+                  getOptionLabel={(option) =>
+                    option && option.CUST_CODE && option.CUST_NAME
+                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                      : ""
+                  }
+                  onChange={handleSearchCustomerNameWithDirectInvoice}
+                  value={customerNameWithDirectInvoice.find(
+                    (option) =>
+                      option?.CUST_CODE === selectedCustomeNameWithDirectInvoice?.CUST_CODE
+                  ) || null}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUST_CODE === value?.CUST_CODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={t("Search Customer ID")}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
               )}
             </div>
 
-            {/* BTOC Customer */}
             {selectedSalesType === "BTOC CUSTOMER" && (
               <div>
                 <label
@@ -3403,7 +3570,6 @@ const POS = () => {
               <Autocomplete
                 id="field1"
                 options={btocCustomer}
-                // getOptionLabel={(option) => option?.CUST_CODE || ""}
                 getOptionLabel={(option) =>
                   option && option.CUST_CODE && option.CUST_NAME
                     ? `${option.CUST_CODE} - ${option.CUST_NAME}`
@@ -4635,6 +4801,7 @@ const POS = () => {
               selectedCustomeNameWithDirectInvoice={
                 selectedCustomeNameWithDirectInvoice
               }
+              selectedTransactionCode={selectedTransactionCode}
             />
           )}
 

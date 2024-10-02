@@ -700,8 +700,8 @@ export const posHistoryInvoiceColumns = (t)=> [
     width: 150,
   },
   {
-    field: "SNo",
-    headerName: t("Serial Number"),
+    field: "CustomerName",
+    headerName: t("Customer Name"),
     width: 150,
   },
   {
