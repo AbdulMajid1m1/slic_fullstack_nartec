@@ -6,13 +6,27 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice, selectedTransactionCode }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
+  const getCustomerCode = () => {
+    // If the transaction code belongs to the EX/AX group, use selectedCustomerCode (fetched based on location and transaction)
+    if (EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)) {
+      return selectedCustomerName?.CUSTOMERCODE;
+    }
+    // Otherwise, use selectedCustomeNameWithDirectInvoice (fetched from the general customer API)
+    return selectedCustomeNameWithDirectInvoice?.CUST_CODE;
+  };
+
   useEffect(() => {
-    console.log("Selected Row Data" , selectedRowData);
+    // console.log("Selected Row Data" , selectedRowData);
+    // console.log("Selected Transaction Code" , selectedTransactionCode);
+    // console.log("Selected CustomerCode" , getCustomerCode())
   }, [selectedRowData]);
+
 
   const { t, i18n } = useTranslation();
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
@@ -20,13 +34,17 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
   // Fetch barcode data from API
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
+
+    const customerCode = getCustomerCode();
+
     setIsLoading(true);
     try {
       const response = await newRequest.get(
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      console.log(data)
+      // console.log(data)
+
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
@@ -35,9 +53,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-            ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-            : selectedCustomerName?.CUSTOMERCODE,
+            // P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+            // ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+            // : selectedCustomerName?.CUSTOMERCODE,
+            P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
