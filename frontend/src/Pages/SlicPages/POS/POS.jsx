@@ -220,9 +220,7 @@ const POS = () => {
     setSelectedCustomeNameWithDirectInvoice,
   ] = useState("");
 
-  // BTOC CUSTOMER state
-  const [btocCustomer, setBtocCustomer] = useState([]);
-  const [selectedBtocCustomer, setSelectedBtocCustomer] = useState("");
+  // fetch All Customer
   const fetchCustomerNames = async () => {
     try {
       const response = await newRequest.get("/customerNames/v1/all");
@@ -236,6 +234,27 @@ const POS = () => {
       // console.log(filteredCustomers);
       setCustomerNameWithDirectInvoice(filteredCustomers);
 
+      // btoc customer
+      // setBtocCustomer(filteredCustomers);
+    } catch (err) {
+      // console.log(err);
+      toast.error(err?.response?.data?.message || "Something went Wrong");
+    }
+  };
+
+  // BTOC CUSTOMER state
+  const [btocCustomer, setBtocCustomer] = useState([]);
+  const [selectedBtocCustomer, setSelectedBtocCustomer] = useState("");
+  const fetchB2CCustomerNames = async () => {
+    try {
+      const response = await newRequest.get("/customerNames/v1/all");
+      const allCustomers = response?.data?.data;
+
+      // Filter customers whose CUST_CODE starts with "CL"
+      const filteredCustomers = allCustomers.filter((customer) =>
+        // customer.CUST_CODE.startsWith("CL")
+        customer.CUST_CODE.startsWith("CL") || customer.CUST_CODE.startsWith("EX")
+      );
       // btoc customer
       setBtocCustomer(filteredCustomers);
     } catch (err) {
@@ -273,6 +292,11 @@ const POS = () => {
   //   fetchCustomerNames();
   // }, []);
 
+  useEffect(() => {
+    if (selectedSalesType === "BTOC CUSTOMER") {
+      fetchB2CCustomerNames();
+    }
+  }, [selectedSalesType]);
 
 
   // Fetch barcode data from API
