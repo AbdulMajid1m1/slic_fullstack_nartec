@@ -174,22 +174,17 @@ exports.updateInvoiceTemp = async (req, res, next) => {
   }
 };
 
-
-
 exports.invoiceHeadersAndLineItems = async (req, res, next) => {
   try {
     // Define the Joi schema
     const schema = Joi.object({
       InvoiceNo: Joi.string().required().messages({
-        'any.required': 'InvoiceNo is required',
-        'string.empty': 'InvoiceNo cannot be empty',
+        "any.required": "InvoiceNo is required",
+        "string.empty": "InvoiceNo cannot be empty",
       }),
-      TransactionCode: Joi.string()
-        .valid('IN', 'SR')
-        .optional()
-        .messages({
-          'any.only': "TransactionCode must be either 'IN' or 'SR'",
-        }),
+      TransactionCode: Joi.string().valid("IN", "SR").optional().messages({
+        "any.only": "TransactionCode must be either 'IN' or 'SR'",
+      }),
     });
 
     // Validate the request query against the schema
@@ -215,7 +210,9 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
       };
     }
 
-    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByFilter(filter);
+    const invoiceHeader = await POSInvoiceMaster.getSingleInvoiceMasterByFilter(
+      filter
+    );
 
     if (!invoiceHeader) {
       const error = new CustomError("Invoice headers not found");
@@ -224,7 +221,9 @@ exports.invoiceHeadersAndLineItems = async (req, res, next) => {
     }
 
     // Use the same filter to get invoice details
-    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFilter(filter);
+    const invoiceDetails = await POSInvoiceDetails.getInvoiceDetailsByFilter(
+      filter
+    );
 
     res.status(200).json(
       response(200, true, "Invoice headers & line items found successfully", {
@@ -481,6 +480,7 @@ exports.getInvoiceDetailsByInvoiceNo = async (req, res, next) => {
     next(error);
   }
 };
+
 exports.archiveInvoice = async (req, res, next) => {
   try {
     const schema = Joi.object({
@@ -546,11 +546,28 @@ exports.archiveInvoice = async (req, res, next) => {
 
     // Insert the master record into the archive table if not already archived
     const { id: masterId, ...invoiceMasterDataWithoutId } = invoiceMaster;
-    await prisma.tblPOSInvoiceMasterArchive.upsert({
+
+    // Check if the archive record exists
+    const existingArchiveRecord = await prisma.tblPOSInvoiceMasterArchive.findFirst({
       where: { InvoiceNo: invoiceNo },
-      update: {},
-      create: invoiceMasterDataWithoutId,
     });
+
+    if (existingArchiveRecord) {
+      // Update existing archive record
+      await prisma.tblPOSInvoiceMasterArchive.update({
+        where: { id: existingArchiveRecord.id },
+        data: {
+          ...invoiceMasterDataWithoutId,
+        },
+      });
+    } else {
+      // Create new archive record
+      await prisma.tblPOSInvoiceMasterArchive.create({
+        data: {
+          ...invoiceMasterDataWithoutId,
+        },
+      });
+    }
 
     // Process each item to return
     let totalReturnAmount = 0;
@@ -577,20 +594,19 @@ exports.archiveInvoice = async (req, res, next) => {
       totalReturnAmount += returnAmount;
 
       // Check if the item is already in the archive
-      const existingArchiveRecord =
-        await prisma.tblPOSInvoiceDetailsArchive.findFirst({
-          where: {
-            InvoiceNo: detailItem.InvoiceNo,
-            ItemSysID: detailItem.ItemSysID,
-          },
-        });
+      const existingDetailArchiveRecord = await prisma.tblPOSInvoiceDetailsArchive.findFirst({
+        where: {
+          InvoiceNo: detailItem.InvoiceNo,
+          ItemSysID: detailItem.ItemSysID,
+        },
+      });
 
-      if (existingArchiveRecord) {
+      if (existingDetailArchiveRecord) {
         // Update the existing archive record by increasing the quantity
         await prisma.tblPOSInvoiceDetailsArchive.update({
-          where: { id: existingArchiveRecord.id },
+          where: { id: existingDetailArchiveRecord.id },
           data: {
-            ItemQry: existingArchiveRecord.ItemQry + qtyToReturn, // Increase the quantity by the returned amount
+            ItemQry: existingDetailArchiveRecord.ItemQry + qtyToReturn, // Increase the quantity by the returned amount
           },
         });
       } else {
@@ -624,23 +640,25 @@ exports.archiveInvoice = async (req, res, next) => {
     const newAdjAmount = invoiceMaster.AdjAmount - totalReturnAmount;
     const newPendingAmount = invoiceMaster.PendingAmount - totalReturnAmount;
 
-    // Update tblPOSInvoiceMaster
+    // Update tblPOSInvoiceMaster using the unique identifier (assuming `id` is unique)
     await prisma.tblPOSInvoiceMaster.update({
-      where: { InvoiceNo: invoiceNo },
+      where: { id: invoiceMaster.id },
       data: {
         AdjAmount: newAdjAmount,
         PendingAmount: newPendingAmount,
       },
     });
 
-    // Update tblPOSInvoiceMasterArchive
-    await prisma.tblPOSInvoiceMasterArchive.update({
-      where: { InvoiceNo: invoiceNo },
-      data: {
-        AdjAmount: totalReturnAmount,
-        PendingAmount: totalReturnAmount,
-      },
-    });
+    // Update tblPOSInvoiceMasterArchive using the unique identifier
+    if (existingArchiveRecord) {
+      await prisma.tblPOSInvoiceMasterArchive.update({
+        where: { id: existingArchiveRecord.id },
+        data: {
+          AdjAmount: newAdjAmount,
+          PendingAmount: newPendingAmount,
+        },
+      });
+    }
 
     // Check if all items have been returned, in which case delete the master record
     const remainingItems = await prisma.tblPOSInvoiceDetails.count({
@@ -648,7 +666,13 @@ exports.archiveInvoice = async (req, res, next) => {
     });
 
     if (remainingItems === 0) {
+      // Delete the master record
       await prisma.tblPOSInvoiceMaster.delete({
+        where: { id: invoiceMaster.id },
+      });
+
+      // Also delete any remaining details records, if they exist
+      await prisma.tblPOSInvoiceDetails.deleteMany({
         where: { InvoiceNo: invoiceNo },
       });
     }
@@ -660,6 +684,7 @@ exports.archiveInvoice = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const allowedMasterColumns = {
   Rec_Num: Joi.number(),
