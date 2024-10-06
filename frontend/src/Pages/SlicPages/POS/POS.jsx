@@ -78,25 +78,80 @@ const POS = () => {
     setShowPopup(false);
   };
 
+
+    // picked current date and time
+    const [currentTime, setCurrentTime] = useState("");
+    const [todayDate, setTodayDate] = useState("");
+    const [invoiceNumber, setInvoiceNumber] = useState("");
+    const [newInvoiceNumber, setNewInvoiceNumber] = useState("");
+  
+    // Function to generate invoice number based on date and time
+    const generateInvoiceNumber = () => {
+      const now = new Date();
+      const timestamp = Date.now();
+      return `${timestamp}`;
+    };
+  
+    useEffect(() => {
+      const updateTime = () => {
+        const now = new Date();
+        setTodayDate(now.toISOString());
+        setCurrentTime(
+          now.toLocaleString("en-US", {
+            dateStyle: "short",
+            timeStyle: "medium",
+          })
+        );
+      };
+  
+      setInvoiceNumber(generateInvoiceNumber());
+      updateTime();
+      const intervalId = setInterval(updateTime, 1000);
+  
+      return () => clearInterval(intervalId);
+    }, []);
+
+    // Function to generate invoice New number based on date and time
+    const generateNewInvoiceNumber = () => {
+      const now = new Date();
+      const timestamp = Date.now();
+      return `${timestamp}`;
+    };
+  
+    useEffect(() => {
+      const updateTime = () => {
+        const now = new Date();
+        setTodayDate(now.toISOString());
+        setCurrentTime(
+          now.toLocaleString("en-US", {
+            dateStyle: "short",
+            timeStyle: "medium",
+          })
+        );
+      };
+  
+      setNewInvoiceNumber(generateInvoiceNumber());
+      updateTime();
+      const intervalId = setInterval(updateTime, 1000);
+      
+      return () => clearInterval(intervalId);
+    }, []);
+
+      
+
   const [isExchangeClick, setIsExchangeClick] = useState(false);
   const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
   const handleItemClick = (action) => {
     setOpenDropdown(null);
-    // Check if the correct sales return type is selected
-    if (selectedSalesReturnType === "DIRECT RETURN") {
-      toast.info(
-        "You need to select 'RETURN WITH EXCHANGE' to perform this action.",
-        {}
-      );
-      return;
-    }
 
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
+      generateNewInvoiceNumber();
     } else if (action === "exchange Dsales") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeDSalesClick(true);
+      generateNewInvoiceNumber();
     }
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
@@ -829,36 +884,6 @@ const POS = () => {
   };
 
   
-  // picked current date and time
-  const [currentTime, setCurrentTime] = useState("");
-  const [todayDate, setTodayDate] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-
-  // Function to generate invoice number based on date and time
-  const generateInvoiceNumber = () => {
-    const now = new Date();
-    const timestamp = Date.now();
-    return `${timestamp}`;
-  };
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTodayDate(now.toISOString());
-      setCurrentTime(
-        now.toLocaleString("en-US", {
-          dateStyle: "short",
-          timeStyle: "medium",
-        })
-      );
-    };
-
-    setInvoiceNumber(generateInvoiceNumber());
-    updateTime();
-    const intervalId = setInterval(updateTime, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   const resetState = () => {
     setData([]);
@@ -948,6 +973,7 @@ const POS = () => {
         ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
         : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
 
+
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -1009,10 +1035,14 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+
         // Construct the master and details data for Sales Return
         const master = {
-          InvoiceNo:
-            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo:
+          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
@@ -1042,8 +1072,9 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo:
-            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo:
+          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
@@ -1082,9 +1113,13 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
+
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1113,7 +1148,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode:
@@ -1148,9 +1184,13 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? generateInvoiceNumber() : newInvoiceNumber || invoiceNumber;
+
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1179,7 +1219,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode: 
@@ -4766,6 +4807,7 @@ const POS = () => {
               }
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
+              newInvoiceNumber={newInvoiceNumber}
               isExchangeClick={isExchangeClick}
               selectedRowData={selectedRowData}
               exchangeData={exchangeData}

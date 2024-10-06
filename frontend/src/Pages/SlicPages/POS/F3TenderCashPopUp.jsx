@@ -49,6 +49,7 @@ const F3TenderCashPopUp = ({
   selectedSalesReturnType,
   searchInvoiceNumber,
   handleZatcaInvoiceGenerator,
+  newInvoiceNumber,
 }) => {
 
   const { t, i18n } = useTranslation();
@@ -715,7 +716,7 @@ const F3TenderCashPopUp = ({
               CustomerName: invoiceHeaderData?.CustomerName,
               MobileNo: invoiceHeaderData?.MobileNo,
               Remarks: invoiceHeaderData?.Remarks,
-              PosRefNo: invoiceHeaderData?.InvoiceNo,
+              PosRefNo: newInvoiceNumber,
               ZATCAPaymentMode: paymentModes.code,
               TaxExemptionReason: examptReason?.name || "",
               SalesmanCode: slicUserData?.SalesmanCode,
@@ -1362,7 +1363,7 @@ const F3TenderCashPopUp = ({
             CustomerName: customerName,
             MobileNo: mobileNo,
             Remarks: remarks,
-            PosRefNo: invoiceNumber,
+            PosRefNo: newInvoiceNumber,
             ZATCAPaymentMode: paymentModes.code,
             TaxExemptionReason: examptReason?.name || "",
             SalesmanCode: slicUserData?.SalesmanCode,

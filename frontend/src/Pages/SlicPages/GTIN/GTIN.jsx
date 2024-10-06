@@ -143,17 +143,17 @@ const GTIN = () => {
       "<html><head><title>GTIN Number</title>" +
       "<style>" +
       "@page { size: 2in 1in; margin: 0; }" +
-      "body { font-size: 13px; line-height: 0.1;}" +
+      "body { font-size: 13px; line-height: 1.0; }" +
       "#header { display: flex; justify-content: start;}" +
       "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +
       "#itemcode { font-size: 8px; font-weight: 400; }" +
-      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -11px;}" +
+      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -15px;}" +
 
-      "#description { width: 100%; display: flex; flex-direction: column; justify-content: between; align-items: center; }" +
+      "#description { width: 100%; display: flex; flex-direction: column; justify-content: between; align-items: center; margin-top: -3px;}" +
       "#itemSerialNo { font-size: 13px; font-weight: 400;}" +
       "#gtin { font-size: 7px; font-weight: 500; margin-top: 5px;}" +
-      "#expiry { font-size: 8px; font-weight: 600; margin-top: 9px;}" +
-      "#batch { font-size: 9px; font-weight: 600; margin-top: 9px;}" +
+      "#expiry { font-size: 8px; font-weight: 600; margin-top: 4px;}" +
+      "#batch { font-size: 9px; font-weight: 600; margin-top: 4px;}" +
 
       "#Qrcodeserails { height: 100%; width: 100%;}" +
       "</style>" +
@@ -406,14 +406,14 @@ const GTIN = () => {
                     <div id="itemcode">
                       <div id="inside-BRCode">
                         <QRCodeSVG
-                          value={`${barcode?.GTIN} - ${barcode?.EnglishName} - ${barcode?.ProductSize}`}
+                          value={`${barcode?.ItemCode} - ${barcode?.EnglishName} - ${barcode?.ProductSize} - ${barcode?.GTIN}`}
                           width="65"
                           height="45"
                         />
                       </div>
 
                       <div id="description">
-                        <div id="gtin">Style# : {barcode?.EnglishName}</div>
+                        <div id="gtin">Style# : {barcode?.ItemCode} - {barcode?.EnglishName}</div>
                         <div id="expiry">Size# : {barcode?.ProductSize}</div>
                         <div id="batch">{barcode?.GTIN}</div>
                       </div>
