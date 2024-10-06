@@ -833,6 +833,7 @@ const POS = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [todayDate, setTodayDate] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [newInvoiceNumber, setNewInvoiceNumber] = useState("");
 
   // Function to generate invoice number based on date and time
   const generateInvoiceNumber = () => {
@@ -854,6 +855,7 @@ const POS = () => {
     };
 
     setInvoiceNumber(generateInvoiceNumber());
+    setNewInvoiceNumber(generateInvoiceNumber());
     updateTime();
     const intervalId = setInterval(updateTime, 1000);
 
@@ -948,6 +950,7 @@ const POS = () => {
         ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
         : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
 
+
       if (selectedSalesType === "DIRECT SALES INVOICE") {
         // Construct the master and details data for Sales Invoice
         const master = {
@@ -1009,10 +1012,14 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? generateInvoiceNumber() : invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber;
+
         // Construct the master and details data for Sales Return
         const master = {
-          InvoiceNo:
-            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo:
+          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
@@ -1042,8 +1049,9 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo:
-            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo:
+          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
@@ -1082,9 +1090,13 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? generateInvoiceNumber() : newInvoiceNumber || invoiceNumber;
+
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1113,7 +1125,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode:
@@ -1148,9 +1161,13 @@ const POS = () => {
         // Dynamically set the ItemSysID based on the first item in the dataToUseDSales array
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
+        const currentInvoiceNumber =
+        transactionCode.slice(-2) === "IN" ? generateInvoiceNumber() : newInvoiceNumber || invoiceNumber;
+
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1179,7 +1196,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: invoiceNumber,
+          // InvoiceNo: invoiceNumber,
+          InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode: 
