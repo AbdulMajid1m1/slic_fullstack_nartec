@@ -143,17 +143,17 @@ const GTIN = () => {
       "<html><head><title>GTIN Number</title>" +
       "<style>" +
       "@page { size: 2in 1in; margin: 0; }" +
-      "body { font-size: 13px; line-height: 1.0; }" +
+      "body { font-size: 12px; line-height: 1.0; }" +
       "#header { display: flex; justify-content: start;}" +
       "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +
       "#itemcode { font-size: 8px; font-weight: 400; }" +
-      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -15px;}" +
+      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -14px;}" +
 
       "#description { width: 100%; display: flex; flex-direction: column; justify-content: between; align-items: center; margin-top: -3px;}" +
       "#itemSerialNo { font-size: 13px; font-weight: 400;}" +
-      "#gtin { font-size: 7px; font-weight: 500; margin-top: 5px;}" +
-      "#expiry { font-size: 8px; font-weight: 600; margin-top: 4px;}" +
-      "#batch { font-size: 9px; font-weight: 600; margin-top: 4px;}" +
+      "#gtin { font-size: 8px; font-weight: 500; margin-top: 5px;}" +
+      "#expiry { font-size: 8px; font-weight: 600; margin-top: 3px;}" +
+      "#batch { font-size: 8px; font-weight: 600; margin-top: 3px;}" +
 
       "#Qrcodeserails { height: 100%; width: 100%;}" +
       "</style>" +
