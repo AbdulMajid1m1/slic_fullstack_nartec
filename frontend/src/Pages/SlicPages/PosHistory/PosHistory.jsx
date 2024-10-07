@@ -553,10 +553,7 @@ const PosHistory = () => {
                   <td colspan="4" style="text-align: left; padding-left: 20px;">
                     <div>
                       <span style="direction: ltr; text-align: left; display: block;">
-                        ${item.Remarks.substring(
-                          0,
-                          item.Remarks.length / 2
-                          )}
+                        ${item.Remarks}
                       </span>
                     </div>
                   </td>
