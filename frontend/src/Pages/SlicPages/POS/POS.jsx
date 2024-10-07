@@ -1185,7 +1185,7 @@ const POS = () => {
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
         const currentInvoiceNumber =
-        transactionCode.slice(-2) === "IN" ? generateInvoiceNumber() : newInvoiceNumber || invoiceNumber;
+        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
