@@ -1729,10 +1729,7 @@ const POS = () => {
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                            ${item.Description}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic}
@@ -1758,10 +1755,7 @@ const POS = () => {
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                            ${item.Description}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic}
@@ -1786,10 +1780,7 @@ const POS = () => {
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
                           <div>
                             <span style="direction: ltr; text-align: left; display: block;">
-                              ${item.Description.substring(
-                                0,
-                                item.Description.length / 2
-                              )}
+                              ${item.Description}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
                               ${item.DescriptionArabic}
@@ -2075,10 +2066,7 @@ const POS = () => {
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                            ${item.Description}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic}
@@ -2104,10 +2092,7 @@ const POS = () => {
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
                         <div>
                           <span style="direction: ltr; text-align: left; display: block;">
-                            ${item.Description.substring(
-                              0,
-                              item.Description.length / 2
-                            )}
+                            ${item.Description}
                           </span>
                           <span style="direction: rtl; text-align: right; display: block;">
                             ${item.DescriptionArabic}
@@ -2132,10 +2117,7 @@ const POS = () => {
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
                           <div>
                             <span style="direction: ltr; text-align: left; display: block;">
-                              ${item.Description.substring(
-                                0,
-                                item.Description.length / 2
-                              )}
+                              ${item.Description}
                             </span>
                             <span style="direction: rtl; text-align: right; display: block;">
                               ${item.DescriptionArabic}
@@ -2469,10 +2451,7 @@ const POS = () => {
                     <td colspan="4" style="text-align: left; padding-left: 20px;">
                       <div>
                         <span style="direction: ltr; text-align: left; display: block;">
-                          ${item.Description.substring(
-                            0,
-                            item.Description.length / 2
-                          )}
+                          ${item.Description}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
                           ${item.DescriptionArabic}
@@ -2727,10 +2706,7 @@ const POS = () => {
                     <td colspan="4" style="text-align: left; padding-left: 20px;">
                       <div>
                         <span style="direction: ltr; text-align: left; display: block;">
-                          ${item.Description.substring(
-                            0,
-                            item.Description.length / 2
-                          )}
+                          ${item.Description}
                         </span>
                         <span style="direction: rtl; text-align: right; display: block;">
                           ${item.DescriptionArabic}
