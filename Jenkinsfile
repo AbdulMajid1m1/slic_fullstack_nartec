@@ -7,25 +7,22 @@ pipeline {
                 script {
                     // Set environment variables based on the branch
                     if (env.BRANCH_NAME == 'dev') {
-                        // Use Jenkins environment variables for development
                         env.NODE_ENV = 'development'
                         env.DATABASE_URL = "${env.slic_dev_DATABASE_URL}"
                         env.PORT = "${env.slic_dev_PORT}"
                         env.JWT_SECRET = "${env.slic_dev_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicuat05api.oneerpcloud.com'
                     } else if (env.BRANCH_NAME == 'master') {
-                        // Use Jenkins environment variables for master
                         env.NODE_ENV = 'master'
                         env.DATABASE_URL = "${env.slic_prod_DATABASE_URL}"
                         env.PORT = "${env.slic_prod_PORT}"
                         env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
-                
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
                     echo "Environment set for ${env.BRANCH_NAME} branch"
-                    echo "DATABASE_URL=${env.DATABASE_URL}"  // Print the database URL to check if it's correctly set
+                    echo "DATABASE_URL=${env.DATABASE_URL}"
                 }
             }
         }
@@ -95,6 +92,14 @@ pipeline {
                         bat "pm2 stop ${appName} || exit 0"
                         bat "pm2 delete ${appName} || exit 0"
                     }
+                }
+            }
+        }
+
+        stage('Update Prisma Schema') {
+            steps {
+                dir('backend') {
+                    bat 'npx prisma generate'
                 }
             }
         }
