@@ -175,7 +175,7 @@ model tblPOSInvoiceMaster {
   AdjAmount              Float?
   DocNo                  String?   @db.NVarChar(255)
   PendingAmount          Float?
-  isReceiptCreated       Boolean?  @default(false) // New column for receipt status
+  isReceiptCreated       Boolean?  @default(false) // New column for receipt status.
   createdAt              DateTime? @default(now()) // Automatically set to current date/time
   updatedAt              DateTime? @updatedAt // Automatically updated on any data modification
 }
