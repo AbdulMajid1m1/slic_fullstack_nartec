@@ -4,7 +4,7 @@ const controller = require("../controllers/invoice");
 
 const router = express.Router();
 
-// Existing routes
+// Existing routes.
 router.get(
   "/v1/invoice-details",
   controller.getInvoiceDetailsByTransactionCode
