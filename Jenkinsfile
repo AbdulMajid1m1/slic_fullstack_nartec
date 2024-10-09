@@ -84,6 +84,13 @@ pipeline {
                 }
             }
         }
+        stage('Update Prisma Schema') {
+            steps {
+                dir('backend') {
+                    bat 'npx prisma generate'  
+                }
+            }
+        }
 
         stage('Stop Existing Backend') {
             steps {
