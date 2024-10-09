@@ -232,7 +232,7 @@ const F3TenderCashPopUp = ({
         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES INVOICE");
       }
       // Call insertInvoiceRecord with both documentNo and headSysId
-      insertInvoiceRecord(documentNo, headSysId);
+      // insertInvoiceRecord(documentNo, headSysId);
 
       // Call the Bank API after successful sales invoice
       if (paymentModes.code === "4" || paymentModes.code === "5") {
@@ -250,7 +250,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: totalAmountWithVat,
-              CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+              CustomerId: customerCode,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -278,13 +278,20 @@ const F3TenderCashPopUp = ({
         );
         console.log("Bank Receipt for Sales Invoice processed");
         const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+        const bankheadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
 
         // If bankDocumentNo is missing, show an error and stop
         if (!bankDocumentNo) {
           toast.error("Error in Bank API: Missing Document No");
           setLoading(false);
           return;
-        }
+        } 
+        
+        // Insert the invoice record using the bank's headSysId
+        insertInvoiceRecord(documentNo, headSysId, bankheadSysId);
+      } else {
+        // Insert the invoice record using the regular headSysId
+        insertInvoiceRecord(documentNo, headSysId);
       }
 
       showOtpPopup(res?.data);
@@ -642,7 +649,8 @@ const F3TenderCashPopUp = ({
   const handleSubmitDirectSalesReturn = async () => {
     setLoading(true);
     console.log("Direct Sales Return Data", exchangeData);
-  
+    // console.log(newInvoiceNumber);
+
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
         "Item-Code": item.SKU || item.ItemCode,
@@ -749,7 +757,7 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord for the EXIN response
-        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+        // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
   
         // Call handleDocumentNoUpdate for EXIN
         handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
@@ -778,12 +786,13 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord for the EXSR response
-        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+        // insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
   
         // Call handleDocumentNoUpdate for EXSR
         handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
   
         // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -836,15 +845,22 @@ const F3TenderCashPopUp = ({
           console.log("Bank Receipt processed for Exchange");
   
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+          bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
             return;
           }
+
+          // Save the IN API record after successful Bank API response
+          insertInvoiceRecord(exinDocumentNo, exinHeadSysId, bankHeadSysId, exinTransactionCode);
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
+  
+        // Save the EXSR API record after the Bank API response (if applicable)
+        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, bankHeadSysId, exsrTransactionCode);
   
         // Final steps
         showOtpPopup(exsrRes?.data);
@@ -874,7 +890,7 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord
-        insertInvoiceRecord(documentNo, headSysId, transactionCode);
+        // insertInvoiceRecord(documentNo, headSysId, transactionCode);
   
         // Call handleDocumentNoUpdate
         handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
@@ -883,6 +899,7 @@ const F3TenderCashPopUp = ({
         await handleArchiveInvoice();
   
         // Call Bank API if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
@@ -930,6 +947,7 @@ const F3TenderCashPopUp = ({
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+          bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
@@ -939,6 +957,9 @@ const F3TenderCashPopUp = ({
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
+
+        // Save the sales return record with the Bank reference ID if applicable
+        insertInvoiceRecord(documentNo, headSysId, bankHeadSysId, transactionCode);
   
         showOtpPopup(res?.data);
         handleCloseCreatePopup();
@@ -1398,7 +1419,7 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord for the EXIN response
-        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+        // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
   
         // Call handleDocumentNoUpdate for EXIN
         handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
@@ -1424,12 +1445,13 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord for the EXSR response
-        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+        // insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
   
         // Call handleDocumentNoUpdate for EXSR
         handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
   
         // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -1449,7 +1471,7 @@ const F3TenderCashPopUp = ({
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
                 //     : selectedCustomerCode?.CUSTOMERCODE,
-                CustomerCode: customerCode,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
@@ -1484,16 +1506,24 @@ const F3TenderCashPopUp = ({
   
           console.log("Bank Receipt processed for Exchange");
           const bankDocumentNo = bankApiResponse?.data?.message?.["Document No"];
+          bankHeadSysId = bankApiResponse?.data?.message?.["Ref-No/SysID"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
             return;
           }
+
+          // Save the IN API record after successful Bank API response
+          insertInvoiceRecord(exinDocumentNo, exinHeadSysId, bankHeadSysId, exinTransactionCode);
+
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
   
+        // Save the EXSR API record after the Bank API response (if applicable)
+        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, bankHeadSysId, exsrTransactionCode);
+
         showOtpPopup(exsrRes?.data);
         handleInvoiceGenerator();
         handleZatcaInvoiceGenerator();
@@ -1521,12 +1551,13 @@ const F3TenderCashPopUp = ({
         }
   
         // Call insertInvoiceRecord
-        insertInvoiceRecord(documentNo, headSysId, transactionCode);
+        // insertInvoiceRecord(documentNo, headSysId, transactionCode);
   
         // Call handleDocumentNoUpdate
         handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
   
         // Call Bank API if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
@@ -1545,7 +1576,7 @@ const F3TenderCashPopUp = ({
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
                 //     : selectedCustomerCode?.CUSTOMERCODE,
-                CustomerCode: customerCode,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
@@ -1574,6 +1605,7 @@ const F3TenderCashPopUp = ({
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
+          bankHeadSysId = bankApiRes?.data?.message?.["Ref-No/SysID"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
@@ -1584,6 +1616,9 @@ const F3TenderCashPopUp = ({
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
   
+        // Save the sales return record with the Bank reference ID if applicable
+        insertInvoiceRecord(documentNo, headSysId, bankHeadSysId, transactionCode);
+
         showOtpPopup(res?.data);
         handleInvoiceGenerator();
       }
@@ -1627,7 +1662,7 @@ const F3TenderCashPopUp = ({
   const validateForm = () => {
     if (
       (paymentModes.code === "4" || paymentModes.code === "5") &&
-      bankApprovedCode.length < 4
+      bankApprovedCode.length < 12
     ) {
       setIsPrintEnabled(false);
     } else {
@@ -1889,7 +1924,7 @@ const F3TenderCashPopUp = ({
                                     {t("Bank Approval Code")}
                                   </p>
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={bankApprovedCode}
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)
@@ -2080,7 +2115,7 @@ const F3TenderCashPopUp = ({
                                     {t("Bank Approval Code")}
                                   </p>
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={bankApprovedCode}
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)
@@ -2214,7 +2249,7 @@ const F3TenderCashPopUp = ({
                                     {t("Bank Approval Code")}
                                   </p>
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={bankApprovedCode}
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)
@@ -2316,7 +2351,7 @@ const F3TenderCashPopUp = ({
                                     {t("Bank Approval Code")}
                                   </p>
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={bankApprovedCode}
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)

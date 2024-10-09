@@ -13,6 +13,7 @@ const ConfirmTransactionPopUp = ({
   isVisible,
   setVisibility,
   onSelectionsSaved,
+  onPaymentModeChange,
 }) => {
   
   const { t, i18n } = useTranslation();
@@ -107,6 +108,8 @@ const ConfirmTransactionPopUp = ({
         "selectedPaymentModels",
         JSON.stringify(selectedPaymentMode)
       );
+
+      onPaymentModeChange(selectedPaymentMode);
     }
   };
 

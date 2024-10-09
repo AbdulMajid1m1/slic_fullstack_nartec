@@ -157,6 +157,12 @@ const POS = () => {
     // console.log("isButtonClick", isExchangeClick);
   };
 
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
+  const handlePaymentModeUpdate = (newPaymentMode) => {
+    setSelectedPaymentMode(newPaymentMode);
+    sessionStorage.setItem("selectedPaymentModels", JSON.stringify(newPaymentMode));
+  };
+
   useEffect(() => {
     const storedCompanyData = sessionStorage.getItem("selectedCompany");
     if (storedCompanyData) {
@@ -166,6 +172,7 @@ const POS = () => {
       }
     }
 
+    
     const storedLocationData = sessionStorage.getItem("selectedLocation");
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
@@ -174,7 +181,19 @@ const POS = () => {
       }
       // console.log(locationData)
     }
+    
+    const storedPaymentMode = sessionStorage.getItem("selectedPaymentModels");
+    if (storedPaymentMode) {
+      setSelectedPaymentMode(JSON.parse(storedPaymentMode));
+    }
+
   }, []);
+  
+  useEffect(() => {
+    if(selectedPaymentMode) {
+      console.log("selected mode", selectedPaymentMode)
+    }
+  },[selectedPaymentMode])
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
@@ -963,7 +982,7 @@ const POS = () => {
     }
   };
 
-  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId, transactionCode) => {
+  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId, bankHeadSysId, transactionCode) => {
     try {
       let invoiceAllData;
 
@@ -995,6 +1014,9 @@ const POS = () => {
           DocNo: newDocumentNo,
           PendingAmount: netWithVat,
           AdjAmount: netWithVat,
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
 
         const details = data.map((item, index) => ({
@@ -1064,6 +1086,9 @@ const POS = () => {
           DocNo: newDocumentNo,
           PendingAmount: amountToUse,
           AdjAmount: amountToUse,
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
 
         const details = dataToUse.map((item, index) => ({
@@ -1141,6 +1166,9 @@ const POS = () => {
           DocNo: newDocumentNo,
           PendingAmount: amountToUse,
           AdjAmount: amountToUse,
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -1212,6 +1240,9 @@ const POS = () => {
           DocNo: newDocumentNo,
           PendingAmount: amountToUse,
           AdjAmount: amountToUse,
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -3071,6 +3102,8 @@ const POS = () => {
     setNetWithVat(0);
     setTotalVat(0);
     setTotalAmountWithVat(0);
+
+    setInvoiceNumber(generateInvoiceNumber());
   }, [selectedSalesType]);
 
   // I checking the invoice number and customer code if customer code is found in this invoice number then input feild is prefilled
@@ -4852,6 +4885,7 @@ const POS = () => {
               isVisible={isConfirmTransactionPopupVisible}
               setVisibility={setIsConfirmTransactionPopupVisible}
               onSelectionsSaved={handleSelectionsSaved}
+              onPaymentModeChange={handlePaymentModeUpdate}
             />
           )}
 
