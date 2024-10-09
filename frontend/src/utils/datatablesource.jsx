@@ -690,16 +690,6 @@ export const customerCodesColumn = (t)=> [
 
 export const posHistoryInvoiceColumns = (t)=> [
   {
-    field: "Rec_Num",
-    headerName: t("Record Number"),
-    width: 150,
-  },
-  {
-    field: "TblSysNoID",
-    headerName: t("Table System ID"),
-    width: 150,
-  },
-  {
     field: "CustomerName",
     headerName: t("Customer Name"),
     width: 150,
@@ -772,6 +762,21 @@ export const posHistoryInvoiceColumns = (t)=> [
   {
     field: "MobileNo",
     headerName: t("Mobile No"),
+    width: 150,
+  },
+  {
+    field: "zatcaPayment_mode_id",
+    headerName: t("ZATCA Payment Mode ID"),
+    width: 120,
+  },
+  {
+    field: "zatcaPayment_mode_name",
+    headerName: t("ZATCA Payment Mode Name"),
+    width: 180,
+  },
+  {
+    field: "BRV_REF_NO",
+    headerName: t("BRV Reference No"),
     width: 150,
   },
   {
