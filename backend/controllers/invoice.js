@@ -711,6 +711,10 @@ const allowedMasterColumns = {
   AdjAmount: Joi.number(),
   DocNo: Joi.string(),
   PendingAmount: Joi.number(),
+  zatcaPayment_mode_id: Joi.string(),
+  zatcaPayment_mode_name: Joi.string(),
+  BRV_REF_NO: Joi.string(),
+
 };
 
 exports.getPOSInvoiceMaster = async (req, res) => {
