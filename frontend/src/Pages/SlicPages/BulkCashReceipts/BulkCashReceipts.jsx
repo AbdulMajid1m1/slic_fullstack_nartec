@@ -18,7 +18,7 @@ import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import { useTranslation } from "react-i18next";
 
-const PosHistory = () => {
+const PosBulkCashReceipts = () => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,9 +90,19 @@ const PosHistory = () => {
         `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
       );
       const posData = response?.data || [];
-      setData(posData);
 
-      calculateAmounts(posData);
+      // Filter the data to include only items with zatcaPayment_mode_id equal to 1
+      const filteredData = posData.filter(
+        (invoice) => invoice.zatcaPayment_mode_id === "1"
+      );
+      
+      if (filteredData.length === 0) {
+        // Show toast message if no data matches the filter condition
+        toast.info("No Cash transactions found. Showing cash transactions instead.");
+      }
+
+      setData(filteredData);
+      calculateAmounts(filteredData);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -699,7 +709,7 @@ const PosHistory = () => {
           >
             <DataTable
               data={data}
-              title={t("POS History")}
+              title={t("POS Bulk Cash Receipts")}
               columnsName={posHistoryInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
@@ -793,4 +803,4 @@ const PosHistory = () => {
   );
 };
 
-export default PosHistory;
+export default PosBulkCashReceipts;

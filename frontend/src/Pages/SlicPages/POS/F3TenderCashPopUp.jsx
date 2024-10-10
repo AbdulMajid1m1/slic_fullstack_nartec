@@ -845,7 +845,8 @@ const F3TenderCashPopUp = ({
           console.log("Bank Receipt processed for Exchange");
   
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-          bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+          // bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankRes?.data?.message?.["Document No"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
@@ -947,7 +948,8 @@ const F3TenderCashPopUp = ({
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-          bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+          // bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankRes?.data?.message?.["Document No"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
@@ -1506,7 +1508,8 @@ const F3TenderCashPopUp = ({
   
           console.log("Bank Receipt processed for Exchange");
           const bankDocumentNo = bankApiResponse?.data?.message?.["Document No"];
-          bankHeadSysId = bankApiResponse?.data?.message?.["Ref-No/SysID"];
+          // bankHeadSysId = bankApiResponse?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankApiResponse?.data?.message?.["Document No"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
@@ -1605,7 +1608,8 @@ const F3TenderCashPopUp = ({
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
-          bankHeadSysId = bankApiRes?.data?.message?.["Ref-No/SysID"];
+          // bankHeadSysId = bankApiRes?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankApiRes?.data?.message?.["Document No"];
   
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
