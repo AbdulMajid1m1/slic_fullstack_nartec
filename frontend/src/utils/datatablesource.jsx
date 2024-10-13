@@ -853,3 +853,98 @@ export const LanguageDataColumn = (t, i18n) => [
     width: 300,
   },
 ];
+
+
+
+export const posBulkCashreceiptInvoiceColumns = (t)=> [
+  {
+    field: "CustomerName",
+    headerName: t("Customer Name"),
+    width: 150,
+  },
+  {
+    field: "DeliveryLocationCode",
+    headerName: t("Delivery Location Code"),
+    width: 180,
+  },
+  {
+    field: "ItemSysID",
+    headerName: t("Item System ID"),
+    width: 150,
+  },
+  {
+    field: "InvoiceNo",
+    headerName: t("Invoice No"),
+    width: 180,
+  },
+  {
+    field: "DocNo",
+    headerName: t("Document No"),
+    width: 180,
+  },
+  {
+    field: "AdjAmount",
+    headerName: t("Adjustment Amount"),
+    width: 180,
+  },
+  {
+    field: "PendingAmount",
+    headerName: t("Pending Amount"),
+    width: 180,
+  },
+  {
+    field: "Head_SYS_ID",
+    headerName: t("Head System ID"),
+    width: 180,
+  },
+  {
+    field: "TransactionCode",
+    headerName: t("Transaction Code"),
+    width: 150,
+  },
+  {
+    field: "CustomerCode",
+    headerName: t("Customer Code"),
+    width: 180,
+  },
+  {
+    field: "SalesLocationCode",
+    headerName: t("Sales Location Code"),
+    width: 180,
+  },
+  {
+    field: "Remarks",
+    headerName: t("Remarks"),
+    width: 250,
+  },
+  {
+    field: "TransactionType",
+    headerName: t("Transaction Type"),
+    width: 150,
+  },
+  {
+    field: "UserID",
+    headerName: t("User ID"),
+    width: 150,
+  },
+  {
+    field: "MobileNo",
+    headerName: t("Mobile No"),
+    width: 150,
+  },
+  {
+    field: "zatcaPayment_mode_id",
+    headerName: t("ZATCA Payment Mode ID"),
+    width: 120,
+  },
+  {
+    field: "zatcaPayment_mode_name",
+    headerName: t("ZATCA Payment Mode Name"),
+    width: 180,
+  },
+  {
+    field: "TransactionDate",
+    headerName: t("Transaction Date"),
+    width: 200,
+  },
+];

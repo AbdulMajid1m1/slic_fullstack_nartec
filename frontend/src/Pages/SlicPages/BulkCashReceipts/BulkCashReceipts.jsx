@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import { posHistoryInvoiceColumns } from "../../../utils/datatablesource";
+import { posBulkCashreceiptInvoiceColumns, posHistoryInvoiceColumns } from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
@@ -32,6 +32,12 @@ const PosBulkCashReceipts = () => {
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+    setCutOfDate(formattedDate);
+  }, []);
 
   useEffect(() => {
     // slic login api token get
@@ -96,17 +102,17 @@ const PosBulkCashReceipts = () => {
       const posData = response?.data || [];
 
       // Filter the data to include only items where transactionCode ends with 'IN'
-      const filteredData = posData.filter(
-        (invoice) => invoice.TransactionCode.slice(-2) === "IN"
-      );
+      // const filteredData = posData.filter(
+      //   (invoice) => invoice.TransactionCode.slice(-2) === "IN"
+      // );
 
-      if (filteredData.length === 0) {
-        // Show toast message if no data matches the filter condition
-        toast.info("No transactions ending with 'IN' found.");
-      }
+      // if (filteredData.length === 0) {
+      //   // Show toast message if no data matches the filter condition
+      //   toast.info("No transactions ending with 'IN' found.");
+      // }
 
-      setData(filteredData);
-      calculateAmounts(filteredData);
+      setData(posData);
+      calculateAmounts(posData);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -718,7 +724,7 @@ const PosBulkCashReceipts = () => {
             <DataTable
               data={data}
               title={t("POS Bulk Cash Receipts")}
-              columnsName={posHistoryInvoiceColumns(t)}
+              columnsName={posBulkCashreceiptInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
