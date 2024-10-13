@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import { posHistoryInvoiceColumns } from "../../../utils/datatablesource";
+import { posBulkCashreceiptInvoiceColumns, posHistoryInvoiceColumns } from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
@@ -32,6 +32,12 @@ const PosBulkCashReceipts = () => {
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+    setCutOfDate(formattedDate);
+  }, []);
 
   useEffect(() => {
     // slic login api token get
@@ -718,7 +724,7 @@ const PosBulkCashReceipts = () => {
             <DataTable
               data={data}
               title={t("POS Bulk Cash Receipts")}
-              columnsName={posHistoryInvoiceColumns(t)}
+              columnsName={posBulkCashreceiptInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
