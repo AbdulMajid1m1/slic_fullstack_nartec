@@ -62,43 +62,47 @@ const PosBulkCashReceipts = () => {
   // console.log(slicUserData?.SalesmanCode);
 
  
-  const fetchCustomerCodes = async () => {
+  // const fetchCustomerCodes = async () => {
+  //   if (!cutOfDate) {
+  //     // toast.error("Please select a cutoff date");
+  //     return;
+  //   }
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await newRequest.get(
+  //       `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
+  //     );
+  //     const customerCodes = response?.data?.customerCodes || [];
+  //     console.log("history", customerCodes);
+  //     setInvoiceList(customerCodes);
+  //     setIsLoading(false);
+  //   } catch (err) {
+  //     setIsLoading(false);
+  //     toast.error(err?.response?.data?.message || "Something went Wrong");
+  //   }
+  // };
+
+  // Fetch POS Invoice Master based on selected customer code
+  const fetchPOSInvoiceMaster = async (customerCode) => {
     if (!cutOfDate) {
-      // toast.error("Please select a cutoff date");
       return;
     }
     setIsLoading(true);
     try {
       const response = await newRequest.get(
-        `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
-      );
-      const customerCodes = response?.data?.customerCodes || [];
-      console.log("history", customerCodes);
-      setInvoiceList(customerCodes);
-      setIsLoading(false);
-    } catch (err) {
-      setIsLoading(false);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
-
-  // Fetch POS Invoice Master based on selected customer code
-  const fetchPOSInvoiceMaster = async (customerCode) => {
-    setIsLoading(true);
-    try {
-      const response = await newRequest.get(
-        `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
+        // `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
+        `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1`
       );
       const posData = response?.data || [];
 
-      // Filter the data to include only items with zatcaPayment_mode_id equal to 1
+      // Filter the data to include only items where transactionCode ends with 'IN'
       const filteredData = posData.filter(
-        (invoice) => invoice.zatcaPayment_mode_id === "1"
+        (invoice) => invoice.TransactionCode.slice(-2) === "IN"
       );
-      
+
       if (filteredData.length === 0) {
         // Show toast message if no data matches the filter condition
-        toast.info("No Cash transactions found. Showing cash transactions instead.");
+        toast.info("No transactions ending with 'IN' found.");
       }
 
       setData(filteredData);
@@ -112,18 +116,22 @@ const PosBulkCashReceipts = () => {
     }
   };
 
-  const handleSelectAllInvoice = (event, value) => {
-    setSelectedInvoice(value || null);
-    console.log(value);
-    if (value) {
-      // Trigger POS Invoice Master API call based on selected customer code
-      fetchPOSInvoiceMaster(value);
-    }
-  };
-
   useEffect(() => {
-    fetchCustomerCodes();
-  }, [selectedLocation?.stockLocation, cutOfDate]);
+    fetchPOSInvoiceMaster();
+  },[cutOfDate])
+
+  // const handleSelectAllInvoice = (event, value) => {
+  //   setSelectedInvoice(value || null);
+  //   console.log(value);
+  //   if (value) {
+  //     // Trigger POS Invoice Master API call based on selected customer code
+  //     fetchPOSInvoiceMaster(value);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchCustomerCodes();
+  // }, [selectedLocation?.stockLocation, cutOfDate]);
 
   // Calculate amounts based on IN and SR transactions
   const calculateAmounts = (transactions) => {
@@ -224,7 +232,7 @@ const PosBulkCashReceipts = () => {
           res?.data?.message || "Receipt status updated successfully!"
         );
 
-        fetchCustomerCodes();
+        // fetchCustomerCodes();
         setSelectedInvoice([]);
         setTotalInvoiceAmount(0);
         setExchangeAmount(0);
@@ -635,7 +643,7 @@ const PosBulkCashReceipts = () => {
                   i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                <div className="flex flex-col w-full">
+                <div className="flex flex-col sm:w-[50%] w-full">
                   <label
                     className={`font-sans font-semibold text-sm text-secondary ${
                       i18n.language === "ar" ? "text-end" : "text-start"
@@ -651,7 +659,7 @@ const PosBulkCashReceipts = () => {
                   />
                 </div>
 
-                <div className="flex flex-col w-full">
+                {/* <div className="flex flex-col w-full">
                   <label
                     className={`font-sans font-semibold text-sm text-secondary ${
                       i18n.language === "ar" ? "text-end" : "text-start"
@@ -674,7 +682,7 @@ const PosBulkCashReceipts = () => {
                       />
                     )}
                   />
-                </div>
+                </div> */}
 
                 {/* <div className="flex justify-center items-center sm:w-[40%] w-full mt-4">
                   <Button
