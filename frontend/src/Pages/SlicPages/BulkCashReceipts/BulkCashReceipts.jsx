@@ -102,17 +102,17 @@ const PosBulkCashReceipts = () => {
       const posData = response?.data || [];
 
       // Filter the data to include only items where transactionCode ends with 'IN'
-      const filteredData = posData.filter(
-        (invoice) => invoice.TransactionCode.slice(-2) === "IN"
-      );
+      // const filteredData = posData.filter(
+      //   (invoice) => invoice.TransactionCode.slice(-2) === "IN"
+      // );
 
-      if (filteredData.length === 0) {
-        // Show toast message if no data matches the filter condition
-        toast.info("No transactions ending with 'IN' found.");
-      }
+      // if (filteredData.length === 0) {
+      //   // Show toast message if no data matches the filter condition
+      //   toast.info("No transactions ending with 'IN' found.");
+      // }
 
-      setData(filteredData);
-      calculateAmounts(filteredData);
+      setData(posData);
+      calculateAmounts(posData);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
