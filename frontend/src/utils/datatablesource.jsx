@@ -6,7 +6,7 @@ import { useGridApiContext } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 const QRCodeCell = (props) => {
-  const url = `https://gs1ksa.org/?gtin=${props.value}`;
+  const url = `${props.value}`;
   return <QRCode value={url} size={40} />;
 };
 
@@ -107,7 +107,7 @@ export const GtinColumn = (t)=> [
   {
     field: "sERIALnUMBER",
     headerName: t("Serial Number"),
-    renderCell: (params) => <QRCodeCell value={params.row.sERIALnUMBER} />,
+    renderCell: (params) => <QRCodeCell value={params.row.EnglishName} />,
     // width: 50, // Adjust this width as needed
   },
   {
