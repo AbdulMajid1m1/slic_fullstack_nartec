@@ -228,7 +228,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           Size
                         </label>
                         <input
-                          type="number"
+                          type="text"
                           id="startsize"
                           value={startSize}
                           onChange={(e) => setStartSize(e.target.value)}
