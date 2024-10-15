@@ -19,6 +19,8 @@ import html2pdf from "html2pdf.js";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 import { useTranslation } from "react-i18next";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const POS = () => {
   const { t, i18n } = useTranslation();
@@ -3133,33 +3135,36 @@ const POS = () => {
   }, [invoiceHeaderData]);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const handleMobileChange = (e) => {
-    const value = e.target.value;
-    setMobileNo(value);
+  const handleMobileChange = (value) => {
+    // Reset error message
+    setErrorMessage("");
 
-    // Validate if the mobile number is exactly 10 digits long
-    if (value.length === 10) {
-      setErrorMessage("");
-    } else if (value.length < 10 && value.length > 0) {
-      setErrorMessage("Mobile must be 10 digits long.");
-    } else {
-      setErrorMessage("");
+    // Check if the country code is for Saudi Arabia
+    if (value.startsWith("966")) {
+      // Check for mobile number (should start with '9665')
+      if (value.length > 1 && value[3] !== "5") {
+        setErrorMessage("Mobile number must start with 9665");
+      }
+
+      // Check for maximum length (12 digits including country code)
+      if (value.length > 12) {
+        setErrorMessage("Number must be a maximum of 12 digits");
+      }
     }
 
-    // if (value.length === 0 || value.startsWith("0")) {
-    //   setMobileNo(value);
+    // Set the mobile number
+    setMobileNo(value);
+    
+    // const value = e.target.value;
+    // setMobileNo(value);
 
-    //   // Validate if it's 10 digits long
-    //   if (value.length === 10) {
-    //     setErrorMessage(""); // Clear error if exactly 10 digits
-    //   } else if (value.length < 10 && value.length > 0) {
-    //     setErrorMessage("Mobile must be 10 digits long.");
-    //   } else {
-    //     setErrorMessage(""); // Clear the error for empty input
-    //   }
-    // }
-    // else {
-    //   setErrorMessage("Mobile must start with 0.");
+    // // Validate if the mobile number is exactly 10 digits long
+    // if (value.length === 10) {
+    //   setErrorMessage("");
+    // } else if (value.length < 10 && value.length > 0) {
+    //   setErrorMessage("Mobile must be 10 digits long.");
+    // } else {
+    //   setErrorMessage("");
     // }
   };
 
@@ -3767,16 +3772,42 @@ const POS = () => {
                 >
                   {t("Mobile")} *
                 </label>
-                <input
+                <div
+                  className={`w-full mt-1 p-1 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
+                    i18n.language === "ar" ? "text-end" : "text-start"
+                  }`}
+                >
+                  <PhoneInput
+                      international
+                      country={"sa"}
+                      defaultCountry={"sa"}
+                      value={mobileNo}
+                      onChange={handleMobileChange}
+                      inputProps={{
+                        id: "mobile",
+                        placeholder: "Mobile Number",
+                        autoComplete: "off",
+                      }}
+                      inputStyle={{
+                        backgroundColor: "#c6f6d5",
+                        color: "black",
+                        textAlign: i18n.language === "ar" ? "right" : "left",
+                        width: "100%",
+                        borderRadius: "0px",
+                        border: "none",
+                      }}
+                      required
+                    />
+                  </div>
+                {/* <input
                   type="number"
                   className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
                     i18n.language === "ar" ? "text-end" : "text-start"
                   }`}
                   placeholder={t("Mobile")}
                   value={mobileNo}
-                  // onChange={(e) => setMobileNo(e.target.value)}
                   onChange={handleMobileChange}
-                />
+                /> */}
               </div>
               {selectedSalesType === "DIRECT SALES RETURN" && (
                 <button
@@ -3985,7 +4016,7 @@ const POS = () => {
               />
             </div>
             {errorMessage && (
-              <p className="text-red-500 text-sm -mt-4">{errorMessage}</p>
+              <p className="text-red-500 text-sm -mt-6">{errorMessage}</p>
             )}
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
