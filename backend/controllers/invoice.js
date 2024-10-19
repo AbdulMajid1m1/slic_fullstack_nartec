@@ -863,7 +863,6 @@ const allowedMasterColumns = {
   zatcaPayment_mode_id: Joi.string(),
   zatcaPayment_mode_name: Joi.string(),
   BRV_REF_NO: Joi.string(),
-  
 };
 exports.getPOSInvoiceMaster = async (req, res) => {
   try {
@@ -875,7 +874,6 @@ exports.getPOSInvoiceMaster = async (req, res) => {
       filter: Joi.object().pattern(Joi.string(), Joi.any()),
       cutoffDate: Joi.date().optional(), // Add cutoffDate as optional
       isBatchIdNull: Joi.boolean().optional(), // Filter for batchId being null or not null
-      batchId: Joi.string().optional(), // Filter for specific batchId
     }).unknown(true);
 
     const { error, value } = columnsSchema.validate(req.query);
@@ -906,11 +904,11 @@ exports.getPOSInvoiceMaster = async (req, res) => {
       };
     }
 
-    // Handle filtering by batchId, ensuring it overrides isBatchIdNull if provided
-    if (value.batchId) {
-      filterConditions.batchId = value.batchId;
-    } else if (value.isBatchIdNull !== undefined) {
-      filterConditions.batchId = value.isBatchIdNull ? null : { not: null };
+    // Ensure batchId takes priority over isBatchIdNull
+    if (!value.filter.batchId) {
+      if (value.isBatchIdNull !== undefined) {
+        filterConditions.batchId = value.isBatchIdNull ? null : { not: null };
+      }
     }
 
     // Ensure that batchId is always selected in the response
@@ -926,7 +924,7 @@ exports.getPOSInvoiceMaster = async (req, res) => {
       where: filterConditions,
       select,
       orderBy: {
-        TransactionDate: 'desc',
+        TransactionDate: "desc",
       },
     });
 
@@ -936,8 +934,6 @@ exports.getPOSInvoiceMaster = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-
 
 exports.getPOSInvoiceMasterArchive = async (req, res) => {
   try {
