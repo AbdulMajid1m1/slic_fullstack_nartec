@@ -459,6 +459,7 @@ const updatePOSInvoiceBatchSchema = Joi.object({
   bulkCashDocNo: Joi.string().optional(),
   bulkCashRefNo: Joi.string().optional(),
   bankDepositNo: Joi.string().optional(),
+  isMatched: Joi.boolean().optional(),
 });
 
 exports.updatePOSInvoiceBatch = async (req, res, next) => {

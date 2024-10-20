@@ -188,6 +188,7 @@ model tblPOSInvoiceBatch {
   bulkCashRefNo       String                @db.NVarChar(255)
   bankDepositNo       String?               @db.NVarChar(255) // Nullable since it might be added later
   createdAt           DateTime              @default(now())
+  isMatched           Boolean               @default(false)
   updatedAt           DateTime              @updatedAt
   tblPOSInvoiceMaster tblPOSInvoiceMaster[]
 
