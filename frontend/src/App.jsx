@@ -24,6 +24,7 @@ import WhatsAppSetting from "./Pages/SlicPages/WhatsAppSetting/WhatsAppSetting.j
 import Products from "./Pages/SlicPages/Products/Products.jsx";
 import LaanguageChange from "./Pages/SlicPages/MasterData/LanguageChange/LaanguageChange.jsx"
 import PosBulkCashReceipts from "./Pages/SlicPages/BulkCashReceipts/BulkCashReceipts.jsx";
+import PosBulkMatchReceipts from "./Pages/SlicPages/MatchReceipts/MatchReceipts.jsx";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => {
                   <Route path="pos-history" element={<PosHistory />} />
                   <Route path="pos-archive" element={<PosArchive />} />
                   <Route path="pos-bulkcash-receipts" element={<PosBulkCashReceipts />} />
+                  <Route path="pos-bulkmatch-receipts" element={<PosBulkMatchReceipts />} />
                   <Route
                     path="purchase-order"
                     element={

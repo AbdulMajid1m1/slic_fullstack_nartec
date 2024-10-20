@@ -7,8 +7,15 @@
 // ... For Development ... //
 let mainUrl = "https://uat.slicapp.online";
 
+// ... For New ERPBase Url ... //
+let newERPBase = "https://slicuat05api.oneerpcloud.com/oneerpreport/api/postdata";
+
+
 // ... for PRODUCTION .... //
 // let mainUrl = 'https://slicapp.online';
 
 export const backendUrl = mainUrl;
 export const baseUrl = `${mainUrl}/api`;
+
+export const newERPBaseUrl = newERPBase;
+
