@@ -17,6 +17,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import { useTranslation } from "react-i18next";
+import { newERPBaseUrl } from "../../../utils/config";
 
 const PosBulkCashReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -67,27 +68,6 @@ const PosBulkCashReceipts = () => {
 
   // console.log(slicUserData?.SalesmanCode);
 
- 
-  // const fetchCustomerCodes = async () => {
-  //   if (!cutOfDate) {
-  //     // toast.error("Please select a cutoff date");
-  //     return;
-  //   }
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await newRequest.get(
-  //       `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
-  //     );
-  //     const customerCodes = response?.data?.customerCodes || [];
-  //     console.log("history", customerCodes);
-  //     setInvoiceList(customerCodes);
-  //     setIsLoading(false);
-  //   } catch (err) {
-  //     setIsLoading(false);
-  //     toast.error(err?.response?.data?.message || "Something went Wrong");
-  //   }
-  // };
-
   // Fetch POS Invoice Master based on selected customer code
   const fetchPOSInvoiceMaster = async (customerCode) => {
     if (!cutOfDate) {
@@ -97,19 +77,9 @@ const PosBulkCashReceipts = () => {
     try {
       const response = await newRequest.get(
         // `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
-        `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1`
+        `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1&isBatchIdNull=true`
       );
       const posData = response?.data || [];
-
-      // Filter the data to include only items where transactionCode ends with 'IN'
-      // const filteredData = posData.filter(
-      //   (invoice) => invoice.TransactionCode.slice(-2) === "IN"
-      // );
-
-      // if (filteredData.length === 0) {
-      //   // Show toast message if no data matches the filter condition
-      //   toast.info("No transactions ending with 'IN' found.");
-      // }
 
       setData(posData);
       calculateAmounts(posData);
@@ -126,18 +96,6 @@ const PosBulkCashReceipts = () => {
     fetchPOSInvoiceMaster();
   },[cutOfDate])
 
-  // const handleSelectAllInvoice = (event, value) => {
-  //   setSelectedInvoice(value || null);
-  //   console.log(value);
-  //   if (value) {
-  //     // Trigger POS Invoice Master API call based on selected customer code
-  //     fetchPOSInvoiceMaster(value);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchCustomerCodes();
-  // }, [selectedLocation?.stockLocation, cutOfDate]);
 
   // Calculate amounts based on IN and SR transactions
   const calculateAmounts = (transactions) => {
@@ -163,28 +121,48 @@ const PosBulkCashReceipts = () => {
   };
 
   const handleGenerateReceipt = async () => {
-    // Extract the necessary fields from the data
-    const mappedData = data.map((row) => ({
-      id: row.id,
-      AdjAmount: row.AdjAmount * 1.15,
-      DocNo: row.DocNo,
-      TransactionCode: row.TransactionCode,
-      PendingAmount: row.PendingAmount * 1.15,
-    }));
-    // console.log(mappedData)
+    let totalRemainingAmount = 0;
+    let details = [];
 
-    // console.log(
-    //   "Total Amount with vat",
-    //   totalInvoiceAmount,
-    //   "Exchange Amount",
-    //   exchangeAmount,
-    //   "Remaining Amount",
-    //   remainingAmount
-    // );
+    data.forEach((transaction) => {
+      if (transaction.TransactionCode.endsWith("IN")) {
+        details.push({
+          Dr_Cr_Flag: "C",
+          Company: "SLIC",
+          Sub_Acnt_Code: transaction.CustomerCode || "",
+          Receipt_Amt: (transaction.PendingAmount * 1.15).toFixed(2),
+        });
+      } else if (transaction.TransactionCode.endsWith("SR")) {
+        details.push({
+          Dr_Cr_Flag: "D",
+          Company: "SLIC",
+          Sub_Acnt_Code: transaction.CustomerCode || "",
+          Receipt_Amt: (transaction.PendingAmount * 1.15).toFixed(2),
+        });
+      }
+
+      // Calculate remaining amount
+      if (transaction.TransactionCode.endsWith("IN")) {
+        totalRemainingAmount += transaction.PendingAmount * 1.15;
+      } else if (transaction.TransactionCode.endsWith("SR")) {
+        totalRemainingAmount -= transaction.PendingAmount * 1.15;
+      }
+    });
+
+    // Add first object for total remaining amount
+    const remainingAmountObject = {
+      Dr_Cr_Flag: "D",
+      Company: "SLIC",
+      Sub_Acnt_Code: "",
+      Receipt_Amt: totalRemainingAmount.toFixed(2),
+    };
+
+    // Add this object to the start of the details array
+    details.unshift(remainingAmountObject);
+
     
     const requestData = {
-      _keyword_: "BANKRCPTBLKCSH",
-      _secret_key_: "2bf52be7-9f68-4d52-9523-53f7f267153b",
+      url: newERPBaseUrl,
       data: [
         {
           Company: "SLIC",
@@ -192,23 +170,15 @@ const PosBulkCashReceipts = () => {
           Department: "011",
           TransactionCode: "BRV",
           Division: "100",
-          // BankApproverCode: "CIUB0000266",
-          CashCardFlag: "CASH",
-          ReceiptAmt: totalInvoiceAmount,
-          CustomerId: selectedInvoice,
-          MatchingTransactions: mappedData.map((transaction) => ({
-            DocNo: transaction.DocNo,
-            TransactionCode: transaction.TransactionCode,
-            PendingAmount: transaction.PendingAmount,
-            AdjAmount: transaction.AdjAmount,
-          })),
+          Details: details,
         },
       ],
       COMPANY: "SLIC",
       USERID: slicUserData?.UserLoginID,
-      APICODE: "BANKRCPTVOUCHERBULK",
+      APICODE: "BULKBRVCASHAPI",
       LANG: "ENG",
     };
+    console.log(requestData)
 
     try {
       setLoading(true);
@@ -221,43 +191,52 @@ const PosBulkCashReceipts = () => {
           },
         }
       );
-      toast.success("Receipt generated successfully!");
+      // console.log(receiptResponse?.data)
 
-      const receiptIds = mappedData.map((item) => item.id);
-      const updateRequestData = {
-        ids: receiptIds,
+      // Check if the "Document No" property exists in the response
+      const responseData = receiptResponse?.data?.message;
+
+      if (!responseData?.["Ref-No/SysID"] || !responseData?.["Document No"]) {
+        throw new Error("Required fields missing in ERP response.");
+      }
+
+      // Show the success message from the first API call
+      toast.success(receiptResponse?.data?.message?.message || "Receipt generated successfully!");
+
+      // Extract the values of REF/Sys No and DocNo
+      const refNo = responseData["Ref-No/SysID"];
+      const docNo = responseData["Document No"];
+
+      // Prepare the data for the second API call
+      const invoiceMasterIds = data.map((transaction) => transaction.id);
+
+      const batchRequestData = {
+        bulkCashDocNo: docNo,
+        bulkCashRefNo: `${refNo}`,
+        invoiceMasterIds: invoiceMasterIds,
       };
-      // console.log(updateRequestData)
 
+      console.log(batchRequestData)
+
+      // Second API call: Create POS Invoice Batch
       try {
-        const res = await newRequest.post(
-          "/invoice/v1/updateReceiptStatus",
-          updateRequestData
-        );
-        toast.success(
-          res?.data?.message || "Receipt status updated successfully!"
+        const batchResponse = await newRequest.post(
+          "/invoice/v1/createPOSInvoiceBatch",
+          batchRequestData
         );
 
-        // fetchCustomerCodes();
-        setSelectedInvoice([]);
-        setTotalInvoiceAmount(0);
-        setExchangeAmount(0);
-        setRemainingAmount(0);
-        setData([]);
+        // Show the success message from the second API call
+        toast.success(batchResponse?.data?.message || "POS Invoice Batch created successfully!");
 
-      } catch (errIdsApi) {
-        toast.error(
-          errIdsApi?.response?.data?.error || "Failed to update receipt status."
-        );
+      } catch (batchErr) {
+        // Handle error from the second API
+        toast.error(batchErr?.response?.data?.message || "Failed to create POS Invoice Batch.");
       }
 
       setLoading(false);
     } catch (err) {
-      // Handle errors from the first API
       setLoading(false);
-      toast.error(
-        err?.response?.data?.message || "Failed to generate receipt."
-      );
+      toast.error(err?.response?.data?.message || "Failed to generate receipt.");
     }
   };
 
@@ -665,39 +644,15 @@ const PosBulkCashReceipts = () => {
                   />
                 </div>
 
-                {/* <div className="flex flex-col w-full">
-                  <label
-                    className={`font-sans font-semibold text-sm text-secondary ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
-                  >
-                    {t("Customer Codes")}
-                  </label>
-                  <Autocomplete
-                    id="customerCodeId"
-                    options={invoiceList}
-                    getOptionLabel={(option) => option || ""}
-                    onChange={handleSelectAllInvoice}
-                    value={selectedInvoice}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        className="bg-gray-50 border border-gray-300 text-black text-xs rounded-sm"
-                        placeholder={t("Select any Customer Code")}
-                        required
-                      />
-                    )}
-                  />
-                </div> */}
 
-                {/* <div className="flex justify-center items-center sm:w-[40%] w-full mt-4">
+                <div className="flex justify-center items-center sm:w-[20%] w-full mt-4">
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: selectedInvoice ? "#021F69" : "#d3d3d3",
-                      color: selectedInvoice ? "#ffffff" : "#a9a9a9",
+                      backgroundColor: "#1d2f90",
+                      color: "#ffffff",
                     }}
-                    disabled={!selectedInvoice || loading}
+                    disabled={loading}
                     className="w-full"
                     onClick={handleGenerateReceipt}
                     endIcon={
@@ -708,7 +663,7 @@ const PosBulkCashReceipts = () => {
                   >
                     {t("Generate Receipt")}
                   </Button>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>
