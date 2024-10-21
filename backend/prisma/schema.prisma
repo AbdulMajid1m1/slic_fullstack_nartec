@@ -151,33 +151,48 @@ model tblPOSInvoiceDetails {
 }
 
 model tblPOSInvoiceMaster {
-  Rec_Num                Float?    @map("Rec ##")
+  Rec_Num                Float?              @map("Rec ##")
   TblSysNoID             Float?
   SNo                    Float?
   zatcaPayment_mode_id   String?
   zatcaPayment_mode_name String?
   BRV_REF_NO             String?
-  DeliveryLocationCode   String?   @db.NVarChar(255)
-  ItemSysID              String?   @db.NVarChar(255)
-  InvoiceNo              String?   @db.NVarChar(255)
-  Head_SYS_ID            String?   @db.NVarChar(255)
-  TransactionCode        String?   @db.NVarChar(255)
-  CustomerCode           String?   @db.NVarChar(255)
-  SalesLocationCode      String?   @db.NVarChar(255)
-  Remarks                String?   @db.NVarChar(255)
-  TransactionType        String?   @db.NVarChar(255)
-  UserID                 String?   @db.NVarChar(255)
-  MobileNo               String?   @db.NVarChar(255)
-  TransactionDate        DateTime? @db.DateTime
-  id                     String    @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
-  VatNumber              String?   @db.VarChar(50)
-  CustomerName           String?   @db.NVarChar(255)
+  DeliveryLocationCode   String?             @db.NVarChar(255)
+  ItemSysID              String?             @db.NVarChar(255)
+  InvoiceNo              String?             @db.NVarChar(255)
+  Head_SYS_ID            String?             @db.NVarChar(255)
+  TransactionCode        String?             @db.NVarChar(255)
+  CustomerCode           String?             @db.NVarChar(255)
+  SalesLocationCode      String?             @db.NVarChar(255)
+  Remarks                String?             @db.NVarChar(255)
+  TransactionType        String?             @db.NVarChar(255)
+  UserID                 String?             @db.NVarChar(255)
+  MobileNo               String?             @db.NVarChar(255)
+  TransactionDate        DateTime?           @db.DateTime
+  id                     String              @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
+  VatNumber              String?             @db.VarChar(50)
+  CustomerName           String?             @db.NVarChar(255)
   AdjAmount              Float?
-  DocNo                  String?   @db.NVarChar(255)
+  DocNo                  String?             @db.NVarChar(255)
   PendingAmount          Float?
-  isReceiptCreated       Boolean?  @default(false) // New column for receipt status.
-  createdAt              DateTime? @default(now()) // Automatically set to current date/time
-  updatedAt              DateTime? @updatedAt // Automatically updated on any data modification
+  isReceiptCreated       Boolean?            @default(false) // New column for receipt status.
+  createdAt              DateTime?           @default(now()) // Automatically set to current date/time
+  updatedAt              DateTime?           @updatedAt // Automatically updated on any data modification
+  batch                  tblPOSInvoiceBatch? @relation(fields: [batchId], references: [id])
+  batchId                String?
+}
+
+model tblPOSInvoiceBatch {
+  id                  String                @id @default(uuid())
+  bulkCashDocNo       String                @db.NVarChar(255)
+  bulkCashRefNo       String                @db.NVarChar(255)
+  bankDepositNo       String?               @db.NVarChar(255) // Nullable since it might be added later
+  createdAt           DateTime              @default(now())
+  isMatched           Boolean               @default(false)
+  updatedAt           DateTime              @updatedAt
+  tblPOSInvoiceMaster tblPOSInvoiceMaster[]
+
+  @@map("tblPOSInvoiceBatch") // Mapping the table to the database name
 }
 
 model tblPOSInvoiceDetailsArchive {
@@ -231,6 +246,7 @@ model tblPOSInvoiceMasterArchive {
   AdjAmount              Float?
   DocNo                  String?   @db.NVarChar(255)
   PendingAmount          Float?
+  batchId                String?
   isReceiptCreated       Boolean?  @default(false) // New column for receipt status
   createdAt              DateTime? @default(now()) // Automatically set to current date/time
   updatedAt              DateTime? @updatedAt // Automatically updated on any data modification

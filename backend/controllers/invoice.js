@@ -357,6 +357,155 @@ exports.saveInvoice = async (req, res, next) => {
   }
 };
 
+exports.searchPOSInvoiceBatch = async (req, res, next) => {
+  try {
+    const { keyword } = req.query; // Get the search keyword from the query parameters
+
+    // Ensure that the keyword is provided
+    if (!keyword || keyword.trim() === "") {
+      return res.status(400).json({
+        message: "Keyword is required for searching.",
+      });
+    }
+
+    // Construct the search condition for Prisma query
+    const searchConditions = {
+      bulkCashDocNo: {
+        contains: keyword.toLowerCase(), // Case-insensitive search by converting keyword to lowercase
+      },
+    };
+
+    // Fetch the top 30 latest records that match the search conditions
+    const invoiceBatches = await prisma.tblPOSInvoiceBatch.findMany({
+      where: searchConditions,
+      orderBy: { createdAt: "desc" }, // Sort by createdAt in descending order
+      take: 30, // Limit to 30 records
+    });
+
+    // Return the found records
+    return res.json(invoiceBatches);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+// Define the schema for validation
+const createPOSInvoiceBatchSchema = Joi.object({
+  bulkCashDocNo: Joi.string().required(),
+  bulkCashRefNo: Joi.string().required(),
+  invoiceMasterIds: Joi.array().items(Joi.string().required()).required(), // Assuming IDs are strings (UUIDs)
+});
+
+exports.createPOSInvoiceBatch = async (req, res, next) => {
+  try {
+    // Validate the incoming request body using Joi
+    const { error, value } = createPOSInvoiceBatchSchema.validate(req.body);
+
+    if (error) {
+      const validationError = new CustomError(
+        `Validation error: ${error.details[0].message}`
+      );
+      validationError.statusCode = 400;
+      throw validationError;
+    }
+
+    const { bulkCashDocNo, bulkCashRefNo, invoiceMasterIds } = value;
+
+    // Create a new POSInvoiceBatch using Prisma
+    const newBatch = await prisma.tblPOSInvoiceBatch.create({
+      data: {
+        bulkCashDocNo,
+        bulkCashRefNo,
+      },
+    });
+
+    // Update POSInvoiceMaster records to set batchId
+    const updatePromises = invoiceMasterIds.map(async (id) => {
+      const invoiceMaster = await prisma.tblPOSInvoiceMaster.findUnique({
+        where: { id },
+      });
+
+      if (!invoiceMaster) {
+        const error = new CustomError(
+          `Invoice Master record with id ${id} not found`
+        );
+        error.statusCode = 404;
+        throw error;
+      }
+
+      // Set the batchId for each invoice master record using Prisma
+      return prisma.tblPOSInvoiceMaster.update({
+        where: { id },
+        data: { batchId: newBatch.id },
+      });
+    });
+
+    // Wait for all updates to complete
+    await Promise.all(updatePromises);
+
+    res.status(201).json({
+      success: true,
+      message: "POSInvoiceBatch created and batchId assigned to records",
+      data: newBatch,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Define the schema for validation
+const updatePOSInvoiceBatchSchema = Joi.object({
+  bulkCashDocNo: Joi.string().optional(),
+  bulkCashRefNo: Joi.string().optional(),
+  bankDepositNo: Joi.string().optional(),
+  isMatched: Joi.boolean().optional(),
+});
+
+exports.updatePOSInvoiceBatch = async (req, res, next) => {
+  try {
+    const { batchId } = req.params;
+
+    // Validate the request body using Joi
+    const { error, value } = updatePOSInvoiceBatchSchema.validate(req.body);
+
+    if (error) {
+      const validationError = new CustomError(
+        `Validation error: ${error.details[0].message}`
+      );
+      validationError.statusCode = 400;
+      throw validationError;
+    }
+
+    // Find the batch by its ID
+    const batch = await prisma.tblPOSInvoiceBatch.findUnique({
+      where: { id: batchId },
+    });
+
+    if (!batch) {
+      const error = new CustomError(
+        `POSInvoiceBatch with id ${batchId} not found`
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Update the batch using Prisma
+    const updatedBatch = await prisma.tblPOSInvoiceBatch.update({
+      where: { id: batchId },
+      data: value, // Joi-validated body contains only the fields to update
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "POSInvoiceBatch updated successfully",
+      data: updatedBatch,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getAllMaters = async (req, res, next) => {
   try {
     const allInvoices = await POSInvoiceMaster.getAllInvoiceDetails();
@@ -548,9 +697,10 @@ exports.archiveInvoice = async (req, res, next) => {
     const { id: masterId, ...invoiceMasterDataWithoutId } = invoiceMaster;
 
     // Check if the archive record exists
-    const existingArchiveRecord = await prisma.tblPOSInvoiceMasterArchive.findFirst({
-      where: { InvoiceNo: invoiceNo },
-    });
+    const existingArchiveRecord =
+      await prisma.tblPOSInvoiceMasterArchive.findFirst({
+        where: { InvoiceNo: invoiceNo },
+      });
 
     if (existingArchiveRecord) {
       // Update existing archive record
@@ -594,12 +744,13 @@ exports.archiveInvoice = async (req, res, next) => {
       totalReturnAmount += returnAmount;
 
       // Check if the item is already in the archive
-      const existingDetailArchiveRecord = await prisma.tblPOSInvoiceDetailsArchive.findFirst({
-        where: {
-          InvoiceNo: detailItem.InvoiceNo,
-          ItemSysID: detailItem.ItemSysID,
-        },
-      });
+      const existingDetailArchiveRecord =
+        await prisma.tblPOSInvoiceDetailsArchive.findFirst({
+          where: {
+            InvoiceNo: detailItem.InvoiceNo,
+            ItemSysID: detailItem.ItemSysID,
+          },
+        });
 
       if (existingDetailArchiveRecord) {
         // Update the existing archive record by increasing the quantity
@@ -685,7 +836,6 @@ exports.archiveInvoice = async (req, res, next) => {
   }
 };
 
-
 const allowedMasterColumns = {
   Rec_Num: Joi.number(),
   TblSysNoID: Joi.number(),
@@ -714,17 +864,17 @@ const allowedMasterColumns = {
   zatcaPayment_mode_id: Joi.string(),
   zatcaPayment_mode_name: Joi.string(),
   BRV_REF_NO: Joi.string(),
-
 };
-
 exports.getPOSInvoiceMaster = async (req, res) => {
   try {
+    // Define the schema for query validation
     const columnsSchema = Joi.object({
       columns: Joi.array().items(
         Joi.string().valid(...Object.keys(allowedMasterColumns))
       ),
       filter: Joi.object().pattern(Joi.string(), Joi.any()),
       cutoffDate: Joi.date().optional(), // Add cutoffDate as optional
+      isBatchIdNull: Joi.boolean().optional(), // Filter for batchId being null or not null
     }).unknown(true);
 
     const { error, value } = columnsSchema.validate(req.query);
@@ -755,10 +905,21 @@ exports.getPOSInvoiceMaster = async (req, res) => {
       };
     }
 
+    // Ensure batchId takes priority over isBatchIdNull
+    if (!value.filter.batchId) {
+      if (value.isBatchIdNull !== undefined) {
+        filterConditions.batchId = value.isBatchIdNull ? null : { not: null };
+      }
+    }
+
+    // Ensure that batchId is always selected in the response
     const select = selectedColumns.reduce((obj, col) => {
       obj[col] = true;
       return obj;
     }, {});
+
+    // Always include batchId in the response
+    select.batchId = true;
 
     const invoices = await prisma.tblPOSInvoiceMaster.findMany({
       where: filterConditions,
