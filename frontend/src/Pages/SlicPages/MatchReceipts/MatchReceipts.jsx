@@ -629,7 +629,7 @@ const PosBulkMatchReceipts = () => {
             const secondResponse = await newRequest.put(
               `/invoice/v1/updatePOSInvoiceBatch/${selectedMatchReceipts?.id}`,
               {
-                isMatched: selectedMatchReceipts?.isMatched,
+                isMatched: true,
               }
             );
             // Display message from the second API response
