@@ -602,8 +602,10 @@ const PosBulkMatchReceipts = () => {
                 DocNo: row?.DocNo,        
                 TransactionCode: row?.TransactionCode,      
                 CustCode: row?.CustomerCode,         
-                PendingAmount: `${row?.PendingAmount}`,  // Convert to string
-                AdjAmount: `${row?.AdjAmount}`          // Convert to string
+                // PendingAmount: `${row?.PendingAmount}`,  // Convert to string
+                // AdjAmount: `${row?.AdjAmount}`          // Convert to string
+                PendingAmount: `${(row?.PendingAmount * 1.15).toFixed(2)}`,
+                AdjAmount: `${(row?.AdjAmount * 1.15).toFixed(2)}`
               }))
             }
           ],
