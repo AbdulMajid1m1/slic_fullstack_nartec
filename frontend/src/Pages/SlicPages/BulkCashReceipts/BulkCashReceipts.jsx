@@ -649,10 +649,11 @@ const PosBulkCashReceipts = () => {
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: "#1d2f90",
+                      backgroundColor: loading || data.length === 0 ? "#9ca3af" : "#1d2f90",
                       color: "#ffffff",
                     }}
-                    disabled={loading}
+                    disabled={loading || data.length === 0}
+                    // disabled={loading}
                     className="w-full"
                     onClick={handleGenerateReceipt}
                     endIcon={
