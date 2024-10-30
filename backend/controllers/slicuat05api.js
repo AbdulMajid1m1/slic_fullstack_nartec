@@ -91,11 +91,11 @@
 //   }
 // };
 
-const axios = require("axios");
-const { SLIC_ERP_URL } = require("../config/envConfigs");
+const axios = require('axios');
+const { SLIC_ERP_URL } = require('../config/envConfigs');
 
 exports.slicLogin = async (req, res) => {
-  const url = SLIC_ERP_URL + "/oneerpauth/api/login";
+  const url = SLIC_ERP_URL + '/oneerpauth/api/login';
   const { apiKey } = req.body;
 
   const data = {
@@ -103,39 +103,37 @@ exports.slicLogin = async (req, res) => {
   };
 
   const headers = {
-    "Content-Type": "application/json",
-    "X-tenanttype": "live",
+    'Content-Type': 'application/json',
+    'X-tenanttype': 'live',
   };
 
   try {
     const response = await axios.post(url, data, { headers });
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error verifying API key:", error);
+    console.error('Error verifying API key:', error);
     if (error.response) {
       // Return the error response from the third-party server
       return res.status(error.response.status).json(error.response.data);
     }
     // Return a generic error if no response is available
-    res.status(500).json({ message: "Unexpected error" });
+    res.status(500).json({ message: 'Unexpected error' });
   }
 };
 
 exports.slicGetApi = async (req, res) => {
-  const url = SLIC_ERP_URL + "/oneerpreport/api/getapi";
+  const url = SLIC_ERP_URL + '/oneerpreport/api/getapi';
   const { authorization } = req.headers;
   const requestBody = req.body;
 
-  if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "Authorization token is missing or invalid" });
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authorization token is missing or invalid' });
   }
 
-  const token = authorization.split(" ")[1];
+  const token = authorization.split(' ')[1];
 
   const headers = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
@@ -143,30 +141,35 @@ exports.slicGetApi = async (req, res) => {
     const response = await axios.post(url, requestBody, { headers });
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error calling API:", error);
+    console.error('Error calling API:', error);
     if (error.response) {
       // Return the error response from the third-party server
       return res.status(error.response.status).json(error.response.data);
     }
     // Return a generic error if no response is available
-    res.status(500).json({ message: "Unexpected error" });
+    res.status(500).json({ message: 'Unexpected error' });
   }
 };
 
 exports.slicPostData = async (req, res) => {
-  const url = SLIC_ERP_URL + "/oneerpreport/api/postdata";
-  const { authorization } = req.headers;
+  let url;
 
-  if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "Authorization token is missing or invalid" });
+  if (req.body.url) {
+    url = req.body.url;
+  } else {
+    url = SLIC_ERP_URL + '/oneerpreport/api/postdata';
   }
 
-  const token = authorization.split(" ")[1];
+  const { authorization } = req.headers;
+
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authorization token is missing or invalid' });
+  }
+
+  const token = authorization.split(' ')[1];
 
   const headers = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
@@ -174,12 +177,12 @@ exports.slicPostData = async (req, res) => {
     const response = await axios.post(url, req.body, { headers });
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error calling API:", error);
+    console.error('Error calling API:', error);
     if (error.response) {
       // Return the error response from the third-party server
       return res.status(error.response.status).json(error.response.data);
     }
     // Return a generic error if no response is available
-    res.status(500).json({ message: "Unexpected error" });
+    res.status(500).json({ message: 'Unexpected error' });
   }
 };
