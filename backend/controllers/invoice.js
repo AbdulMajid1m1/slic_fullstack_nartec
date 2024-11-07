@@ -357,6 +357,83 @@ exports.saveInvoice = async (req, res, next) => {
   }
 };
 
+
+const allowedBatchColumns = {
+  id: Joi.string(),
+  bulkCashDocNo: Joi.string(),
+  bulkCashRefNo: Joi.string(),
+  bankDepositNo: Joi.string().allow(null),
+  createdAt: Joi.date(),
+  isMatched: Joi.boolean(),
+  updatedAt: Joi.date(),
+};
+
+exports.getPOSInvoiceBatch = async (req, res) => {
+  try {
+    // Define the schema for query validation
+    const columnsSchema = Joi.object({
+      columns: Joi.array().items(
+        Joi.string().valid(...Object.keys(allowedBatchColumns))
+      ),
+      filter: Joi.object().pattern(Joi.string(), Joi.any()),
+      cutoffDate: Joi.date().optional(), // Add cutoffDate as optional
+      isMatched: Joi.boolean().optional(), // Filter for matched/unmatched records
+    }).unknown(true);
+
+    // Validate query parameters
+    const { error, value } = columnsSchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid query parameter: ${error.details[0].message}`,
+      });
+    }
+
+    // Columns to select
+    const selectedColumns =
+      value.columns && value.columns.length > 0
+        ? value.columns
+        : Object.keys(allowedBatchColumns);
+
+    const filterConditions = value.filter || {};
+
+    // Convert cutoffDate to a valid filter condition if provided
+    if (value.cutoffDate) {
+      filterConditions.createdAt = {
+        gt: new Date(value.cutoffDate), // Fetch records created after the cutoff date
+      };
+    }
+
+    // Apply the isMatched filter if provided
+    if (value.isMatched !== undefined) {
+      filterConditions.isMatched = value.isMatched;
+    }
+
+    // Construct the select object to dynamically pick columns
+    const select = selectedColumns.reduce((obj, col) => {
+      obj[col] = true;
+      return obj;
+    }, {});
+
+    // Always include the `id` column
+    select.id = true;
+
+    // Fetch the data from the database
+    const invoiceBatches = await prisma.tblPOSInvoiceBatch.findMany({
+      where: filterConditions,
+      select,
+      orderBy: { createdAt: "desc" },
+      take: 30, // Limit to 30 records or customize as needed
+    });
+
+    // Return the response
+    return res.json(invoiceBatches);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 exports.searchPOSInvoiceBatch = async (req, res, next) => {
   try {
     const { keyword } = req.query; // Get the search keyword from the query parameters
@@ -935,6 +1012,7 @@ exports.getPOSInvoiceMaster = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.getPOSInvoiceMasterArchive = async (req, res) => {
   try {

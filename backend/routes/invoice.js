@@ -16,6 +16,8 @@ router.put("/v1/update-invoice-temp", controller.updateInvoiceTemp);
 router.get("/v1/invoices", controller.getInvoicesByMobileNo);
 router.get("/v1/searchPOSInvoiceBatch", controller.searchPOSInvoiceBatch);
 
+router.get("/v1/getPOSInvoiceBatch", controller.getPOSInvoiceBatch);
+
 // * Pass Invoice no as query and user will get headers (master) & Line items (Details)
 router.get("/v1/headers-and-line-items", controller.invoiceHeadersAndLineItems);
 
