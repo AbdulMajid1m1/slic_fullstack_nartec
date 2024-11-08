@@ -26,6 +26,11 @@ router.post("/v1/saveInvoice", controller.saveInvoice);
 router.post("/v1/createPOSInvoiceBatch", controller.createPOSInvoiceBatch);
 router.put("/v1/updatePOSInvoiceBatch/:batchId", controller.updatePOSInvoiceBatch);
 
+// Error Logs
+router.post("/v1/createErrorLogs", controller.createErrorLogs);
+
+router.get("/v1/getErrorLogs", controller.getErrorLogs);
+
 // * Get all invoice details
 router.get("/v1/masters", controller.getAllMaters);
 

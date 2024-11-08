@@ -357,7 +357,6 @@ exports.saveInvoice = async (req, res, next) => {
   }
 };
 
-
 const allowedBatchColumns = {
   id: Joi.string(),
   bulkCashDocNo: Joi.string(),
@@ -432,7 +431,6 @@ exports.getPOSInvoiceBatch = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 exports.searchPOSInvoiceBatch = async (req, res, next) => {
   try {
@@ -528,6 +526,75 @@ exports.createPOSInvoiceBatch = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+const errorLogSchema = Joi.object({
+  inDocumentNo: Joi.string().optional(),
+  inRefSysId: Joi.string().optional(),
+  srDocumentNo: Joi.string().optional(),
+  srRefSysId: Joi.string().optional(),
+  transactionType: Joi.string().optional(),
+
+});
+
+exports.createErrorLogs = async (req, res, next) => {
+  try {
+    // Validate the request body
+    const { error, value } = errorLogSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: `Validation error: ${error.details[0].message}`,
+      });
+    }
+
+    // Create the error log using Prisma
+    const newErrorLog = await prisma.errorLog.create({
+      data: {
+        inDocumentNo: value.inDocumentNo,
+        inRefSysId: value.inRefSysId,
+        srDocumentNo: value.srDocumentNo,
+        srRefSysId: value.srRefSysId,
+        transactionType: value.transactionType,
+       
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Error log created successfully",
+      data: newErrorLog,
+    });
+  } catch (err) {
+    console.error("Error creating error log:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getErrorLogs = async (req, res, next) => {
+  try {
+    const { inDocumentNo, srDocumentNo, transactionType } = req.query;
+
+    // Build the filter conditions based on query parameters
+    const filterConditions = {};
+    if (inDocumentNo) filterConditions.inDocumentNo = inDocumentNo;
+    if (srDocumentNo) filterConditions.srDocumentNo = srDocumentNo;
+    if (transactionType) filterConditions.transactionType = transactionType;
+
+    // Fetch the error logs using Prisma
+    const errorLogs = await prisma.errorLog.findMany({
+      where: filterConditions,
+      orderBy: { createdAt: "desc" },
+      take: 30, // Limit to 30 records
+    });
+
+    return res.json({
+      success: true,
+      data: errorLogs,
+    });
+  } catch (err) {
+    console.error("Error fetching error logs:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -1012,7 +1079,6 @@ exports.getPOSInvoiceMaster = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 exports.getPOSInvoiceMasterArchive = async (req, res) => {
   try {
