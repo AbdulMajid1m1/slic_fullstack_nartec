@@ -286,7 +286,7 @@ function SideNav({ children }) {
                                     className="w-10 h-10 object-cover"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    Match Receipts
+                                    Matching Receipts
                                   </span>
                                 </div>
                               </Link>
@@ -303,7 +303,7 @@ function SideNav({ children }) {
                                     className="w-10 h-10 object-cover"
                                   />
                                   <span className="text-secondary font-medium text-lg">
-                                    BRV Receipts
+                                    Matched Receipts
                                   </span>
                                 </div>
                               </Link>
@@ -311,6 +311,37 @@ function SideNav({ children }) {
                           </ul>
                         </div>
                       )}
+                    </li>
+                    <li className="mt-3">
+                      <Link
+                        to="/pos-error-logs"
+                        className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${
+                          i18n.language === "ar"
+                            ? "pr-3 pl-4 justify-end"
+                            : "pl-3 pr-4 justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex justify-center items-center gap-3 ${
+                            i18n.language === "ar"
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <img
+                            src={userprofile}
+                            alt="logo"
+                            className="w-10 h-10 object-cover"
+                          />
+                          <span className={`text-secondary font-medium text-lg  ${
+                          i18n.language === "ar"
+                            ? "text-end"
+                            : "text-start"
+                        }`}>
+                            {t("POS Error Logs")}
+                          </span>
+                        </div>
+                      </Link>
                     </li>
                     <li className="mt-3">
                       <Link

@@ -26,6 +26,7 @@ import LaanguageChange from "./Pages/SlicPages/MasterData/LanguageChange/Laangua
 import PosBulkCashReceipts from "./Pages/SlicPages/BulkCashReceipts/BulkCashReceipts.jsx";
 import PosBulkMatchReceipts from "./Pages/SlicPages/MatchReceipts/MatchReceipts.jsx";
 import PosBrvMatchedReceipts from "./Pages/SlicPages/BrvMatchedReceipts/BrvMatchedReceipts.jsx";
+import PosErrorLogs from "./Pages/SlicPages/PosErrorLogs/PosErrorLogs.jsx";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const App = () => {
                   <Route path="pos-bulkcash-receipts" element={<PosBulkCashReceipts />} />
                   <Route path="pos-bulkmatch-receipts" element={<PosBulkMatchReceipts />} />
                   <Route path="pos-Matched-receipts" element={<PosBrvMatchedReceipts />} />
+                  <Route path="pos-error-logs" element={<PosErrorLogs />} />
                   <Route
                     path="purchase-order"
                     element={

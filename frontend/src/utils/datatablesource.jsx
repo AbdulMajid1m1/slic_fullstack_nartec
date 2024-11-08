@@ -948,3 +948,37 @@ export const posBulkCashreceiptInvoiceColumns = (t)=> [
     width: 200,
   },
 ];
+
+
+
+export const posErrorLogsColumn =(t)=> [
+  {
+    field: "inDocumentNo",
+    headerName: t("In Document No"),
+    width: 180,
+  },
+  {
+    field: "inRefSysId",
+    headerName: t("In RefSys Id"),
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "srDocumentNo",
+    headerName: t("SR DocumentNo"),
+    width: 180,
+  },
+  {
+    field: "srRefSysId",
+    headerName: t("SR RefSysId"),
+    width: 180,
+  },
+  {
+    field: "transactionType",
+    headerName: t("Transaction Type"),
+    width: 180,
+  },
+  
+
+
+]

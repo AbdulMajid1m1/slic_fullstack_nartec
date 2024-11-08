@@ -2291,7 +2291,11 @@ const POS = () => {
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
     // Generate QR code data URL
-    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    // const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    const qrCodeDataURL = await QRCode.toDataURL(`${
+      selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+      ? invoiceNumber
+      : searchInvoiceNumber}`);
 
     const qrCodeDatazatcaExchange = await QRCode.toDataURL(`${qrCodeData}`);
 
@@ -2470,7 +2474,10 @@ const POS = () => {
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+                  ? invoiceNumber
+                  : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -2725,7 +2732,10 @@ const POS = () => {
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+                  ? invoiceNumber
+                  : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">

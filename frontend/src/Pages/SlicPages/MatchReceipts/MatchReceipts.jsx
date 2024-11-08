@@ -6,13 +6,12 @@ import DataTable from "../../../components/Datatable/Datatable";
 import EditIcon from "@mui/icons-material/Edit";
 import { useTranslation } from "react-i18next";
 import newRequest from "../../../utils/userRequest";
-import { Autocomplete, Button, CircularProgress, debounce, TextField } from "@mui/material";
+import { Autocomplete, Button, CircularProgress, TextField } from "@mui/material";
 import { toast } from "react-toastify";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import AddBankDepositNoPopUp from "./AddBankDepositNoPopUp";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
-import axios from "axios";
 import { newERPBaseUrl } from "../../../utils/config";
 
 const PosBulkMatchReceipts = () => {
@@ -20,7 +19,6 @@ const PosBulkMatchReceipts = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [matchingTransactionLoader, setMatchingTransactionLaoder] = useState(false);
-  const navigate = useNavigate();
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [totalInvoiceAmount, setTotalInvoiceAmount] = useState(0);
   const [exchangeAmount, setExchangeAmount] = useState(0);
@@ -56,21 +54,17 @@ const PosBulkMatchReceipts = () => {
   // console.log(slicUserData?.SalesmanCode);
 
 
-  const [isSubmitClicked, setIsSubmitClicked] = useState(false);
   const [selectedMatchReceipts, setSelectedMatchReceipts] = useState(null);
-  const [isAutocompleteFilled, setIsAutocompleteFilled] = useState(false);
-  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const [matchReceiptsList, setMatchReceiptsList] = useState([]);
   const [buttonEnabled, setButtonEnabled] = useState(false);
   const [matchingButtonEnabled, setMatchingButtonEnabled] = useState(false); // For "Matching Transaction" button
   const [matchingButtonText, setMatchingButtonText] = useState("Matching Transaction");
-  const abortControllerRef = React.useRef(null);
+ 
 
-  const handleGPCAutoCompleteChange = (event, value) => {
+  const handleSelectedBrvReceipts = (event, value) => {
     console.log(value);
     setSelectedMatchReceipts(value);
-    
+
     // Update "Add Bank Deposit Number" button
     setButtonEnabled(value !== null);
 
@@ -91,70 +85,25 @@ const PosBulkMatchReceipts = () => {
     }
   };
 
-  // Use debounce to wrap the handleAutoCompleteInputChange function
-  const debouncedHandleAutoCompleteInputChange = debounce(
-    async (event, newInputValue, reason) => {
-      // console.log(reason);
-      setIsSubmitClicked(false);
-      if (reason === "reset" || reason === "clear") {
-        setMatchReceiptsList([]); // Clear the data list if there is no input
-        return; // Do not perform search if the input is cleared or an option is selected
-      }
-      if (reason === "option") {
-        return; // Do not perform search if the option is selected
-      }
+  const handleFetchAllBrvReceipts = async () => {
+    try {
+        const response = await newRequest.get(`/invoice/v1/getPOSInvoiceBatch?isMatched=true`);
+        console.log(response.data);
+        const data = response.data;
+        const name = data.map((receipt) => ({
+          id: receipt?.id,
+          bulkCashDocNo: receipt.bulkCashDocNo,
+          bulkCashRefNo: receipt.bulkCashRefNo
+      }));
+      setMatchReceiptsList(name)
+    } catch (error) {
+        console.log(error);
+    }
+  };
 
-      if (!newInputValue || newInputValue.trim() === "") {
-        // perform operation when input is cleared
-        setMatchReceiptsList([]);
-        setButtonEnabled(false);
-        return;
-      }
-
-      // console.log(newInputValue);
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort(); // Abort previous request
-      }
-      abortControllerRef.current = new AbortController(); // Create a new controller for the new request
-
-      try {
-        setAutocompleteLoading(true);
-        setOpen(true);
-
-        const res = await newRequest.get(
-          `/invoice/v1/searchPOSInvoiceBatch?keyword=${newInputValue}`,
-          {
-            signal: abortControllerRef.current.signal,
-          }
-        );
-        console.log(res);
-
-        const crs = res?.data?.map((item) => {
-          return {
-            ...item, // Spread all existing properties of the item
-            bulkCashDocNo: item.bulkCashDocNo,
-            bankDepositNo: item.bankDepositNo,
-            bulkCashRefNo: item.bulkCashRefNo,
-          };
-        });
-
-        console.log(crs)
-        setMatchReceiptsList(crs);
-      
-        setOpen(true);
-        setAutocompleteLoading(false);
-
-        // fetchData();
-      } catch (error) {
-        console.error(error);
-        setMatchReceiptsList([]); // Clear the data list if an error occurs
-        setOpen(false);
-        setAutocompleteLoading(false);
-      }
-    },
-    400
-  );
-
+  useEffect(() => {
+    handleFetchAllBrvReceipts();
+  },[])
 
 
   // Calculate amounts based on IN and SR transactions
@@ -669,84 +618,44 @@ const PosBulkMatchReceipts = () => {
                 }`}
               >
                 <div className="px-3 sm:w-[30%] w-full">
-                  <Autocomplete
-                    id="companyName"
-                    required
-                    options={matchReceiptsList}
-                    // bulkCashDocNo: item.bulkCashDocNo,
-                    // bankDepositNo: item.bankDepositNo,
-                    // bulkCashRefNo: item.bulkCashRefNo,
-                    getOptionLabel={(option) =>
-                        option && option.bulkCashDocNo
-                        ? `${option?.bulkCashDocNo} - ${option?.bulkCashRefNo}`
-                        : ""
-                    }
-                    onChange={handleGPCAutoCompleteChange}
-                    value={selectedMatchReceipts}
-                    onInputChange={(event, newInputValue, params) =>
-                        debouncedHandleAutoCompleteInputChange(
-                        event,
-                        newInputValue,
-                        params
-                        )
-                    }
-                    loading={autocompleteLoading}
-                    sx={{ marginTop: "10px" }}
-                    open={open}
-                    onOpen={() => {
-                        // setOpen(true);
-                    }}
-                    onClose={() => {
-                        setOpen(false);
-                    }}
-                    renderOption={(props, option) => (
-                        <li key={option.bulkCashDocNo} {...props}>
-                        {option
-                            ? `${option.bulkCashDocNo} - ${option.bulkCashRefNo}`
-                            : "No options"}
-                        </li>
-                    )}
-                    renderInput={(params) => (
-                        <TextField
-                        // required
-                        error={isSubmitClicked && !selectedMatchReceipts?.bulkCashDocNo}
-                        helperText={
-                            isSubmitClicked && !selectedMatchReceipts?.bulkCashDocNo
-                            ? "Products is required"
-                            : ""
+                    <Autocomplete
+                      id="field1"
+                      options={matchReceiptsList}
+                      getOptionLabel={(option) => `${option?.bulkCashDocNo} - ${option?.bulkCashRefNo}`}
+                      onChange={handleSelectedBrvReceipts}
+                      value={selectedMatchReceipts}
+                      onInputChange={(event, value) => {
+                        if (!value) {
+                        // perform operation when input is cleared
+                        // console.log("Input cleared");
                         }
-                        {...params}
-                        label={`${t("Search Match Receipts")}`}
-                        InputProps={{
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          InputProps={{
                             ...params.InputProps,
-                            endAdornment: (
-                            <React.Fragment>
-                                {autocompleteLoading ? (
-                                <CircularProgress color="inherit" size={20} />
-                                ) : null}
-                                {params.InputProps.endAdornment}
-                            </React.Fragment>
-                            ),
-                        }}
-                        sx={{
-                            "& label.Mui-focused": {
-                            color: "#00006A",
-                            },
-                            "& .MuiInput-underline:after": {
-                            borderBottomColor: "#00006A",
-                            },
-                            "& .MuiOutlinedInput-root": {
-                            "&:hover fieldset": {
-                                borderColor: "#000000",
-                            },
-                            "&.Mui-focused fieldset": {
-                                borderColor: "#000000",
-                            },
-                            },
-                        }}
+                            className: "text-white",
+                          }}
+                          InputLabelProps={{
+                            ...params.InputLabelProps,
+                            style: { color: "white" },
+                          }}
+                          className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                          placeholder={`${t("Search BRV Receipts")}`}
+
+                          required
                         />
-                     )}
-                    />
+                      )}
+                      classes={{
+                        endAdornment: "text-white",
+                      }}
+                      sx={{
+                        "& .MuiAutocomplete-endAdornment": {
+                        color: "white",
+                      },
+                    }}
+                  />
                 </div>
                 <div className="flex justify-end items-center w-full gap-3">
                   <button
