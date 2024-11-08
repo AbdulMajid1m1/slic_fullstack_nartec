@@ -32,12 +32,25 @@ const POS = () => {
   const [customerName, setCustomerName] = useState("");
   const [mobileNo, setMobileNo] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [vat, setVat] = useState("");
+  const [vat, setVat] = useState(15);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+
+  // vat dynamic
+  const handleVatChange = (e) => {
+    const value = e.target.value;
+    // Convert to number and validate
+    const numValue = parseFloat(value);
+    
+    // Allow empty string or valid numbers
+    if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 100)) {
+      setVat(value);
+    }
+  };
+
   const [selectedSalesReturnType, setSelectedSalesReturnType] =
     useState("RETRUN WITH EXCHANGE");
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -114,30 +127,30 @@ const POS = () => {
     }, []);
 
     // Function to generate invoice New number based on date and time
-    const generateNewInvoiceNumber = () => {
-      const now = new Date();
-      const timestamp = Date.now();
-      return `${timestamp}`;
-    };
+    // const generateNewInvoiceNumber = () => {
+    //   const now = new Date();
+    //   const timestamp = Date.now();
+    //   return `${timestamp}`;
+    // };
   
-    useEffect(() => {
-      const updateTime = () => {
-        const now = new Date();
-        setTodayDate(now.toISOString());
-        setCurrentTime(
-          now.toLocaleString("en-US", {
-            dateStyle: "short",
-            timeStyle: "medium",
-          })
-        );
-      };
+    // useEffect(() => {
+    //   const updateTime = () => {
+    //     const now = new Date();
+    //     setTodayDate(now.toISOString());
+    //     setCurrentTime(
+    //       now.toLocaleString("en-US", {
+    //         dateStyle: "short",
+    //         timeStyle: "medium",
+    //       })
+    //     );
+    //   };
   
-      setNewInvoiceNumber(generateInvoiceNumber());
-      updateTime();
-      const intervalId = setInterval(updateTime, 1000);
+    //   setNewInvoiceNumber(generateInvoiceNumber());
+    //   updateTime();
+    //   const intervalId = setInterval(updateTime, 1000);
       
-      return () => clearInterval(intervalId);
-    }, []);
+    //   return () => clearInterval(intervalId);
+    // }, []);
 
       
 
@@ -149,11 +162,11 @@ const POS = () => {
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     } else if (action === "exchange Dsales") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeDSalesClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     }
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
@@ -269,7 +282,7 @@ const POS = () => {
         `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
       );
       const allCustomers = response?.data?.data;
-      console.log(allCustomers)
+      // console.log(allCustomers)
 
       setSearchCustomerName(allCustomers);
     } catch (err) {
@@ -397,6 +410,11 @@ const POS = () => {
       return;
     }
 
+    if(vat === "") {
+      toast.info("Please add Vat Dynamically for all transactions");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await newRequest.get(
@@ -450,8 +468,11 @@ const POS = () => {
           );
 
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
-          const vat = itemPrice * 0.15;
-          const total = itemPrice + vat;
+          // const vat = itemPrice * 0.15;
+          // const total = itemPrice + vat;
+          const vatRate = parseFloat(vat) / 100 || 0; // Convert percentage to decimal, default to 0 if empty
+          const vatAmount = itemPrice * vatRate;
+          const total = itemPrice + vatAmount;
 
           // Set data in state
           setData((prevData) => {
@@ -465,7 +486,8 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1,
                 Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
+                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount),
               };
               return updatedData;
             } else {
@@ -479,7 +501,8 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  VAT: vat,
+                  // VAT: vat,
+                  VAT: vatAmount,
                   Total: total,
                 },
               ];
@@ -639,10 +662,12 @@ const POS = () => {
 
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
-          const total = itemPrice + vat;
-          console.log(itemPrice);
+          // const vat = itemPrice * 0.15;
+          // const total = itemPrice + vat;
+          // console.log(itemPrice);
+          const vatRate = parseFloat(vat) / 100 || 0; // Convert percentage to decimal, default to 0 if empty
+          const vatAmount = itemPrice * vatRate;
+          const total = itemPrice + vatAmount;
 
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
@@ -656,7 +681,8 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
                 Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount), // Update total with the new quantity
               };
               return updatedData;
             } else {
@@ -672,7 +698,8 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  VAT: vat,
+                  // VAT: vat,
+                  VAT: vatAmount,
                   Total: total,
                 },
               ];
@@ -761,9 +788,12 @@ const POS = () => {
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
-          const total = itemPrice + vat;
-          console.log(itemPrice);
+          // const vat = itemPrice * 0.15;
+          // const total = itemPrice + vat;
+          // console.log(itemPrice);
+          const vatRate = parseFloat(vat) / 100 || 0;
+          const vatAmount = itemPrice * vatRate;
+          const total = itemPrice + vatAmount;
 
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
@@ -777,7 +807,8 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
                 Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount), // Update total with the new quantity
               };
               return updatedData;
             } else {
@@ -793,7 +824,8 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  VAT: vat,
+                  // VAT: vat,
+                  VAT: vatAmount,
                   Total: total,
                 },
               ];
@@ -1060,13 +1092,14 @@ const POS = () => {
         const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
         const currentInvoiceNumber =
-        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+        // transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+        transactionCode.slice(-2) === "IN" ? invoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
 
         // Construct the master and details data for Sales Return
         const master = {
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          InvoiceNo: currentInvoiceNumber, 
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
@@ -1099,9 +1132,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
@@ -1145,8 +1177,8 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1178,8 +1210,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode:
@@ -1219,8 +1251,8 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1252,8 +1284,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode: 
@@ -1421,9 +1453,15 @@ const POS = () => {
       let totalNet = 0;
       let totalVat = 0;
 
+      // data.forEach((item) => {
+      //   totalNet += item.ItemPrice * item.Qty;
+      //   totalVat += item.VAT * item.Qty;
+      // });
       data.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        const itemTotal = item.ItemPrice * item.Qty;
+        totalNet += itemTotal;
+        const vatRate = parseFloat(vat) / 100 || 0;
+        totalVat += itemTotal * vatRate;
       });
 
       setNetWithVat(totalNet);
@@ -1435,7 +1473,8 @@ const POS = () => {
     if (data.length > 0) {
       calculateTotals(); // Only calculate when there is data
     }
-  }, [data]);
+  }, [data, vat]);
+// }, [data]);
 
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
   const [isReceiptPrinted, setIsReceiptPrinted] = useState(false);
@@ -1460,7 +1499,7 @@ const POS = () => {
           ${netWithVat}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${vat || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalVat}
         </div>
@@ -1488,7 +1527,7 @@ const POS = () => {
           ${netWithOutVatExchange}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${vat || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutExchange}
         </div>
@@ -1516,7 +1555,7 @@ const POS = () => {
           ${netWithOutVatDSalesNoInvoice}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${vat || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutVatDSalesNoInvoice}
         </div>
@@ -2269,7 +2308,7 @@ const POS = () => {
         ${netWithVat}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${vat || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVat}
       </div>
@@ -2853,11 +2892,16 @@ const POS = () => {
       setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
+        // new changes vat dynamic
+        // const vatRate = parseFloat(vat) / 100 || 0; 
+        const vatRate = parseFloat(data?.invoiceHeader?.VatNumber) / 100 || 0;
 
         setInvoiceData(
           invoiceDetails.map((item) => {
-            const vat = item.ItemPrice * 0.15;
-            const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
+            // const vat = item.ItemPrice * 0.15;
+            // const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
+            const vatAmount = item.ItemPrice * vatRate;
+            const total = item.ItemPrice * item.ItemQry + vatAmount * item.ItemQry;  
 
             return {
               id: item.id,
@@ -2869,7 +2913,8 @@ const POS = () => {
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
               ItemPrice: item.ItemPrice,
-              VAT: vat,
+              // VAT: vat,
+              VAT: vatAmount,
               Total: total,
             };
           })
@@ -2894,10 +2939,16 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+      
+      // invoiceData.forEach((item) => {
+      //   totalNet += item.ItemPrice * item.Qty;
+      //   totalVat += item.VAT * item.Qty;
+      // });
+      // dynamically change value
       invoiceData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        const itemTotal = item.ItemPrice * item.Qty;
+        totalNet += itemTotal;
+        totalVat += item.VAT;
       });
       // console.log(exchangeData)
 
@@ -2907,7 +2958,7 @@ const POS = () => {
     };
 
     calculateTotals();
-  }, [invoiceData]);
+}, [invoiceData]);
 
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
@@ -2917,13 +2968,22 @@ const POS = () => {
 
     if (qty > originalQty || qty < 1) return;
 
+    const vatRate = parseFloat(vat) / 100 || 0;
+
     // Update the state with the new quantity
     const updatedInvoiceData = invoiceData.map((item, i) => {
       if (i === index) {
+        // const itemTotal = item.ItemPrice * qty;
+        // const vatAmount = itemTotal * vatRate;
+        const itemTotal = item.ItemPrice * qty; // Calculate total for the new quantity
+        const vatAmount = itemTotal * (parseFloat(item.VatNumber) / 100 || 0);  
+  
         return {
+          // new changes
           ...item,
           Qty: qty,
-          Total: item.ItemPrice * qty + item.VAT * qty, // Recalculate total
+          VAT: vatAmount,
+          Total: itemTotal + vatAmount,
         };
       }
       return item;
@@ -2955,6 +3015,9 @@ const POS = () => {
 
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = (newData) => {
+    // new changes vat dynamically
+    // const vatRate = parseFloat(vat) / 100 || 0;
+
     setExchangeData((prevData) => {
       // Loop through the newData array to handle multiple scanned items
       return newData.reduce(
@@ -2972,12 +3035,31 @@ const POS = () => {
                 (updatedData[existingItemIndex].Qty + newItem.Qty) *
                 (newItem.ItemPrice + newItem.VAT),
             };
+            // const newQty = updatedData[existingItemIndex].Qty + newItem.Qty;
+            // const itemTotal = newItem.ItemPrice * newQty;
+            // const vatAmount = itemTotal * vatRate;
 
-            // Replace the existing item with the updated item
-            updatedData[existingItemIndex] = updatedItem;
+            // const updatedItem = {
+            //   ...updatedData[existingItemIndex],
+            //   Qty: newQty,
+            //   VAT: vatAmount, // Recalculate VAT with current rate
+            //   Total: itemTotal + vatAmount,
+            // };
+
+            // // Replace the existing item with the updated item
+            // updatedData[existingItemIndex] = updatedItem;
           } else {
             // If the item is new, add it to the data array
             updatedData.push(newItem);
+
+            // const itemTotal = newItem.ItemPrice * newItem.Qty;
+            // const vatAmount = itemTotal * vatRate;
+
+            // updatedData.push({
+            //   ...newItem,
+            //   VAT: vatAmount, // Calculate VAT with current rate
+            //   Total: itemTotal + vatAmount, // Set total with new VAT
+            // });
           }
 
           return updatedData;
@@ -2992,12 +3074,19 @@ const POS = () => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
+      // new changes vat dynamically
+      // const vatRate = parseFloat(vat) / 100 || 0;
 
       exchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
+      // exchangeData.forEach((item) => {
+      //   const itemTotal = item.ItemPrice * item.Qty;
+      //   totalNet += itemTotal;
+      //   totalVat += itemTotal * vatRate; // Calculate VAT based on current rate
+      // });
 
       setNetWithVat(totalNet);
       setTotalVat(totalVat);
@@ -3008,12 +3097,16 @@ const POS = () => {
     if (exchangeData.length > 0) {
       calculateExchangeTotals(); // Only calculate when there is exchange data
     }
-  }, [exchangeData]);
+  // }, [exchangeData, vat]);
+}, [exchangeData]);
 
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
     useState([]);
   const addDSalesExchangeData = (newData) => {
+    // new changes vat dynamically
+    // const vatRate = parseFloat(vat) / 100 || 0;
+
     setDSalesNoInvoiceexchangeData((prevData) => {
       return newData.reduce(
         (updatedData, newItem) => {
@@ -3030,9 +3123,29 @@ const POS = () => {
                 (newItem.ItemPrice + newItem.VAT),
             };
 
+            // const newQty = updatedData[existingItemIndex].Qty + newItem.Qty;
+            // const itemTotal = newItem.ItemPrice * newQty;
+            // const vatAmount = itemTotal * vatRate;
+
+            // const updatedItem = {
+            //   ...updatedData[existingItemIndex],
+            //   Qty: newQty,
+            //   VAT: vatAmount,
+            //   Total: itemTotal + vatAmount,
+            // };
+
             updatedData[existingItemIndex] = updatedItem;
           } else {
             updatedData.push(newItem);
+
+            // const itemTotal = newItem.ItemPrice * newItem.Qty;
+            // const vatAmount = itemTotal * vatRate;
+
+            // updatedData.push({
+            //   ...newItem,
+            //   VAT: vatAmount,
+            //   Total: itemTotal + vatAmount,
+            // });
           }
 
           return updatedData;
@@ -3047,32 +3160,48 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
+      const vatRate = parseFloat(vat) / 100 || 0;
 
-      DSalesNoInvoiceData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
-      });
+      // DSalesNoInvoiceData.forEach((item) => {
+      //   totalNet += item.ItemPrice * item.Qty;
+      //   totalVat += item.VAT * item.Qty;
+      // });
       // console.log(exchangeData)
 
+      DSalesNoInvoiceData.forEach((item) => {
+        const itemTotal = item.ItemPrice * item.Qty;
+        totalNet += itemTotal;
+        totalVat += itemTotal * vatRate;
+      });
+
       setNetWithOutVatDSalesNoInvoice(totalNet);
-      setTotalWithOutVatDSalesNoInvoice(totalVat);
+      setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
       setTotolAmountWithoutVatDSalesNoInvoice(totalNet + totalVat);
     };
 
     calculateTotals();
-  }, [DSalesNoInvoiceData]);
+  }, [DSalesNoInvoiceData, vat]);
+// }, [DSalesNoInvoiceData]);
 
   // DSALES No Invocie Exchange calculation
   useEffect(() => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      console.log(dSalesNoInvoiceexchangeData);
+      // const vatRate = parseFloat(vat) / 100 || 0;
+
+      // console.log(dSalesNoInvoiceexchangeData);
       dSalesNoInvoiceexchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
-      // console.log(dSalesNoInvoiceexchangeData)
+      console.log(dSalesNoInvoiceexchangeData)
+
+      // dSalesNoInvoiceexchangeData.forEach((item) => {
+      //   const itemTotal = item.ItemPrice * item.Qty;
+      //   totalNet += itemTotal;
+      //   totalVat += itemTotal * vatRate;
+      // });
 
       setNetWithVat(totalNet);
       setTotalVat(totalVat);
@@ -3083,7 +3212,8 @@ const POS = () => {
     if (dSalesNoInvoiceexchangeData.length > 0) {
       calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
     }
-  }, [dSalesNoInvoiceexchangeData]);
+  // }, [dSalesNoInvoiceexchangeData, vat]);
+}, [dSalesNoInvoiceexchangeData]);
 
   // handleDelete
   const handleDeleteExchangeData = (index) => {
@@ -3999,7 +4129,22 @@ const POS = () => {
                 {t("VAT")} #
               </label>
               <input
-                type="text"
+              //   type="text"
+              //   value={
+              //     selectedSalesType === "DIRECT SALES RETURN"
+              //       ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
+              //       : vat
+              //   }
+              //   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
+              //     selectedSalesType === "DIRECT SALES RETURN"
+              //       ? "bg-gray-200"
+              //       : "bg-green-200"
+              //   }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
+              //   disabled={selectedSalesType === "DIRECT SALES RETURN"}
+              //   placeholder={t("VAT")}
+              //   onChange={(e) => setVat(e.target.value)}
+              // />
+                type="number" // Changed to number type
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
@@ -4011,9 +4156,17 @@ const POS = () => {
                     : "bg-green-200"
                 }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                placeholder={t("VAT")}
-                onChange={(e) => setVat(e.target.value)}
+                placeholder={t("Enter VAT percentage (0-100)")}
+                onChange={handleVatChange}
+                min="0"
+                max="100"
+                step="0.01" // Allows for decimal values
               />
+              {vat && (parseFloat(vat) < 0 || parseFloat(vat) > 100) && (
+                <p className="text-red-500 text-sm mt-1">
+                  {t("VAT must be between 0 and 100")}
+                </p>
+              )}
             </div>
             {errorMessage && (
               <p className="text-red-500 text-sm -mt-6">{errorMessage}</p>
@@ -4847,7 +5000,8 @@ const POS = () => {
               }
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
-              newInvoiceNumber={newInvoiceNumber}
+              newInvoiceNumber={invoiceNumber}
+              // newInvoiceNumber={newInvoiceNumber}
               isExchangeClick={isExchangeClick}
               selectedRowData={selectedRowData}
               exchangeData={exchangeData}

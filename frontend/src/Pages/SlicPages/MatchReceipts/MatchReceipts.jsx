@@ -138,6 +138,7 @@ const PosBulkMatchReceipts = () => {
           };
         });
 
+        console.log(crs)
         setMatchReceiptsList(crs);
       
         setOpen(true);
@@ -188,7 +189,7 @@ const PosBulkMatchReceipts = () => {
       );
       setData(response?.data || []);
       calculateAmounts(response?.data);
-    //   console.log(response.data);
+      console.log(response.data);
       setIsLoading(false);
 
     } catch (err) {
@@ -597,13 +598,14 @@ const PosBulkMatchReceipts = () => {
           data: [
             {
               BrvDocNo: selectedMatchReceipts?.bulkCashDocNo,
+              BrvSysId: selectedMatchReceipts?.bulkCashRefNo,
+              bankDepositNo: selectedMatchReceipts?.bankDepositNo,
             //   BrvDocNo: "2024003208",
               MatchingTransactions: data.map((row) => ({
                 DocNo: row?.DocNo,        
                 TransactionCode: row?.TransactionCode,      
                 CustCode: row?.CustomerCode,         
-                // PendingAmount: `${row?.PendingAmount}`,  // Convert to string
-                // AdjAmount: `${row?.AdjAmount}`          // Convert to string
+                
                 PendingAmount: `${(row?.PendingAmount * 1.15).toFixed(2)}`,
                 AdjAmount: `${(row?.AdjAmount * 1.15).toFixed(2)}`
               }))

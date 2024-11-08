@@ -62,7 +62,7 @@ const PosBulkCashReceipts = () => {
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
-      // console.log(adminData?.data?.user)
+      console.log(adminData?.data?.user)
     }
   }, []);
 
@@ -121,6 +121,10 @@ const PosBulkCashReceipts = () => {
   };
 
   const handleGenerateReceipt = async () => {
+    if (parseFloat(remainingAmount) < 0) {
+      toast.error("Cannot generate receipt when remaining amount is negative");
+      return;
+    }
     let totalRemainingAmount = 0;
     let details = [];
 
@@ -170,6 +174,7 @@ const PosBulkCashReceipts = () => {
           Department: "011",
           TransactionCode: "BRV",
           Division: "100",
+          Narration: slicUserData?.UserLoginID,
           Details: details,
         },
       ],
