@@ -4,6 +4,7 @@ import { RolesContext } from './Contexts/FetchRolesContext';
 import { toast } from 'react-toastify';
 
 const ProtectedRoute = ({ children, requiredRoles }) => {
+    console.log('Required Roles:', requiredRoles);
     const { userRoles } = useContext(RolesContext);
     console.log(userRoles);
 
@@ -29,10 +30,13 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 
     // Check if user has the required roles
     // const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role.RoleName));
+    
     const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role.RoleName));
     console.log(userRoles);
+
+    console.log(requiredRoles);
     console.log(hasRequiredRole)
-    console.log(requiredRoles)
+    // console.log(requiredRoles)
     if (userRoles && !hasRequiredRole) {
         const toastShownKey = `toastShown_${requiredRoles}`;
         if (!sessionStorage.getItem(toastShownKey)) {

@@ -56,20 +56,26 @@ const PosBrvMatchedReceipts = () => {
     let totalSRAmount = 0;
 
     transactions.forEach((transaction) => {
+      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
+      const vatRate = transaction.VatNumber
+        ? parseFloat(transaction.VatNumber) / 100
+        : 0.15;
+      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+
+      // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
-        totalINAmount += transaction.PendingAmount;
+        totalINAmount += transaction.PendingAmount * vatMultiplier;
       } else if (transaction.TransactionCode.endsWith("SR")) {
-        totalSRAmount += transaction.PendingAmount;
+        totalSRAmount += transaction.PendingAmount * vatMultiplier;
       }
     });
 
-    // Add 15% VAT to the amounts
-    const totalINWithVAT = totalINAmount * 1.15;
-    const totalSRWithVAT = totalSRAmount * 1.15;
-    const remainingAmount = totalINWithVAT - totalSRWithVAT;
+    // Calculate remaining amount
+    const remainingAmount = totalINAmount - totalSRAmount;
 
-    setTotalInvoiceAmount(totalINWithVAT.toFixed(2));
-    setExchangeAmount(totalSRWithVAT.toFixed(2));
+    // Update state with calculated values
+    setTotalInvoiceAmount(totalINAmount.toFixed(2));
+    setExchangeAmount(totalSRAmount.toFixed(2));
     setRemainingAmount(remainingAmount.toFixed(2));
   };
 
