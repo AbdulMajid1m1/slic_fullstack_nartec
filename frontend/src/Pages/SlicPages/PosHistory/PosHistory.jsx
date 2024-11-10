@@ -51,7 +51,7 @@ const PosHistory = () => {
   const [slicUserData, setSlicUserData] = useState(null);
   useEffect(() => {
     // slic our user data
-    const slicUser = sessionStorage.getItem('slicUserData');
+    const slicUser = sessionStorage.getItem("slicUserData");
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
@@ -61,7 +61,6 @@ const PosHistory = () => {
 
   // console.log(slicUserData?.SalesmanCode);
 
- 
   const fetchCustomerCodes = async () => {
     if (!cutOfDate) {
       // toast.error("Please select a cutoff date");
@@ -91,7 +90,7 @@ const PosHistory = () => {
       );
       const posData = response?.data || [];
       setData(posData);
-
+      console.log("posData", posData);
       calculateAmounts(posData);
       setIsLoading(false);
     } catch (err) {
@@ -115,225 +114,237 @@ const PosHistory = () => {
     fetchCustomerCodes();
   }, [selectedLocation?.stockLocation, cutOfDate]);
 
-  // Calculate amounts based on IN and SR transactions
+  // Calculate amounts based on IN and SR transactions with dynamic VAT handling
   const calculateAmounts = (transactions) => {
     let totalINAmount = 0;
     let totalSRAmount = 0;
 
     transactions.forEach((transaction) => {
+      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
+      const vatRate = transaction.VatNumber
+        ? parseFloat(transaction.VatNumber) / 100
+        : 0.15;
+      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+
+      // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
-        totalINAmount += transaction.PendingAmount;
+        totalINAmount += transaction.PendingAmount * vatMultiplier;
       } else if (transaction.TransactionCode.endsWith("SR")) {
-        totalSRAmount += transaction.PendingAmount;
+        totalSRAmount += transaction.PendingAmount * vatMultiplier;
       }
     });
 
-    // Add 15% VAT to the amounts
-    const totalINWithVAT = totalINAmount * 1.15;
-    const totalSRWithVAT = totalSRAmount * 1.15;
-    const remainingAmount = totalINWithVAT - totalSRWithVAT;
+    // Calculate remaining amount
+    const remainingAmount = totalINAmount - totalSRAmount;
 
-    setTotalInvoiceAmount(totalINWithVAT.toFixed(2));
-    setExchangeAmount(totalSRWithVAT.toFixed(2));
+    // Update state with calculated values
+    setTotalInvoiceAmount(totalINAmount.toFixed(2));
+    setExchangeAmount(totalSRAmount.toFixed(2));
     setRemainingAmount(remainingAmount.toFixed(2));
   };
 
-  const handleGenerateReceipt = async () => {
-    // Extract the necessary fields from the data
-    const mappedData = data.map((row) => ({
-      id: row.id,
-      AdjAmount: row.AdjAmount * 1.15,
-      DocNo: row.DocNo,
-      TransactionCode: row.TransactionCode,
-      PendingAmount: row.PendingAmount * 1.15,
-    }));
-    // console.log(mappedData)
+  // const handleGenerateReceipt = async () => {
+  //   // Extract the necessary fields from the data
+  //   const mappedData = data.map((row) => ({
+  //     id: row.id,
+  //     AdjAmount: row.AdjAmount * 1.15,
+  //     DocNo: row.DocNo,
+  //     TransactionCode: row.TransactionCode,
+  //     PendingAmount: row.PendingAmount * 1.15,
+  //   }));
+  //   // console.log(mappedData)
 
-    // console.log(
-    //   "Total Amount with vat",
-    //   totalInvoiceAmount,
-    //   "Exchange Amount",
-    //   exchangeAmount,
-    //   "Remaining Amount",
-    //   remainingAmount
-    // );
-    
-    const requestData = {
-      _keyword_: "BANKRCPTBLKCSH",
-      _secret_key_: "2bf52be7-9f68-4d52-9523-53f7f267153b",
-      data: [
-        {
-          Company: "SLIC",
-          UserId: "SYSADMIN",
-          Department: "011",
-          TransactionCode: "BRV",
-          Division: "100",
-          // BankApproverCode: "CIUB0000266",
-          CashCardFlag: "CASH",
-          ReceiptAmt: totalInvoiceAmount,
-          CustomerId: selectedInvoice,
-          MatchingTransactions: mappedData.map((transaction) => ({
-            DocNo: transaction.DocNo,
-            TransactionCode: transaction.TransactionCode,
-            PendingAmount: transaction.PendingAmount,
-            AdjAmount: transaction.AdjAmount,
-          })),
-        },
-      ],
-      COMPANY: "SLIC",
-      USERID: slicUserData?.UserLoginID,
-      APICODE: "BANKRCPTVOUCHERBULK",
-      LANG: "ENG",
-    };
+  //   // console.log(
+  //   //   "Total Amount with vat",
+  //   //   totalInvoiceAmount,
+  //   //   "Exchange Amount",
+  //   //   exchangeAmount,
+  //   //   "Remaining Amount",
+  //   //   remainingAmount
+  //   // );
 
-    try {
-      setLoading(true);
-      const receiptResponse = await ErpTeamRequest.post(
-        "/slicuat05api/v1/postData",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success("Receipt generated successfully!");
+  //   const requestData = {
+  //     _keyword_: "BANKRCPTBLKCSH",
+  //     _secret_key_: "2bf52be7-9f68-4d52-9523-53f7f267153b",
+  //     data: [
+  //       {
+  //         Company: "SLIC",
+  //         UserId: "SYSADMIN",
+  //         Department: "011",
+  //         TransactionCode: "BRV",
+  //         Division: "100",
+  //         // BankApproverCode: "CIUB0000266",
+  //         CashCardFlag: "CASH",
+  //         ReceiptAmt: totalInvoiceAmount,
+  //         CustomerId: selectedInvoice,
+  //         MatchingTransactions: mappedData.map((transaction) => ({
+  //           DocNo: transaction.DocNo,
+  //           TransactionCode: transaction.TransactionCode,
+  //           PendingAmount: transaction.PendingAmount,
+  //           AdjAmount: transaction.AdjAmount,
+  //         })),
+  //       },
+  //     ],
+  //     COMPANY: "SLIC",
+  //     USERID: slicUserData?.UserLoginID,
+  //     APICODE: "BANKRCPTVOUCHERBULK",
+  //     LANG: "ENG",
+  //   };
 
-      const receiptIds = mappedData.map((item) => item.id);
-      const updateRequestData = {
-        ids: receiptIds,
-      };
-      // console.log(updateRequestData)
+  //   try {
+  //     setLoading(true);
+  //     const receiptResponse = await ErpTeamRequest.post(
+  //       "/slicuat05api/v1/postData",
+  //       requestData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     toast.success("Receipt generated successfully!");
 
-      try {
-        const res = await newRequest.post(
-          "/invoice/v1/updateReceiptStatus",
-          updateRequestData
-        );
-        toast.success(
-          res?.data?.message || "Receipt status updated successfully!"
-        );
+  //     const receiptIds = mappedData.map((item) => item.id);
+  //     const updateRequestData = {
+  //       ids: receiptIds,
+  //     };
+  //     // console.log(updateRequestData)
 
-        fetchCustomerCodes();
-        setSelectedInvoice([]);
-        setTotalInvoiceAmount(0);
-        setExchangeAmount(0);
-        setRemainingAmount(0);
-        setData([]);
+  //     try {
+  //       const res = await newRequest.post(
+  //         "/invoice/v1/updateReceiptStatus",
+  //         updateRequestData
+  //       );
+  //       toast.success(
+  //         res?.data?.message || "Receipt status updated successfully!"
+  //       );
 
-      } catch (errIdsApi) {
-        toast.error(
-          errIdsApi?.response?.data?.error || "Failed to update receipt status."
-        );
-      }
+  //       fetchCustomerCodes();
+  //       setSelectedInvoice([]);
+  //       setTotalInvoiceAmount(0);
+  //       setExchangeAmount(0);
+  //       setRemainingAmount(0);
+  //       setData([]);
+  //     } catch (errIdsApi) {
+  //       toast.error(
+  //         errIdsApi?.response?.data?.error || "Failed to update receipt status."
+  //       );
+  //     }
 
-      setLoading(false);
-    } catch (err) {
-      // Handle errors from the first API
-      setLoading(false);
-      toast.error(
-        err?.response?.data?.message || "Failed to generate receipt."
-      );
-    }
-  };
+  //     setLoading(false);
+  //   } catch (err) {
+  //     // Handle errors from the first API
+  //     setLoading(false);
+  //     toast.error(
+  //       err?.response?.data?.message || "Failed to generate receipt."
+  //     );
+  //   }
+  // };
 
-
-  const handleRowClickInParent = async () => {
-    
-  };  
+  const handleRowClickInParent = async () => {};
 
   // const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (selectedRow) => {
-    const {
-      createdAt,
-      AdjAmount,
-      InvoiceNo,
-      TransactionCode,
-    } = selectedRow;
-  
-    try {
+    const { createdAt, AdjAmount, InvoiceNo, TransactionCode } = selectedRow;
 
-      const dynamicTransactionCode = TransactionCode ? TransactionCode.slice(-2) : '';
+    try {
+      const dynamicTransactionCode = TransactionCode
+        ? TransactionCode.slice(-2)
+        : "";
       console.log(dynamicTransactionCode);
 
       const invoiceResponse = await newRequest.get(
         // `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}`
         `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}&TransactionCode=${dynamicTransactionCode}`
       );
-  
+
       const invoiceData = invoiceResponse?.data?.data;
-      
+
       // console.log("Fetched invoice data:", invoiceData);
 
-      const { invoiceDetails } = invoiceData;
-    
+      const { invoiceDetails, invoiceHeader } = invoiceData;
+      // Get VAT rate from VatNumber or use default (15%)
+      const vatRate = invoiceHeader?.VatNumber
+        ? parseFloat(invoiceHeader.VatNumber) / 100
+        : 0.15;
       let totalGrossAmount = 0;
       let totalVAT = 0;
 
       // Loop through invoiceDetails and calculate gross, VAT, and total amounts
       invoiceDetails.forEach((item) => {
         const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-        const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        const itemVAT = itemGross * vatRate; // Calculate VAT for each item
         totalGrossAmount += itemGross;
         totalVAT += itemVAT;
       });
 
       const totalAmountWithVAT = totalGrossAmount + totalVAT;
-  
+
       const payload = {
         invoiceDate: createdAt,
         totalWithVat: totalAmountWithVAT,
         vatTotal: totalVAT,
       };
-  
+
       const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       // setZatcaQrcode(qrCodeDataFromApi);
-  
+
       // Now pass the invoice data to handle the printing logic
       // handlePrintSalesInvoice(selectedRow, invoiceData);
       if (qrCodeDataFromApi) {
         // Now pass the invoice data to handle the printing logic
         handlePrintSalesInvoice(selectedRow, invoiceData, qrCodeDataFromApi);
       } else {
-        throw new Error('QR code data not generated properly.');
+        throw new Error("QR code data not generated properly.");
       }
 
       toast.success("Invoice generated and ready to print!");
     } catch (err) {
-      toast.error(err?.response?.data?.errors[0]?.msg || "An error occurred while generating the invoice");
+      console.error(err);
+      toast.error(
+        err?.response?.data?.errors[0]?.msg ||
+          "An error occurred while generating the invoice"
+      );
     }
   };
-  
-  
+
   // invoice generate
-  const handlePrintSalesInvoice = async (selectedRow, invoiceData, qrCodeDataFromApi) => {
-    
-    const {
-      InvoiceNo,
-      DocNo,
-    } = selectedRow;
+  const handlePrintSalesInvoice = async (
+    selectedRow,
+    invoiceData,
+    qrCodeDataFromApi
+  ) => {
+    const { InvoiceNo, DocNo } = selectedRow;
 
     const { invoiceHeader, invoiceDetails } = invoiceData;
- 
+
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${InvoiceNo}`);
-    
-    const formattedDate = new Date(invoiceHeader?.TransactionDate).toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-    });    
 
-    let salesInvoiceTitle = '';
+    const formattedDate = new Date(
+      invoiceHeader?.TransactionDate
+    ).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+    let salesInvoiceTitle = "";
     const lastTwoTransactionCode = invoiceHeader?.TransactionCode.slice(-2);
 
-    if (lastTwoTransactionCode === 'IN') {
-        salesInvoiceTitle = 'SALES INVOICE';
-    } else if (lastTwoTransactionCode === 'SR') {
-        salesInvoiceTitle = 'CREDIT NOTE';
+    if (lastTwoTransactionCode === "IN") {
+      salesInvoiceTitle = "SALES INVOICE";
+    } else if (lastTwoTransactionCode === "SR") {
+      salesInvoiceTitle = "CREDIT NOTE";
     }
 
+    // Get VAT rate from VatNumber or use default (15%)
+    const vatRate = invoiceHeader?.VatNumber
+      ? parseFloat(invoiceHeader.VatNumber) / 100
+      : 0.15;
+
+      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
     // Calculate total VAT
     let totalGrossAmount = 0;
     let totalVAT = 0;
@@ -341,14 +352,14 @@ const PosHistory = () => {
 
     // Loop through invoiceDetails and calculate gross, VAT, and total amounts
     invoiceDetails.forEach((item) => {
+      console.log(item);
       const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-      const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+      const itemVAT = itemGross * vatRate; // Calculate VAT for each item
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
 
     totalAmountWithVAT = totalGrossAmount + totalVAT; // Total amount including VAT
-
 
     // Generate totals for exchange invoice
     const totalsContent = `
@@ -373,6 +384,10 @@ const PosHistory = () => {
         ${DocNo}
       </div>
     `;
+
+
+
+
 
     const html = `
       <html>
@@ -487,7 +502,9 @@ const PosHistory = () => {
           <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${invoiceHeader?.CustomerName}</div>
+            <div><span class="field-label">Customer: </span>${
+              invoiceHeader?.CustomerName
+            }</div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${invoiceHeader?.VatNumber}
@@ -541,13 +558,16 @@ const PosHistory = () => {
             </thead>
 
            <tbody>
-           ${invoiceDetails.map(
-              (item) => `
+           ${invoiceDetails
+             .map(
+               (item) => `
                 <tr>
                   <td style="border-bottom: none;">${item.ItemSKU}</td>
                   <td style="border-bottom: none;">${item.ItemQry}</td>
                   <td style="border-bottom: none;">${item.ItemPrice}</td>
-                  <td style="border-bottom: none;">${(item.ItemPrice * 1.15).toFixed(2)}</td>
+                  <td style="border-bottom: none;">${(
+                    item.ItemPrice * vatMultiplier
+                  ).toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -559,9 +579,8 @@ const PosHistory = () => {
                   </td>
                 </tr>
               `
-              )
-              .join("")
-            }
+             )
+             .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -612,7 +631,6 @@ const PosHistory = () => {
       // console.log(qrCodeData);
     };
   };
-
 
   return (
     <SideNav>
@@ -724,43 +742,82 @@ const PosHistory = () => {
             />
           </div>
         </div>
-        <div className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
+        <div
+          className={`flex  ${
+            i18n.language === "ar" ? " justify-start" : "justify-end"
+          }`}
+        >
           <div className="bg-white p-4 rounded shadow-md sm:w-[60%] w-full">
             <div className="flex flex-col gap-4">
-              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
-                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
-                  {t("Total Invoice Amount WithVAT(15%)")}:
+              <div
+                className={`flex justify-between items-center ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                <label
+                  className={`block text-gray-700 font-bold ${
+                    i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                  }`}
+                >
+                  {t("Total Invoice Amount WithVAT(%)")}:
                 </label>
                 <input
                   type="text"
                   value={totalInvoiceAmount}
                   readOnly
-                 className={`mt-1 p-2 border bg-gray-100 w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
-                  
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%] ${
+                    i18n.language === "ar" ? "text-start" : "text-end"
+                  }`}
                 />
               </div>
 
-              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
-                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+              <div
+                className={`flex justify-between items-center ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                <label
+                  className={`block text-gray-700 font-bold ${
+                    i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                  }`}
+                >
                   {t("Exchange Amount")}
                 </label>
                 <input
                   type="text"
                   value={exchangeAmount}
                   readOnly
-                 className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${i18n.language === "ar" ? "text-start" : "text-end"}`}
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${
+                    i18n.language === "ar" ? "text-start" : "text-end"
+                  }`}
                 />
               </div>
 
-              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
-                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+              <div
+                className={`flex justify-between items-center ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                <label
+                  className={`block text-gray-700 font-bold ${
+                    i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                  }`}
+                >
                   {t("Remaining Amount")}
                 </label>
                 <input
                   type="text"
                   value={remainingAmount}
                   readOnly
-                 className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
+                  className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
+                    i18n.language === "ar" ? "text-start" : "text-end"
+                  }`}
                 />
               </div>
             </div>

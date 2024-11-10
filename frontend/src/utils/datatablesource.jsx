@@ -725,6 +725,11 @@ export const posHistoryInvoiceColumns = (t)=> [
     width: 180,
   },
   {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
+    width: 180,
+  },
+  {
     field: "Head_SYS_ID",
     headerName: t("Head System ID"),
     width: 180,
@@ -890,6 +895,11 @@ export const posBulkCashreceiptInvoiceColumns = (t)=> [
   {
     field: "PendingAmount",
     headerName: t("Pending Amount"),
+    width: 180,
+  },
+  {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
     width: 180,
   },
   {

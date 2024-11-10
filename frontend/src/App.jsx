@@ -22,7 +22,7 @@ import PosHistory from "./Pages/SlicPages/PosHistory/PosHistory.jsx";
 import PosArchive from "./Pages/SlicPages/PosArchive/PosArchive.jsx";
 import WhatsAppSetting from "./Pages/SlicPages/WhatsAppSetting/WhatsAppSetting.jsx";
 import Products from "./Pages/SlicPages/Products/Products.jsx";
-import LaanguageChange from "./Pages/SlicPages/MasterData/LanguageChange/LaanguageChange.jsx"
+import LaanguageChange from "./Pages/SlicPages/MasterData/LanguageChange/LaanguageChange.jsx";
 import PosBulkCashReceipts from "./Pages/SlicPages/BulkCashReceipts/BulkCashReceipts.jsx";
 import PosBulkMatchReceipts from "./Pages/SlicPages/MatchReceipts/MatchReceipts.jsx";
 import PosBrvMatchedReceipts from "./Pages/SlicPages/BrvMatchedReceipts/BrvMatchedReceipts.jsx";
@@ -73,9 +73,30 @@ const App = () => {
                   {/* <Route path="pos" element={<POS />} /> */}
                   <Route path="pos-history" element={<PosHistory />} />
                   <Route path="pos-archive" element={<PosArchive />} />
-                  <Route path="pos-bulkcash-receipts" element={<PosBulkCashReceipts />} />
-                  <Route path="pos-bulkmatch-receipts" element={<PosBulkMatchReceipts />} />
-                  <Route path="pos-Matched-receipts" element={<PosBrvMatchedReceipts />} />
+                  <Route
+                    path="pos-bulkcash-receipts"
+                    element={
+                      <ProtectedRoute requiredRoles="bulk_cash">
+                        <PosBulkCashReceipts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="pos-bulkmatch-receipts"
+                    element={
+                      <ProtectedRoute requiredRoles="bulk_cash">
+                        <PosBulkMatchReceipts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="pos-Matched-receipts"
+                    element={
+                      <ProtectedRoute requiredRoles="bulk_cash">
+                        <PosBrvMatchedReceipts />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="pos-error-logs" element={<PosErrorLogs />} />
                   <Route
                     path="purchase-order"
@@ -105,8 +126,8 @@ const App = () => {
                     }
                   />
                   {/* <Route path="users" element={<Users />} /> */}
-                <Route path="whats-app" element={<WhatsAppSetting />} />
-                <Route path="products" element={<Products />} />
+                  <Route path="whats-app" element={<WhatsAppSetting />} />
+                  <Route path="products" element={<Products />} />
                   <Route
                     path="roles"
                     element={
@@ -115,7 +136,10 @@ const App = () => {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="Language/Dynamic" element={<LaanguageChange />} />
+                  <Route
+                    path="Language/Dynamic"
+                    element={<LaanguageChange />}
+                  />
                   {/* <Route path="roles" element={<Roles />} /> */}
                   {/* <Route path="transaction-codes" element={<TransactionCodes />} /> */}
                   <Route
