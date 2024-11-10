@@ -1464,8 +1464,8 @@ const POS = () => {
         totalVat += itemTotal * vatRate;
       });
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
@@ -2962,8 +2962,8 @@ const POS = () => {
       });
       // console.log(exchangeData)
 
-      setNetWithOutExchange(totalNet);
-      setTotalWithOutExchange(totalVat);
+      setNetWithOutExchange(totalNet.toFixed(2));
+      setTotalWithOutExchange(totalVat.toFixed(2));
       setTotolAmountWithoutExchange(totalNet + totalVat);
     };
 
@@ -3098,8 +3098,8 @@ const POS = () => {
       //   totalVat += itemTotal * vatRate; // Calculate VAT based on current rate
       // });
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
@@ -3184,7 +3184,7 @@ const POS = () => {
         totalVat += itemTotal * vatRate;
       });
 
-      setNetWithOutVatDSalesNoInvoice(totalNet);
+      setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
       setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
       setTotolAmountWithoutVatDSalesNoInvoice(totalNet + totalVat);
     };
@@ -3213,8 +3213,8 @@ const POS = () => {
       //   totalVat += itemTotal * vatRate;
       // });
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
