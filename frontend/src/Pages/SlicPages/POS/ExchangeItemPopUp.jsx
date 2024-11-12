@@ -5,12 +5,13 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice, selectedTransactionCode }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
-  const [vat, setVat] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { taxAmount } = useTaxContext();
 
   const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
   const getCustomerCode = () => {
@@ -28,18 +29,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     // console.log("Selected CustomerCode" , getCustomerCode())
   }, [selectedRowData]);
 
-  // vat dynamic
-  const handleVatChange = (e) => {
-    const value = e.target.value;
-    // Convert to number and validate
-    const numValue = parseFloat(value);
-    
-    // Allow empty string or valid numbers
-    if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 100)) {
-      setVat(value);
-    }
-  };
-
 
   const { t, i18n } = useTranslation();
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
@@ -49,11 +38,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     e.preventDefault();
 
     const customerCode = getCustomerCode();
-
-    if(vat === "") {
-      toast.info("Please add Vat Dynamically for all transactions");
-      return;
-    }
 
     setIsLoading(true);
     try {
@@ -112,13 +96,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           );
 
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const vat = itemPrice * 0.15;
-          // const total = itemPrice + vat;
-          // console.log(itemPrice);
-          const vatRate = parseFloat(vat) / 100 || 0;
-          const vatAmount = itemPrice * vatRate;
-          const total = itemPrice + vatAmount;
-
+          const vat = itemPrice * taxAmount / 100;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
+          
           setData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
@@ -131,8 +112,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
                 Total:
-                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount),
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
               };
               return updatedData;
             } else {
@@ -147,8 +127,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  // VAT: vat,
-                  VAT: vatAmount,
+                  VAT: vat,
                   Total: total,
                 },
               ];
@@ -334,36 +313,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                     }`}
                     placeholder={t("Enter Barcode")}
                   />
-                </div>
-
-                {/* vat dynamically type */}
-                <div className={`w-full ${
-                  i18n.language === "ar" ? "text-end" : "text-start"
-                }`}>
-                  <label
-                    className={`block text-gray-700 ${
-                      i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
-                    }`}
-                  >
-                    {t("VAT")} #
-                  </label>
-                  <input
-                    type="number" // Changed to number type
-                    value={vat}
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black`}
-                    placeholder={t("Enter VAT percentage (0-100)")}
-                    onChange={handleVatChange}
-                    min="0"
-                    max="100"
-                    step="0.01" // Allows for decimal values
-                  />
-                  {vat && (parseFloat(vat) < 0 || parseFloat(vat) > 100) && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {t("VAT must be between 0 and 100")}
-                    </p>
-                  )}
                 </div>
                 <button
                   type="submit"

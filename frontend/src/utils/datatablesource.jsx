@@ -992,3 +992,37 @@ export const posErrorLogsColumn =(t)=> [
 
 
 ]
+
+
+
+export const taxSettingsColumn =(t)=> [
+  {
+    field: "taxAmount",
+    headerName: t("Tax Settings"),
+    width: 180,
+  },
+  {
+    field: "createdAt",
+    headerName: t("Created At"),
+    width: 180,
+
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  {
+    field: "updatedAt",
+    headerName: t("Updated At"),
+    width: 180,
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  
+
+
+]

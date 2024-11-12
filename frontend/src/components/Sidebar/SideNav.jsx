@@ -345,6 +345,33 @@ function SideNav({ children }) {
                     </li>
                     <li className="mt-3">
                       <Link
+                        to="/tax-settings"
+                        className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${
+                          i18n.language === "ar"
+                            ? "pr-3 pl-4 justify-end"
+                            : "pl-3 pr-4 justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex justify-center items-center gap-3 ${
+                            i18n.language === "ar"
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <img
+                            src={Purchase}
+                            alt="logo"
+                            className="w-10 h-10 object-cover"
+                          />
+                          <span className="text-secondary font-medium text-lg">
+                            {t("Tex Settings")}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                    <li className="mt-3">
+                      <Link
                         to="/user-profile"
                         className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${
                           i18n.language === "ar"
