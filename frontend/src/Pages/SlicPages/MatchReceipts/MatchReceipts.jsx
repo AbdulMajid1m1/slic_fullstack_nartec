@@ -18,6 +18,7 @@ import sliclogo from "../../../Images/sliclogo.png";
 import AddBankDepositNoPopUp from "./AddBankDepositNoPopUp";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { newERPBaseUrl } from "../../../utils/config";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const PosBulkMatchReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -30,6 +31,8 @@ const PosBulkMatchReceipts = () => {
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [token, setToken] = useState(null);
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
 
   useEffect(() => {
     // slic login api token get
@@ -125,7 +128,8 @@ const PosBulkMatchReceipts = () => {
       const vatRate = transaction.VatNumber
         ? parseFloat(transaction.VatNumber) / 100
         : 0.15;
-      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
       // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
@@ -213,7 +217,8 @@ const PosBulkMatchReceipts = () => {
       // Loop through invoiceDetails and calculate gross, VAT, and total amounts
       invoiceDetails.forEach((item) => {
         const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-        const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+        // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+        const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
         totalGrossAmount += itemGross;
         totalVAT += itemVAT;
       });
@@ -283,7 +288,8 @@ const PosBulkMatchReceipts = () => {
       ? parseFloat(invoiceHeader.VatNumber) / 100
       : 0.15;
 
-    const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+    // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+    const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
     // Calculate total VAT
     let totalGrossAmount = 0;
     let totalVAT = 0;
@@ -293,7 +299,8 @@ const PosBulkMatchReceipts = () => {
     invoiceDetails.forEach((item) => {
       console.log(item);
       const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-      const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
@@ -308,7 +315,7 @@ const PosBulkMatchReceipts = () => {
         ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${taxAmount || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVAT.toFixed(2)}
       </div>
@@ -582,7 +589,8 @@ const PosBulkMatchReceipts = () => {
             const vatRate = row?.VatNumber
               ? parseFloat(row.VatNumber) / 100
               : 0.15;
-            const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+            // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+            const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
             return {
               DocNo: row?.DocNo,
@@ -794,7 +802,7 @@ const PosBulkMatchReceipts = () => {
                       : "text-start direction-ltr"
                   }`}
                 >
-                  {t("Total Invoice Amount WithVAT(15%)")}:
+                  {t("Total Invoice Amount WithVAT")}:
                 </label>
                 <input
                   type="text"

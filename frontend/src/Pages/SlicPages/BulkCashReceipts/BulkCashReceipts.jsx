@@ -21,6 +21,7 @@ import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import { useTranslation } from "react-i18next";
 import { newERPBaseUrl } from "../../../utils/config";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const PosBulkCashReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -36,6 +37,8 @@ const PosBulkCashReceipts = () => {
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [token, setToken] = useState(null);
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
 
   useEffect(() => {
     const currentDate = new Date();
@@ -109,7 +112,8 @@ const PosBulkCashReceipts = () => {
       const vatRate = transaction.VatNumber
         ? parseFloat(transaction.VatNumber) / 100
         : 0.15;
-      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
       // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
@@ -141,7 +145,8 @@ const PosBulkCashReceipts = () => {
     data.forEach((transaction) => {
         // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
         const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
-        const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+        // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+        const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
         // Handle "IN" transactions
         if (transaction.TransactionCode.endsWith("IN")) {
@@ -283,7 +288,8 @@ const PosBulkCashReceipts = () => {
       // Loop through invoiceDetails and calculate gross, VAT, and total amounts
       invoiceDetails.forEach((item) => {
         const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-        const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        // const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        const itemVAT = itemGross * taxAmount; // Calculate VAT for each item (15%)
         totalGrossAmount += itemGross;
         totalVAT += itemVAT;
       });
@@ -352,7 +358,8 @@ const PosBulkCashReceipts = () => {
     const vatRate = invoiceHeader?.VatNumber
       ? parseFloat(invoiceHeader.VatNumber) / 100
       : 0.15;
-    const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+    // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+    const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
     // Calculate total VAT
     let totalGrossAmount = 0;
@@ -362,7 +369,8 @@ const PosBulkCashReceipts = () => {
     // Loop through invoiceDetails and calculate gross, VAT, and total amounts
     invoiceDetails.forEach((item) => {
       const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-      const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
@@ -742,7 +750,7 @@ const PosBulkCashReceipts = () => {
                       : "text-start direction-ltr"
                   }`}
                 >
-                  {t("Total Invoice Amount WithVAT( %)")}:
+                  {t("Total Invoice Amount WithVAT")}:
                 </label>
                 <input
                   type="text"
