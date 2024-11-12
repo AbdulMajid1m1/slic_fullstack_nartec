@@ -1397,11 +1397,9 @@ exports.createTaxRecord = async (req, res, next) => {
     const { error, value } = createTaxSchema.validate(req.body);
 
     if (error) {
-      const validationError = new Error(
-        `Validation error: ${error.details[0].message}`
-      );
-      validationError.statusCode = 400;
-      throw validationError;
+      return res
+        .status(400)
+        .json({ message: `Validation error: ${error.details[0].message}` });
     }
 
     const { taxAmount } = value;
@@ -1430,11 +1428,7 @@ exports.updateTaxRecord = async (req, res, next) => {
     const { error, value } = updateTaxSchema.validate(req.body);
 
     if (error) {
-      const validationError = new Error(
-        `Validation error: ${error.details[0].message}`
-      );
-      validationError.statusCode = 400;
-      throw validationError;
+      return res.status(400).json({ message: error.details[0].message });
     }
 
     const taxRecord = await prisma.tblTax.findUnique({
@@ -1442,9 +1436,9 @@ exports.updateTaxRecord = async (req, res, next) => {
     });
 
     if (!taxRecord) {
-      const notFoundError = new Error(`Tax record with id ${taxId} not found`);
-      notFoundError.statusCode = 404;
-      throw notFoundError;
+      return res
+        .status(404)
+        .json({ message: `Tax record with id ${taxId} not found` });
     }
 
     const updatedTax = await prisma.tblTax.update({
