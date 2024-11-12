@@ -53,4 +53,15 @@ router.post(
 );
 router.post("/v1/updateReceiptStatus", controller.updateReceiptStatus);
 
+
+
+
+
+// tax routes 
+
+router.get("/v1/getTaxRecords", controller.getTaxRecords);
+router.post("/v1/createTaxRecord", controller.createTaxRecord);
+router.put("/v1/updateTaxRecord/:taxId", controller.updateTaxRecord);
+router.delete("/v1/deleteTaxRecord/:taxId", controller.deleteTaxRecord);
+
 module.exports = router;

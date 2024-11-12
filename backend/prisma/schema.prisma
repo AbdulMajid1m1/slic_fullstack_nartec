@@ -195,6 +195,15 @@ model tblPOSInvoiceBatch {
   @@map("tblPOSInvoiceBatch") // Mapping the table to the database name
 }
 
+model tblTax {
+  id        String   @id @default(uuid())
+  taxAmount Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tblTax")
+}
+
 model ErrorLog {
   id              String   @id @default(uuid())
   inDocumentNo    String?  @db.NVarChar(255) // Optional IN document number
