@@ -9,6 +9,7 @@ import newRequest from "../../../utils/userRequest";
 import { Autocomplete, CircularProgress, debounce, TextField } from "@mui/material";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const PosBrvMatchedReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -20,6 +21,8 @@ const PosBrvMatchedReceipts = () => {
 
   const [selectedMatchReceipts, setSelectedMatchReceipts] = useState(null);
   const [matchReceiptsList, setMatchReceiptsList] = useState([]);
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
 
   const handleSelectedBrvReceipts = (event, value) => {
     console.log(value);
@@ -60,7 +63,8 @@ const PosBrvMatchedReceipts = () => {
       const vatRate = transaction.VatNumber
         ? parseFloat(transaction.VatNumber) / 100
         : 0.15;
-      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
       // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
@@ -197,7 +201,7 @@ const PosBrvMatchedReceipts = () => {
             <div className="flex flex-col gap-4">
               <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
                 <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
-                  {t("Total Invoice Amount WithVAT(15%)")}:
+                  {t("Total Invoice Amount WithVAT")}:
                 </label>
                 <input
                   type="text"

@@ -21,6 +21,7 @@ import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 import { useTranslation } from "react-i18next";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const POS = () => {
   const { t, i18n } = useTranslation();
@@ -38,18 +39,20 @@ const POS = () => {
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
 
   // vat dynamic
-  const handleVatChange = (e) => {
-    const value = e.target.value;
-    // Convert to number and validate
-    const numValue = parseFloat(value);
+  // const handleVatChange = (e) => {
+  //   const value = e.target.value;
+  //   // Convert to number and validate
+  //   const numValue = parseFloat(value);
     
-    // Allow empty string or valid numbers
-    if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 100)) {
-      setVat(value);
-    }
-  };
+  //   // Allow empty string or valid numbers
+  //   if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 100)) {
+  //     setVat(value);
+  //   }
+  // };
 
   const [selectedSalesReturnType, setSelectedSalesReturnType] =
     useState("RETRUN WITH EXCHANGE");
@@ -201,6 +204,8 @@ const POS = () => {
     if (storedPaymentMode) {
       setSelectedPaymentMode(JSON.parse(storedPaymentMode));
     }
+
+    // console.log(taxAmount);
 
   }, []);
   
@@ -410,10 +415,10 @@ const POS = () => {
       return;
     }
 
-    if(vat === "") {
-      toast.info("Please add Vat Dynamically for all transactions");
-      return;
-    }
+    // if(vat === "") {
+    //   toast.info("Please add Vat Dynamically for all transactions");
+    //   return;
+    // }
 
     setIsLoading(true);
     try {
@@ -468,11 +473,8 @@ const POS = () => {
           );
 
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
-          // const vat = itemPrice * 0.15;
-          // const total = itemPrice + vat;
-          const vatRate = parseFloat(vat) / 100 || 0; // Convert percentage to decimal, default to 0 if empty
-          const vatAmount = itemPrice * vatRate;
-          const total = itemPrice + vatAmount;
+          const vat = itemPrice * taxAmount / 100;
+          const total = itemPrice + vat;
 
           // Set data in state
           setData((prevData) => {
@@ -486,8 +488,7 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1,
                 Total:
-                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount),
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
               };
               return updatedData;
             } else {
@@ -501,8 +502,7 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  // VAT: vat,
-                  VAT: vatAmount,
+                  VAT: vat,
                   Total: total,
                 },
               ];
@@ -662,13 +662,10 @@ const POS = () => {
 
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const vat = itemPrice * 0.15;
-          // const total = itemPrice + vat;
-          // console.log(itemPrice);
-          const vatRate = parseFloat(vat) / 100 || 0; // Convert percentage to decimal, default to 0 if empty
-          const vatAmount = itemPrice * vatRate;
-          const total = itemPrice + vatAmount;
-
+          const vat = itemPrice * taxAmount / 100;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
+       
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
@@ -681,8 +678,7 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
                 Total:
-                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
               };
               return updatedData;
             } else {
@@ -698,8 +694,7 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  // VAT: vat,
-                  VAT: vatAmount,
+                  VAT: vat,
                   Total: total,
                 },
               ];
@@ -788,12 +783,9 @@ const POS = () => {
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          // const vat = itemPrice * 0.15;
-          // const total = itemPrice + vat;
-          // console.log(itemPrice);
-          const vatRate = parseFloat(vat) / 100 || 0;
-          const vatAmount = itemPrice * vatRate;
-          const total = itemPrice + vatAmount;
+          const vat = itemPrice * taxAmount;
+          const total = itemPrice + vat;
+          console.log(itemPrice);
 
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
@@ -807,8 +799,7 @@ const POS = () => {
                 ...updatedData[existingItemIndex],
                 Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
                 Total:
-                  // (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vatAmount), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
               };
               return updatedData;
             } else {
@@ -824,8 +815,7 @@ const POS = () => {
                   ItemSize: ProductSize,
                   Qty: 1,
                   ItemPrice: itemPrice,
-                  // VAT: vat,
-                  VAT: vatAmount,
+                  VAT: vat,
                   Total: total,
                 },
               ];
@@ -1453,16 +1443,16 @@ const POS = () => {
       let totalNet = 0;
       let totalVat = 0;
 
-      // data.forEach((item) => {
-      //   totalNet += item.ItemPrice * item.Qty;
-      //   totalVat += item.VAT * item.Qty;
-      // });
       data.forEach((item) => {
-        const itemTotal = item.ItemPrice * item.Qty;
-        totalNet += itemTotal;
-        const vatRate = parseFloat(vat) / 100 || 0;
-        totalVat += itemTotal * vatRate;
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
       });
+      // data.forEach((item) => {
+      //   const itemTotal = item.ItemPrice * item.Qty;
+      //   totalNet += itemTotal;
+      //   const vatRate = parseFloat(vat) / 100 || 0;
+      //   totalVat += itemTotal * vatRate;
+      // });
 
       setNetWithVat(totalNet.toFixed(2));
       setTotalVat(totalVat.toFixed(2));
@@ -1473,8 +1463,8 @@ const POS = () => {
     if (data.length > 0) {
       calculateTotals(); // Only calculate when there is data
     }
-  }, [data, vat]);
-// }, [data]);
+  // }, [data, vat]);
+}, [data]);
 
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
   const [isReceiptPrinted, setIsReceiptPrinted] = useState(false);
@@ -1499,7 +1489,7 @@ const POS = () => {
           ${netWithVat}
         </div>
         <div>
-          <strong>VAT (${vat || 0}%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalVat}
         </div>
@@ -1527,7 +1517,7 @@ const POS = () => {
           ${netWithOutVatExchange}
         </div>
         <div>
-          <strong>VAT (${vat || 0}%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutExchange}
         </div>
@@ -1555,7 +1545,7 @@ const POS = () => {
           ${netWithOutVatDSalesNoInvoice}
         </div>
         <div>
-          <strong>VAT (${vat || 0}%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutVatDSalesNoInvoice}
         </div>
@@ -2312,7 +2302,7 @@ const POS = () => {
         ${netWithVat}
       </div>
       <div>
-        <strong>VAT (${vat || 0}%):</strong>
+        <strong>VAT (${taxAmount || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVat}
       </div>
@@ -2904,14 +2894,12 @@ const POS = () => {
         const invoiceDetails = data.invoiceDetails;
         // new changes vat dynamic
         // const vatRate = parseFloat(vat) / 100 || 0; 
-        const vatRate = parseFloat(data?.invoiceHeader?.VatNumber) / 100 || 0;
+        // const vatRate = parseFloat(data?.invoiceHeader?.VatNumber) / 100 || 0;
 
         setInvoiceData(
           invoiceDetails.map((item) => {
-            // const vat = item.ItemPrice * 0.15;
-            // const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
-            const vatAmount = item.ItemPrice * vatRate;
-            const total = item.ItemPrice * item.ItemQry + vatAmount * item.ItemQry;  
+            const vat = item.ItemPrice * taxAmount;
+            const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
 
             return {
               id: item.id,
@@ -2923,8 +2911,7 @@ const POS = () => {
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
               ItemPrice: item.ItemPrice,
-              // VAT: vat,
-              VAT: vatAmount,
+              VAT: vat,
               Total: total,
             };
           })
@@ -2950,17 +2937,10 @@ const POS = () => {
       let totalNet = 0;
       let totalVat = 0;
       
-      // invoiceData.forEach((item) => {
-      //   totalNet += item.ItemPrice * item.Qty;
-      //   totalVat += item.VAT * item.Qty;
-      // });
-      // dynamically change value
       invoiceData.forEach((item) => {
-        const itemTotal = item.ItemPrice * item.Qty;
-        totalNet += itemTotal;
-        totalVat += item.VAT;
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
       });
-      // console.log(exchangeData)
 
       setNetWithOutExchange(totalNet.toFixed(2));
       setTotalWithOutExchange(totalVat.toFixed(2));
@@ -2978,22 +2958,13 @@ const POS = () => {
 
     if (qty > originalQty || qty < 1) return;
 
-    const vatRate = parseFloat(vat) / 100 || 0;
-
     // Update the state with the new quantity
     const updatedInvoiceData = invoiceData.map((item, i) => {
       if (i === index) {
-        // const itemTotal = item.ItemPrice * qty;
-        // const vatAmount = itemTotal * vatRate;
-        const itemTotal = item.ItemPrice * qty; // Calculate total for the new quantity
-        const vatAmount = itemTotal * (parseFloat(item.VatNumber) / 100 || 0);  
-  
         return {
-          // new changes
           ...item,
           Qty: qty,
-          VAT: vatAmount,
-          Total: itemTotal + vatAmount,
+          Total: item.ItemPrice * qty + item.VAT * qty, // Recalculate total
         };
       }
       return item;
@@ -3025,9 +2996,6 @@ const POS = () => {
 
   const [exchangeData, setExchangeData] = useState([]);
   const addExchangeData = (newData) => {
-    // new changes vat dynamically
-    // const vatRate = parseFloat(vat) / 100 || 0;
-
     setExchangeData((prevData) => {
       // Loop through the newData array to handle multiple scanned items
       return newData.reduce(
@@ -3045,31 +3013,12 @@ const POS = () => {
                 (updatedData[existingItemIndex].Qty + newItem.Qty) *
                 (newItem.ItemPrice + newItem.VAT),
             };
-            // const newQty = updatedData[existingItemIndex].Qty + newItem.Qty;
-            // const itemTotal = newItem.ItemPrice * newQty;
-            // const vatAmount = itemTotal * vatRate;
 
-            // const updatedItem = {
-            //   ...updatedData[existingItemIndex],
-            //   Qty: newQty,
-            //   VAT: vatAmount, // Recalculate VAT with current rate
-            //   Total: itemTotal + vatAmount,
-            // };
-
-            // // Replace the existing item with the updated item
-            // updatedData[existingItemIndex] = updatedItem;
+            // Replace the existing item with the updated item
+            updatedData[existingItemIndex] = updatedItem;
           } else {
             // If the item is new, add it to the data array
             updatedData.push(newItem);
-
-            // const itemTotal = newItem.ItemPrice * newItem.Qty;
-            // const vatAmount = itemTotal * vatRate;
-
-            // updatedData.push({
-            //   ...newItem,
-            //   VAT: vatAmount, // Calculate VAT with current rate
-            //   Total: itemTotal + vatAmount, // Set total with new VAT
-            // });
           }
 
           return updatedData;
@@ -3084,19 +3033,12 @@ const POS = () => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      // new changes vat dynamically
-      // const vatRate = parseFloat(vat) / 100 || 0;
-
+    
       exchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
-      // exchangeData.forEach((item) => {
-      //   const itemTotal = item.ItemPrice * item.Qty;
-      //   totalNet += itemTotal;
-      //   totalVat += itemTotal * vatRate; // Calculate VAT based on current rate
-      // });
 
       setNetWithVat(totalNet.toFixed(2));
       setTotalVat(totalVat.toFixed(2));
@@ -3107,16 +3049,12 @@ const POS = () => {
     if (exchangeData.length > 0) {
       calculateExchangeTotals(); // Only calculate when there is exchange data
     }
-  // }, [exchangeData, vat]);
 }, [exchangeData]);
 
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
     useState([]);
   const addDSalesExchangeData = (newData) => {
-    // new changes vat dynamically
-    // const vatRate = parseFloat(vat) / 100 || 0;
-
     setDSalesNoInvoiceexchangeData((prevData) => {
       return newData.reduce(
         (updatedData, newItem) => {
@@ -3133,29 +3071,9 @@ const POS = () => {
                 (newItem.ItemPrice + newItem.VAT),
             };
 
-            // const newQty = updatedData[existingItemIndex].Qty + newItem.Qty;
-            // const itemTotal = newItem.ItemPrice * newQty;
-            // const vatAmount = itemTotal * vatRate;
-
-            // const updatedItem = {
-            //   ...updatedData[existingItemIndex],
-            //   Qty: newQty,
-            //   VAT: vatAmount,
-            //   Total: itemTotal + vatAmount,
-            // };
-
             updatedData[existingItemIndex] = updatedItem;
           } else {
             updatedData.push(newItem);
-
-            // const itemTotal = newItem.ItemPrice * newItem.Qty;
-            // const vatAmount = itemTotal * vatRate;
-
-            // updatedData.push({
-            //   ...newItem,
-            //   VAT: vatAmount,
-            //   Total: itemTotal + vatAmount,
-            // });
           }
 
           return updatedData;
@@ -3170,19 +3088,12 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      const vatRate = parseFloat(vat) / 100 || 0;
-
-      // DSalesNoInvoiceData.forEach((item) => {
-      //   totalNet += item.ItemPrice * item.Qty;
-      //   totalVat += item.VAT * item.Qty;
-      // });
-      // console.log(exchangeData)
-
+     
       DSalesNoInvoiceData.forEach((item) => {
-        const itemTotal = item.ItemPrice * item.Qty;
-        totalNet += itemTotal;
-        totalVat += itemTotal * vatRate;
+        totalNet += item.ItemPrice * item.Qty;
+        totalVat += item.VAT * item.Qty;
       });
+      // console.log(exchangeData)
 
       setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
       setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
@@ -3190,15 +3101,13 @@ const POS = () => {
     };
 
     calculateTotals();
-  }, [DSalesNoInvoiceData, vat]);
-// }, [DSalesNoInvoiceData]);
+}, [DSalesNoInvoiceData]);
 
   // DSALES No Invocie Exchange calculation
   useEffect(() => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      // const vatRate = parseFloat(vat) / 100 || 0;
 
       // console.log(dSalesNoInvoiceexchangeData);
       dSalesNoInvoiceexchangeData.forEach((item) => {
@@ -3207,11 +3116,6 @@ const POS = () => {
       });
       console.log(dSalesNoInvoiceexchangeData)
 
-      // dSalesNoInvoiceexchangeData.forEach((item) => {
-      //   const itemTotal = item.ItemPrice * item.Qty;
-      //   totalNet += itemTotal;
-      //   totalVat += itemTotal * vatRate;
-      // });
 
       setNetWithVat(totalNet.toFixed(2));
       setTotalVat(totalVat.toFixed(2));
@@ -3222,7 +3126,6 @@ const POS = () => {
     if (dSalesNoInvoiceexchangeData.length > 0) {
       calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
     }
-  // }, [dSalesNoInvoiceexchangeData, vat]);
 }, [dSalesNoInvoiceexchangeData]);
 
   // handleDelete
@@ -4139,22 +4042,7 @@ const POS = () => {
                 {t("VAT")} #
               </label>
               <input
-              //   type="text"
-              //   value={
-              //     selectedSalesType === "DIRECT SALES RETURN"
-              //       ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
-              //       : vat
-              //   }
-              //   className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
-              //     selectedSalesType === "DIRECT SALES RETURN"
-              //       ? "bg-gray-200"
-              //       : "bg-green-200"
-              //   }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
-              //   disabled={selectedSalesType === "DIRECT SALES RETURN"}
-              //   placeholder={t("VAT")}
-              //   onChange={(e) => setVat(e.target.value)}
-              // />
-                type="number" // Changed to number type
+                type="text"
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
@@ -4166,18 +4054,10 @@ const POS = () => {
                     : "bg-green-200"
                 }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
-                placeholder={t("Enter VAT percentage (0-100)")}
-                onChange={handleVatChange}
-                min="0"
-                max="100"
-                step="0.01" // Allows for decimal values
+                placeholder={t("VAT")}
+                onChange={(e) => setVat(e.target.value)}
               />
-              {vat && (parseFloat(vat) < 0 || parseFloat(vat) > 100) && (
-                <p className="text-red-500 text-sm mt-1">
-                  {t("VAT must be between 0 and 100")}
-                </p>
-              )}
-            </div>
+          </div>
             {errorMessage && (
               <p className="text-red-500 text-sm -mt-6">{errorMessage}</p>
             )}
@@ -4194,7 +4074,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
@@ -4325,7 +4205,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Item Size")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
@@ -4501,7 +4381,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -4631,7 +4511,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Item Size")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -4803,7 +4683,7 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Available Stock Qty")}</th>      
                           <th className="px-4 py-2">{t("Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
-                          <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                          <th className="px-4 py-2">{t("VAT")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
                           <th className="px-4 py-2">{t("Action")}</th>
                         </tr>

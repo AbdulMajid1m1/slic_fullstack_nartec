@@ -27,6 +27,8 @@ import PosBulkCashReceipts from "./Pages/SlicPages/BulkCashReceipts/BulkCashRece
 import PosBulkMatchReceipts from "./Pages/SlicPages/MatchReceipts/MatchReceipts.jsx";
 import PosBrvMatchedReceipts from "./Pages/SlicPages/BrvMatchedReceipts/BrvMatchedReceipts.jsx";
 import PosErrorLogs from "./Pages/SlicPages/PosErrorLogs/PosErrorLogs.jsx";
+import TaxSettings from "./Pages/SlicPages/TaxSettings/TaxSettings.jsx";
+import { TaxProvider } from './Contexts/TaxContext.jsx';
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,7 @@ const App = () => {
     <>
       <DataTableProvider>
         <RolesProvider>
+         <TaxProvider>
           <div>
             <BrowserRouter>
               <QueryClientProvider client={queryClient}>
@@ -73,6 +76,7 @@ const App = () => {
                   {/* <Route path="pos" element={<POS />} /> */}
                   <Route path="pos-history" element={<PosHistory />} />
                   <Route path="pos-archive" element={<PosArchive />} />
+                  <Route path="tax-settings" element={<TaxSettings />} />
                   <Route
                     path="pos-bulkcash-receipts"
                     element={
@@ -163,6 +167,7 @@ const App = () => {
               </QueryClientProvider>
             </BrowserRouter>
           </div>
+         </TaxProvider>
         </RolesProvider>
       </DataTableProvider>
     </>
