@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 const Joi = require("joi");
 
 // exports.getInvoiceDetailsByTransactionCode = async (req, res, next) => {
-//   const { transactionCode } = req.params;
+//   const { transactionCode } = req.params; //
 
 //   try {
 //     // Validate the input
