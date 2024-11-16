@@ -18,11 +18,23 @@ const PosBrvMatchedReceipts = () => {
   const [totalInvoiceAmount, setTotalInvoiceAmount] = useState(0);
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const [selectedMatchReceipts, setSelectedMatchReceipts] = useState(null);
   const [matchReceiptsList, setMatchReceiptsList] = useState([]);
   const { taxAmount } = useTaxContext();
   // console.log(taxAmount);
+
+  useEffect(() => {
+    const storedLocationData = sessionStorage.getItem("selectedLocation");
+    if (storedLocationData) {
+      const locationData = JSON.parse(storedLocationData);
+      if (JSON.stringify(locationData) !== JSON.stringify(selectedLocation)) {
+        setSelectedLocation(locationData);
+      }
+      // console.log(locationData)
+    }
+  }, []);
 
   const handleSelectedBrvReceipts = (event, value) => {
     console.log(value);
@@ -88,7 +100,7 @@ const PosBrvMatchedReceipts = () => {
     // console.log(value);
     try {
       const response = await newRequest.get(
-        `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}`
+        `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}`
       );
       setData(response?.data || []);
       calculateAmounts(response?.data);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
 import { posBulkCashreceiptInvoiceColumns } from "../../../utils/datatablesource";
@@ -19,6 +19,7 @@ import AddBankDepositNoPopUp from "./AddBankDepositNoPopUp";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { newERPBaseUrl } from "../../../utils/config";
 import { useTaxContext } from "../../../Contexts/TaxContext";
+import { RolesContext } from "../../../Contexts/FetchRolesContext";
 
 const PosBulkMatchReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -33,6 +34,17 @@ const PosBulkMatchReceipts = () => {
   const [token, setToken] = useState(null);
   const { taxAmount } = useTaxContext();
   // console.log(taxAmount);
+
+  const { userRoles } = useContext(RolesContext);
+  const [hasBulkCashRole, setHasBulkCashRole] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has the "bulk_cash" role
+    const bulkCashRole = userRoles.find((role) => role.RoleName === "bulk_cash");
+    setHasBulkCashRole(!!bulkCashRole);
+  }, [userRoles]);
+
+  console.log(hasBulkCashRole)
 
   useEffect(() => {
     // slic login api token get
@@ -153,11 +165,11 @@ const PosBulkMatchReceipts = () => {
     // console.log(value);
     try {
       const response = await newRequest.get(
-        `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}`
+        `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}`
       );
       setData(response?.data || []);
       calculateAmounts(response?.data);
-      console.log(response.data);
+      // console.log(response.data);
       setIsLoading(false);
     } catch (err) {
       console.log(err);
@@ -705,6 +717,7 @@ const PosBulkMatchReceipts = () => {
                     }}
                   />
                 </div>
+                {hasBulkCashRole ? (
                 <div className="flex justify-end items-center w-full gap-3">
                   <button
                     className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
@@ -744,6 +757,9 @@ const PosBulkMatchReceipts = () => {
                     </Button>
                   </div>
                 </div>
+                ) : (
+                  <div className="flex justify-end items-center w-full gap-3">You do not have permission to access these actions.</div>
+                )}
               </div>
             </div>
           </div>
