@@ -85,22 +85,24 @@ const App = () => {
                       </ProtectedRoute>
                     }
                   />
-                  <Route
+                  {/* <Route
                     path="pos-bulkmatch-receipts"
                     element={
                       <ProtectedRoute requiredRoles="bulk_cash">
                         <PosBulkMatchReceipts />
                       </ProtectedRoute>
                     }
-                  />
-                  <Route
+                  /> */}
+                  <Route path="pos-bulkmatch-receipts" element={<PosBulkMatchReceipts />} />
+                  <Route path="pos-Matched-receipts" element={<PosBrvMatchedReceipts />} />
+                  {/* <Route
                     path="pos-Matched-receipts"
                     element={
                       <ProtectedRoute requiredRoles="bulk_cash">
                         <PosBrvMatchedReceipts />
                       </ProtectedRoute>
                     }
-                  />
+                  /> */}
                   <Route path="pos-error-logs" element={<PosErrorLogs />} />
                   <Route
                     path="purchase-order"
