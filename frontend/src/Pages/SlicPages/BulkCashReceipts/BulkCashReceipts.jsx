@@ -132,143 +132,137 @@ const PosBulkCashReceipts = () => {
     setRemainingAmount(remainingAmount.toFixed(2));
   };
 
+
   const handleGenerateReceipt = async () => {
     if (parseFloat(remainingAmount) < 0) {
-      toast.error("Cannot generate receipt when remaining amount is negative");
-      return;
+        toast.error("Cannot generate receipt when remaining amount is negative");
+        return;
     }
 
     let totalRemainingAmount = 0;
     let details = [];
 
     data.forEach((transaction) => {
-      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
-      const vatRate = transaction.VatNumber
-        ? parseFloat(transaction.VatNumber) / 100
-        : 0.15;
-      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
-      const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
+        // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
+        const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
+        // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+        const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
-      // Handle "IN" transactions
-      if (transaction.TransactionCode.endsWith("IN")) {
-        details.push({
-          Dr_Cr_Flag: "C",
-          Company: "SLIC",
-          Sub_Acnt_Code: transaction.CustomerCode || "",
-          Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
-        });
-        totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
-      }
-      // Handle "SR" transactions
-      else if (transaction.TransactionCode.endsWith("SR")) {
-        details.push({
-          Dr_Cr_Flag: "D",
-          Company: "SLIC",
-          Sub_Acnt_Code: transaction.CustomerCode || "",
-          Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
-        });
-        totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
-      }
+        // Handle "IN" transactions
+        if (transaction.TransactionCode.endsWith("IN")) {
+            details.push({
+                Dr_Cr_Flag: "C",
+                Company: "SLIC",
+                Sub_Acnt_Code: transaction.CustomerCode || "",
+                Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+            });
+            totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
+        }
+        // Handle "SR" transactions
+        else if (transaction.TransactionCode.endsWith("SR")) {
+            details.push({
+                Dr_Cr_Flag: "D",
+                Company: "SLIC",
+                Sub_Acnt_Code: transaction.CustomerCode || "",
+                Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+            });
+            totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
+        }
     });
 
     // Add first object for total remaining amount
     const remainingAmountObject = {
-      Dr_Cr_Flag: "D",
-      Company: "SLIC",
-      Sub_Acnt_Code: "",
-      Receipt_Amt: totalRemainingAmount.toFixed(2),
+        Dr_Cr_Flag: "D",
+        Company: "SLIC",
+        Sub_Acnt_Code: "",
+        Receipt_Amt: totalRemainingAmount.toFixed(2),
     };
 
     // Add this object to the start of the details array
     details.unshift(remainingAmountObject);
 
     const requestData = {
-      url: newERPBaseUrl,
-      data: [
-        {
-          Company: "SLIC",
-          UserId: "SYSADMIN",
-          Department: "011",
-          TransactionCode: "BRV",
-          Division: "100",
-          Narration: slicUserData?.UserLoginID,
-          Details: details,
-        },
-      ],
-      COMPANY: "SLIC",
-      USERID: slicUserData?.UserLoginID,
-      APICODE: "BULKBRVCASHAPI",
-      LANG: "ENG",
+        url: newERPBaseUrl,
+        data: [
+            {
+                Company: "SLIC",
+                UserId: "SYSADMIN",
+                Department: "011",
+                TransactionCode: "BRV",
+                Division: "100",
+                Narration: slicUserData?.UserLoginID,
+                Details: details,
+            },
+        ],
+        COMPANY: "SLIC",
+        USERID: slicUserData?.UserLoginID,
+        APICODE: "BULKBRVCASHAPI",
+        LANG: "ENG",
     };
 
     console.log(requestData);
 
     try {
-      setLoading(true);
-      const receiptResponse = await ErpTeamRequest.post(
-        "/slicuat05api/v1/postData",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const responseData = receiptResponse?.data?.message;
-
-      if (!responseData?.["Ref-No/SysID"] || !responseData?.["Document No"]) {
-        throw new Error("Required fields missing in ERP response.");
-      }
-
-      toast.success(
-        receiptResponse?.data?.message?.message ||
-          "Receipt generated successfully!"
-      );
-
-      const refNo = responseData["Ref-No/SysID"];
-      const docNo = responseData["Document No"];
-
-      const invoiceMasterIds = data.map((transaction) => transaction.id);
-
-      const batchRequestData = {
-        bulkCashDocNo: docNo,
-        bulkCashRefNo: `${refNo}`,
-        invoiceMasterIds: invoiceMasterIds,
-      };
-
-      console.log(batchRequestData);
-
-      try {
-        const batchResponse = await newRequest.post(
-          "/invoice/v1/createPOSInvoiceBatch",
-          batchRequestData
+        setLoading(true);
+        const receiptResponse = await ErpTeamRequest.post(
+            "/slicuat05api/v1/postData",
+            requestData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
         );
+
+        const responseData = receiptResponse?.data?.message;
+
+        if (!responseData?.["Ref-No/SysID"] || !responseData?.["Document No"]) {
+            throw new Error("Required fields missing in ERP response.");
+        }
 
         toast.success(
-          batchResponse?.data?.message ||
-            "POS Invoice Batch created successfully!"
+            receiptResponse?.data?.message?.message || "Receipt generated successfully!"
         );
-      } catch (batchErr) {
-        toast.error(
-          batchErr?.response?.data?.message ||
-            "Failed to create POS Invoice Batch."
-        );
-      }
 
-      setLoading(false);
-      // clear the data
-      setData([]);
-      setTotalInvoiceAmount(0);
-      setExchangeAmount(0);
-      setRemainingAmount(0);
+        const refNo = responseData["Ref-No/SysID"];
+        const docNo = responseData["Document No"];
+
+        const invoiceMasterIds = data.map((transaction) => transaction.id);
+
+        const batchRequestData = {
+            bulkCashDocNo: docNo,
+            bulkCashRefNo: `${refNo}`,
+            invoiceMasterIds: invoiceMasterIds,
+        };
+
+        console.log(batchRequestData);
+
+        try {
+            const batchResponse = await newRequest.post(
+                "/invoice/v1/createPOSInvoiceBatch",
+                batchRequestData
+            );
+
+            toast.success(
+                batchResponse?.data?.message || "POS Invoice Batch created successfully!"
+            );
+        } catch (batchErr) {
+            toast.error(
+                batchErr?.response?.data?.message || "Failed to create POS Invoice Batch."
+            );
+        }
+
+        setLoading(false);
+        // clear the data
+        setData([]);
+        setTotalInvoiceAmount(0);
+        setExchangeAmount(0);
+        setRemainingAmount(0);
     } catch (err) {
-      setLoading(false);
-      toast.error(
-        err?.response?.data?.message || "Failed to generate receipt."
-      );
+        setLoading(false);
+        toast.error(err?.response?.data?.message || "Failed to generate receipt.");
     }
-  };
+};
 
   const handleRowClickInParent = async () => {};
 
@@ -381,7 +375,7 @@ const PosBulkCashReceipts = () => {
     invoiceDetails.forEach((item) => {
       const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
       // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
-      const itemVAT = (itemGross * taxAmount) / 100; // Calculate VAT for each item
+      const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
