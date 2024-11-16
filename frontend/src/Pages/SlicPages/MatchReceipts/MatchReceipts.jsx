@@ -40,7 +40,7 @@ const PosBulkMatchReceipts = () => {
 
   useEffect(() => {
     // Check if the user has the "bulk_cash" role
-    const bulkCashRole = userRoles.find((role) => role.RoleName === "bulk_cash");
+    const bulkCashRole = userRoles.find((role) => role.RoleName === "matching_receipt");
     setHasBulkCashRole(!!bulkCashRole);
   }, [userRoles]);
 
