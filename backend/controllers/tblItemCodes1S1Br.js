@@ -6,41 +6,60 @@ const BarSeriesNo = require('../models/barSeriesNo');
 const generateResponse = require('../utils/response');
 const CustomError = require('../exceptions/customError');
 
+function calculateCheckDigit(gtinWithoutCheckDigit) {
+  const digits = gtinWithoutCheckDigit.split("").map(Number);
+  let sum = 0;
+
+  // EAN-13 check digit calculation (modulo-10 algorithm)
+  for (let i = 0; i < digits.length; i++) {
+    sum += i % 2 === 0 ? digits[i] * 1 : digits[i] * 3;
+  }
+
+  const remainder = sum % 10;
+  const checkDigit = remainder === 0 ? 0 : 10 - remainder;
+
+  return checkDigit.toString();
+}
+
 async function generateBarcode(id) {
   const GCP = '6287898';
-  let barcode;
   const seriesNo = await BarSeriesNo.getBarSeriesNo(id);
+
   if (!seriesNo) {
-    const error = new CustomError('BarSeriesNo not found');
-    error.statusCode = 404;
-    throw error;
+    throw new CustomError('BarSeriesNo not found', 404);
   }
 
-  const CHECK_DIGIT = mod10CheckDigit(`${GCP}${seriesNo.BarSeriesNo}`);
+  // Construct the base barcode
+  const baseBarcode = `${GCP}${seriesNo.BarSeriesNo}`;
 
-  if (`${GCP}${seriesNo.BarSeriesNo}`.length != 12) {
-    // add 0 after GCP
-    barcode = `${GCP}0${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
-  } else barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
-
-  if (barcode.length != 13) {
-    const error = new CustomError('Generated barcode is not 13 characters long');
-    error.statusCode = 500;
-    throw error;
+  // Add a leading zero if the base barcode length is 11
+  let barcode;
+  if (baseBarcode.length === 11) {
+    barcode = `${GCP}0${seriesNo.BarSeriesNo}`;
+  } else if (baseBarcode.length === 12) {
+    barcode = baseBarcode;
+  } else {
+    throw new CustomError('BarSeriesNo is not in a valid format', 400);
   }
 
+  // Calculate the check digit and append it
+  const CHECK_DIGIT = calculateCheckDigit(barcode);
+  barcode += CHECK_DIGIT;
+
+  if (barcode.length !== 13) {
+    throw new CustomError('Generated barcode is not 13 characters long', 500);
+  }
+
+  // Increment the BarSeriesNo for the next generation
   const number = (Number(seriesNo.BarSeriesNo) + 1).toString();
-
   const result = await BarSeriesNo.updateBarSeriesNo(id, number);
+
   if (!result) {
-    const error = new CustomError('Failed to update BarSeriesNo');
-    error.statusCode = 500;
-    throw error;
+    throw new CustomError('Failed to update BarSeriesNo', 500);
   }
 
   return barcode;
 }
-
 exports.getItemCodes = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
