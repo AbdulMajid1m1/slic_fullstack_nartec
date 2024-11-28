@@ -16,6 +16,8 @@ prisma/migrations/
 
 # User-uploaded images
 images/
+uploads/
+public/
 
 # VS Code settings
 .vscode/

@@ -296,7 +296,7 @@ exports.deleteItemCode = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    const deletedItemCode = await ItemCodeModel.delete(GTIN);
+    const deletedItemCode = await ItemCodeModel.deleteById(itemCode.id);
     res
       .status(200)
       .json(
