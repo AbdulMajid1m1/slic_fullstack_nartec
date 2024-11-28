@@ -253,6 +253,11 @@ const PosBulkCashReceipts = () => {
         }
 
         setLoading(false);
+        // clear the data
+        setData([]);
+        setTotalInvoiceAmount(0);
+        setExchangeAmount(0);
+        setRemainingAmount(0);
     } catch (err) {
         setLoading(false);
         toast.error(err?.response?.data?.message || "Failed to generate receipt.");

@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 const Joi = require("joi");
 
 // exports.getInvoiceDetailsByTransactionCode = async (req, res, next) => {
-//   const { transactionCode } = req.params;
+//   const { transactionCode } = req.params; //
 
 //   try {
 //     // Validate the input
@@ -535,7 +535,6 @@ const errorLogSchema = Joi.object({
   srDocumentNo: Joi.string().optional(),
   srRefSysId: Joi.string().optional(),
   transactionType: Joi.string().optional(),
-
 });
 
 exports.createErrorLogs = async (req, res, next) => {
@@ -556,7 +555,6 @@ exports.createErrorLogs = async (req, res, next) => {
         srDocumentNo: value.srDocumentNo,
         srRefSysId: value.srRefSysId,
         transactionType: value.transactionType,
-       
       },
     });
 
@@ -1335,5 +1333,152 @@ exports.updateReceiptStatus = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error: " + error.message });
+  }
+};
+
+// TAX Controller
+
+const allowedTaxColumns = {
+  id: Joi.string(),
+  taxAmount: Joi.number().precision(2).min(1).max(100),
+  createdAt: Joi.date(),
+  updatedAt: Joi.date(),
+};
+
+exports.getTaxRecords = async (req, res) => {
+  try {
+    const columnsSchema = Joi.object({
+      columns: Joi.array().items(
+        Joi.string().valid(...Object.keys(allowedTaxColumns))
+      ),
+      filter: Joi.object().pattern(Joi.string(), Joi.any()),
+    }).unknown(true);
+
+    const { error, value } = columnsSchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({
+        message: `Invalid query parameter: ${error.details[0].message}`,
+      });
+    }
+
+    const selectedColumns =
+      value.columns && value.columns.length > 0
+        ? value.columns
+        : Object.keys(allowedTaxColumns);
+
+    const filterConditions = value.filter || {};
+
+    const select = selectedColumns.reduce((obj, col) => {
+      obj[col] = true;
+      return obj;
+    }, {});
+
+    select.id = true;
+
+    const taxRecords = await prisma.tblTax.findMany({
+      where: filterConditions,
+      select,
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.json(taxRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const createTaxSchema = Joi.object({
+  taxAmount: Joi.number().precision(2).min(1).max(100).required(),
+});
+
+exports.createTaxRecord = async (req, res, next) => {
+  try {
+    const { error, value } = createTaxSchema.validate(req.body);
+
+    if (error) {
+      return res
+        .status(400)
+        .json({ message: `Validation error: ${error.details[0].message}` });
+    }
+
+    const { taxAmount } = value;
+
+    const newTax = await prisma.tblTax.create({
+      data: { taxAmount },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Tax record created successfully",
+      data: newTax,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateTaxSchema = Joi.object({
+  taxAmount: Joi.number().precision(2).min(1).max(100).required(),
+});
+
+exports.updateTaxRecord = async (req, res, next) => {
+  try {
+    const { taxId } = req.params;
+    const { error, value } = updateTaxSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const taxRecord = await prisma.tblTax.findUnique({
+      where: { id: taxId },
+    });
+
+    if (!taxRecord) {
+      return res
+        .status(404)
+        .json({ message: `Tax record with id ${taxId} not found` });
+    }
+
+    const updatedTax = await prisma.tblTax.update({
+      where: { id: taxId },
+      data: value,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Tax record updated successfully",
+      data: updatedTax,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteTaxRecord = async (req, res, next) => {
+  try {
+    const { taxId } = req.params;
+
+    const taxRecord = await prisma.tblTax.findUnique({
+      where: { id: taxId },
+    });
+
+    if (!taxRecord) {
+      const notFoundError = new Error(`Tax record with id ${taxId} not found`);
+      notFoundError.statusCode = 404;
+      throw notFoundError;
+    }
+
+    await prisma.tblTax.delete({
+      where: { id: taxId },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Tax record deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };

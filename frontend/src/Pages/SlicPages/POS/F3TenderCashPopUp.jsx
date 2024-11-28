@@ -250,8 +250,8 @@ const F3TenderCashPopUp = ({
                 {
                   DocNo: documentNo,
                   TransactionCode: selectTransactionCode,
-                  PendingAmount: totalAmountWithVat.toFixed(2),
-                  AdjAmount: totalAmountWithVat.toFixed(2),
+                  PendingAmount: parseFloat(totalAmountWithVat.toFixed(2)),
+                  AdjAmount: parseFloat(totalAmountWithVat.toFixed(2)),
                 },
               ],
             },
@@ -518,7 +518,9 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt: totalAmountWithVat.toFixed(2) - totolAmountWithoutExchange.toFixed(2),
+                ReceiptAmt:
+                  totalAmountWithVat.toFixed(2) -
+                  totolAmountWithoutExchange.toFixed(2),
                 // CustomerId:
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -528,14 +530,19 @@ const F3TenderCashPopUp = ({
                   {
                     DocNo: exinDocumentNo,
                     TransactionCode: modifiedTransactionCode,
-                    PendingAmount: totalAmountWithVat.toFixed(2),
-                    AdjAmount: totalAmountWithVat.toFixed(2),
+
+                    PendingAmount: parseFloat(totalAmountWithVat.toFixed(2)),
+                    AdjAmount: parseFloat(totalAmountWithVat.toFixed(2)),
                   },
                   {
                     DocNo: exsrDocumentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: totolAmountWithoutExchange.toFixed(2),
-                    AdjAmount: totolAmountWithoutExchange.toFixed(2),
+                    PendingAmount: parseFloat(
+                      totolAmountWithoutExchange.toFixed(2)
+                    ),
+                    AdjAmount: parseFloat(
+                      totolAmountWithoutExchange.toFixed(2)
+                    ),
                   },
                 ],
               },
@@ -674,8 +681,12 @@ const F3TenderCashPopUp = ({
                   {
                     DocNo: documentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: totolAmountWithoutExchange.toFixed(2),
-                    AdjAmount: totolAmountWithoutExchange.toFixed(2),
+                    PendingAmount: parseFloat(
+                      totolAmountWithoutExchange.toFixed(2)
+                    ),
+                    AdjAmount: parseFloat(
+                      totolAmountWithoutExchange.toFixed(2)
+                    ),
                   },
                 ],
               },
@@ -897,7 +908,8 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt:
-                  totalAmountWithVat.toFixed(2) - totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
+                  totalAmountWithVat.toFixed(2) -
+                  totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
                 // CustomerId:
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -907,14 +919,19 @@ const F3TenderCashPopUp = ({
                   {
                     DocNo: exinDocumentNo,
                     TransactionCode: modifiedTransactionCode,
-                    PendingAmount: totalAmountWithVat.toFixed(2),
-                    AdjAmount: totalAmountWithVat.toFixed(2),
+
+                    PendingAmount: parseFloat(totalAmountWithVat.toFixed(2)),
+                    AdjAmount: parseFloat(totalAmountWithVat.toFixed(2)),
                   },
                   {
                     DocNo: exsrDocumentNo,
                     TransactionCode: selectTransactionCode,
-                    PendingAmount: totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
-                    AdjAmount: totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
+                    PendingAmount: parseFloat(
+                      totolAmountWithoutVatDSalesNoInvoice.toFixed(2)
+                    ),
+                    AdjAmount: parseFloat(
+                      totolAmountWithoutVatDSalesNoInvoice.toFixed(2)
+                    ),
                   },
                 ],
               },
@@ -1050,8 +1067,12 @@ const F3TenderCashPopUp = ({
                   {
                     DocNo: documentNo,
                     TransactionCode: transactionCode,
-                    PendingAmount: totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
-                    AdjAmount: totolAmountWithoutVatDSalesNoInvoice.toFixed(2),
+                    PendingAmount: parseFloat(
+                      totolAmountWithoutVatDSalesNoInvoice.toFixed(2)
+                    ),
+                    AdjAmount: parseFloat(
+                      totolAmountWithoutVatDSalesNoInvoice.toFixed(2)
+                    ),
                   },
                 ],
               },
