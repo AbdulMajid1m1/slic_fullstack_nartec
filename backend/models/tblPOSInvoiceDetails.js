@@ -61,23 +61,21 @@ class POSInvoiceDetails {
     }
   }
 
-  static async getInvoiceDetailsByField(field, value) {
+  static async getInvoiceDetailsByFilter(filter) {
     try {
       const details = await prisma.tblPOSInvoiceDetails.findMany({
-        where: {
-          [field]: value,
-        },
+        where: filter,
         orderBy: {
           TransactionDate: "desc", // Sort by TransactionDate in descending order
         },
       });
       return details;
     } catch (error) {
-      console.error(`Error fetching invoice details by ${field}:`, error);
-      throw new Error(`Error fetching invoice details by ${field}`);
+      console.error(`Error fetching invoice details by filter:`, error);
+      throw new Error(`Error fetching invoice details by filter`);
     }
   }
-
+  
   static async getDetailsByInvoiceNoAndTransactionCode(
     InvoiceNo,
     TransactionCode

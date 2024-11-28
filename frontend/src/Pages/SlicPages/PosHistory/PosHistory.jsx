@@ -16,13 +16,15 @@ import {
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
+import { useTranslation } from "react-i18next";
 
 const PosHistory = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState([]);
-  const [selectedInvoice, setSelectedInvoice] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [cutOfDate, setCutOfDate] = useState(""); // Cut of Date
   const navigate = useNavigate();
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -46,6 +48,19 @@ const PosHistory = () => {
     }
   }, []);
 
+  const [slicUserData, setSlicUserData] = useState(null);
+  useEffect(() => {
+    // slic our user data
+    const slicUser = sessionStorage.getItem('slicUserData');
+    const adminData = JSON.parse(slicUser);
+    if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
+      setSlicUserData(adminData?.data?.user);
+      // console.log(adminData?.data?.user)
+    }
+  }, []);
+
+  // console.log(slicUserData?.SalesmanCode);
+
  
   const fetchCustomerCodes = async () => {
     if (!cutOfDate) {
@@ -58,6 +73,7 @@ const PosHistory = () => {
         `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
       );
       const customerCodes = response?.data?.customerCodes || [];
+      console.log("history", customerCodes);
       setInvoiceList(customerCodes);
       setIsLoading(false);
     } catch (err) {
@@ -87,7 +103,7 @@ const PosHistory = () => {
   };
 
   const handleSelectAllInvoice = (event, value) => {
-    setSelectedInvoice(value);
+    setSelectedInvoice(value || null);
     console.log(value);
     if (value) {
       // Trigger POS Invoice Master API call based on selected customer code
@@ -165,7 +181,7 @@ const PosHistory = () => {
         },
       ],
       COMPANY: "SLIC",
-      USERID: "SYSADMIN",
+      USERID: slicUserData?.UserLoginID,
       APICODE: "BANKRCPTVOUCHERBULK",
       LANG: "ENG",
     };
@@ -226,89 +242,135 @@ const PosHistory = () => {
     
   };  
 
-  const [zatcaQrcode, setZatcaQrcode] = useState(null);
+  // const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (selectedRow) => {
     const {
       createdAt,
       AdjAmount,
-      VatNumber,
+      InvoiceNo,
+      TransactionCode,
     } = selectedRow;
-
+  
     try {
+
+      const dynamicTransactionCode = TransactionCode ? TransactionCode.slice(-2) : '';
+      console.log(dynamicTransactionCode);
+
+      const invoiceResponse = await newRequest.get(
+        // `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}`
+        `/invoice/v1/headers-and-line-items?InvoiceNo=${InvoiceNo}&TransactionCode=${dynamicTransactionCode}`
+      );
+  
+      const invoiceData = invoiceResponse?.data?.data;
+      
+      // console.log("Fetched invoice data:", invoiceData);
+
+      const { invoiceDetails } = invoiceData;
+    
+      let totalGrossAmount = 0;
+      let totalVAT = 0;
+
+      // Loop through invoiceDetails and calculate gross, VAT, and total amounts
+      invoiceDetails.forEach((item) => {
+        const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
+        const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        totalGrossAmount += itemGross;
+        totalVAT += itemVAT;
+      });
+
+      const totalAmountWithVAT = totalGrossAmount + totalVAT;
+  
       const payload = {
         invoiceDate: createdAt,
-        totalWithVat: AdjAmount,
-        vatTotal: Number(AdjAmount),
+        totalWithVat: totalAmountWithVAT,
+        vatTotal: totalVAT,
       };
-
+  
       const res = await newRequest.post("/zatca/generateZatcaQRCode", payload);
-  
       const qrCodeDataFromApi = res?.data?.qrCodeData;
-      // console.log(qrCodeDataFromApi);
-      setZatcaQrcode(qrCodeDataFromApi);
+      // setZatcaQrcode(qrCodeDataFromApi);
   
-      handlePrintSalesInvoice(selectedRow);
-  
+      // Now pass the invoice data to handle the printing logic
+      // handlePrintSalesInvoice(selectedRow, invoiceData);
+      if (qrCodeDataFromApi) {
+        // Now pass the invoice data to handle the printing logic
+        handlePrintSalesInvoice(selectedRow, invoiceData, qrCodeDataFromApi);
+      } else {
+        throw new Error('QR code data not generated properly.');
+      }
+
       toast.success("Invoice generated and ready to print!");
     } catch (err) {
-      // console.log(err);
       toast.error(err?.response?.data?.errors[0]?.msg || "An error occurred while generating the invoice");
     }
-  };  
+  };
+  
   
   // invoice generate
-  const handlePrintSalesInvoice = async (selectedRow) => {
+  const handlePrintSalesInvoice = async (selectedRow, invoiceData, qrCodeDataFromApi) => {
     
     const {
       InvoiceNo,
-      AdjAmount,
-      PendingAmount,
-      TransactionCode,
       DocNo,
-      CustomerName,
-      VatNumber,
-      TransactionDate,
     } = selectedRow;
+
+    const { invoiceHeader, invoiceDetails } = invoiceData;
  
     // Generate QR code data URL
     const qrCodeDataURL = await QRCode.toDataURL(`${InvoiceNo}`);
     
-    const formattedDate = new Date(TransactionDate).toLocaleDateString('en-US', {
+    const formattedDate = new Date(invoiceHeader?.TransactionDate).toLocaleDateString('en-US', {
       month: '2-digit',
       day: '2-digit',
       year: 'numeric',
     });    
 
     let salesInvoiceTitle = '';
-    const lastTwoTransactionCode = TransactionCode.slice(-2);
+    const lastTwoTransactionCode = invoiceHeader?.TransactionCode.slice(-2);
 
     if (lastTwoTransactionCode === 'IN') {
         salesInvoiceTitle = 'SALES INVOICE';
     } else if (lastTwoTransactionCode === 'SR') {
-        salesInvoiceTitle = 'SALES RETURN';
+        salesInvoiceTitle = 'CREDIT NOTE';
     }
+
+    // Calculate total VAT
+    let totalGrossAmount = 0;
+    let totalVAT = 0;
+    let totalAmountWithVAT = 0;
+
+    // Loop through invoiceDetails and calculate gross, VAT, and total amounts
+    invoiceDetails.forEach((item) => {
+      const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
+      const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+      totalGrossAmount += itemGross;
+      totalVAT += itemVAT;
+    });
+
+    totalAmountWithVAT = totalGrossAmount + totalVAT; // Total amount including VAT
+
 
     // Generate totals for exchange invoice
     const totalsContent = `
       <div>
         <strong>Gross:</strong>
         <div class="arabic-label">(ريال) المجموع</div>
-        ${AdjAmount}
+        ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
         <strong>VAT (15%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
-        15%
+        ${totalVAT.toFixed(2)}
       </div>
       <div>
         <strong>Total Amount With VAT:</strong>
         <div class="arabic-label">المجموع</div>
-        ${AdjAmount * 1.15}
+        ${totalAmountWithVAT.toFixed(2)}
       </div>
       <div>
-        <strong>Change Due:</strong>
+        <strong>Document No.:</strong>
         <div class="arabic-label">المتبقي</div>
-        0.00
+        ${DocNo}
       </div>
     `;
 
@@ -425,14 +487,14 @@ const PosHistory = () => {
           <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${CustomerName}</div>
+            <div><span class="field-label">Customer: </span>${invoiceHeader?.CustomerName}</div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${VatNumber}
+                ${invoiceHeader?.VatNumber}
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${VatNumber}
+                  ${invoiceHeader?.VatNumber}
               </div>
             </div>
             <div class="customer-invoiceNumber">
@@ -479,12 +541,27 @@ const PosHistory = () => {
             </thead>
 
            <tbody>
-             <tr>
-              <td>Transaction: ${TransactionCode}</td>
-              <td>1</td>
-              <td>${AdjAmount}</td>
-              <td>${PendingAmount * 1.15}</td>
-             </tr>        
+           ${invoiceDetails.map(
+              (item) => `
+                <tr>
+                  <td style="border-bottom: none;">${item.ItemSKU}</td>
+                  <td style="border-bottom: none;">${item.ItemQry}</td>
+                  <td style="border-bottom: none;">${item.ItemPrice}</td>
+                  <td style="border-bottom: none;">${(item.ItemPrice * 1.15).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colspan="4" style="text-align: left; padding-left: 20px;">
+                    <div>
+                      <span style="direction: ltr; text-align: left; display: block;">
+                        ${item.Remarks}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              `
+              )
+              .join("")
+            }
             </tbody>
           </table>
           <div class="total-section">
@@ -499,7 +576,7 @@ const PosHistory = () => {
 
           <div class="receipt-footer">This invoice is generated as per ZATCA</div>
         </body>
-      </html>j
+      </html>
     `;
     const printWindow = window.open("", "Print Window", "height=800,width=800");
     if (!printWindow) {
@@ -520,7 +597,7 @@ const PosHistory = () => {
       // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
-        zatcaQrcode,
+        qrCodeDataFromApi,
         { width: 380 },
         function (error) {
           if (error) console.error(error);
@@ -543,10 +620,18 @@ const PosHistory = () => {
         <div className="flex justify-center items-center">
           <div className="h-auto w-full">
             <div className="h-auto w-full bg-white shadow-xl rounded-md">
-              <div className="sm:flex p-4 gap-2 w-full">
+              <div
+                className={`sm:flex p-4 gap-2 w-full ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
                 <div className="flex flex-col w-full">
-                  <label className="font-sans font-semibold text-sm text-secondary">
-                    Cut Of Date
+                  <label
+                    className={`font-sans font-semibold text-sm text-secondary ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                  >
+                    {t("Cut Of Date")}
                   </label>
                   <input
                     value={cutOfDate}
@@ -557,8 +642,12 @@ const PosHistory = () => {
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label className="font-sans font-semibold text-sm text-secondary">
-                    Customer Codes
+                  <label
+                    className={`font-sans font-semibold text-sm text-secondary ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                  >
+                    {t("Customer Codes")}
                   </label>
                   <Autocomplete
                     id="customerCodeId"
@@ -570,7 +659,7 @@ const PosHistory = () => {
                       <TextField
                         {...params}
                         className="bg-gray-50 border border-gray-300 text-black text-xs rounded-sm"
-                        placeholder="Select any Customer Code"
+                        placeholder={t("Select any Customer Code")}
                         required
                       />
                     )}
@@ -593,7 +682,7 @@ const PosHistory = () => {
                       ) : null
                     }
                   >
-                    Generate Receipt
+                    {t("Generate Receipt")}
                   </Button>
                 </div>
               </div>
@@ -610,8 +699,8 @@ const PosHistory = () => {
           >
             <DataTable
               data={data}
-              title={"POS History"}
-              columnsName={posHistoryInvoiceColumns}
+              title={t("POS History")}
+              columnsName={posHistoryInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -620,7 +709,7 @@ const PosHistory = () => {
               // actionColumnVisibility={false}
               dropDownOptions={[
                 {
-                  label: "Print Receipts",
+                  label: t("Print Receipts"),
                   icon: (
                     <EditIcon
                       fontSize="small"
@@ -628,49 +717,50 @@ const PosHistory = () => {
                       style={{ color: "rgb(37 99 235)" }}
                     />
                   ),
-                    action: handleInvoiceGenerator,
+                  action: handleInvoiceGenerator,
                 },
               ]}
               uniqueId="posHistoryId"
             />
           </div>
         </div>
-        <div className="flex justify-end mt-3">
+        <div className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"}`}>
           <div className="bg-white p-4 rounded shadow-md sm:w-[60%] w-full">
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Total Invoice Amount WithVAT(15%):
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Total Invoice Amount WithVAT(15%)")}:
                 </label>
                 <input
                   type="text"
                   value={totalInvoiceAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100 w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
+                  
                 />
               </div>
 
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Exchange Amount
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Exchange Amount")}
                 </label>
                 <input
                   type="text"
                   value={exchangeAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${i18n.language === "ar" ? "text-start" : "text-end"}`}
                 />
               </div>
 
-              <div className="flex justify-between items-center">
-                <label className="block text-gray-700 font-bold">
-                  Remaining Amount
+              <div className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"}`}>
+                <label className={`block text-gray-700 font-bold ${i18n.language === 'ar' ? "direction-rtl" : 'text-start direction-ltr'}`}>
+                  {t("Remaining Amount")}
                 </label>
                 <input
                   type="text"
                   value={remainingAmount}
                   readOnly
-                  className="mt-1 p-2 border bg-gray-100 text-end w-[60%]"
+                 className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"}`}
                 />
               </div>
             </div>

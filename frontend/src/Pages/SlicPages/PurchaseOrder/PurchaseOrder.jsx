@@ -13,8 +13,10 @@ import AddPurchaseOrderPopUp from "./AddPurchaseOrderPopUp";
 import { Button } from "@mui/material";
 import UpdatePurchaseOrderPopUp from "./UpdatePurchaseOrderPopUp";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import { useTranslation } from "react-i18next";
 
 const PurchaseOrder = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const memberDataString = sessionStorage.getItem("slicUserData");
   const memberData = JSON.parse(memberDataString);
@@ -140,12 +142,12 @@ const PurchaseOrder = () => {
   const handleDelete = (row) => {
     // console.log(row);
     Swal.fire({
-      title: `${'Are you sure to delete this record?'}!`,
-      text: `${'You will not be able to recover this Purchase Order'}!`,
+      title: `${t('Are you sure to delete this record?')}`,
+      text: `${t('You will not be able to recover this Purchase Order!')}`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: `${'Yes Delete'}!`,
-      cancelButtonText: `${'No, keep it'}!`,
+      confirmButtonText: `${t('Yes Delete!')}`,
+      cancelButtonText: `${t('No, keep it!')}`,
       confirmButtonColor: '#1E3B8B',
       cancelButtonColor: '#FF0032',
     }).then((result) => {
@@ -215,8 +217,8 @@ const PurchaseOrder = () => {
           >
             <DataTable
               data={data}
-              title={"Purchase Order"}
-              columnsName={purchaseOrderColumn}
+              title={t("Purchase Order")}
+              columnsName={(purchaseOrderColumn(t))}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -224,7 +226,7 @@ const PurchaseOrder = () => {
               actionColumnVisibility={false}
               dropDownOptions={[
                 {
-                  label: "Edit",
+                  label: t("Edit"),
                   icon: (
                     <EditIcon
                       fontSize="small"
@@ -235,7 +237,7 @@ const PurchaseOrder = () => {
                   action: handleShowUpdatePopup,
                 },
                 {
-                  label: "Delete",
+                  label: t("Delete"),
                   icon: (
                     <DeleteIcon
                       fontSize="small"
@@ -254,9 +256,9 @@ const PurchaseOrder = () => {
         <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
           <DataTable
             data={filteredData}
-            title={"Purchase Order Details"}
+            title={t("Purchase Order Details")}
             secondaryColor="secondary"
-            columnsName={purchaseOrderDetailsColumn}
+            columnsName={purchaseOrderDetailsColumn(t)}
             backButton={true}
             checkboxSelection="disabled"
             actionColumnVisibility={false}

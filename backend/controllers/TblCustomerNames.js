@@ -47,8 +47,7 @@ exports.syncCustomers = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // Configuration for the external API request
-    const externalApiUrl =
-      "https://slicapi.oneerpcloud.com/oneerpreport/api/getapi";
+    const externalApiUrl = SLIC_ERP_URL + "/oneerpreport/api/getapi";
     const requestBody = {
       filter: {},
       M_COMP_CODE: "SLIC",

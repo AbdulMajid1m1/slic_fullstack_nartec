@@ -1,17 +1,17 @@
-const mod10CheckDigit = require("mod10-check-digit");
-const { validationResult } = require("express-validator");
+const mod10CheckDigit = require('mod10-check-digit');
+const { validationResult } = require('express-validator');
 
-const ItemCodeModel = require("../models/tblItemCodes1S1Br");
-const BarSeriesNo = require("../models/barSeriesNo");
-const generateResponse = require("../utils/response");
-const CustomError = require("../exceptions/customError");
+const ItemCodeModel = require('../models/tblItemCodes1S1Br');
+const BarSeriesNo = require('../models/barSeriesNo');
+const generateResponse = require('../utils/response');
+const CustomError = require('../exceptions/customError');
 
 async function generateBarcode(id) {
-  const GCP = "6287898";
+  const GCP = '6287898';
   let barcode;
   const seriesNo = await BarSeriesNo.getBarSeriesNo(id);
   if (!seriesNo) {
-    const error = new CustomError("BarSeriesNo not found");
+    const error = new CustomError('BarSeriesNo not found');
     error.statusCode = 404;
     throw error;
   }
@@ -24,9 +24,7 @@ async function generateBarcode(id) {
   } else barcode = `${GCP}${seriesNo.BarSeriesNo}${CHECK_DIGIT}`;
 
   if (barcode.length != 13) {
-    const error = new CustomError(
-      "Generated barcode is not 13 characters long"
-    );
+    const error = new CustomError('Generated barcode is not 13 characters long');
     error.statusCode = 500;
     throw error;
   }
@@ -35,7 +33,7 @@ async function generateBarcode(id) {
 
   const result = await BarSeriesNo.updateBarSeriesNo(id, number);
   if (!result) {
-    const error = new CustomError("Failed to update BarSeriesNo");
+    const error = new CustomError('Failed to update BarSeriesNo');
     error.statusCode = 500;
     throw error;
   }
@@ -49,21 +47,17 @@ exports.getItemCodes = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const search = req.query.search || null;
 
-    const result = await ItemCodeModel.findAllWithPagination(
-      page,
-      limit,
-      search
-    );
+    const result = await ItemCodeModel.findAllWithPagination(page, limit, search);
     const { itemCodes, pagination } = result;
 
     if (!itemCodes || itemCodes.length <= 0) {
-      const error = new CustomError("No item codes found");
+      const error = new CustomError('No item codes found');
       error.statusCode = 404;
       return next(error);
     }
 
     res.status(200).json(
-      generateResponse(200, true, "Item codes retrieved successfully", {
+      generateResponse(200, true, 'Item codes retrieved successfully', {
         itemCodes,
         pagination,
       })
@@ -78,16 +72,12 @@ exports.getAllItemCodes = async (req, res, next) => {
     const result = await ItemCodeModel.findAll();
 
     if (!result || result.length <= 0) {
-      const error = new CustomError("No item codes found");
+      const error = new CustomError('No item codes found');
       error.statusCode = 404;
       return next(error);
     }
 
-    res
-      .status(200)
-      .json(
-        generateResponse(200, true, "Item codes retrieved successfully", result)
-      );
+    res.status(200).json(generateResponse(200, true, 'Item codes retrieved successfully', result));
   } catch (error) {
     console.log(error);
     if (error instanceof CustomError) {
@@ -134,11 +124,7 @@ exports.postItemCode = async (req, res, next) => {
     };
     const _itemCode = await ItemCodeModel.create(body);
 
-    res
-      .status(201)
-      .json(
-        generateResponse(201, true, "Item code created successfully", _itemCode)
-      );
+    res.status(201).json(generateResponse(201, true, 'Item code created successfully', _itemCode));
   } catch (error) {
     next(error);
   }
@@ -176,16 +162,7 @@ exports.postItemCodeV2 = async (req, res, next) => {
       recordsCreated.push(_itemCode);
     }
 
-    res
-      .status(201)
-      .json(
-        generateResponse(
-          201,
-          true,
-          "Item codes created successfully",
-          recordsCreated
-        )
-      );
+    res.status(201).json(generateResponse(201, true, 'Item codes created successfully', recordsCreated));
   } catch (error) {
     next(error);
   }
@@ -198,25 +175,24 @@ exports.putItemCode = async (req, res, next) => {
     const existingItemCode = await ItemCodeModel.findById(GTIN);
 
     if (!existingItemCode) {
-      const error = new CustomError("Item code not found");
+      const error = new CustomError('Item code not found');
       error.statusCode = 404;
       throw error;
     }
 
-    const { itemCode, quantity, description, startSize, endSize } = req.body;
+    const { itemCode, quantity, description, startSize, ArabicName, endSize } = req.body;
 
     // Prepare the updated data
     const updatedData = {
       ItemCode: itemCode || existingItemCode.ItemCode,
-      ItemQty:
-        quantity !== undefined ? Number(quantity) : existingItemCode.ItemQty,
+      ItemQty: quantity !== undefined ? Number(quantity) : existingItemCode.ItemQty,
       EnglishName: description || existingItemCode.EnglishName,
-      ArabicName: description || existingItemCode.ArabicName,
+      ArabicName: ArabicName || existingItemCode.ArabicName,
       ProductSize: startSize || existingItemCode.ProductSize,
     };
 
     // Save the updated item code data
-    const updatedItemCode = await ItemCodeModel.update(GTIN, updatedData);
+    const updatedItemCode = await ItemCodeModel.update(existingItemCode.id, updatedData);
 
     if (!updatedItemCode) {
       const error = new CustomError(`Couldn't update item code`);
@@ -224,16 +200,7 @@ exports.putItemCode = async (req, res, next) => {
       throw error;
     }
 
-    res
-      .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Item code updated successfully",
-          updatedItemCode
-        )
-      );
+    res.status(200).json(generateResponse(200, true, 'Item code updated successfully', updatedItemCode));
   } catch (error) {
     next(error);
   }
@@ -244,7 +211,7 @@ exports.deleteItemCode = async (req, res, next) => {
     const GTIN = req.params.GTIN;
     const itemCode = await ItemCodeModel.findById(GTIN);
     if (!itemCode) {
-      const error = new CustomError("Item code not found");
+      const error = new CustomError('Item code not found');
       error.statusCode = 404;
       throw error;
     }
@@ -269,20 +236,11 @@ exports.searchByPartialGTIN = async (req, res, next) => {
     const GTIN = req.query.GTIN;
     const itemCodes = await ItemCodeModel.searchByGtin(GTIN);
     if (!itemCodes || itemCodes.length <= 0) {
-      const error = new CustomError("No item codes found with the given GTIN");
+      const error = new CustomError('No item codes found with the given GTIN');
       error.statusCode = 404;
       throw error;
     }
-    res
-      .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Item code retrieved successfully",
-          itemCodes
-        )
-      );
+    res.status(200).json(generateResponse(200, true, 'Item code retrieved successfully', itemCodes));
   } catch (error) {
     next(error);
   }
@@ -293,20 +251,11 @@ exports.searchByGTIN = async (req, res, next) => {
     const GTIN = req.query.GTIN;
     const itemCode = await ItemCodeModel.findById(GTIN);
     if (!itemCode) {
-      const error = new CustomError("No item code found with the given GTIN");
+      const error = new CustomError('No item code found with the given GTIN');
       error.statusCode = 404;
       throw error;
     }
-    res
-      .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Item code retrieved successfully",
-          itemCode
-        )
-      );
+    res.status(200).json(generateResponse(200, true, 'Item code retrieved successfully', itemCode));
   } catch (error) {
     next(error);
   }
@@ -317,15 +266,11 @@ exports.findByItemCode = async (req, res, next) => {
     const itemCode = req.query.itemCode;
     const item = await ItemCodeModel.findByItemCode(itemCode);
     if (!item) {
-      const error = new CustomError("No item code found");
+      const error = new CustomError('No item code found');
       error.statusCode = 404;
       throw error;
     }
-    res
-      .status(200)
-      .json(
-        generateResponse(200, true, "Item code retrieved successfully", item)
-      );
+    res.status(200).json(generateResponse(200, true, 'Item code retrieved successfully', item));
   } catch (error) {
     next(error);
   }

@@ -13,8 +13,10 @@ import { Button } from "@mui/material";
 import AddSalesOrderPopUp from "./AddSalesOrderPopUp";
 import UpdateSalesOrderPopUp from "./UpdateSalesOrderPopUp";
 import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import { useTranslation } from "react-i18next";
 
 const SalesOrder = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const memberDataString = sessionStorage.getItem("slicUserData");
   const memberData = JSON.parse(memberDataString);
@@ -159,49 +161,52 @@ const SalesOrder = () => {
   const handleDelete = (row) => {
     // console.log(row);
     Swal.fire({
-      title: `${'Are you sure to delete this record?'}!`,
-      text: `${'You will not be able to recover this Sales Order'}!`,
-      icon: 'warning',
+      title: `${t("Are you sure to delete this record?")}!`,
+      text: `${t("You will not be able to recover this Products!")}`,
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: `${'Yes Delete'}!`,
-      cancelButtonText: `${'No, keep it'}!`,
-      confirmButtonColor: '#1E3B8B',
-      cancelButtonColor: '#FF0032',
+      confirmButtonText: `${t("Yes Delete!")}`,
+      cancelButtonText: `${t("No, keep it!")}`,
+      confirmButtonColor: "#1E3B8B",
+      cancelButtonColor: "#FF0032",
     }).then((result) => {
       if (result.isConfirmed) {
         const deletePromise = new Promise(async (resolve, reject) => {
           try {
-            const response = await newRequest.delete("/salesOrders/v1/delete/" + row?.SO_NUMBER);
+            const response = await newRequest.delete(
+              "/salesOrders/v1/delete/" + row?.SO_NUMBER
+            );
             if (response) {
               // await refetch();
-              resolve(response?.data?.message || 'Products deleted successfully');
-              const updatedData = data.filter(item => item.SO_NUMBER !== row.SO_NUMBER);
+              resolve(
+                response?.data?.message || `${t("Products deleted successfully")}`
+              );
+              const updatedData = data.filter(
+                (item) => item.SO_NUMBER !== row.SO_NUMBER
+              );
               setData(updatedData);
             } else {
-              reject(new Error('Failed to delete product'));
+              reject(new Error("Failed to delete product"));
             }
           } catch (error) {
             console.error("Error deleting product:", error);
             reject(error);
           }
         });
-  
-        toast.promise(
-          deletePromise,
-          {
-            pending: 'Deleting product...',
-            success: {
-              render({ data }) {
-                return data;
-              }
+
+        toast.promise(deletePromise, {
+          pending: "Deleting product...",
+          success: {
+            render({ data }) {
+              return data;
             },
-            error: {
-              render({ data }) {
-                return data.message || 'Failed to delete product';
-              }
-            }
-          }
-        );
+          },
+          error: {
+            render({ data }) {
+              return data.message || "Failed to delete product";
+            },
+          },
+        });
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         return;
       }
@@ -235,8 +240,8 @@ const SalesOrder = () => {
           >
             <DataTable
               data={data}
-              title={"Sales Order"}
-              columnsName={salesOrderColumn}
+              title={t("Sales Order")}
+              columnsName={salesOrderColumn(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -244,7 +249,7 @@ const SalesOrder = () => {
               actionColumnVisibility={false}
               dropDownOptions={[
                 {
-                  label: "Edit",
+                  label: t("Edit"),
                   icon: (
                     <EditIcon
                       fontSize="small"
@@ -255,7 +260,7 @@ const SalesOrder = () => {
                   action: handleShowUpdatePopup,
                 },
                 {
-                  label: "Delete",
+                  label: t("Delete"),
                   icon: (
                     <DeleteIcon
                       fontSize="small"
@@ -274,9 +279,9 @@ const SalesOrder = () => {
         <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
           <DataTable
             data={filteredData}
-            title={"List Of Sales Order"}
+            title={t("List Of Sales Order")}
             secondaryColor="secondary"
-            columnsName={salesOrderDetailsColumn}
+            columnsName={salesOrderDetailsColumn(t)}
             backButton={true}
             checkboxSelection="disabled"
             actionColumnVisibility={false}

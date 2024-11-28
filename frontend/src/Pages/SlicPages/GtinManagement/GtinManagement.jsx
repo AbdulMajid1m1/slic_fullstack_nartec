@@ -7,8 +7,10 @@ import rawmaterial from '../../../Images/rawmaterial.png'
 import sold from '../../../Images/sold.png'
 import DashboardTable from '../../../components/ProductsDashboardTable/ProductsDashboardTable'
 import SideNav from '../../../components/Sidebar/SideNav';
+import { useTranslation } from 'react-i18next';
 
 const GtinManagement = () => {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [rawMaterials, setRawMaterials] = useState([]);
   const [supplies, setSupplies] = useState([]);
@@ -100,45 +102,53 @@ const GtinManagement = () => {
 
           {/* <!-- Statistics Cards --> */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 p-4 gap-4 bg-gradient-to-l from-primary">
-            <div className="bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group">
+            <div className={`bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}>
               <div className="flex justify-center items-center w-14 h-14 rounded-full transition-all duration-300 transform group-hover:rotate-12">
                 <img src={listofbarcodes} className='' alt='' />
               </div>
-              <div className="text-right">
+              <div className={`${ i18n.language === "ar" ? "text-left" : "text-right"}`}>
                 {/* <span>{rawMaterials.length > 0 ? rawMaterials.length : null}</span> */}
                 <span>48</span>
-                <p>List of Issue Barcode</p>
+                <p>{t("List of Issue Barcode")}</p>
               </div>
             </div>
-            <div className="bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group">
+            <div className={`bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}>
               <div className="flex justify-center items-center w-14 h-14 rounded-full transition-all duration-300 transform group-hover:rotate-12">
                 {/* <svg width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="stroke-current text-blue-800 dark:text-gray-800 transform transition-transform duration-500 ease-in-out"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg> */}
                 <img src={listoffinished} className='' alt='' />
               </div>
-              <div className="text-right">
+              <div className={`${ i18n.language === "ar" ? "text-left" : "text-right"}`}>
                 {/* <span>{consumables.length > 0 ? consumables.length : null}</span> */}
                 <span>45</span>
-                <p>List of Finished Goods</p>
+                <p>{t("List of Finished Goods")}</p>
               </div>
             </div>
-            <div className="bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group">
+            <div className={`bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}>
               <div className="flex justify-center items-center w-14 h-14 rounded-full transition-all duration-300 transform group-hover:rotate-12">
                 <img src={rawmaterial} className='' alt='' />
               </div>
-              <div className="text-right">
+              <div className={`${ i18n.language === "ar" ? "text-left" : "text-right"}`}>
                 {/* <span>{supplies.length > 0 ? supplies.length : null}</span> */}
                 <span>40</span>
-                <p>Raw Materials</p>
+                <p>{t("Raw Materials")}</p>
               </div>
             </div>
-            <div className="bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group">
+            <div className={`bg-secondary shadow-lg rounded-md flex items-center justify-between p-3 border-b-2 border-white text-white font-medium group ${
+                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}>
               <div className="flex justify-center items-center w-14 h-14 rounded-full transition-all duration-300 transform group-hover:rotate-12">
                 <img src={sold} className='' alt='' />
               </div>
-              <div className="text-right">
+              <div className={`${ i18n.language === "ar" ? "text-left" : "text-right"}`}>
                 {/* <span>{data.length > 0 ? data.length : null}</span> */}
                 <span>35</span>
-                <p>Products Sold</p>
+                <p>{t("Products Sold")}</p>
               </div>
             </div>
           </div>
@@ -147,22 +157,22 @@ const GtinManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4 bg-gradient-to-r from-primary">
             {/* <!-- Social Traffic --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={rawMaterials} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Issue Barcode in Production"} UniqueId="barcodeInProductionId" />
+              <DashboardTable data={rawMaterials} columnsName={archivedUserColumn(t)} secondaryColor="secondary" title={t("List of Issue Barcode in Production")} UniqueId="barcodeInProductionId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50  w-full shadow-lg rounded">
-              <DashboardTable data={consumables} columnsName={archivedUserColumn} secondaryColor="secondary" title={"List of Finished Goods"} UniqueId="finishedGoodsId" />
+              <DashboardTable data={consumables} columnsName={archivedUserColumn(t)} secondaryColor="secondary" title={t("List of Finished Goods")} UniqueId="finishedGoodsId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={supplies} columnsName={archivedUserColumn} secondaryColor="secondary" title={"Raw Materials"} UniqueId="rawMaterialsId" />
+              <DashboardTable data={supplies} columnsName={archivedUserColumn(t)} secondaryColor="secondary" title={t("Raw Materials")} UniqueId="rawMaterialsId" />
             </div>
 
             {/* <!-- Social Traffic2 --> */}
             <div className="relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 w-full shadow-lg rounded">
-              <DashboardTable data={data} columnsName={archivedUserColumn} loading={isLoading} secondaryColor="secondary" title={"Products Sold"} UniqueId="productSoldId" />
+              <DashboardTable data={data} columnsName={archivedUserColumn(t)} loading={isLoading} secondaryColor="secondary" title={t("Products Sold")} UniqueId="productSoldId" />
             </div>
 
           </div>

@@ -4,8 +4,10 @@ import newRequest from "../../../../utils/userRequest";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
+import { useTranslation } from "react-i18next";
 
 const UpdateUserPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [userStatus, setUserStatus] = useState("");
   const [password, setPassword] = useState("");
@@ -79,7 +81,7 @@ const UpdateUserPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Update User
+                    {t("Update User")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none"
@@ -145,33 +147,37 @@ const UpdateUserPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode" className={`text-secondary`}>
-                          Item Code
+                        <label htmlFor="itemCode" className={`text-secondary ${i18n.language === "ar" ? "text-end" : "text-start"}`}>
+                          {t("Item Code")}
                         </label>
                         <input
                           type="text"
                           id="itemCode"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="Enter Email"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Item Code")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                         />
                       </div>
                     </div>
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="quantity" className={`text-secondary`}>
-                          User Status
+                        <label htmlFor="quantity" className={`text-secondary ${i18n.language === "ar" ? "text-end" : "text-start"}`}>
+                          {t("User Status")}
                         </label>
-                        <select className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                        <select className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                           required
                           id="userStatus"
                           value={userStatus}
                           onChange={(e) => setUserStatus(e.target.value)}
                         >
-                            <option value="">Select User Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="">{t("Select User Status")}</option>
+                            <option value="Active">{t("Active")}</option>
+                            <option value="Inactive">{t("Inactive")}</option>
                           </select>
                       </div>
 
@@ -179,17 +185,19 @@ const UpdateUserPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label
                           htmlFor="englishName"
-                          className={`text-secondary`}
+                          className={`text-secondary ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                         >
-                          Password
+                          {t("Password")}
                         </label>
                         <input
                           type="text"
                           id="englishName"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Enter Password"
-                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3`}
+                          placeholder={t("Enter Password")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${
+                            i18n.language === "ar" ? "text-end" : "text-start"
+                          }`}
                         />
                       </div>
                     </div>
@@ -209,7 +217,7 @@ const UpdateUserPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           )
                         }
                       >
-                        Update Changes
+                        {t("Update Changes")}
                       </Button>
                     </div>
                   </div>

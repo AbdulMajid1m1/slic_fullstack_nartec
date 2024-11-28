@@ -4,27 +4,47 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
-const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice }) => {
+const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice, selectedTransactionCode }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
+  const getCustomerCode = () => {
+    // If the transaction code belongs to the EX/AX group, use selectedCustomerCode (fetched based on location and transaction)
+    if (EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)) {
+      return selectedCustomerName?.CUSTOMERCODE;
+    }
+    // Otherwise, use selectedCustomeNameWithDirectInvoice (fetched from the general customer API)
+    return selectedCustomeNameWithDirectInvoice?.CUST_CODE;
+  };
+
   useEffect(() => {
-    console.log("Selected Row Data" , selectedRowData);
+    // console.log("Selected Row Data" , selectedRowData);
+    // console.log("Selected Transaction Code" , selectedTransactionCode);
+    // console.log("Selected CustomerCode" , getCustomerCode())
   }, [selectedRowData]);
 
+
+  const { t, i18n } = useTranslation();
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
   // Fetch barcode data from API
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
+
+    const customerCode = getCustomerCode();
+
     setIsLoading(true);
     try {
       const response = await newRequest.get(
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      console.log(data)
+      // console.log(data)
+
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
@@ -33,9 +53,10 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-            ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-            : selectedCustomerName?.CUSTOMERCODE,
+            // P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
+            // ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
+            // : selectedCustomerName?.CUSTOMERCODE,
+            P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
           M_COMP_CODE: "SLIC",
@@ -138,7 +159,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
     const item = data[0]; // Assuming you are dealing with a single item at a time
     console.log(item);
     
-    const locationCode = selectedSalesType === "DSALES NO INVOICE" 
+    const locationCode = selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
     ? dsalesLocationCode
     : invoiceHeaderData;
   
@@ -178,6 +199,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
       if (availableStock >= item.Qty) {
         // console.log(item.Qty)
 
+        // Update data with only the FREE_STOCK value
+        const updatedData = data.map((d) => ({
+          ...d,
+          FreeStock: availableStock,
+        }));
+
         // I commented the createExchangeInvocie Api
         // const res = await newRequest.post('/exchangeInvoice/v1/createExchangeInvoice', {
         //   EnglishName: item.Description,
@@ -192,12 +219,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         // addExchangeData(res?.data?.data);
 
         // i show the data based on user selection datagrid
-        if (selectedSalesType === "DSALES NO INVOICE") {
+        if (selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER") {
           // addDSalesExchangeData(res?.data?.data);
-          addDSalesExchangeData(data);
+          addDSalesExchangeData(updatedData);
         } else {
           // addExchangeData(res?.data?.data);
-          addExchangeData(data);
+          addExchangeData(updatedData);
         }
 
         handleCloseCreatePopup();
@@ -228,7 +255,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
               <div className="relative">
                 <div className="fixed top-0 left-0 z-10 flex justify-between w-full px-3 bg-secondary">
                   <h2 className="text-white sm:text-xl text-lg font-body font-semibold">
-                    Exchange Item
+                    {t("Exchange Item")}
                   </h2>
                   <div className="flex items-center space-x-3">
                     <button className="text-white hover:text-gray-300 focus:outline-none" onClick={handleCloseCreatePopup}>
@@ -271,14 +298,18 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
 
               {/* Exchange Item in Heading */}
               <form onSubmit={handleGetBarcodes} className="flex items-center w-full mt-6">
-                <div className="w-full">
-                  <label className="block text-gray-700">Scan Barcode</label>
+                <div  className={`w-full ${
+                  i18n.language === "ar" ? "text-end" : "text-start"
+                }`}>
+                  <label className="block text-gray-700">{t("Scan Barcode")}</label>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
-                    className="w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                    placeholder="Enter Barcode"
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black ${
+                      i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                    placeholder={t("Enter Barcode")}
                   />
                 </div>
                 <button
@@ -294,12 +325,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                 <table className="table-auto w-full">
                   <thead className="bg-secondary text-white">
                     <tr>
-                      <th className="px-4 py-2">Item Code</th>
-                      <th className="px-4 py-2">Item Size</th>
-                      <th className="px-4 py-2">Qty</th>
-                      <th className="px-4 py-2">Item Price</th>
-                      <th className="px-4 py-2">VAT (15%)</th>
-                      <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2">{t('Item Code')}</th>
+                      <th className="px-4 py-2">{t("Item Size")}</th>
+                      <th className="px-4 py-2">{t("Qty")}</th>
+                      <th className="px-4 py-2">{t("Item Price")}</th>
+                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("Total")}</th>
                     </tr>
                   </thead>
                   {isLoading ? (
@@ -337,7 +368,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   onClick={handleExchangeItems}
                   className="p-3 border rounded bg-secondary hover:bg-[#424e9b] text-white flex items-center justify-center"
                 >
-                  Submit and Save
+                  {t("Submit and Save")}
                 </button>
               </div>
             </div>
