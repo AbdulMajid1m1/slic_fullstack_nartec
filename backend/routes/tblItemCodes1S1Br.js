@@ -25,7 +25,6 @@ router.post(
 );
 
 router.put("/v1/itemCode/:GTIN", isAuth, itemCodesController.putItemCode);
-router.post("/v1/updateGTINs", itemCodesController.updateGTINs);
 
 router.delete("/v1/itemCode/:GTIN", isAuth, itemCodesController.deleteItemCode);
 
