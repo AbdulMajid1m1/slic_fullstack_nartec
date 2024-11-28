@@ -30,7 +30,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   // get this session data
   const updateProductsData = JSON.parse(sessionStorage.getItem("updateListOfEmployeeData"));
 
-  // console.log(updateProductsData);
+  // console.log(updateProductsData); //
 
   useEffect(() => {
     setItemCode(updateProductsData?.ItemCode || "");
