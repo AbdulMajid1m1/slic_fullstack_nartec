@@ -106,6 +106,12 @@ class ItemCodeModel {
     });
   }
 
+  static async deleteById(id) {
+    return await prisma.tblItemCodes1S1Br.delete({
+      where: { id: id },
+    });
+  }
+
   static async searchByGtin(gtin) {
     return await prisma.tblItemCodes1S1Br.findMany({
       where: {
