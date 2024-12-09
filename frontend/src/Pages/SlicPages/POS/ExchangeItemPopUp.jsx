@@ -55,9 +55,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            // P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-            // ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-            // : selectedCustomerName?.CUSTOMERCODE,
             P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
@@ -105,6 +102,11 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
               (item) => item.Barcode === GTIN
             );
 
+            const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
+            const finalItemPrice = isAXSR ? 0 : itemPrice;
+            const finalVAT = isAXSR ? 0 : vat;
+            const finalTotal = isAXSR ? 0 : total;
+
             if (existingItemIndex !== -1) {
               // If the item already exists, just update the Qty and Total
               const updatedData = [...prevData];
@@ -126,9 +128,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
-                  ItemPrice: itemPrice,
-                  VAT: vat,
-                  Total: total,
+                  // ItemPrice: itemPrice,
+                  // VAT: vat,
+                  // Total: total,
+                  ItemPrice: finalItemPrice,
+                  VAT: finalVAT,
+                  Total: finalTotal,
                 },
               ];
             }

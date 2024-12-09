@@ -519,8 +519,8 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt:
-                  totalAmountWithVat.toFixed(2) -
-                  totolAmountWithoutExchange.toFixed(2),
+                selectedTransactionCode?.TXN_CODE === "AXSR" ? 0.1 : totalAmountWithVat.toFixed(2) -
+                totolAmountWithoutExchange.toFixed(2),
                 // CustomerId:
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE

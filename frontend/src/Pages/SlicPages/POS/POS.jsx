@@ -2901,6 +2901,11 @@ const POS = () => {
             const vat = item.ItemPrice * taxAmount;
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
 
+            const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
+            const finalItemPrice = isAXSR ? 0 : itemPrice;
+            const finalVAT = isAXSR ? 0 : vat;
+            const finalTotal = isAXSR ? 0 : total;
+
             return {
               id: item.id,
               SKU: item.ItemSKU,
@@ -2910,9 +2915,12 @@ const POS = () => {
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
-              ItemPrice: item.ItemPrice,
-              VAT: vat,
-              Total: total,
+              // ItemPrice: item.ItemPrice,
+              // VAT: vat,
+              // Total: total,
+              ItemPrice: finalItemPrice,
+              VAT: finalVAT,
+              Total: finalTotal,
             };
           })
         );
