@@ -2897,14 +2897,14 @@ const POS = () => {
   
             // Check if the transaction code is not "AXSR"
             const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
-            const finalItemPrice = isAXSR ? 0 : item.ItemPrice; // Use API data
-            const finalVAT = isAXSR ? 0 : vat; // Use calculated VAT
-            const finalTotal = isAXSR ? 0 : total; // Use calculated total
+            const finalItemPrice = isAXSR ? 0 : item.ItemPrice;
+            const finalVAT = isAXSR ? 0 : vat;
+            const finalTotal = isAXSR ? 0 : total;
   
             return {
               id: item.id,
               SKU: item.ItemSKU,
-              Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
+              Barcode: item.InvoiceNo,
               Description: item.Remarks || "No description",
               DescriptionArabic: item.Remarks || "No description",
               ItemSize: item.ItemSize,
