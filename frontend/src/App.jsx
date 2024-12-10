@@ -79,14 +79,15 @@ const App = () => {
                     {/* <Route path="pos" element={<POS />} /> */}
                     <Route path="pos-history" element={<PosHistory />} />
                     <Route path="pos-archive" element={<PosArchive />} />
-                    <Route
+                    <Route path="tax-settings" element={<TaxSettings />} />
+                    {/* <Route
                       path="tax-settings"
                       element={
                         <ProtectedRoute requiredRoles="tax_settings">
                           <TaxSettings />
                         </ProtectedRoute>
                       }
-                    />
+                    /> */}
                     <Route
                       path="pos-bulkcash-receipts"
                       element={
