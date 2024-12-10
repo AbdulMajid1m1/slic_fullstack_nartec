@@ -20,6 +20,8 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { newERPBaseUrl } from "../../../utils/config";
 import { useTaxContext } from "../../../Contexts/TaxContext";
 import { RolesContext } from "../../../Contexts/FetchRolesContext";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const PosBulkMatchReceipts = () => {
   const { t, i18n } = useTranslation();
@@ -169,7 +171,7 @@ const PosBulkMatchReceipts = () => {
       );
       setData(response?.data || []);
       calculateAmounts(response?.data);
-      // console.log(response.data);
+      console.log(response.data);
       setIsLoading(false);
     } catch (err) {
       console.log(err);
@@ -665,6 +667,106 @@ const PosBulkMatchReceipts = () => {
     setMatchingTransactionLaoder(false);
   };
 
+  const handlePrintPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt", // Use points for better control over dimensions
+      format: [1650, 600], // Custom page size
+    });
+
+    // Add title
+    doc.setFontSize(16);
+    doc.text("POS Bulk Cash Receipts", 40, 40);
+
+    // Define the columns and rows for the table
+    const columns = [
+      { header: "Customer Name", dataKey: "customerName" },
+      { header: "Delivery Location Code", dataKey: "deliveryLocationCode" },
+      { header: "Item System ID", dataKey: "itemSystemId" },
+      { header: "Invoice No", dataKey: "invoiceNo" },
+      { header: "Document No", dataKey: "DocNo" },
+      { header: "Adjustment Amount", dataKey: "AdjAmount" },
+      { header: "Pending Amount", dataKey: "pendingAmount" },
+      { header: "Vat Number", dataKey: "vatNumber" },
+      { header: "Head System ID", dataKey: "headSystemId" },
+      { header: "Transaction Code", dataKey: "transactionCode" },
+      { header: "Customer Code", dataKey: "customerCode" },
+      { header: "Sales Location Code", dataKey: "salesLocationCode" },
+      { header: "Remarks", dataKey: "remarks" },
+      { header: "Transaction Type", dataKey: "transactionType" },
+      { header: "User ID", dataKey: "userId" },
+      { header: "Mobile No", dataKey: "mobileNo" },
+      { header: "Zatca Payment Mode ID", dataKey: "zatcaPaymentModeId" },
+      { header: "Zatca Payment Mode Name", dataKey: "zatcaPaymentModeName" },
+    ];
+
+    const rows = data.map((row) => ({
+      customerName: row.CustomerName,
+      deliveryLocationCode: row.DeliveryLocationCode,
+      itemSystemId: row.ItemSysID,
+      invoiceNo: row.InvoiceNo,
+      DocNo: row.DocNo,
+      AdjAmount: row.AdjAmount,
+      pendingAmount: row.PendingAmount,
+      vatNumber: row.VatNumber,
+      headSystemId: row.Head_SYS_ID,
+      transactionCode: row.TransactionCode,
+      customerCode: row.CustomerCode,
+      salesLocationCode: row.SalesLocationCode,
+      remarks: row.Remarks,
+      transactionType: row.TransactionType,
+      userId: row.UserID,
+      mobileNo: row.MobileNo,
+      zatcaPaymentModeId: row.zatcaPayment_mode_id,
+      zatcaPaymentModeName: row.zatcaPayment_mode_name,
+    }));
+
+    // Add the table to the PDF
+    doc.autoTable({
+      columns,
+      body: rows,
+      startY: 60,
+      theme: 'grid',
+      styles: {
+        fontSize: 10, // Adjust font size
+        cellPadding: 5, // Adjust cell padding
+      },
+      headStyles: {
+        fillColor: [29, 47, 144], // Custom header color
+        textColor: [255, 255, 255], // White text
+      },
+      columnStyles: {
+        0: { cellWidth: 100 }, // Adjust column width
+        1: { cellWidth: 100 },
+        2: { cellWidth: 80 },
+        3: { cellWidth: 100 },
+        4: { cellWidth: 100 },
+        5: { cellWidth: 100 },
+        6: { cellWidth: 100 },
+        7: { cellWidth: 80 },
+        8: { cellWidth: 80 },
+        9: { cellWidth: 80 },
+        10: { cellWidth: 80 },
+        11: { cellWidth: 80 },
+        12: { cellWidth: 80 },
+        13: { cellWidth: 80 },
+        14: { cellWidth: 80 },
+        15: { cellWidth: 80 },
+        16: { cellWidth: 80 },
+        17: { cellWidth: 80 },
+      },
+    });
+
+    // Add totals at the end
+    doc.setFontSize(12);
+    doc.text(`Total Invoice Amount With VAT: ${totalInvoiceAmount}`, 40, doc.lastAutoTable.finalY + 20);
+    doc.text(`Exchange Amount: ${exchangeAmount}`, 40, doc.lastAutoTable.finalY + 40);
+    doc.text(`Remaining Amount: ${remainingAmount}`, 40, doc.lastAutoTable.finalY + 60);
+
+    // Save the PDF
+    doc.save("Match_Receipts.pdf");
+  };
+
   return (
     <SideNav>
       <div className="p-3 h-full">
@@ -719,6 +821,17 @@ const PosBulkMatchReceipts = () => {
                 </div>
                 {hasBulkCashRole ? (
                 <div className="flex justify-end items-center w-full gap-3">
+                   <button
+                    className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
+                      buttonEnabled
+                        ? "bg-secondary hover:bg-primary text-white hover:text-black"
+                        : "bg-gray-400 text-white cursor-not-allowed"
+                    }`}
+                    disabled={!buttonEnabled}
+                    onClick={handlePrintPDF}
+                  >
+                    Print PDF
+                  </button>
                   <button
                     className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
                       buttonEnabled
