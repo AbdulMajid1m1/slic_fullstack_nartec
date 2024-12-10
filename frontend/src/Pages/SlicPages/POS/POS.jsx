@@ -2878,12 +2878,10 @@ const POS = () => {
   const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
   // Fetch invoice details when searching by invoice number for a sales return
   const handleGetInvoiceDetails = async (invoiceNo) => {
-    // e.preventDefault();
     setInvoiceDataLoader(true);
-
+  
     try {
       const response = await newRequest.get(
-        // `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
         `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}&TransactionCode=IN`
       );
       const data = response?.data?.data;
@@ -2892,20 +2890,17 @@ const POS = () => {
       setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
-        // new changes vat dynamic
-        // const vatRate = parseFloat(vat) / 100 || 0; 
-        // const vatRate = parseFloat(data?.invoiceHeader?.VatNumber) / 100 || 0;
-
         setInvoiceData(
           invoiceDetails.map((item) => {
             const vat = item.ItemPrice * taxAmount;
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
-
+  
+            // Check if the transaction code is not "AXSR"
             const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
-            const finalItemPrice = isAXSR ? 0 : itemPrice;
-            const finalVAT = isAXSR ? 0 : vat;
-            const finalTotal = isAXSR ? 0 : total;
-
+            const finalItemPrice = isAXSR ? 0 : item.ItemPrice; // Use API data
+            const finalVAT = isAXSR ? 0 : vat; // Use calculated VAT
+            const finalTotal = isAXSR ? 0 : total; // Use calculated total
+  
             return {
               id: item.id,
               SKU: item.ItemSKU,
@@ -2915,9 +2910,6 @@ const POS = () => {
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
-              // ItemPrice: item.ItemPrice,
-              // VAT: vat,
-              // Total: total,
               ItemPrice: finalItemPrice,
               VAT: finalVAT,
               Total: finalTotal,
