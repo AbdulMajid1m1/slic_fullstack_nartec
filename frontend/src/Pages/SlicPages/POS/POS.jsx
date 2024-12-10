@@ -783,7 +783,7 @@ const POS = () => {
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * taxAmount;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
 
@@ -2892,7 +2892,7 @@ const POS = () => {
         const invoiceDetails = data.invoiceDetails;
         setInvoiceData(
           invoiceDetails.map((item) => {
-            const vat = item.ItemPrice * taxAmount;
+            const vat = item.ItemPrice * taxAmount / 100;
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
   
             // Check if the transaction code is not "AXSR"
