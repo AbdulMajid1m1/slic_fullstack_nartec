@@ -676,7 +676,7 @@ const PosBulkMatchReceipts = () => {
 
     // Add title
     doc.setFontSize(16);
-    doc.text("POS Bulk Cash Receipts", 40, 40);
+    doc.text("POS Bulk Match Receipts", 40, 40);
 
     // Define the columns and rows for the table
     const columns = [
