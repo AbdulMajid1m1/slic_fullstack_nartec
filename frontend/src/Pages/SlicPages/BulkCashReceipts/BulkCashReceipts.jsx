@@ -144,31 +144,69 @@ const PosBulkCashReceipts = () => {
     let totalRemainingAmount = 0;
     let details = [];
 
-    data.forEach((transaction) => {
-        const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
-        const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
+    // Group transactions by customer
+    const customerTransactions = data.reduce((acc, transaction) => {
+      const customerCode = transaction.CustomerCode || "";
+      if (!acc[customerCode]) {
+          acc[customerCode] = {
+              totalAmount: 0,
+              Company: "SLIC",
+              Sub_Acnt_Code: customerCode
+          };
+      }
 
-        // Handle "IN" transactions
-        if (transaction.TransactionCode.endsWith("IN")) {
+      const vatMultiplier = 1 + taxAmount / 100;
+      const amount = transaction.PendingAmount * vatMultiplier;
+
+      // Add for IN, subtract for SR
+      if (transaction.TransactionCode.endsWith("IN")) {
+          acc[customerCode].totalAmount += amount;
+          totalRemainingAmount += amount;
+      } else if (transaction.TransactionCode.endsWith("SR")) {
+          acc[customerCode].totalAmount -= amount;
+          totalRemainingAmount -= amount;
+      }
+
+      return acc;
+    }, {});
+
+    // Convert grouped transactions to details array
+    Object.values(customerTransactions).forEach(customer => {
+        if (customer.totalAmount !== 0) {  // Only add if there's a non-zero balance
             details.push({
-                Dr_Cr_Flag: "C",
-                Company: "SLIC",
-                Sub_Acnt_Code: transaction.CustomerCode || "",
-                Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+                Dr_Cr_Flag: customer.totalAmount >= 0 ? "C" : "D",
+                Company: customer.Company,
+                Sub_Acnt_Code: customer.Sub_Acnt_Code,
+                Receipt_Amt: Math.abs(customer.totalAmount).toFixed(2)
             });
-            totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
-        }
-        // Handle "SR" transactions
-        else if (transaction.TransactionCode.endsWith("SR")) {
-            details.push({
-                Dr_Cr_Flag: "D",
-                Company: "SLIC",
-                Sub_Acnt_Code: transaction.CustomerCode || "",
-                Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
-            });
-            totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
         }
     });
+
+    // data.forEach((transaction) => {
+    //     const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
+    //     const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
+
+    //     // Handle "IN" transactions
+    //     if (transaction.TransactionCode.endsWith("IN")) {
+    //         details.push({
+    //             Dr_Cr_Flag: "C",
+    //             Company: "SLIC",
+    //             Sub_Acnt_Code: transaction.CustomerCode || "",
+    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+    //         });
+    //         totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
+    //     }
+    //     // Handle "SR" transactions
+    //     else if (transaction.TransactionCode.endsWith("SR")) {
+    //         details.push({
+    //             Dr_Cr_Flag: "D",
+    //             Company: "SLIC",
+    //             Sub_Acnt_Code: transaction.CustomerCode || "",
+    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+    //         });
+    //         totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
+    //     }
+    // });
 
     // Add first object for total remaining amount
     const remainingAmountObject = {
