@@ -671,7 +671,7 @@ const PosBulkMatchReceipts = () => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt", // Use points for better control over dimensions
-      format: [1650, 600], // Custom page size
+      format: [1020, 600], // Custom page size
     });
 
     // Add title
@@ -680,45 +680,27 @@ const PosBulkMatchReceipts = () => {
 
     // Define the columns and rows for the table
     const columns = [
-      { header: "Customer Name", dataKey: "customerName" },
-      { header: "Delivery Location Code", dataKey: "deliveryLocationCode" },
-      { header: "Item System ID", dataKey: "itemSystemId" },
       { header: "Invoice No", dataKey: "invoiceNo" },
-      { header: "Document No", dataKey: "DocNo" },
+      { header: "Customer Name", dataKey: "customerName" },
       { header: "Adjustment Amount", dataKey: "AdjAmount" },
       { header: "Pending Amount", dataKey: "pendingAmount" },
-      { header: "Vat Number", dataKey: "vatNumber" },
-      { header: "Head System ID", dataKey: "headSystemId" },
+      { header: "Document No", dataKey: "DocNo" },
       { header: "Transaction Code", dataKey: "transactionCode" },
       { header: "Customer Code", dataKey: "customerCode" },
-      { header: "Sales Location Code", dataKey: "salesLocationCode" },
-      { header: "Remarks", dataKey: "remarks" },
       { header: "Transaction Type", dataKey: "transactionType" },
-      { header: "User ID", dataKey: "userId" },
       { header: "Mobile No", dataKey: "mobileNo" },
-      { header: "Zatca Payment Mode ID", dataKey: "zatcaPaymentModeId" },
-      { header: "Zatca Payment Mode Name", dataKey: "zatcaPaymentModeName" },
     ];
 
     const rows = data.map((row) => ({
-      customerName: row.CustomerName,
-      deliveryLocationCode: row.DeliveryLocationCode,
-      itemSystemId: row.ItemSysID,
       invoiceNo: row.InvoiceNo,
-      DocNo: row.DocNo,
+      customerName: row.CustomerName,
       AdjAmount: row.AdjAmount,
       pendingAmount: row.PendingAmount,
-      vatNumber: row.VatNumber,
-      headSystemId: row.Head_SYS_ID,
+      DocNo: row.DocNo,
       transactionCode: row.TransactionCode,
       customerCode: row.CustomerCode,
-      salesLocationCode: row.SalesLocationCode,
-      remarks: row.Remarks,
       transactionType: row.TransactionType,
-      userId: row.UserID,
       mobileNo: row.MobileNo,
-      zatcaPaymentModeId: row.zatcaPayment_mode_id,
-      zatcaPaymentModeName: row.zatcaPayment_mode_name,
     }));
 
     // Add the table to the PDF
@@ -728,7 +710,7 @@ const PosBulkMatchReceipts = () => {
       startY: 60,
       theme: 'grid',
       styles: {
-        fontSize: 10, // Adjust font size
+        fontSize: 11, // Adjust font size
         cellPadding: 5, // Adjust cell padding
       },
       headStyles: {
@@ -737,23 +719,14 @@ const PosBulkMatchReceipts = () => {
       },
       columnStyles: {
         0: { cellWidth: 100 }, // Adjust column width
-        1: { cellWidth: 100 },
-        2: { cellWidth: 80 },
-        3: { cellWidth: 100 },
-        4: { cellWidth: 100 },
-        5: { cellWidth: 100 },
+        1: { cellWidth: 110 },
+        2: { cellWidth: 120 },
+        3: { cellWidth: 110 },
+        4: { cellWidth: 110 },
+        5: { cellWidth: 110 },
         6: { cellWidth: 100 },
-        7: { cellWidth: 80 },
-        8: { cellWidth: 80 },
-        9: { cellWidth: 80 },
-        10: { cellWidth: 80 },
-        11: { cellWidth: 80 },
-        12: { cellWidth: 80 },
-        13: { cellWidth: 80 },
-        14: { cellWidth: 80 },
-        15: { cellWidth: 80 },
-        16: { cellWidth: 80 },
-        17: { cellWidth: 80 },
+        7: { cellWidth: 100 },
+        8: { cellWidth: 90 },
       },
     });
 
