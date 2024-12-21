@@ -689,8 +689,8 @@ const PosBulkCashReceipts = () => {
   const handlePrintPDF = () => {
     const doc = new jsPDF({
       orientation: "landscape",
-      unit: "pt",
-      format: [1140, 600]
+      unit: "pt", // Use points for better control over dimensions
+      format: [1140, 600], // Custom page size
     });
 
     // Add title
@@ -731,24 +731,24 @@ const PosBulkCashReceipts = () => {
       startY: 60,
       theme: 'grid',
       styles: {
-        fontSize: 11,
-        cellPadding: 5,
+        fontSize: 11, // Adjust font size
+        cellPadding: 5, // Adjust cell padding
       },
       headStyles: {
-        fillColor: [29, 47, 144],
-        textColor: [255, 255, 255],
+        fillColor: [29, 47, 144], // Custom header color
+        textColor: [255, 255, 255], // White text
       },
       columnStyles: {
-        0: { cellWidth: 90 },
-        1: { cellWidth: 100 },
-        2: { cellWidth: 100 },
-        3: { cellWidth: 100 },
-        4: { cellWidth: 100 },
-        5: { cellWidth: 100 },
-        6: { cellWidth: 100 },
-        7: { cellWidth: 90 },
-        8: { cellWidth: 90 },
-        9: { cellWidth: 80 },
+        0: { cellWidth: 100 }, // Adjust column width
+        1: { cellWidth: 110 },
+        2: { cellWidth: 120 },
+        3: { cellWidth: 110 },
+        4: { cellWidth: 110 },
+        5: { cellWidth: 110 },
+        6: { cellWidth: 110 },
+        7: { cellWidth: 100 },
+        8: { cellWidth: 100 },
+        9: { cellWidth: 90 },
       },
     });
 
