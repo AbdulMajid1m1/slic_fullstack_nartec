@@ -138,11 +138,6 @@ const PosBulkMatchReceipts = () => {
     let totalSRAmount = 0;
 
     transactions.forEach((transaction) => {
-      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
-      const vatRate = transaction.VatNumber
-        ? parseFloat(transaction.VatNumber) / 100
-        : 0.15;
-      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
       const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
       // Check transaction code and update the respective totals
@@ -169,7 +164,11 @@ const PosBulkMatchReceipts = () => {
       const response = await newRequest.get(
         `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}`
       );
-      setData(response?.data || []);
+      const dataWithTax = (response?.data || []).map(row => ({
+        ...row,
+        AmountWithTax: row.AdjAmount + (row.AdjAmount * taxAmount / 100)
+      }));
+      setData(dataWithTax);
       calculateAmounts(response?.data);
       console.log(response.data);
       setIsLoading(false);
@@ -649,7 +648,8 @@ const PosBulkMatchReceipts = () => {
             secondResponse.data.message ||
               "POS Invoice Batch updated successfully!"
           );
-          fetchData();
+          setData([]);
+          // fetchData();
           resetComboBox();
         }
       } else {
@@ -671,7 +671,7 @@ const PosBulkMatchReceipts = () => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt", // Use points for better control over dimensions
-      format: [1020, 600], // Custom page size
+      format: [1140, 600], // Custom page size
     });
 
     // Add title
@@ -683,6 +683,7 @@ const PosBulkMatchReceipts = () => {
       { header: "Invoice No", dataKey: "invoiceNo" },
       { header: "Customer Name", dataKey: "customerName" },
       { header: "Adjustment Amount", dataKey: "AdjAmount" },
+      { header: "Amount With Tax", dataKey: "AmountWithTax" },
       { header: "Pending Amount", dataKey: "pendingAmount" },
       { header: "Document No", dataKey: "DocNo" },
       { header: "Transaction Code", dataKey: "transactionCode" },
@@ -695,6 +696,7 @@ const PosBulkMatchReceipts = () => {
       invoiceNo: row.InvoiceNo,
       customerName: row.CustomerName,
       AdjAmount: row.AdjAmount,
+      AmountWithTax: row.AmountWithTax,
       pendingAmount: row.PendingAmount,
       DocNo: row.DocNo,
       transactionCode: row.TransactionCode,
@@ -724,9 +726,10 @@ const PosBulkMatchReceipts = () => {
         3: { cellWidth: 110 },
         4: { cellWidth: 110 },
         5: { cellWidth: 110 },
-        6: { cellWidth: 100 },
+        6: { cellWidth: 110 },
         7: { cellWidth: 100 },
-        8: { cellWidth: 90 },
+        8: { cellWidth: 100 },
+        9: { cellWidth: 90 },
       },
     });
 

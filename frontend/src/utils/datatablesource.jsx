@@ -898,6 +898,11 @@ export const posBulkCashreceiptInvoiceColumns = (t)=> [
     width: 180,
   },
   {
+    field: "AmountWithTax",
+    headerName: t("Amount With Tax"),
+    width: 180,
+  },
+  {
     field: "VatNumber",
     headerName: t("Vat Number (%)"),
     width: 180,

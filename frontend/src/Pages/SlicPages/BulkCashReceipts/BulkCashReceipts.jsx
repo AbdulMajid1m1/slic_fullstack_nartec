@@ -76,7 +76,6 @@ const PosBulkCashReceipts = () => {
 
   // console.log(slicUserData?.SalesmanCode);
 
-  // Fetch POS Invoice Master based on selected customer code
   const fetchPOSInvoiceMaster = async (customerCode) => {
     if (!cutOfDate) {
       return;
@@ -84,12 +83,15 @@ const PosBulkCashReceipts = () => {
     setIsLoading(true);
     try {
       const response = await newRequest.get(
-        // `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
         `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1&isBatchIdNull=true`
       );
       const posData = response?.data || [];
-      console.log(posData);
-      setData(posData);
+      const dataWithTax = (response?.data || []).map(row => ({
+        ...row,
+        AmountWithTax: row.AdjAmount + (row.AdjAmount * taxAmount / 100)
+      }));
+      console.log(dataWithTax);
+      setData(dataWithTax);
       calculateAmounts(posData);
       setIsLoading(false);
     } catch (err) {
@@ -110,14 +112,8 @@ const PosBulkCashReceipts = () => {
     let totalSRAmount = 0;
 
     transactions.forEach((transaction) => {
-      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
-      const vatRate = transaction.VatNumber
-        ? parseFloat(transaction.VatNumber) / 100
-        : 0.15;
-      // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
       const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
-      // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
         totalINAmount += transaction.PendingAmount * vatMultiplier;
       } else if (transaction.TransactionCode.endsWith("SR")) {
@@ -693,8 +689,8 @@ const PosBulkCashReceipts = () => {
   const handlePrintPDF = () => {
     const doc = new jsPDF({
       orientation: "landscape",
-      unit: "pt", // Use points for better control over dimensions
-      format: [1020, 600] // Custom page size
+      unit: "pt",
+      format: [1140, 600]
     });
 
     // Add title
@@ -706,42 +702,26 @@ const PosBulkCashReceipts = () => {
       { header: "Invoice No", dataKey: "invoiceNo" },
       { header: "Customer Name", dataKey: "customerName" },
       { header: "Adjustment Amount", dataKey: "AdjAmount" },
+      { header: "Amount With Tax", dataKey: "AmountWithTax" },
       { header: "Pending Amount", dataKey: "pendingAmount" },
       { header: "Document No", dataKey: "DocNo" },
       { header: "Transaction Code", dataKey: "transactionCode" },
       { header: "Customer Code", dataKey: "customerCode" },
       { header: "Transaction Type", dataKey: "transactionType" },
       { header: "Mobile No", dataKey: "mobileNo" },
-      // { header: "Delivery Location Code", dataKey: "deliveryLocationCode" },
-      // { header: "Item System ID", dataKey: "itemSystemId" },
-      // { header: "Vat Number", dataKey: "vatNumber" },
-      // { header: "Head System ID", dataKey: "headSystemId" },
-      // { header: "Sales Location Code", dataKey: "salesLocationCode" },
-      // { header: "Remarks", dataKey: "remarks" },
-      // { header: "User ID", dataKey: "userId" },
-      // { header: "Zatca Payment Mode ID", dataKey: "zatcaPaymentModeId" },
-      // { header: "Zatca Payment Mode Name", dataKey: "zatcaPaymentModeName" },
     ];
 
     const rows = data.map((row) => ({
       invoiceNo: row.InvoiceNo,
       customerName: row.CustomerName,
       AdjAmount: row.AdjAmount,
+      AmountWithTax: row.AmountWithTax,
       pendingAmount: row.PendingAmount,
       DocNo: row.DocNo,
       transactionCode: row.TransactionCode,
       customerCode: row.CustomerCode,
       transactionType: row.TransactionType,
       mobileNo: row.MobileNo,
-      // deliveryLocationCode: row.DeliveryLocationCode,
-      // itemSystemId: row.ItemSysID,
-      // vatNumber: row.VatNumber,
-      // headSystemId: row.Head_SYS_ID,
-      // salesLocationCode: row.SalesLocationCode,
-      // remarks: row.Remarks,
-      // userId: row.UserID,
-      // zatcaPaymentModeId: row.zatcaPayment_mode_id,
-      // zatcaPaymentModeName: row.zatcaPayment_mode_name,
     }));
 
     // Add the table to the PDF
@@ -751,23 +731,24 @@ const PosBulkCashReceipts = () => {
       startY: 60,
       theme: 'grid',
       styles: {
-        fontSize: 11, // Adjust font size
-        cellPadding: 5, // Adjust cell padding
+        fontSize: 11,
+        cellPadding: 5,
       },
       headStyles: {
-        fillColor: [29, 47, 144], // Custom header color
-        textColor: [255, 255, 255], // White text
+        fillColor: [29, 47, 144],
+        textColor: [255, 255, 255],
       },
       columnStyles: {
-        0: { cellWidth: 100 }, // Adjust column width
-        1: { cellWidth: 110 },
-        2: { cellWidth: 120 },
-        3: { cellWidth: 110 },
-        4: { cellWidth: 110 },
-        5: { cellWidth: 110 },
+        0: { cellWidth: 90 },
+        1: { cellWidth: 100 },
+        2: { cellWidth: 100 },
+        3: { cellWidth: 100 },
+        4: { cellWidth: 100 },
+        5: { cellWidth: 100 },
         6: { cellWidth: 100 },
-        7: { cellWidth: 100 },
+        7: { cellWidth: 90 },
         8: { cellWidth: 90 },
+        9: { cellWidth: 80 },
       },
     });
 
