@@ -210,8 +210,7 @@ const PosBulkCashReceipts = () => {
 
     // Add first object for total remaining amount
     const remainingAmountObject = {
-        // Dr_Cr_Flag: "D",
-        Dr_Cr_Flag: totalRemainingAmount >= 0 ? "D" : "C",
+        Dr_Cr_Flag: "D",
         Company: "SLIC",
         Sub_Acnt_Code: "",
         Receipt_Amt: totalRemainingAmount.toFixed(2),
