@@ -115,6 +115,7 @@ exports.getAllItemCodes = async (req, res, next) => {
   }
 };
 
+<<<<<<< HEAD
 exports.updateGTINs = async (req, res, next) => {
   try {
     // Fetch all item codes
@@ -141,6 +142,34 @@ exports.updateGTINs = async (req, res, next) => {
     next(error);
   }
 };
+=======
+// exports.updateGTINs = async (req, res, next) => {
+//   try {
+//     // Fetch all item codes
+//     const itemCodes = await ItemCodeModel.findAll();
+
+//     // Update each item code with the correct check digit
+//     const updatePromises = itemCodes.map(async (item) => {
+//       if (item.GTIN && item.GTIN.length === 13) {
+//         const gtinWithoutCheckDigit = item.GTIN.slice(0, 12);
+//         const correctCheckDigit = calculateCheckDigit(gtinWithoutCheckDigit);
+//         const updatedGTIN = `${gtinWithoutCheckDigit}${correctCheckDigit}`;
+
+//         // Update the record only if it needs correction
+//         if (updatedGTIN !== item.GTIN) {
+//           return await ItemCodeModel.update(item.id, { GTIN: updatedGTIN });
+//         }
+//       }
+//     });
+
+//     await Promise.all(updatePromises);
+
+//     res.status(200).json({ message: "GTINs updated successfully" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+>>>>>>> dev
 
 exports.postItemCode = async (req, res, next) => {
   try {
@@ -292,10 +321,14 @@ exports.deleteItemCode = async (req, res, next) => {
     const GTIN = req.params.GTIN;
     const itemCode = await ItemCodeModel.findById(GTIN);
     if (!itemCode) {
-      const error = new CustomError('Item code not found');
+      const error = new CustomError("Item code not found");
       error.statusCode = 404;
       throw error;
     }
+<<<<<<< HEAD
+=======
+    // Delete the item code
+>>>>>>> dev
     const deletedItemCode = await ItemCodeModel.deleteById(itemCode.id);
     res
       .status(200)

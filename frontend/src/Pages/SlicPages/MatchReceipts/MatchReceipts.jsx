@@ -1,39 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import {
-  posBulkCashreceiptInvoiceColumns,
-  posHistoryInvoiceColumns,
-} from "../../../utils/datatablesource";
+import { posBulkCashreceiptInvoiceColumns } from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
-import newRequest from "../../../utils/userRequest";
-import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { useTranslation } from "react-i18next";
+import newRequest from "../../../utils/userRequest";
 import {
   Autocomplete,
   Button,
   CircularProgress,
   TextField,
 } from "@mui/material";
-import ErpTeamRequest from "../../../utils/ErpTeamRequest";
+import { toast } from "react-toastify";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
-import { useTranslation } from "react-i18next";
+import AddBankDepositNoPopUp from "./AddBankDepositNoPopUp";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { newERPBaseUrl } from "../../../utils/config";
 import { useTaxContext } from "../../../Contexts/TaxContext";
+import { RolesContext } from "../../../Contexts/FetchRolesContext";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const PosBulkCashReceipts = () => {
+const PosBulkMatchReceipts = () => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [invoiceList, setInvoiceList] = useState([]);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [cutOfDate, setCutOfDate] = useState(""); // Cut of Date
-  const navigate = useNavigate();
+  const [matchingTransactionLoader, setMatchingTransactionLaoder] =
+    useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [totalInvoiceAmount, setTotalInvoiceAmount] = useState(0);
   const [exchangeAmount, setExchangeAmount] = useState(0);
@@ -42,11 +37,16 @@ const PosBulkCashReceipts = () => {
   const { taxAmount } = useTaxContext();
   // console.log(taxAmount);
 
+  const { userRoles } = useContext(RolesContext);
+  const [hasBulkCashRole, setHasBulkCashRole] = useState(false);
+
   useEffect(() => {
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
-    setCutOfDate(formattedDate);
-  }, []);
+    // Check if the user has the "bulk_cash" role
+    const bulkCashRole = userRoles.find((role) => role.RoleName === "matching_receipt");
+    setHasBulkCashRole(!!bulkCashRole);
+  }, [userRoles]);
+
+  console.log(hasBulkCashRole)
 
   useEffect(() => {
     // slic login api token get
@@ -70,41 +70,67 @@ const PosBulkCashReceipts = () => {
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
-      console.log(adminData?.data?.user);
+      // console.log(adminData?.data?.user)
     }
   }, []);
 
   // console.log(slicUserData?.SalesmanCode);
 
-  const fetchPOSInvoiceMaster = async (customerCode) => {
-    if (!cutOfDate) {
-      return;
+  const [selectedMatchReceipts, setSelectedMatchReceipts] = useState(null);
+  const [matchReceiptsList, setMatchReceiptsList] = useState([]);
+  const [buttonEnabled, setButtonEnabled] = useState(false);
+  const [matchingButtonEnabled, setMatchingButtonEnabled] = useState(false); // For "Matching Transaction" button
+  const [matchingButtonText, setMatchingButtonText] = useState(
+    "Matching Transaction"
+  );
+
+  const handleSelectedBrvReceipts = (event, value) => {
+    console.log(value);
+    setSelectedMatchReceipts(value);
+
+    // Update "Add Bank Deposit Number" button
+    setButtonEnabled(value !== null);
+
+    // Check if isMatched is true, and update the "Matching Transaction" button
+    if (value && value.isMatched) {
+      setMatchingButtonEnabled(false);
+      setMatchingButtonText("Already Matched");
+    } else if (value) {
+      setMatchingButtonEnabled(true);
+      setMatchingButtonText("Matching Transaction");
+    } else {
+      setMatchingButtonEnabled(false);
+      setMatchingButtonText("Matching Transaction");
     }
-    setIsLoading(true);
+
+    if (value) {
+      fetchData(value);
+    }
+  };
+
+  const handleFetchAllBrvReceipts = async () => {
     try {
       const response = await newRequest.get(
-        `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1&isBatchIdNull=true`
+        `/invoice/v1/getPOSInvoiceBatch?isMatched=false`
       );
-      const posData = response?.data || [];
-      const dataWithTax = (response?.data || []).map(row => ({
-        ...row,
-        AmountWithTax: row.AdjAmount + (row.AdjAmount * taxAmount / 100)
+      console.log(response.data);
+      const data = response.data;
+      const name = data.map((receipt) => ({
+        id: receipt?.id,
+        bulkCashDocNo: receipt.bulkCashDocNo,
+        bulkCashRefNo: receipt.bulkCashRefNo,
+        bankDepositNo: receipt.bankDepositNo,
+
       }));
-      console.log(dataWithTax);
-      setData(dataWithTax);
-      calculateAmounts(posData);
-      setIsLoading(false);
-    } catch (err) {
-      setIsLoading(false);
-      toast.error(
-        err?.response?.data?.error || "Failed to fetch POS invoice data"
-      );
+      setMatchReceiptsList(name);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   useEffect(() => {
-    fetchPOSInvoiceMaster();
-  }, [cutOfDate]);
+    handleFetchAllBrvReceipts();
+  }, []);
 
   // Calculate amounts based on IN and SR transactions
   const calculateAmounts = (transactions) => {
@@ -114,6 +140,7 @@ const PosBulkCashReceipts = () => {
     transactions.forEach((transaction) => {
       const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
+      // Check transaction code and update the respective totals
       if (transaction.TransactionCode.endsWith("IN")) {
         totalINAmount += transaction.PendingAmount * vatMultiplier;
       } else if (transaction.TransactionCode.endsWith("SR")) {
@@ -130,175 +157,44 @@ const PosBulkCashReceipts = () => {
     setRemainingAmount(remainingAmount.toFixed(2));
   };
 
-
-  const handleGenerateReceipt = async () => {
-    if (parseFloat(remainingAmount) < 0) {
-        toast.error("Cannot generate receipt when remaining amount is negative");
-        return;
-    }
-
-    let totalRemainingAmount = 0;
-    let details = [];
-
-    // Group transactions by customer
-    const customerTransactions = data.reduce((acc, transaction) => {
-      const customerCode = transaction.CustomerCode || "";
-      if (!acc[customerCode]) {
-          acc[customerCode] = {
-              totalAmount: 0,
-              Company: "SLIC",
-              Sub_Acnt_Code: customerCode
-          };
-      }
-
-      const vatMultiplier = 1 + taxAmount / 100;
-      const amount = transaction.PendingAmount * vatMultiplier;
-
-      // Add for IN, subtract for SR
-      if (transaction.TransactionCode.endsWith("IN")) {
-          acc[customerCode].totalAmount += amount;
-          totalRemainingAmount += amount;
-      } else if (transaction.TransactionCode.endsWith("SR")) {
-          acc[customerCode].totalAmount -= amount;
-          totalRemainingAmount -= amount;
-      }
-
-      return acc;
-    }, {});
-
-    // Convert grouped transactions to details array
-    Object.values(customerTransactions).forEach(customer => {
-        if (customer.totalAmount !== 0) {  // Only add if there's a non-zero balance
-            details.push({
-                Dr_Cr_Flag: customer.totalAmount >= 0 ? "C" : "D",
-                Company: customer.Company,
-                Sub_Acnt_Code: customer.Sub_Acnt_Code,
-                Receipt_Amt: Math.abs(customer.totalAmount).toFixed(2)
-            });
-        }
-    });
-
-    // data.forEach((transaction) => {
-    //     const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
-    //     const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
-
-    //     // Handle "IN" transactions
-    //     if (transaction.TransactionCode.endsWith("IN")) {
-    //         details.push({
-    //             Dr_Cr_Flag: "C",
-    //             Company: "SLIC",
-    //             Sub_Acnt_Code: transaction.CustomerCode || "",
-    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
-    //         });
-    //         totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
-    //     }
-    //     // Handle "SR" transactions
-    //     else if (transaction.TransactionCode.endsWith("SR")) {
-    //         details.push({
-    //             Dr_Cr_Flag: "D",
-    //             Company: "SLIC",
-    //             Sub_Acnt_Code: transaction.CustomerCode || "",
-    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
-    //         });
-    //         totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
-    //     }
-    // });
-
-    // Add first object for total remaining amount
-    const remainingAmountObject = {
-        Dr_Cr_Flag: "D",
-        Company: "SLIC",
-        Sub_Acnt_Code: "",
-        Receipt_Amt: totalRemainingAmount.toFixed(2),
-    };
-
-    // Add this object to the start of the details array
-    details.unshift(remainingAmountObject);
-
-    const requestData = {
-        url: newERPBaseUrl,
-        data: [
-            {
-                Company: "SLIC",
-                UserId: "SYSADMIN",
-                Department: "011",
-                TransactionCode: "BRV",
-                Division: "100",
-                Narration: slicUserData?.UserLoginID,
-                Details: details,
-            },
-        ],
-        COMPANY: "SLIC",
-        USERID: slicUserData?.UserLoginID,
-        APICODE: "BULKBRVCASHAPI",
-        LANG: "ENG",
-    };
-
-    console.log(requestData);
-
+  const fetchData = async (value) => {
+    setIsLoading(true);
+    // console.log(value);
     try {
-        setLoading(true);
-        const receiptResponse = await ErpTeamRequest.post(
-            "/slicuat05api/v1/postData",
-            requestData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-
-        const responseData = receiptResponse?.data?.message;
-
-        if (!responseData?.["Ref-No/SysID"] || !responseData?.["Document No"]) {
-            throw new Error("Required fields missing in ERP response.");
-        }
-
-        toast.success(
-            receiptResponse?.data?.message?.message || "Receipt generated successfully!"
-        );
-
-        const refNo = responseData["Ref-No/SysID"];
-        const docNo = responseData["Document No"];
-
-        const invoiceMasterIds = data.map((transaction) => transaction.id);
-
-        const batchRequestData = {
-            bulkCashDocNo: docNo,
-            bulkCashRefNo: `${refNo}`,
-            invoiceMasterIds: invoiceMasterIds,
-        };
-
-        console.log(batchRequestData);
-
-        try {
-            const batchResponse = await newRequest.post(
-                "/invoice/v1/createPOSInvoiceBatch",
-                batchRequestData
-            );
-
-            toast.success(
-                batchResponse?.data?.message || "POS Invoice Batch created successfully!"
-            );
-            // I call the print pdf function here
-            handlePrintPDF();
-        } catch (batchErr) {
-            toast.error(
-                batchErr?.response?.data?.message || "Failed to create POS Invoice Batch."
-            );
-        }
-
-        setLoading(false);
-        // clear the data
-        setData([]);
-        setTotalInvoiceAmount(0);
-        setExchangeAmount(0);
-        setRemainingAmount(0);
+      const response = await newRequest.get(
+        `/invoice/v1/getPOSInvoiceMaster?filter[batchId]=${value?.id}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}`
+      );
+      const dataWithTax = (response?.data || []).map(row => ({
+        ...row,
+        AmountWithTax: row.AdjAmount + (row.AdjAmount * taxAmount / 100)
+      }));
+      setData(dataWithTax);
+      calculateAmounts(response?.data);
+      console.log(response.data);
+      setIsLoading(false);
     } catch (err) {
-        setLoading(false);
-        toast.error(err?.response?.data?.message || "Failed to generate receipt.");
+      console.log(err);
+      setIsLoading(false);
+      toast.error(err?.response?.data?.message || "An error occurred");
     }
-};
+  };
+
+  const [isAddBankDepositPopupVisible, setAddBankDepositPopupVisible] =
+    useState(false);
+  const handleShowUpdatePopup = (row) => {
+    setAddBankDepositPopupVisible(true);
+    // console.log(row)
+    sessionStorage.setItem(
+      "updateListOfEmployeeData",
+      JSON.stringify(selectedMatchReceipts)
+    );
+  };
+
+  // after the success of popup
+  const resetComboBox = () => {
+    setSelectedMatchReceipts(null);
+    setButtonEnabled(false);
+  };
 
   const handleRowClickInParent = async () => {};
 
@@ -323,14 +219,19 @@ const PosBulkCashReceipts = () => {
 
       const { invoiceDetails, invoiceHeader } = invoiceData;
 
+      // Get VAT rate from VatNumber or use default (15%)
+      const vatRate = invoiceHeader?.VatNumber
+        ? parseFloat(invoiceHeader.VatNumber) / 100
+        : 0.15;
+
       let totalGrossAmount = 0;
       let totalVAT = 0;
 
       // Loop through invoiceDetails and calculate gross, VAT, and total amounts
       invoiceDetails.forEach((item) => {
         const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-        // const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
-        const itemVAT = itemGross * taxAmount; // Calculate VAT for each item (15%)
+        // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+        const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
         totalGrossAmount += itemGross;
         totalVAT += itemVAT;
       });
@@ -399,9 +300,9 @@ const PosBulkCashReceipts = () => {
     const vatRate = invoiceHeader?.VatNumber
       ? parseFloat(invoiceHeader.VatNumber) / 100
       : 0.15;
+
     // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
     const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
-
     // Calculate total VAT
     let totalGrossAmount = 0;
     let totalVAT = 0;
@@ -409,6 +310,7 @@ const PosBulkCashReceipts = () => {
 
     // Loop through invoiceDetails and calculate gross, VAT, and total amounts
     invoiceDetails.forEach((item) => {
+      console.log(item);
       const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
       // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
       const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
@@ -426,7 +328,7 @@ const PosBulkCashReceipts = () => {
         ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${taxAmount || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVAT.toFixed(2)}
       </div>
@@ -685,6 +587,85 @@ const PosBulkCashReceipts = () => {
     };
   };
 
+  const handleMatchingTransactions = async () => {
+    setMatchingTransactionLaoder(true);
+
+    const payload = {
+      url: newERPBaseUrl,
+      data: [
+        {
+          BrvDocNo: selectedMatchReceipts?.bulkCashDocNo,
+          BrvSysId: selectedMatchReceipts?.bulkCashRefNo,
+          bankDepositNo: selectedMatchReceipts?.bankDepositNo,
+          MatchingTransactions: data.map((row) => {
+            // Determine VAT rate dynamically, defaulting to 15% if VatNumber is not provided
+            const vatRate = row?.VatNumber
+              ? parseFloat(row.VatNumber) / 100
+              : 0.15;
+            // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+            const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
+
+            return {
+              DocNo: row?.DocNo,
+              TransactionCode: row?.TransactionCode,
+              CustCode: row?.CustomerCode,
+              PendingAmount: `${(row?.PendingAmount * vatMultiplier).toFixed(
+                2
+              )}`,
+              AdjAmount: `${(row?.AdjAmount * vatMultiplier).toFixed(2)}`,
+            };
+          }),
+        },
+      ],
+      COMPANY: "SLIC",
+      USERID: slicUserData?.UserLoginID,
+      APICODE: "BULKBRVMATCHAPI",
+      LANG: "ENG",
+    };
+
+    try {
+      const response = await ErpTeamRequest.post(
+        "/slicuat05api/v1/postData",
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Check for 200 status and if the message property exists
+      if (response?.status === 200 && response?.data?.message) {
+        toast.success(response.data.message); // First API message
+
+        const secondResponse = await newRequest.put(
+          `/invoice/v1/updatePOSInvoiceBatch/${selectedMatchReceipts?.id}`,
+          {
+            isMatched: true,
+          }
+        );
+        // Display message from the second API response
+        if (secondResponse?.data?.message) {
+          toast.success(
+            secondResponse.data.message ||
+              "POS Invoice Batch updated successfully!"
+          );
+          setData([]);
+          // fetchData();
+          resetComboBox();
+        }
+      } else {
+        throw new Error("Message property missing from API response");
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.error ||
+          error.message ||
+          "Error in matching transactions."
+      );
+      console.error("Matching transaction error:", error);
+    }
+
+    setMatchingTransactionLaoder(false);
+  };
 
   const handlePrintPDF = () => {
     const doc = new jsPDF({
@@ -695,7 +676,7 @@ const PosBulkCashReceipts = () => {
 
     // Add title
     doc.setFontSize(16);
-    doc.text("POS Bulk Cash Receipts", 40, 40);
+    doc.text("POS Bulk Match Receipts", 40, 40);
 
     // Define the columns and rows for the table
     const columns = [
@@ -759,10 +740,9 @@ const PosBulkCashReceipts = () => {
     doc.text(`Remaining Amount: ${remainingAmount}`, 40, doc.lastAutoTable.finalY + 60);
 
     // Save the PDF
-    doc.save("POS_Bulk_Cash_Receipts.pdf");
+    doc.save("Match_Receipts.pdf");
   };
 
-  
   return (
     <SideNav>
       <div className="p-3 h-full">
@@ -774,43 +754,101 @@ const PosBulkCashReceipts = () => {
                   i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                <div className="flex flex-col sm:w-[50%] w-full">
-                  <label
-                    className={`font-sans font-semibold text-sm text-secondary ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
-                  >
-                    {t("Cut Of Date")}
-                  </label>
-                  <input
-                    value={cutOfDate}
-                    onChange={(e) => setCutOfDate(e.target.value)}
-                    type="date"
-                    className="border border-gray-300 p-3 rounded-lg"
+                <div className="px-3 sm:w-[30%] w-full">
+                  <Autocomplete
+                    id="field1"
+                    options={matchReceiptsList}
+                    getOptionLabel={(option) =>
+                      `${option?.bulkCashDocNo} - ${option?.bulkCashRefNo}`
+                    }
+                    onChange={handleSelectedBrvReceipts}
+                    value={selectedMatchReceipts}
+                    onInputChange={(event, value) => {
+                      if (!value) {
+                        // perform operation when input is cleared
+                        // console.log("Input cleared");
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        InputProps={{
+                          ...params.InputProps,
+                          className: "text-white",
+                        }}
+                        InputLabelProps={{
+                          ...params.InputLabelProps,
+                          style: { color: "white" },
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                        placeholder={`${t("Search BRV Receipts")}`}
+                        required
+                      />
+                    )}
+                    classes={{
+                      endAdornment: "text-white",
+                    }}
+                    sx={{
+                      "& .MuiAutocomplete-endAdornment": {
+                        color: "white",
+                      },
+                    }}
                   />
                 </div>
-
-                <div className="flex justify-center items-center sm:w-[20%] w-full mt-4">
-                  <Button
-                    variant="contained"
-                    style={{
-                      backgroundColor:
-                        loading || data.length === 0 ? "#9ca3af" : "#1d2f90",
-                      color: "#ffffff",
-                    }}
-                    disabled={loading || data.length === 0}
-                    // disabled={loading}
-                    className="w-full"
-                    onClick={handleGenerateReceipt}
-                    endIcon={
-                      loading ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : null
-                    }
+                {hasBulkCashRole ? (
+                <div className="flex justify-end items-center w-full gap-3">
+                   <button
+                    className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
+                      buttonEnabled
+                        ? "bg-secondary hover:bg-primary text-white hover:text-black"
+                        : "bg-gray-400 text-white cursor-not-allowed"
+                    }`}
+                    disabled={!buttonEnabled}
+                    onClick={handlePrintPDF}
                   >
-                    {t("Generate Receipt")}
-                  </Button>
+                    Print PDF
+                  </button>
+                  <button
+                    className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
+                      buttonEnabled
+                        ? "bg-secondary hover:bg-primary text-white hover:text-black"
+                        : "bg-gray-400 text-white cursor-not-allowed"
+                    }`}
+                    disabled={!buttonEnabled}
+                    onClick={handleShowUpdatePopup}
+                  >
+                    Add Bank Deposit Number
+                  </button>
+
+                  <div className="mt-2">
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: matchingButtonEnabled
+                          ? "#1d2f90"
+                          : "#9ca3af",
+                        color:
+                          matchingButtonText === "Already Matched"
+                            ? "#000000"
+                            : "#ffffff",
+                      }}
+                      type="button"
+                      onClick={handleMatchingTransactions}
+                      disabled={!matchingButtonEnabled}
+                      className="ml-2"
+                      endIcon={
+                        matchingTransactionLoader ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : null
+                      }
+                    >
+                      {matchingButtonText}
+                    </Button>
+                  </div>
                 </div>
+                ) : (
+                  <div className="flex justify-end items-center w-full gap-3">You do not have permission to access these actions.</div>
+                )}
               </div>
             </div>
           </div>
@@ -825,7 +863,7 @@ const PosBulkCashReceipts = () => {
           >
             <DataTable
               data={data}
-              title={t("POS Bulk Cash Receipts")}
+              title={t("POS Bulk Match Receipts")}
               columnsName={posBulkCashreceiptInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
@@ -932,30 +970,17 @@ const PosBulkCashReceipts = () => {
           </div>
         </div>
 
-        {/* <div style={{ marginLeft: "-11px", marginRight: "-11px" }}>
-          <DataTable
-            data={filteredData}
-            title={"POS History Details"}
-            secondaryColor="secondary"
-            columnsName={posHistoryInvoiceColumns}
-            backButton={true}
-            checkboxSelection="disabled"
-            actionColumnVisibility={false}
-            // dropDownOptions={[
-            //   {
-            //     label: "Delete",
-            //     icon: <DeleteIcon fontSize="small" style={{ color: '#FF0032' }} />
-            //     ,
-            //     action: handleShipmentDelete,
-            //   },
-            // ]}
-            uniqueId={"posHistoryDetailsId"}
-            loading={isPurchaseOrderDataLoading}
+        {isAddBankDepositPopupVisible && (
+          <AddBankDepositNoPopUp
+            isVisible={isAddBankDepositPopupVisible}
+            setVisibility={setAddBankDepositPopupVisible}
+            refreshGTINData={fetchData}
+            resetComboBox={resetComboBox}
           />
-        </div> */}
+        )}
       </div>
     </SideNav>
   );
 };
 
-export default PosBulkCashReceipts;
+export default PosBulkMatchReceipts;

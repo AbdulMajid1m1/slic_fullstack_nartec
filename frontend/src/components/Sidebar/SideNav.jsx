@@ -13,6 +13,9 @@ import transactioncodes from "../../Images/transactioncodes.png"
 import customercodes from "../../Images/customercodes.png"
 import POShistory from "../../Images/POShistory.png"
 import POSArchive from "../../Images/POSArchive.png"
+import bulkcash from "../../Images/bulkcash.png"
+import matchreceipts from "../../Images/matchreceipts.png"
+import brvmatched from "../../Images/brvmatched.png"
 import { FaChevronDown, FaChevronUp, FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -28,6 +31,7 @@ function SideNav({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMangeOpen, setIsMangeOpen] = useState(false);
   const [isMangeSliderOpen, setIsMangeSliderOpen] = useState(false);
+  const [isBulkCashReceiptOpen, setIsBulkCashReceiptOpen] = useState(false);
   const [settings, setSettings] = useState(false);
   const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
@@ -47,6 +51,9 @@ function SideNav({ children }) {
     setIsMangeSliderOpen(!isMangeSliderOpen);
   };
 
+  const handleToggleBulkCashReceipt = () => {
+    setIsBulkCashReceiptOpen(!isBulkCashReceiptOpen);
+  };
   const handleToggleMangeSettings = () => {
     setSettings(!settings);
   };
@@ -217,23 +224,152 @@ function SideNav({ children }) {
                         </div>
                       </Link>
                     </li>
-                    <li className="mt-3">
-                    <Link
-                      to="/pos-bulkcash-receipts"
-                     className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
-                    >
-                      <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
-                        <img
-                          src={directinvoice}
-                          alt="logo"
-                          className="w-10 h-10 object-cover"
-                        />
-                        <span className="text-secondary font-medium text-lg">
-                          Bulk Cash Receipts
+                  <li className="mt-3">
+                      <div
+                       className={`flex items-center py-1  text-gray-700 group hover:text-gray-600 hover:bg-gray-100 cursor-pointer ${
+                          i18n.language === "ar"
+                            ? "flex-row-reverse pr-3 pl-4"
+                            : "flex-row pl-3 pr-4"
+                        }`}  onClick={handleToggleBulkCashReceipt}
+                      >
+                        <div
+                          className={`flex justify-center items-center gap-3 ${
+                            i18n.language === "ar"
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <img
+                            src={bulkcash}
+                            alt="logo"
+                            className="w-10 h-10 object-cover"
+                          />
+                          <span className="text-secondary font-medium text-lg">
+                            {t("Bulk Cash")}
+                          </span>
+                        </div>
+                        <span  className={`inline-block  sidenav-arrow ${
+                            i18n.language === "ar" ? "mr-auto" : "ml-auto"
+                          }`}>
+                          {isBulkCashReceiptOpen ? <FaChevronUp /> : <FaChevronDown />}
                         </span>
                       </div>
-                    </Link>
-                  </li>
+                      {isBulkCashReceiptOpen && (
+                        <div className="pl-1 ml-3 transition border-gray-500 dropdown-section nested-menu">
+                          <ul className="text-sm">
+                            <li className="mt-3">
+                              <Link
+                                to="/pos-bulkcash-receipts"
+                              className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
+                              >
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                                  <img
+                                    src={directinvoice}
+                                    alt="logo"
+                                    className="w-10 h-10 object-cover"
+                                  />
+                                  <span className="text-secondary font-medium text-lg">
+                                    Bulk Cash Receipts
+                                  </span>
+                                </div>
+                              </Link>
+                            </li>
+                            <li className="mt-3">
+                              <Link
+                                to="/pos-bulkmatch-receipts"
+                              className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
+                              >
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                                  <img
+                                    src={matchreceipts}
+                                    alt="logo"
+                                    className="w-10 h-10 object-cover"
+                                  />
+                                  <span className="text-secondary font-medium text-lg">
+                                    Matching Receipts
+                                  </span>
+                                </div>
+                              </Link>
+                            </li>
+                            <li className="mt-3">
+                              <Link
+                                to="/pos-Matched-receipts"
+                              className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${i18n.language === "ar" ? "pr-3 pl-4 justify-end" : "pl-3 pr-4 justify-start" }`}
+                              >
+                                <div className={`flex justify-center items-center gap-3 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row" }`}>
+                                  <img
+                                    src={brvmatched}
+                                    alt="logo"
+                                    className="w-10 h-10 object-cover"
+                                  />
+                                  <span className="text-secondary font-medium text-lg">
+                                    Matched Receipts
+                                  </span>
+                                </div>
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                    </li>
+                    <li className="mt-3">
+                      <Link
+                        to="/pos-error-logs"
+                        className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${
+                          i18n.language === "ar"
+                            ? "pr-3 pl-4 justify-end"
+                            : "pl-3 pr-4 justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex justify-center items-center gap-3 ${
+                            i18n.language === "ar"
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <img
+                            src={userprofile}
+                            alt="logo"
+                            className="w-10 h-10 object-cover"
+                          />
+                          <span className={`text-secondary font-medium text-lg  ${
+                          i18n.language === "ar"
+                            ? "text-end"
+                            : "text-start"
+                        }`}>
+                            {t("POS Error Logs")}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                    <li className="mt-3">
+                      <Link
+                        to="/tax-settings"
+                        className={`flex items-center py-1  text-gray-700 rounded hover:bg-gray-100 ${
+                          i18n.language === "ar"
+                            ? "pr-3 pl-4 justify-end"
+                            : "pl-3 pr-4 justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`flex justify-center items-center gap-3 ${
+                            i18n.language === "ar"
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <img
+                            src={Purchase}
+                            alt="logo"
+                            className="w-10 h-10 object-cover"
+                          />
+                          <span className="text-secondary font-medium text-lg">
+                            {t("Tex Settings")}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
                     <li className="mt-3">
                       <Link
                         to="/user-profile"

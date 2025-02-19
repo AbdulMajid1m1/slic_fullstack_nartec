@@ -406,14 +406,14 @@ const GTIN = () => {
                     <div id="itemcode">
                       <div id="inside-BRCode">
                         <QRCodeSVG
-                          value={`${barcode?.ItemCode} - ${barcode?.EnglishName} - ${barcode?.ProductSize} - ${barcode?.GTIN}`}
+                          value={`${barcode?.ItemCode} - ${barcode?.ProductSize} - ${barcode?.GTIN}`}
                           width="65"
                           height="45"
                         />
                       </div>
 
                       <div id="description">
-                        <div id="gtin">Style# : {barcode?.ItemCode} - {barcode?.EnglishName}</div>
+                        <div id="gtin">Style# : {barcode?.ItemCode}</div>
                         <div id="expiry">Size# : {barcode?.ProductSize}</div>
                         <div id="batch">{barcode?.GTIN}</div>
                       </div>

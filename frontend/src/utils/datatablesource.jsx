@@ -725,6 +725,11 @@ export const posHistoryInvoiceColumns = (t)=> [
     width: 180,
   },
   {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
+    width: 180,
+  },
+  {
     field: "Head_SYS_ID",
     headerName: t("Head System ID"),
     width: 180,
@@ -893,6 +898,16 @@ export const posBulkCashreceiptInvoiceColumns = (t)=> [
     width: 180,
   },
   {
+    field: "AmountWithTax",
+    headerName: t("Amount With Tax"),
+    width: 180,
+  },
+  {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
+    width: 180,
+  },
+  {
     field: "Head_SYS_ID",
     headerName: t("Head System ID"),
     width: 180,
@@ -948,3 +963,71 @@ export const posBulkCashreceiptInvoiceColumns = (t)=> [
     width: 200,
   },
 ];
+
+
+
+export const posErrorLogsColumn =(t)=> [
+  {
+    field: "inDocumentNo",
+    headerName: t("In Document No"),
+    width: 180,
+  },
+  {
+    field: "inRefSysId",
+    headerName: t("In RefSys Id"),
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "srDocumentNo",
+    headerName: t("SR DocumentNo"),
+    width: 180,
+  },
+  {
+    field: "srRefSysId",
+    headerName: t("SR RefSysId"),
+    width: 180,
+  },
+  {
+    field: "transactionType",
+    headerName: t("Transaction Type"),
+    width: 180,
+  },
+  
+
+
+]
+
+
+
+export const taxSettingsColumn =(t)=> [
+  {
+    field: "taxAmount",
+    headerName: t("Tax Settings"),
+    width: 180,
+  },
+  {
+    field: "createdAt",
+    headerName: t("Created At"),
+    width: 180,
+
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  {
+    field: "updatedAt",
+    headerName: t("Updated At"),
+    width: 180,
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  
+
+
+]

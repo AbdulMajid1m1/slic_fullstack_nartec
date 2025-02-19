@@ -21,6 +21,7 @@ import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 import { useTranslation } from "react-i18next";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const POS = () => {
   const { t, i18n } = useTranslation();
@@ -32,12 +33,37 @@ const POS = () => {
   const [customerName, setCustomerName] = useState("");
   const [mobileNo, setMobileNo] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [vat, setVat] = useState("");
+  const [vat, setVat] = useState(15);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
+
+  // Add this function near other state declarations
+  const [discountedTotal, setDiscountedTotal] = useState(0);
+  // Add this function to calculate discount
+  const calculateDiscount = (items, totalQty) => {
+    // Check if selected customer is Buy 2 Get 1 Free customer
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+ 
+    // const isBuy2Get1Customer = true;
+    
+    if (!isBuy2Get1Customer || totalQty !== 3) {
+      return 0;
+    }
+
+    // Find lowest price item
+    const lowestPrice = Math.min(...items.map(item => Number(item.ItemPrice)));    
+    return lowestPrice;
+  };
+
+  
   const [selectedSalesReturnType, setSelectedSalesReturnType] =
     useState("RETRUN WITH EXCHANGE");
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -136,31 +162,31 @@ const POS = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Function to generate invoice New number based on date and time
-  const generateNewInvoiceNumber = () => {
-    const now = new Date();
-    const timestamp = Date.now();
-    return `${timestamp}`;
-  };
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTodayDate(now.toISOString());
-      setCurrentTime(
-        now.toLocaleString("en-US", {
-          dateStyle: "short",
-          timeStyle: "medium",
-        })
-      );
-    };
-
-    setNewInvoiceNumber(generateInvoiceNumber());
-    updateTime();
-    const intervalId = setInterval(updateTime, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
+    // Function to generate invoice New number based on date and time
+    // const generateNewInvoiceNumber = () => {
+    //   const now = new Date();
+    //   const timestamp = Date.now();
+    //   return `${timestamp}`;
+    // };
+  
+    // useEffect(() => {
+    //   const updateTime = () => {
+    //     const now = new Date();
+    //     setTodayDate(now.toISOString());
+    //     setCurrentTime(
+    //       now.toLocaleString("en-US", {
+    //         dateStyle: "short",
+    //         timeStyle: "medium",
+    //       })
+    //     );
+    //   };
+  
+    //   setNewInvoiceNumber(generateInvoiceNumber());
+    //   updateTime();
+    //   const intervalId = setInterval(updateTime, 1000);
+      
+    //   return () => clearInterval(intervalId);
+    // }, []);
 
 
 
@@ -172,11 +198,11 @@ const POS = () => {
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     } else if (action === "exchange Dsales") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeDSalesClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     }
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
@@ -211,6 +237,8 @@ const POS = () => {
     if (storedPaymentMode) {
       setSelectedPaymentMode(JSON.parse(storedPaymentMode));
     }
+
+    // console.log(taxAmount);
 
   }, []);
 
@@ -292,7 +320,7 @@ const POS = () => {
         `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
       );
       const allCustomers = response?.data?.data;
-      console.log(allCustomers)
+      // console.log(allCustomers)
 
       setSearchCustomerName(allCustomers);
     } catch (err) {
@@ -363,7 +391,7 @@ const POS = () => {
   };
 
   const handleSearchCustomerNameWithDirectInvoice = (event, value) => {
-    // console.log(value);
+    console.log(value);
     setSelectedCustomeNameWithDirectInvoice(value);
   };
 
@@ -399,202 +427,384 @@ const POS = () => {
 
 
   // Fetch barcode data from API
+  // const handleGetBarcodes = async (e) => {
+  //   e.preventDefault();
+
+  //   // Dynamically determine the CustomerCode based on the selected transaction code
+  //   const customerCode =
+  //   EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+  //     ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+  //     : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+    
+  //   // console.log("direct sales invoice ", customerCode)
+  //   if (!selectedTransactionCode?.TXN_CODE) {
+  //     toast.error("Please select a transaction code first.");
+  //     setIsExchangeItemPopupVisible(false);
+  //     return;
+  //   }
+  //   if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+  //     toast.error("Please select a customer code first.");
+  //     setIsExchangeItemPopupVisible(false);
+  //     return;
+  //   }
+
+  //   // if(vat === "") {
+  //   //   toast.info("Please add Vat Dynamically for all transactions");
+  //   //   return;
+  //   // }
+
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await newRequest.get(
+  //       `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+  //     );
+  //     const data = response?.data?.data;
+
+  //     if (data) {
+  //       const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
+
+  //       // Call the second API
+  //       const secondApiBody = {
+  //         filter: {
+  //           P_COMP_CODE: "SLIC",
+  //           P_ITEM_CODE: ItemCode,
+  //           // P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+  //           P_CUST_CODE: customerCode,
+  //           P_GRADE_CODE_1: ProductSize,
+  //         },
+  //         M_COMP_CODE: "SLIC",
+  //         M_USER_ID: "SYSADMIN",
+  //         APICODE: "PRICELIST",
+  //         M_LANG_CODE: "ENG",
+  //       };
+
+  //       try {
+  //         const secondApiResponse = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/getApi",
+  //           secondApiBody,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //           }
+  //         );
+  //         const secondApiData = secondApiResponse?.data;
+  //         // console.log(secondApiData);
+
+  //         let storedData = sessionStorage.getItem("secondApiResponses");
+  //         storedData = storedData ? JSON.parse(storedData) : {};
+
+  //         const itemRates = secondApiData.map(
+  //           (item) => item?.PRICELIST?.PLI_RATE
+  //         );
+
+  //         storedData[ItemCode] = itemRates;
+
+  //         sessionStorage.setItem(
+  //           "secondApiResponses",
+  //           JSON.stringify(storedData)
+  //         );
+
+  //         const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
+  //         const vat = itemPrice * taxAmount / 100;
+  //         const total = itemPrice + vat;
+
+  //         // Set data in state
+  //         setData((prevData) => {
+  //           const existingItemIndex = prevData.findIndex(
+  //             (item) => item.Barcode === GTIN
+  //           );
+
+  //           if (existingItemIndex !== -1) {
+  //             const updatedData = [...prevData];
+  //             updatedData[existingItemIndex] = {
+  //               ...updatedData[existingItemIndex],
+  //               Qty: updatedData[existingItemIndex].Qty + 1,
+  //               Total:
+  //                 (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
+  //             };
+  //             return updatedData;
+  //           } else {
+  //             return [
+  //               ...prevData,
+  //               {
+  //                 SKU: ItemCode,
+  //                 Barcode: GTIN,
+  //                 Description: EnglishName,
+  //                 DescriptionArabic: ArabicName,
+  //                 ItemSize: ProductSize,
+  //                 Qty: 1,
+  //                 ItemPrice: itemPrice,
+  //                 VAT: vat,
+  //                 Total: total,
+  //               },
+  //             ];
+  //           }
+  //         });
+
+  //         // Now, call the stock status API after second API success
+  //         const stockStatusBody = {
+  //           filter: {
+  //             M_COMP_CODE: "SLIC",
+  //             P_LOCN_CODE: selectedLocation?.stockLocation,
+  //             P_ITEM_CODE: ItemCode,
+  //             P_GRADE_1: ProductSize,
+  //             P_GRADE_2: "NA",
+  //           },
+  //           M_COMP_CODE: "SLIC",
+  //           M_USER_ID: "SYSADMIN",
+  //           APICODE: "STOCKSTATUS",
+  //           M_LANG_CODE: "ENG",
+  //         };
+
+  //         try {
+  //           const stockStatusResponse = await ErpTeamRequest.post(
+  //             "/slicuat05api/v1/getApi",
+  //             stockStatusBody,
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${token}`,
+  //               },
+  //             }
+  //           );
+
+  //           const stockData = stockStatusResponse?.data;
+  //           // console.log(stockData);
+
+  //           // Check the available stock
+  //           const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
+
+  //           // Update the grid with available stock info
+  //           setData((prevData) =>
+  //             prevData.map((item) =>
+  //               item.SKU === ItemCode
+  //                 ? { ...item, AvailableStock: availableStock }
+  //                 : item
+  //             )
+  //           );
+
+  //         } catch (stockStatusError) {
+  //           toast.error(
+  //             stockStatusError?.response?.data?.message ||
+  //               "An error occurred while fetching stock status"
+  //           );
+  //         }
+
+  //       } catch (secondApiError) {
+  //         toast.error(
+  //           secondApiError?.response?.data?.message ||
+  //             "An error occurred while calling the second API"
+  //         );
+  //       }
+
+  //       // Clear the barcode state after the response
+  //       setBarcode("");
+  //     } else {
+  //       setData([]);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error?.response?.data?.message || "An error occurred");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   // Main barcode handling function
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
 
-    // Dynamically determine the CustomerCode based on the selected transaction code
-    const customerCode =
-      EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
-        ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
-        : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+  // Dynamically determine the CustomerCode based on the selected transaction code
+  const customerCode =
+    EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+      ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+      : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
 
-    if (!selectedTransactionCode?.TXN_CODE) {
-      toast.error("Please select a transaction code first.");
-      setIsExchangeItemPopupVisible(false);
-      return;
-    }
+  if (!selectedTransactionCode?.TXN_CODE) {
+    toast.error("Please select a transaction code first.");
+    setIsExchangeItemPopupVisible(false);
+    return;
+  }
+  
+  if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+    toast.error("Please select a customer code first.");
+    setIsExchangeItemPopupVisible(false);
+    return;
+  }
 
-    if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
-      toast.error("Please select a customer code first.");
-      setIsExchangeItemPopupVisible(false);
-      return;
-    }
+  setIsLoading(true);
+  try {
+    const response = await newRequest.get(
+      `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+    );
+    const data = response?.data?.data;
 
-    setIsLoading(true);
-    try {
-      const response = await newRequest.get(
-        `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
-      );
-      const data = response?.data?.data;
+    if (data) {
+      const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
 
-      if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
+      // Call the second API
+      const secondApiBody = {
+        filter: {
+          P_COMP_CODE: "SLIC",
+          P_ITEM_CODE: ItemCode,
+          P_CUST_CODE: customerCode,
+          P_GRADE_CODE_1: ProductSize,
+        },
+        M_COMP_CODE: "SLIC",
+        M_USER_ID: "SYSADMIN",
+        APICODE: "PRICELIST",
+        M_LANG_CODE: "ENG",
+      };
 
-        // Call the second API
-        const secondApiBody = {
+      try {
+        const secondApiResponse = await ErpTeamRequest.post(
+          "/slicuat05api/v1/getApi",
+          secondApiBody,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const secondApiData = secondApiResponse?.data;
+
+        let storedData = sessionStorage.getItem("secondApiResponses");
+        storedData = storedData ? JSON.parse(storedData) : {};
+
+        const itemRates = secondApiData.map(
+          (item) => item?.PRICELIST?.PLI_RATE
+        );
+
+        storedData[ItemCode] = itemRates;
+
+        sessionStorage.setItem(
+          "secondApiResponses",
+          JSON.stringify(storedData)
+        );
+
+        const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
+        const vat = itemPrice * taxAmount / 100;
+
+        setData((prevData) => {
+          const existingItemIndex = prevData.findIndex(
+            (item) => item.Barcode === GTIN
+          );
+        
+          let newData;
+          if (existingItemIndex !== -1) {
+            // Update existing item
+            newData = [...prevData];
+            newData[existingItemIndex] = {
+              ...newData[existingItemIndex],
+              Qty: newData[existingItemIndex].Qty + 1,
+            };
+          } else {
+            // Add new item
+            const newItem = {
+              SKU: ItemCode,
+              Barcode: GTIN,
+              Description: EnglishName,
+              DescriptionArabic: ArabicName,
+              ItemSize: ProductSize,
+              Qty: 1,
+              ItemPrice: itemPrice,
+              // VAT: vat,
+              VAT: (itemPrice * taxAmount) / 100,
+            };
+            newData = [...prevData, newItem];
+          }
+        
+          // Calculate total quantity across all items
+          const totalQty = newData.reduce((sum, item) => sum + item.Qty, 0);
+          console.log("Total Quantity:", totalQty);
+        
+          // Prevent more than 3 items
+          if (totalQty > 3) {
+            toast.error("Maximum 3 items allowed for Buy 2 Get 1 Free offer");
+            setBarcode("");
+            return prevData;
+          }
+        
+          // Calculate discount using newData
+          const discount = calculateDiscount(newData, totalQty);
+          const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
+          setDiscountedTotal(discount);
+          console.log("discount", discount)
+        
+          // Update totals for all items including discount
+          return newData.map(item => {
+            const discountedPrice = item.ItemPrice - discountPerItem;
+            const newVat = (discountedPrice * taxAmount) / 100; // Recalculate VAT based on discounted price
+            
+            return {
+              ...item,
+              DiscountedPrice: discountedPrice,
+              VAT: newVat,
+              Total: (discountedPrice + newVat) * item.Qty,
+              Discount: discountPerItem
+            };
+          });
+        });
+
+        // Now, call the stock status API after second API success
+        const stockStatusBody = {
           filter: {
-            P_COMP_CODE: "SLIC",
+            M_COMP_CODE: "SLIC",
+            P_LOCN_CODE: selectedLocation?.stockLocation,
             P_ITEM_CODE: ItemCode,
-            P_CUST_CODE: customerCode,
-            P_GRADE_CODE_1: ProductSize,
+            P_GRADE_1: ProductSize,
+            P_GRADE_2: "NA",
           },
           M_COMP_CODE: "SLIC",
           M_USER_ID: "SYSADMIN",
-          APICODE: "PRICELIST",
+          APICODE: "STOCKSTATUS",
           M_LANG_CODE: "ENG",
         };
 
         try {
-          const secondApiResponse = await ErpTeamRequest.post(
+          const stockStatusResponse = await ErpTeamRequest.post(
             "/slicuat05api/v1/getApi",
-            secondApiBody,
+            stockStatusBody,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-          const secondApiData = secondApiResponse?.data;
 
-          let storedData = sessionStorage.getItem("secondApiResponses");
-          storedData = storedData ? JSON.parse(storedData) : {};
+          const stockData = stockStatusResponse?.data;
+          const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
 
-          const itemRates = secondApiData.map(
-            (item) => item?.PRICELIST?.PLI_RATE
+          // Update the grid with available stock info
+          setData((prevData) =>
+            prevData.map((item) =>
+              item.SKU === ItemCode
+                ? { ...item, AvailableStock: availableStock }
+                : item
+            )
           );
 
-          storedData[ItemCode] = itemRates;
-
-          sessionStorage.setItem(
-            "secondApiResponses",
-            JSON.stringify(storedData)
-          );
-
-          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
-          const vat = itemPrice * 0.15 / 100;
-
-          setData((prevData) => {
-            const existingItemIndex = prevData.findIndex(
-              (item) => item.Barcode === GTIN
-            );
-
-            let newData;
-            if (existingItemIndex !== -1) {
-              // Update existing item
-              newData = [...prevData];
-              newData[existingItemIndex] = {
-                ...newData[existingItemIndex],
-                Qty: newData[existingItemIndex].Qty + 1,
-              };
-            } else {
-              // Add new item
-              const newItem = {
-                SKU: ItemCode,
-                Barcode: GTIN,
-                Description: EnglishName,
-                DescriptionArabic: ArabicName,
-                ItemSize: ProductSize,
-                Qty: 1,
-                ItemPrice: itemPrice,
-                // VAT: vat,
-                VAT: (itemPrice * 0.15) / 100,
-              };
-              newData = [...prevData, newItem];
-            }
-
-            // Calculate total quantity across all items
-            const totalQty = newData.reduce((sum, item) => sum + item.Qty, 0);
-            console.log("Total Quantity:", totalQty);
-
-            // Prevent more than 3 items
-            if (totalQty > 3) {
-              toast.error("Maximum 3 items allowed for Buy 2 Get 1 Free offer");
-              setBarcode("");
-              return prevData;
-            }
-
-            // Calculate discount using newData
-            const discount = calculateDiscount(newData, totalQty);
-            const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
-            setDiscountedTotal(discount);
-            console.log("discount", discount)
-
-            // Update totals for all items including discount
-            return newData.map(item => {
-              const discountedPrice = item.ItemPrice - discountPerItem;
-              const newVat = (discountedPrice * 0.15) / 100; // Recalculate VAT based on discounted price
-
-              return {
-                ...item,
-                DiscountedPrice: discountedPrice,
-                VAT: newVat,
-                Total: (discountedPrice + newVat) * item.Qty,
-                Discount: discountPerItem
-              };
-            });
-          });
-
-          // Now, call the stock status API after second API success
-          const stockStatusBody = {
-            filter: {
-              M_COMP_CODE: "SLIC",
-              P_LOCN_CODE: selectedLocation?.stockLocation,
-              P_ITEM_CODE: ItemCode,
-              P_GRADE_1: ProductSize,
-              P_GRADE_2: "NA",
-            },
-            M_COMP_CODE: "SLIC",
-            M_USER_ID: "SYSADMIN",
-            APICODE: "STOCKSTATUS",
-            M_LANG_CODE: "ENG",
-          };
-
-          try {
-            const stockStatusResponse = await ErpTeamRequest.post(
-              "/slicuat05api/v1/getApi",
-              stockStatusBody,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-
-            const stockData = stockStatusResponse?.data;
-            const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
-
-            // Update the grid with available stock info
-            setData((prevData) =>
-              prevData.map((item) =>
-                item.SKU === ItemCode
-                  ? { ...item, AvailableStock: availableStock }
-                  : item
-              )
-            );
-
-          } catch (stockStatusError) {
-            toast.error(
-              stockStatusError?.response?.data?.message ||
-              "An error occurred while fetching stock status"
-            );
-          }
-
-          // Clear the barcode state after the response
-          setBarcode("");
-        } catch (secondApiError) {
+        } catch (stockStatusError) {
           toast.error(
-            secondApiError?.response?.data?.message ||
-            "An error occurred while calling the second API"
+            stockStatusError?.response?.data?.message ||
+              "An error occurred while fetching stock status"
           );
         }
-      } else {
-        setData([]);
+
+        // Clear the barcode state after the response
+        setBarcode("");
+      } catch (secondApiError) {
+        toast.error(
+          secondApiError?.response?.data?.message ||
+            "An error occurred while calling the second API"
+        );
       }
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "An error occurred");
-    } finally {
-      setIsLoading(false);
+    } else {
+      setData([]);
+    }
+  } catch (error) {
+    toast.error(error?.response?.data?.message || "An error occurred");
+  } finally {
+    setIsLoading(false);
     }
   };
 
@@ -685,11 +895,10 @@ const POS = () => {
 
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
-
+       
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
@@ -807,7 +1016,7 @@ const POS = () => {
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
 
@@ -1060,8 +1269,8 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
+          PendingAmount: parseFloat(netWithVat),
+          AdjAmount: parseFloat(netWithVat),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1106,13 +1315,14 @@ const POS = () => {
         const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
         const currentInvoiceNumber =
-          transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+        // transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+        transactionCode.slice(-2) === "IN" ? invoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
 
         // Construct the master and details data for Sales Return
         const master = {
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           // ItemSysID: exchangeData[0]?.ItemCode,
@@ -1132,8 +1342,8 @@ const POS = () => {
           TransactionDate: todayDate,
           CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(amountToUse),
+          AdjAmount:parseFloat(amountToUse),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1145,9 +1355,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
@@ -1191,8 +1400,8 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1212,8 +1421,8 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(amountToUse),
+          AdjAmount: parseFloat(amountToUse),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1224,8 +1433,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode:
@@ -1265,8 +1474,8 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
@@ -1286,8 +1495,8 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(amountToUse),
+          AdjAmount: parseFloat(amountToUse),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1298,8 +1507,8 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
           // CustomerCode: 
@@ -1462,56 +1671,62 @@ const POS = () => {
   };
 
   // Calculate totals for Net with VAT, Total VAT, and Total Amount with VAT
-  // useEffect(() => {
-  //   const calculateTotals = () => {
-  //     let totalNet = 0;
-  //     let totalVat = 0;
+//   useEffect(() => {
+//     const calculateTotals = () => {
+//       let totalNet = 0;
+//       let totalVat = 0;
 
-  //     data.forEach((item) => {
-  //       totalNet += item.ItemPrice * item.Qty;
-  //       totalVat += item.VAT * item.Qty;
-  //     });
+//       data.forEach((item) => {
+//         totalNet += item.ItemPrice * item.Qty;
+//         totalVat += item.VAT * item.Qty;
+//       });
+//       // data.forEach((item) => {
+//       //   const itemTotal = item.ItemPrice * item.Qty;
+//       //   totalNet += itemTotal;
+//       //   const vatRate = parseFloat(vat) / 100 || 0;
+//       //   totalVat += itemTotal * vatRate;
+//       // });
 
-  //     setNetWithVat(totalNet);
-  //     setTotalVat(totalVat);
-  //     setTotalAmountWithVat(totalNet + totalVat);
-  //   };
+//       setNetWithVat(totalNet.toFixed(2));
+//       setTotalVat(totalVat.toFixed(2));
+//       setTotalAmountWithVat(totalNet + totalVat);
+//     };
 
-  //   // calculateTotals();
-  //   if (data.length > 0) {
-  //     calculateTotals(); // Only calculate when there is data
-  //   }
-  // }, [data]);
+//     // calculateTotals();
+//     if (data.length > 0) {
+//       calculateTotals(); // Only calculate when there is data
+//     }
+//   // }, [data, vat]);
+// }, [data]);
 
-
-
+  // Direct Sales Invoice with discount 
   useEffect(() => {
     const calculateTotals = () => {
       const totalQty = data.reduce((sum, item) => sum + item.Qty, 0);
       const discount = calculateDiscount(data, totalQty);
       const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
-
+  
       let totalNet = 0;
       let totalVat = 0;
       let totalAmount = 0;
-
+  
       data.forEach((item) => {
         const discountedPrice = item.ItemPrice - discountPerItem;
-        const itemVat = (discountedPrice * 0.15) / 100;
-
+        const itemVat = (discountedPrice * taxAmount) / 100;
+        
         totalNet += discountedPrice * item.Qty;
         totalVat += itemVat * item.Qty;
         totalAmount += (discountedPrice + itemVat) * item.Qty;
       });
-
+  
       setNetWithVat(totalNet.toFixed(2));
       setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalAmount);
       setDiscountedTotal(discount);
     };
-
+  
     calculateTotals();
-  }, [data, selectedCustomeNameWithDirectInvoice, 0.15]);
+  }, [data, selectedCustomeNameWithDirectInvoice, taxAmount]);
 
 
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
@@ -1537,7 +1752,7 @@ const POS = () => {
           ${netWithVat}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalVat}
         </div>
@@ -1565,7 +1780,7 @@ const POS = () => {
           ${netWithOutVatExchange}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutExchange}
         </div>
@@ -1593,7 +1808,7 @@ const POS = () => {
           ${netWithOutVatDSalesNoInvoice}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
           ${totalWithOutVatDSalesNoInvoice}
         </div>
@@ -2311,7 +2526,11 @@ const POS = () => {
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
     // Generate QR code data URL
-    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    // const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    const qrCodeDataURL = await QRCode.toDataURL(`${
+      selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+      ? invoiceNumber
+      : searchInvoiceNumber}`);
 
     const qrCodeDatazatcaExchange = await QRCode.toDataURL(`${qrCodeData}`);
 
@@ -2328,7 +2547,7 @@ const POS = () => {
         ${netWithVat}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${taxAmount || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVat}
       </div>
@@ -2487,7 +2706,10 @@ const POS = () => {
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+                  ? invoiceNumber
+                  : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -2739,7 +2961,10 @@ const POS = () => {
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${
+                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+                  ? invoiceNumber
+                  : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -2892,12 +3117,10 @@ const POS = () => {
   const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
   // Fetch invoice details when searching by invoice number for a sales return
   const handleGetInvoiceDetails = async (invoiceNo) => {
-    // e.preventDefault();
     setInvoiceDataLoader(true);
-
+  
     try {
       const response = await newRequest.get(
-        // `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
         `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}&TransactionCode=IN`
       );
       const data = response?.data?.data;
@@ -2906,24 +3129,29 @@ const POS = () => {
       setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
-
         setInvoiceData(
           invoiceDetails.map((item) => {
-            const vat = item.ItemPrice * 0.15;
+            const vat = item.ItemPrice * taxAmount / 100;
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
-
+  
+            // Check if the transaction code is not "AXSR"
+            const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
+            const finalItemPrice = isAXSR ? 0 : item.ItemPrice;
+            const finalVAT = isAXSR ? 0 : vat;
+            const finalTotal = isAXSR ? 0 : total;
+  
             return {
               id: item.id,
               SKU: item.ItemSKU,
-              Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
+              Barcode: item.InvoiceNo,
               Description: item.Remarks || "No description",
               DescriptionArabic: item.Remarks || "No description",
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
-              ItemPrice: item.ItemPrice,
-              VAT: vat,
-              Total: total,
+              ItemPrice: finalItemPrice,
+              VAT: finalVAT,
+              Total: finalTotal,
             };
           })
         );
@@ -2947,20 +3175,19 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+      
       invoiceData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
-      // console.log(exchangeData)
 
-      setNetWithOutExchange(totalNet);
-      setTotalWithOutExchange(totalVat);
+      setNetWithOutExchange(totalNet.toFixed(2));
+      setTotalWithOutExchange(totalVat.toFixed(2));
       setTotolAmountWithoutExchange(totalNet + totalVat);
     };
 
     calculateTotals();
-  }, [invoiceData]);
+}, [invoiceData]);
 
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
@@ -3045,15 +3272,15 @@ const POS = () => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+    
       exchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
@@ -3061,7 +3288,7 @@ const POS = () => {
     if (exchangeData.length > 0) {
       calculateExchangeTotals(); // Only calculate when there is exchange data
     }
-  }, [exchangeData]);
+}, [exchangeData]);
 
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
@@ -3100,35 +3327,37 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+     
       DSalesNoInvoiceData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
       // console.log(exchangeData)
 
-      setNetWithOutVatDSalesNoInvoice(totalNet);
-      setTotalWithOutVatDSalesNoInvoice(totalVat);
+      setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
+      setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
       setTotolAmountWithoutVatDSalesNoInvoice(totalNet + totalVat);
     };
 
     calculateTotals();
-  }, [DSalesNoInvoiceData]);
+}, [DSalesNoInvoiceData]);
 
   // DSALES No Invocie Exchange calculation
   useEffect(() => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      console.log(dSalesNoInvoiceexchangeData);
+
+      // console.log(dSalesNoInvoiceexchangeData);
       dSalesNoInvoiceexchangeData.forEach((item) => {
         totalNet += item.ItemPrice * item.Qty;
         totalVat += item.VAT * item.Qty;
       });
-      // console.log(dSalesNoInvoiceexchangeData)
+      console.log(dSalesNoInvoiceexchangeData)
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
+
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
@@ -3136,7 +3365,7 @@ const POS = () => {
     if (dSalesNoInvoiceexchangeData.length > 0) {
       calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
     }
-  }, [dSalesNoInvoiceexchangeData]);
+}, [dSalesNoInvoiceexchangeData]);
 
   // handleDelete
   const handleDeleteExchangeData = (index) => {
@@ -3430,159 +3659,6 @@ const POS = () => {
               >
                 {t("Search Customer")}
               </label>
-              {/* {selectedSalesType === "DIRECT SALES RETURN" ||
-                selectedSalesType === "DSALES NO INVOICE" || 
-                 selectedSalesType === "BTOC CUSTOMER" ? (
-                  selectedSalesReturnType === "DIRECT RETURN" ? (
-                  // Show the combo box for DIRECT RETURN
-                  <Autocomplete
-                    id="field1"
-                    options={customerNameWithDirectInvoice}
-                    getOptionLabel={(option) =>
-                      option && option.CUST_CODE && option.CUST_NAME
-                        ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                        : ""
-                    }
-                    onChange={handleSearchCustomerNameWithDirectInvoice}
-                    value={
-                      customerNameWithDirectInvoice.find(
-                        (option) =>
-                          option?.CUST_CODE ===
-                          selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                      ) || null
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUST_CODE === value?.CUST_CODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={t("Search Customer ID")}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                ) : (
-                  // Show the combo box for RETURN WITH EXCHANGE
-                  <Autocomplete
-                    id="field1"
-                    options={searchCustomerName}
-                    getOptionLabel={(option) =>
-                      option && option.CUSTOMERCODE && option.TXN_NAME
-                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
-                        : ""
-                    }
-                    onChange={handleSearchCustomerName}
-                    value={selectedCustomerName || null}
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomerName(""); // Clear selection when input is cleared
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={t("Search Customer ID")}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                )
-              ) : (
-                // otherwise in drect sales invoice
-                <Autocomplete
-                  id="field1"
-                  options={customerNameWithDirectInvoice}
-                  // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                  getOptionLabel={(option) =>
-                    option && option.CUST_CODE && option.CUST_NAME
-                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                      : ""
-                  }
-                  onChange={handleSearchCustomerNameWithDirectInvoice}
-                  value={
-                    customerNameWithDirectInvoice.find(
-                      (option) =>
-                        option?.CUST_CODE ===
-                        selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    ) || null
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.CUST_CODE === value?.CUST_CODE
-                  }
-                  onInputChange={(event, value) => {
-                    if (!value) {
-                      setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      InputProps={{
-                        ...params.InputProps,
-                        className: "text-white",
-                      }}
-                      InputLabelProps={{
-                        ...params.InputLabelProps,
-                        style: { color: "white" },
-                      }}
-                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={t("Search Customer ID")}
-                      required
-                    />
-                  )}
-                  classes={{
-                    endAdornment: "text-white",
-                  }}
-                  sx={{
-                    "& .MuiAutocomplete-endAdornment": {
-                      color: "white",
-                    },
-                  }}
-                />
-              )} */}
               {EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE) ? (
                 // Show the combo box for transactions EXIN, AXIN, EXSR, AXSR (location-based customer names)
                 <Autocomplete
@@ -4036,7 +4112,7 @@ const POS = () => {
                 placeholder={t("VAT")}
                 onChange={(e) => setVat(e.target.value)}
               />
-            </div>
+          </div>
             {errorMessage && (
               <p className="text-red-500 text-sm -mt-6">{errorMessage}</p>
             )}
@@ -4053,7 +4129,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
                     <th className="px-4 py-2">{t("Discount")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
@@ -4176,7 +4252,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Item Size")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
@@ -4342,7 +4418,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -4462,7 +4538,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Item Size")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -4624,7 +4700,7 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                           <th className="px-4 py-2">{t("Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
-                          <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                          <th className="px-4 py-2">{t("VAT")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
                           <th className="px-4 py-2">{t("Action")}</th>
                         </tr>
@@ -4818,7 +4894,8 @@ const POS = () => {
               }
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
-              newInvoiceNumber={newInvoiceNumber}
+              newInvoiceNumber={invoiceNumber}
+              // newInvoiceNumber={newInvoiceNumber}
               isExchangeClick={isExchangeClick}
               selectedRowData={selectedRowData}
               exchangeData={exchangeData}
