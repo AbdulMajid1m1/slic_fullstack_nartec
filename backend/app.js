@@ -68,20 +68,13 @@ function calculateCheckDigit(gtinWithoutCheckDigit) {
 
   const remainder = sum % 10;
   const checkDigit = remainder === 0 ? 0 : 10 - remainder;
-<<<<<<< HEAD
-=======
   
->>>>>>> dev
 
   return checkDigit.toString();
 }
 
 
-<<<<<<< HEAD
 let barcod3=calculateCheckDigit("628789803474")
-=======
-let barcod3=calculateCheckDigit("628789810616")
->>>>>>> dev
 console.log(barcod3)
 res.send(barcod3)
 });
