@@ -47,7 +47,11 @@ const POS = () => {
   // Add this function to calculate discount
   const calculateDiscount = (items, totalQty) => {
     // Check if selected customer is Buy 2 Get 1 Free customer
-    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+ 
     // const isBuy2Get1Customer = true;
     
     if (!isBuy2Get1Customer || totalQty !== 3) {
