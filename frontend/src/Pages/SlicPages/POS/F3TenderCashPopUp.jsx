@@ -159,11 +159,15 @@ const F3TenderCashPopUp = ({
     setLoading(true);
 
     try {
+      // Check if customer is eligible for discount
+      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+
       const items = storeDatagridData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
-        Rate: `${item?.ItemPrice}`,
+        Rate: isBuy2Get1Customer ? `${item.DiscountedPrice || item.ItemPrice}` : `${item.ItemPrice}`,
+        // Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
 
