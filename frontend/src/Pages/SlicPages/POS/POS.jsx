@@ -695,7 +695,9 @@ const POS = () => {
           console.log("Total Quantity:", totalQty);
         
           // Prevent more than 3 items
-          if (totalQty > 3) {
+          const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+          // const isBuy2Get1Customer = true;
+          if (isBuy2Get1Customer && totalQty > 3) {
             toast.error("Maximum 3 items allowed for Buy 2 Get 1 Free offer");
             setBarcode("");
             return prevData;
