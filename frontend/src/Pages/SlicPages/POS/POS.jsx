@@ -47,10 +47,10 @@ const POS = () => {
   // Add this function to calculate discount
   const calculateDiscount = (items, totalQty) => {
     // Check if selected customer is Buy 2 Get 1 Free customer
-    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
-    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
-    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
  
     // const isBuy2Get1Customer = true;
     
@@ -1058,18 +1058,30 @@ const POS = () => {
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
-  const handleShowCreatePopup = () => {
-    // if (!isCreatePopupVisible) {
-    // if (!data || data.length === 0) {
-    //   toast.warning(
-    //     "The datagrid is empty. Please ensure data is available before proceeding."
-    //   );
-    // } else {
-    setStoreDatagridData([...data]);
-    setStoreInvoiceDatagridData([...invoiceData]);
+  // const handleShowCreatePopup = () => {
+  //   setStoreDatagridData([...data]);
+  //   setStoreInvoiceDatagridData([...invoiceData]);
 
+  //   setCreatePopupVisibility(true);
+  // };
+  const handleShowCreatePopup = () => {
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+
+    // Store data with correct prices
+    const updatedData = data.map(item => ({
+      ...item,
+      ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
+      Total: isBuy2Get1Customer ? 
+        ((item.DiscountedPrice || item.ItemPrice) * item.Qty) : 
+        (item.ItemPrice * item.Qty)
+    }));
+  
+    setStoreDatagridData(updatedData);
+    setStoreInvoiceDatagridData([...invoiceData]);
     setCreatePopupVisibility(true);
-    // }
   };
 
   const [apiResponse, setApiResponse] = useState(null);
@@ -1227,8 +1239,18 @@ const POS = () => {
 
 
       if (selectedSalesType === "DIRECT SALES INVOICE") {
+
+        // Check if customer is eligible for discount
+        // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+        const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+        // Calculate total amount considering discounts if applicable
+        const totalAmount = isBuy2Get1Customer ? parseFloat(netWithVat) : parseFloat(data.reduce((sum, item) => sum + (item.ItemPrice * item.Qty), 0));
+
         // Construct the master and details data for Sales Invoice
         const master = {
+
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
@@ -1245,8 +1267,10 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: parseFloat(netWithVat),
-          AdjAmount: parseFloat(netWithVat),
+          // PendingAmount: parseFloat(netWithVat),
+          // AdjAmount: parseFloat(netWithVat),
+          PendingAmount: parseFloat(totalAmount),
+          AdjAmount: parseFloat(totalAmount),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1270,8 +1294,10 @@ const POS = () => {
           ItemSKU: item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice,
-          ItemPrice: item.ItemPrice,
+          // ITEMRATE: item.ItemPrice,
+          // ItemPrice: item.ItemPrice,
+          ITEMRATE: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
+          ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1721,6 +1747,11 @@ const POS = () => {
     let totalsContent;
 
     if (selectedSalesType === "DIRECT SALES INVOICE") {
+      // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+   
       totalsContent = `
         <div>
           <strong>Gross:</strong>
@@ -1742,6 +1773,13 @@ const POS = () => {
           <div class="arabic-label">المدفوع</div>
           ${totalAmountWithVat}
         </div>
+        ${isBuy2Get1Customer ? `
+          <div>
+            <strong>Discount:</strong>
+            <div class="arabic-label">خصم</div>
+            ${discountedTotal}
+          </div>
+        ` : ''}
         <div>
           <strong>Change Due:</strong>
           <div class="arabic-label">المتبقي</div>
