@@ -1271,8 +1271,8 @@ const POS = () => {
           DocNo: newDocumentNo,
           // PendingAmount: parseFloat(netWithVat),
           // AdjAmount: parseFloat(netWithVat),
-          PendingAmount: parseFloat(totalAmount),
-          AdjAmount: parseFloat(totalAmount),
+          PendingAmount: parseFloat(totalAmount).toFixed(2),
+          AdjAmount: parseFloat(totalAmount).toFixed(2),
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1298,8 +1298,8 @@ const POS = () => {
           ItemSize: item.ItemSize,
           // ITEMRATE: item.ItemPrice,
           // ItemPrice: item.ItemPrice,
-          ITEMRATE: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
-          ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
+          ITEMRATE: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice).toFixed(2) : item.ItemPrice.toFixed(2),
+          ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice).toFixed(2) : item.ItemPrice.toFixed(2),
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1632,7 +1632,7 @@ const POS = () => {
     } catch (err) {
       console.log(err);
       toast.error(
-        err?.response?.data?.errors[0] ||
+        err?.response?.data?.error ||
           "An error occurred while generating the invoice"
       );
       setInvoiceLoader(false);
@@ -1725,8 +1725,8 @@ const POS = () => {
   
       setNetWithVat(totalNet.toFixed(2));
       setTotalVat(totalVat.toFixed(2));
-      setTotalAmountWithVat(totalAmount);
-      setDiscountedTotal(discount);
+      setTotalAmountWithVat(totalAmount.toFixed(2));
+      setDiscountedTotal(discount.toFixed(2));
     };
   
     calculateTotals();
@@ -1758,28 +1758,28 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithVat}
+          ${parseFloat(netWithVat).toFixed(2)}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalVat}
+          ${parseFloat(totalVat).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totalAmountWithVat}
+          ${parseFloat(totalAmountWithVat).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totalAmountWithVat}
+          ${parseFloat(totalAmountWithVat).toFixed(2)}
         </div>
         ${isBuy2Get1Customer ? `
           <div>
             <strong>Discount:</strong>
             <div class="arabic-label">خصم</div>
-            ${discountedTotal}
+            ${parseFloat(discountedTotal).toFixed(2)}
           </div>
         ` : ''}
         <div>
@@ -2112,10 +2112,8 @@ const POS = () => {
                        <tr>
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
-                        <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${
-                          item.ItemPrice * item.Qty
-                        }</td>
+                        <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                        <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -2449,10 +2447,8 @@ const POS = () => {
                        <tr>
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
-                        <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${
-                          item.ItemPrice * item.Qty
-                        }</td>
+                        <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                        <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -4224,10 +4220,10 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.ItemSize}</td>
                         <td className="border px-4 py-2">{row.AvailableStock}</td>
                         <td className="border px-4 py-2">{row.Qty}</td>
-                        <td className="border px-4 py-2">{row.ItemPrice}</td>
-                        <td className="border px-4 py-2">{row.VAT}</td>
+                        <td className="border px-4 py-2">{Number(row.ItemPrice).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{Number(row.VAT).toFixed(2)}</td>
                         <td className="border px-4 py-2">{row.Discount}</td>
-                        <td className="border px-4 py-2">{row.Total}</td>
+                        <td className="border px-4 py-2">{Number(row.Total).toFixed(2)}</td>
                         <td className="border px-4 py-2 text-center">
                           <button onClick={() => handleDelete(index)}>
                             <MdRemoveCircle className="text-secondary text-xl hover:text-red-500" />
