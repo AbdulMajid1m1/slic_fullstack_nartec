@@ -166,7 +166,7 @@ const F3TenderCashPopUp = ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
-        Rate: isBuy2Get1Customer ? `${item.DiscountedPrice || item.ItemPrice}` : `${item.ItemPrice}`,
+        Rate: isBuy2Get1Customer ? `${(item.DiscountedPrice || item.ItemPrice).toFixed(2)}` : `${item.ItemPrice.toFixed(2)}`,
         // Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
