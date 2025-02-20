@@ -47,10 +47,10 @@ const POS = () => {
   // Add this function to calculate discount
   const calculateDiscount = (items, totalQty) => {
     // Check if selected customer is Buy 2 Get 1 Free customer
-    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
-                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
-                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
  
     // const isBuy2Get1Customer = true;
     
@@ -1065,10 +1065,10 @@ const POS = () => {
   //   setCreatePopupVisibility(true);
   // };
   const handleShowCreatePopup = () => {
-    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
-                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
-                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
 
     // Store data with correct prices
     const updatedData = data.map(item => ({
@@ -1241,10 +1241,10 @@ const POS = () => {
       if (selectedSalesType === "DIRECT SALES INVOICE") {
 
         // Check if customer is eligible for discount
-        // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-        const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
-                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
-                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+        const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+        // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+        //                     selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+        //                     selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
         // Calculate total amount considering discounts if applicable
         const totalAmount = isBuy2Get1Customer ? parseFloat(netWithVat) : parseFloat(data.reduce((sum, item) => sum + (item.ItemPrice * item.Qty), 0));
 
@@ -1747,10 +1747,10 @@ const POS = () => {
     let totalsContent;
 
     if (selectedSalesType === "DIRECT SALES INVOICE") {
-      // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
-                            selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
-                            selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+      // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+      //                       selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+      //                       selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
    
       totalsContent = `
         <div>
