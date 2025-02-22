@@ -1804,22 +1804,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatExchange.toFixed(2)}
+          ${parseFloat(netWithOutVatExchange.toFixed(2))}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutExchange.toFixed(2)}
+          ${parseFloat(totalWithOutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutExchange.toFixed(2)}
+          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutExchange.toFixed(2)}
+          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -1832,22 +1832,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(netWithOutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totalWithOutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Change Due:</strong>
