@@ -1600,24 +1600,24 @@ const POS = () => {
         case "DIRECT SALES INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totalAmountWithVat,
-            vatTotal: Number(totalVat),
+            totalWithVat: parseFloat(parseFloat(totalAmountWithVat).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
           };
           break;
 
         case "DIRECT SALES RETURN":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutExchange,
-            vatTotal: Number(totalWithOutExchange),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutExchange).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutExchange).toFixed(2)),
           };
           break;
 
         case "DSALES NO INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutVatDSalesNoInvoice,
-            vatTotal: Number(totalWithOutVatDSalesNoInvoice),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutVatDSalesNoInvoice).toFixed(2)),
           };
           break;
 
@@ -1663,8 +1663,8 @@ const POS = () => {
 
     let payload = {
       invoiceDate: todayDate,
-      totalWithVat: parseFloat(totalAmountWithVat.toFixed(2)),
-      vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
+      totalWithVat: parseFloat(Number(totalAmountWithVat.toFixed(2))),
+      vatTotal: parseFloat(Number(totalVat).toFixed(2)),
     };
 
     try {
