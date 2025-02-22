@@ -196,7 +196,7 @@ const PosBulkMatchReceipts = () => {
     setButtonEnabled(false);
   };
 
-  const handleRowClickInParent = async () => {};
+  const handleRowClickInParent = async () => { };
 
   // const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (selectedRow) => {
@@ -261,7 +261,7 @@ const PosBulkMatchReceipts = () => {
     } catch (err) {
       toast.error(
         err?.response?.data?.errors[0]?.msg ||
-          "An error occurred while generating the invoice"
+        "An error occurred while generating the invoice"
       );
     }
   };
@@ -457,9 +457,8 @@ const PosBulkMatchReceipts = () => {
           <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${
-              invoiceHeader?.CustomerName
-            }</div>
+            <div><span class="field-label">Customer: </span>${invoiceHeader?.CustomerName
+      }</div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${invoiceHeader?.VatNumber}
@@ -514,15 +513,15 @@ const PosBulkMatchReceipts = () => {
 
            <tbody>
            ${invoiceDetails
-             .map(
-               (item) => `
+        .map(
+          (item) => `
                 <tr>
                   <td style="border-bottom: none;">${item.ItemSKU}</td>
                   <td style="border-bottom: none;">${item.ItemQry}</td>
                   <td style="border-bottom: none;">${item.ItemPrice}</td>
                   <td style="border-bottom: none;">${(
-                    item.ItemPrice * vatMultiplier
-                  ).toFixed(2)}</td>
+              item.ItemPrice * vatMultiplier
+            ).toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -534,8 +533,8 @@ const PosBulkMatchReceipts = () => {
                   </td>
                 </tr>
               `
-             )
-             .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -609,10 +608,9 @@ const PosBulkMatchReceipts = () => {
               DocNo: row?.DocNo,
               TransactionCode: row?.TransactionCode,
               CustCode: row?.CustomerCode,
-              PendingAmount: `${(row?.PendingAmount * vatMultiplier).toFixed(
-                2
-              )}`,
-              AdjAmount: `${(row?.AdjAmount * vatMultiplier).toFixed(2)}`,
+              PendingAmount: parseFloat((row?.PendingAmount * vatMultiplier).toFixed(2)),
+              AdjAmount: parseFloat((row?.AdjAmount * vatMultiplier).toFixed(2)),
+
             };
           }),
         },
@@ -646,7 +644,7 @@ const PosBulkMatchReceipts = () => {
         if (secondResponse?.data?.message) {
           toast.success(
             secondResponse.data.message ||
-              "POS Invoice Batch updated successfully!"
+            "POS Invoice Batch updated successfully!"
           );
           setData([]);
           // fetchData();
@@ -658,8 +656,8 @@ const PosBulkMatchReceipts = () => {
     } catch (error) {
       toast.error(
         error?.response?.data?.error ||
-          error.message ||
-          "Error in matching transactions."
+        error.message ||
+        "Error in matching transactions."
       );
       console.error("Matching transaction error:", error);
     }
@@ -750,9 +748,8 @@ const PosBulkMatchReceipts = () => {
           <div className="h-auto w-full">
             <div className="h-auto w-full bg-white shadow-xl rounded-md">
               <div
-                className={`sm:flex p-4 gap-2 w-full ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`sm:flex p-4 gap-2 w-full ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div className="px-3 sm:w-[30%] w-full">
                   <Autocomplete
@@ -796,56 +793,54 @@ const PosBulkMatchReceipts = () => {
                   />
                 </div>
                 {hasBulkCashRole ? (
-                <div className="flex justify-end items-center w-full gap-3">
-                   <button
-                    className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
-                      buttonEnabled
-                        ? "bg-secondary hover:bg-primary text-white hover:text-black"
-                        : "bg-gray-400 text-white cursor-not-allowed"
-                    }`}
-                    disabled={!buttonEnabled}
-                    onClick={handlePrintPDF}
-                  >
-                    Print PDF
-                  </button>
-                  <button
-                    className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${
-                      buttonEnabled
-                        ? "bg-secondary hover:bg-primary text-white hover:text-black"
-                        : "bg-gray-400 text-white cursor-not-allowed"
-                    }`}
-                    disabled={!buttonEnabled}
-                    onClick={handleShowUpdatePopup}
-                  >
-                    Add Bank Deposit Number
-                  </button>
-
-                  <div className="mt-2">
-                    <Button
-                      variant="contained"
-                      style={{
-                        backgroundColor: matchingButtonEnabled
-                          ? "#1d2f90"
-                          : "#9ca3af",
-                        color:
-                          matchingButtonText === "Already Matched"
-                            ? "#000000"
-                            : "#ffffff",
-                      }}
-                      type="button"
-                      onClick={handleMatchingTransactions}
-                      disabled={!matchingButtonEnabled}
-                      className="ml-2"
-                      endIcon={
-                        matchingTransactionLoader ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : null
-                      }
+                  <div className="flex justify-end items-center w-full gap-3">
+                    <button
+                      className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${buttonEnabled
+                          ? "bg-secondary hover:bg-primary text-white hover:text-black"
+                          : "bg-gray-400 text-white cursor-not-allowed"
+                        }`}
+                      disabled={!buttonEnabled}
+                      onClick={handlePrintPDF}
                     >
-                      {matchingButtonText}
-                    </Button>
+                      Print PDF
+                    </button>
+                    <button
+                      className={`px-3 py-2 rounded-md font-sans mt-2 transition duration-300 ease-in-out ${buttonEnabled
+                          ? "bg-secondary hover:bg-primary text-white hover:text-black"
+                          : "bg-gray-400 text-white cursor-not-allowed"
+                        }`}
+                      disabled={!buttonEnabled}
+                      onClick={handleShowUpdatePopup}
+                    >
+                      Add Bank Deposit Number
+                    </button>
+
+                    <div className="mt-2">
+                      <Button
+                        variant="contained"
+                        style={{
+                          backgroundColor: matchingButtonEnabled
+                            ? "#1d2f90"
+                            : "#9ca3af",
+                          color:
+                            matchingButtonText === "Already Matched"
+                              ? "#000000"
+                              : "#ffffff",
+                        }}
+                        type="button"
+                        onClick={handleMatchingTransactions}
+                        disabled={!matchingButtonEnabled}
+                        className="ml-2"
+                        endIcon={
+                          matchingTransactionLoader ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : null
+                        }
+                      >
+                        {matchingButtonText}
+                      </Button>
+                    </div>
                   </div>
-                </div>
                 ) : (
                   <div className="flex justify-end items-center w-full gap-3">You do not have permission to access these actions.</div>
                 )}
@@ -889,23 +884,20 @@ const PosBulkMatchReceipts = () => {
           </div>
         </div>
         <div
-          className={`flex  ${
-            i18n.language === "ar" ? " justify-start" : "justify-end"
-          }`}
+          className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"
+            }`}
         >
           <div className="bg-white p-4 rounded shadow-md sm:w-[60%] w-full">
             <div className="flex flex-col gap-4">
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
                   {t("Total Invoice Amount WithVAT")}:
                 </label>
@@ -913,23 +905,20 @@ const PosBulkMatchReceipts = () => {
                   type="text"
                   value={totalInvoiceAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100 w-[60%] ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
 
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
                   {t("Exchange Amount")}
                 </label>
@@ -937,23 +926,20 @@ const PosBulkMatchReceipts = () => {
                   type="text"
                   value={exchangeAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
 
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
                   {t("Remaining Amount")}
                 </label>
@@ -961,9 +947,8 @@ const PosBulkMatchReceipts = () => {
                   type="text"
                   value={remainingAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
             </div>

@@ -1271,8 +1271,9 @@ const POS = () => {
           DocNo: newDocumentNo,
           // PendingAmount: parseFloat(netWithVat),
           // AdjAmount: parseFloat(netWithVat),
-          PendingAmount: parseFloat(totalAmount).toFixed(2),
-          AdjAmount: parseFloat(totalAmount).toFixed(2),
+          PendingAmount: parseFloat(parseFloat(totalAmount).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(totalAmount).toFixed(2)),
+
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1298,8 +1299,14 @@ const POS = () => {
           ItemSize: item.ItemSize,
           // ITEMRATE: item.ItemPrice,
           // ItemPrice: item.ItemPrice,
-          ITEMRATE: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice).toFixed(2) : item.ItemPrice.toFixed(2),
-          ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice).toFixed(2) : item.ItemPrice.toFixed(2),
+          ITEMRATE: isBuy2Get1Customer
+            ? parseFloat((item.DiscountedPrice || item.ItemPrice).toFixed(2))
+            : parseFloat(item.ItemPrice.toFixed(2)),
+
+          ItemPrice: isBuy2Get1Customer
+            ? parseFloat((item.DiscountedPrice || item.ItemPrice).toFixed(2))
+            : parseFloat(item.ItemPrice.toFixed(2)),
+
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1346,8 +1353,9 @@ const POS = () => {
           TransactionDate: todayDate,
           CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
           DocNo: newDocumentNo,
-          PendingAmount: parseFloat(amountToUse).toFixed(2),
-          AdjAmount: parseFloat(amountToUse).toFixed(2),
+          PendingAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1377,8 +1385,8 @@ const POS = () => {
           ItemSKU: isExchangeClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice.toFixed(2),
-          ItemPrice: item.ItemPrice.toFixed(2),
+          ITEMRATE: parseFloat(item.ItemPrice.toFixed(2)),
+          ItemPrice: parseFloat(item.ItemPrice.toFixed(2)),
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1425,8 +1433,9 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: parseFloat(amountToUse).toFixed(2),
-          AdjAmount: parseFloat(amountToUse).toFixed(2),
+          PendingAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+
           zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
           zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
           BRV_REF_NO: `${bankHeadSysId}` || "",
@@ -1453,8 +1462,8 @@ const POS = () => {
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice.toFixed(2),
-          ItemPrice: item.ItemPrice.toFixed(2),
+          ITEMRATE: parseFloat(item.ItemPrice.toFixed(2)),
+          ItemPrice: parseFloat(item.ItemPrice.toFixed(2)),
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1528,8 +1537,9 @@ const POS = () => {
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           // ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: Number(item.ItemPrice).toFixed(2),
-          ItemPrice: Number(item.ItemPrice).toFixed(2),
+          ITEMRATE: Number(Number(item.ItemPrice).toFixed(2)),
+          ItemPrice: Number(Number(item.ItemPrice).toFixed(2)),
+
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1653,8 +1663,8 @@ const POS = () => {
 
     let payload = {
       invoiceDate: todayDate,
-      totalWithVat: totalAmountWithVat.toFixed(2),
-      vatTotal: Number(totalVat).toFixed(2),
+      totalWithVat: parseFloat(totalAmountWithVat.toFixed(2)),
+      vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
     };
 
     try {
@@ -2539,8 +2549,8 @@ const POS = () => {
     // Generate QR code data URL
     // const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
     const qrCodeDataURL = await QRCode.toDataURL(`${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-        ? invoiceNumber
-        : searchInvoiceNumber}`);
+      ? invoiceNumber
+      : searchInvoiceNumber}`);
 
     const qrCodeDatazatcaExchange = await QRCode.toDataURL(`${qrCodeData}`);
 
@@ -3494,8 +3504,8 @@ const POS = () => {
               <label
                 htmlFor="transactionId"
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Transactions Codes")} *
@@ -3555,8 +3565,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Sale Type")} *
@@ -3612,8 +3622,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Sales Locations")} *
@@ -3635,8 +3645,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Invoice")} #
@@ -3661,8 +3671,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Search Customer")}
@@ -3769,8 +3779,8 @@ const POS = () => {
               <div>
                 <label
                   className={`block text-gray-700 ${i18n.language === "ar"
-                      ? "direction-rtl"
-                      : "text-start direction-ltr"
+                    ? "direction-rtl"
+                    : "text-start direction-ltr"
                     }`}
                 >
                   {t("Search B2C Customer")}
@@ -3829,8 +3839,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Delivery")} *
@@ -3844,8 +3854,8 @@ const POS = () => {
                     : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
                 className={`${selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                  ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                  : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
                   }
                     ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
@@ -3854,8 +3864,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Customer Name")}*
@@ -3864,8 +3874,8 @@ const POS = () => {
                 type="text"
                 onChange={(e) => setCustomerName(e.target.value)}
                 className={`${selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                  : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
                   }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 placeholder="Walk-in customer"
                 value={
@@ -3889,8 +3899,8 @@ const POS = () => {
               >
                 <label
                   className={`block text-gray-700 ${i18n.language === "ar"
-                      ? "direction-rtl"
-                      : "text-start direction-ltr"
+                    ? "direction-rtl"
+                    : "text-start direction-ltr"
                     }`}
                 >
                   {t("Mobile")} *
@@ -3949,8 +3959,8 @@ const POS = () => {
                 <div className="w-full">
                   <label
                     className={`block text-gray-700 ${i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
                       }`}
                   >
                     {t("Scan Barcode")}
@@ -3981,8 +3991,8 @@ const POS = () => {
                 <div className="w-full">
                   <label
                     className={`block text-gray-700 ${i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
                       }`}
                   >
                     {t("Scan Barcode (No Invoice)")}
@@ -4014,8 +4024,8 @@ const POS = () => {
                 <div className="w-full">
                   <label
                     className={`block text-gray-700 ${i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
                       }`}
                   >
                     {t("Scan Barcode (Btoc Customer)")}
@@ -4046,8 +4056,8 @@ const POS = () => {
                 <div className="w-full">
                   <label
                     className={`block text-gray-700 ${i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
                       }`}
                   >
                     {t("Scan Invoice")}
@@ -4074,8 +4084,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("Remarks")} *
@@ -4088,8 +4098,8 @@ const POS = () => {
                     : remarks
                 }
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
                   }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 placeholder={t("Remarks")}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
@@ -4099,8 +4109,8 @@ const POS = () => {
             <div>
               <label
                 className={`block text-gray-700 ${i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
                   }`}
               >
                 {t("VAT")} #
@@ -4113,8 +4123,8 @@ const POS = () => {
                     : vat
                 }
                 className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
                   }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 placeholder={t("VAT")}
@@ -4187,8 +4197,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Net Without VAT")}:
@@ -4208,8 +4218,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total VAT")}:
@@ -4229,8 +4239,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total Amount With VAT")}:
@@ -4347,8 +4357,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Net Without VAT")}:
@@ -4368,8 +4378,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total VAT")}:
@@ -4389,8 +4399,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total Amount With VAT")}:
@@ -4471,8 +4481,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Net Without VAT")}:
@@ -4492,8 +4502,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total VAT")}:
@@ -4513,8 +4523,8 @@ const POS = () => {
                     >
                       <label
                         className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
                           }`}
                       >
                         {t("Total Amount With VAT")}:
@@ -4618,14 +4628,14 @@ const POS = () => {
                     <div className="flex flex-col gap-4">
                       <div
                         className={`flex justify-between items-center ${i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
+                          ? "flex-row-reverse"
+                          : "flex-row"
                           }`}
                       >
                         <label
                           className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
                             }`}
                         >
                           {t("Net Without VAT")}:
@@ -4641,14 +4651,14 @@ const POS = () => {
 
                       <div
                         className={`flex justify-between items-center ${i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
+                          ? "flex-row-reverse"
+                          : "flex-row"
                           }`}
                       >
                         <label
                           className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
                             }`}
                         >
                           {t("Total VAT")}:
@@ -4664,14 +4674,14 @@ const POS = () => {
 
                       <div
                         className={`flex justify-between items-center ${i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
+                          ? "flex-row-reverse"
+                          : "flex-row"
                           }`}
                       >
                         <label
                           className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
                             }`}
                         >
                           {t("Total Amount With VAT")}:
@@ -4755,14 +4765,14 @@ const POS = () => {
                       <div className="flex flex-col gap-4">
                         <div
                           className={`flex justify-between items-center ${i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
+                            ? "flex-row-reverse"
+                            : "flex-row"
                             }`}
                         >
                           <label
                             className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
                               }`}
                           >
                             {t("Net Without VAT")}:
@@ -4772,22 +4782,22 @@ const POS = () => {
                             value={netWithVat}
                             readOnly
                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
+                              ? " text-start"
+                              : "text-end"
                               }`}
                           />
                         </div>
 
                         <div
                           className={`flex justify-between items-center ${i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
+                            ? "flex-row-reverse"
+                            : "flex-row"
                             }`}
                         >
                           <label
                             className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
                               }`}
                           >
                             {t("Total VAT")}:
@@ -4797,22 +4807,22 @@ const POS = () => {
                             value={totalVat}
                             readOnly
                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
+                              ? " text-start"
+                              : "text-end"
                               }`}
                           />
                         </div>
 
                         <div
                           className={`flex justify-between items-center ${i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
+                            ? "flex-row-reverse"
+                            : "flex-row"
                             }`}
                         >
                           <label
                             className={`block text-gray-700 font-bold ${i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
                               }`}
                           >
                             {t("Total Amount With VAT")}:
@@ -4822,8 +4832,8 @@ const POS = () => {
                             value={totalAmountWithVat}
                             readOnly
                             className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
+                              ? " text-start"
+                              : "text-end"
                               }`}
                           />
                         </div>
@@ -4844,8 +4854,8 @@ const POS = () => {
                 <button
                   onClick={handleShowConfirmTransactionPopup}
                   className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${isConfirmDisabled
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-500"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500"
                     }`}
                   disabled={isConfirmDisabled}
                 >
@@ -4854,8 +4864,8 @@ const POS = () => {
                 <button
                   onClick={handleShowCreatePopup}
                   className={`${isTenderCashEnabled
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-gray-400 cursor-not-allowed"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-gray-400 cursor-not-allowed"
                     } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
                   disabled={!isTenderCashEnabled}
                 >
