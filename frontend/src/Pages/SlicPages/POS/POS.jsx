@@ -3297,9 +3297,9 @@ const POS = () => {
       });
       // console.log(exchangeData)
 
-      setNetWithVat(totalNet.toFixed(2));
-      setTotalVat(totalVat.toFixed(2));
-      setTotalAmountWithVat(totalNet.toFixed(2) + totalVat.toFixed(2));
+      setNetWithVat(parseFloat(totalNet.toFixed(2)));
+      setTotalVat(parseFloat(totalVat.toFixed(2)));
+      setTotalAmountWithVat(parseFloat(totalNet.toFixed(2)) + parseFloat(totalVat.toFixed(2)));
     };
 
     // calculateTotals();
