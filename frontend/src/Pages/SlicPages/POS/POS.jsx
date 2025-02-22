@@ -1600,24 +1600,24 @@ const POS = () => {
         case "DIRECT SALES INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totalAmountWithVat,
-            vatTotal: Number(totalVat),
+            totalWithVat: parseFloat(parseFloat(totalAmountWithVat).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
           };
           break;
 
         case "DIRECT SALES RETURN":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutExchange,
-            vatTotal: Number(totalWithOutExchange),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutExchange).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutExchange).toFixed(2)),
           };
           break;
 
         case "DSALES NO INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutVatDSalesNoInvoice,
-            vatTotal: Number(totalWithOutVatDSalesNoInvoice),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutVatDSalesNoInvoice).toFixed(2)),
           };
           break;
 
@@ -1663,8 +1663,8 @@ const POS = () => {
 
     let payload = {
       invoiceDate: todayDate,
-      totalWithVat: parseFloat(totalAmountWithVat.toFixed(2)),
-      vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
+      totalWithVat: parseFloat(Number(totalAmountWithVat.toFixed(2))),
+      vatTotal: parseFloat(Number(totalVat).toFixed(2)),
     };
 
     try {
@@ -1804,22 +1804,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatExchange.toFixed(2)}
+          ${parseFloat(netWithOutVatExchange.toFixed(2))}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutExchange.toFixed(2)}
+          ${parseFloat(totalWithOutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutExchange.toFixed(2)}
+          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutExchange.toFixed(2)}
+          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -1832,22 +1832,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(netWithOutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totalWithOutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice.toFixed(2)}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -3189,23 +3189,52 @@ const POS = () => {
   };
 
   // Sales return Calculation without exhange
+  // useEffect(() => {
+  //   const calculateTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     invoiceData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+
+  //     setNetWithOutExchange(totalNet.toFixed(2));
+  //     setTotalWithOutExchange(totalVat.toFixed(2));
+  //     setTotolAmountWithoutExchange(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   calculateTotals();
+  // }, [invoiceData]);
+
+  // Sales return Calculation without exchange
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
 
       invoiceData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate net amount without VAT
+        const itemNet = item.ItemPrice * item.Qty;
+        totalNet += itemNet;
+        
+        // Calculate VAT amount
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
       });
 
-      setNetWithOutExchange(totalNet.toFixed(2));
-      setTotalWithOutExchange(totalVat.toFixed(2));
-      setTotolAmountWithoutExchange(totalNet.toFixed(2) + totalVat.toFixed(2));
+      // Convert to numbers before setting state to avoid string concatenation
+      const netAmount = parseFloat(totalNet.toFixed(2));
+      const vatAmount = parseFloat(totalVat.toFixed(2));
+      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
+
+      setNetWithOutExchange(netAmount);
+      setTotalWithOutExchange(vatAmount);
+      setTotolAmountWithoutExchange(totalAmount);
     };
 
     calculateTotals();
-  }, [invoiceData]);
+  }, [invoiceData, taxAmount]);
 
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
@@ -3286,27 +3315,63 @@ const POS = () => {
   };
 
   // exchange calculation
+  // useEffect(() => {
+  //   const calculateExchangeTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     exchangeData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     // console.log(exchangeData)
+
+  //     setNetWithVat(parseFloat(totalNet.toFixed(2)));
+  //     setTotalVat(parseFloat(totalVat.toFixed(2)));
+  //     setTotalAmountWithVat(parseFloat(totalNet.toFixed(2)) + parseFloat(totalVat.toFixed(2)));
+  //   };
+
+  //   // calculateTotals();
+  //   if (exchangeData.length > 0) {
+  //     calculateExchangeTotals(); // Only calculate when there is exchange data
+  //   }
+  // }, [exchangeData]);
+
   useEffect(() => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+  
       exchangeData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate net amount without VAT
+        const itemNet = item.ItemPrice * item.Qty;
+        totalNet += itemNet;
+        
+        // Calculate VAT amount based on tax rate
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
       });
-      // console.log(exchangeData)
-
-      setNetWithVat(totalNet.toFixed(2));
-      setTotalVat(totalVat.toFixed(2));
-      setTotalAmountWithVat(totalNet.toFixed(2) + totalVat.toFixed(2));
+  
+      // Convert to numbers and maintain precision
+      const netAmount = parseFloat(totalNet.toFixed(2));
+      const vatAmount = parseFloat(totalVat.toFixed(2));
+      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
+  
+      setNetWithVat(netAmount);
+      setTotalVat(vatAmount);
+      setTotalAmountWithVat(totalAmount);
     };
-
-    // calculateTotals();
+  
+    // Only calculate when there is exchange data
     if (exchangeData.length > 0) {
-      calculateExchangeTotals(); // Only calculate when there is exchange data
+      calculateExchangeTotals();
+    } else {
+      // Reset values when no exchange data
+      setNetWithVat(0);
+      setTotalVat(0);
+      setTotalAmountWithVat(0);
     }
-  }, [exchangeData]);
+  }, [exchangeData, taxAmount]);
 
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
@@ -3341,49 +3406,99 @@ const POS = () => {
   };
 
   // DSales No Invoice Calculation
+  // useEffect(() => {
+  //   const calculateTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     DSalesNoInvoiceData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     // console.log(exchangeData)
+
+  //     setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
+  //     setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
+  //     setTotolAmountWithoutVatDSalesNoInvoice(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   calculateTotals();
+  // }, [DSalesNoInvoiceData]);
+
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-
+  
       DSalesNoInvoiceData.forEach((item) => {
+        // Calculate net amount without VAT
         totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate VAT amount
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
       });
-      // console.log(exchangeData)
-
+  
       setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
       setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
-      setTotolAmountWithoutVatDSalesNoInvoice(totalNet.toFixed(2) + totalVat.toFixed(2));
+      setTotolAmountWithoutVatDSalesNoInvoice((totalNet + totalVat).toFixed(2));
     };
-
+  
     calculateTotals();
-  }, [DSalesNoInvoiceData]);
+  }, [DSalesNoInvoiceData, taxAmount]);
 
   // DSALES No Invocie Exchange calculation
+  // useEffect(() => {
+  //   const calculateDSalesExchangeTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     // console.log(dSalesNoInvoiceexchangeData);
+  //     dSalesNoInvoiceexchangeData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     console.log(dSalesNoInvoiceexchangeData)
+
+
+  //     setNetWithVat(totalNet.toFixed(2));
+  //     setTotalVat(totalVat.toFixed(2));
+  //     setTotalAmountWithVat(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   // calculateTotals();
+  //   if (dSalesNoInvoiceexchangeData.length > 0) {
+  //     calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
+  //   }
+  // }, [dSalesNoInvoiceexchangeData]);
+
+  // DSALES No Invoice Exchange calculation
   useEffect(() => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
 
-      // console.log(dSalesNoInvoiceexchangeData);
       dSalesNoInvoiceexchangeData.forEach((item) => {
+        // Calculate net amount without VAT
         totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate VAT amount
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
       });
-      console.log(dSalesNoInvoiceexchangeData)
 
+      // Convert to numbers before setting state to avoid string concatenation
+      const netAmount = parseFloat(totalNet.toFixed(2));
+      const vatAmount = parseFloat(totalVat.toFixed(2));
+      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
 
-      setNetWithVat(totalNet.toFixed(2));
-      setTotalVat(totalVat.toFixed(2));
-      setTotalAmountWithVat(totalNet.toFixed(2) + totalVat.toFixed(2));
+      setNetWithVat(netAmount);
+      setTotalVat(vatAmount);
+      setTotalAmountWithVat(totalAmount);
     };
 
-    // calculateTotals();
     if (dSalesNoInvoiceexchangeData.length > 0) {
-      calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
+      calculateDSalesExchangeTotals();
     }
-  }, [dSalesNoInvoiceexchangeData]);
+  }, [dSalesNoInvoiceexchangeData, taxAmount]);
 
   // handleDelete
   const handleDeleteExchangeData = (index) => {
