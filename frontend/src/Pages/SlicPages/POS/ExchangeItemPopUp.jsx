@@ -103,9 +103,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
             );
 
             const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
-            const finalItemPrice = isAXSR ? 0 : itemPrice;
-            const finalVAT = isAXSR ? 0 : vat;
-            const finalTotal = isAXSR ? 0 : total;
+            // const finalItemPrice = isAXSR ? 0 : itemPrice;
+            const finalItemPrice = itemPrice;
+            // const finalVAT = isAXSR ? 0 : vat;
+            const finalVAT = vat;
+            // const finalTotal = isAXSR ? 0 : total;
+            const finalTotal = total;
 
             if (existingItemIndex !== -1) {
               // If the item already exists, just update the Qty and Total
