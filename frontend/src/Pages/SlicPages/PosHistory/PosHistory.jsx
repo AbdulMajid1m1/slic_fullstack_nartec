@@ -6,23 +6,19 @@ import DataTable from "../../../components/Datatable/Datatable";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Autocomplete,
-  Button,
-  CircularProgress,
   TextField,
 } from "@mui/material";
-import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import { useTranslation } from "react-i18next";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const PosHistory = () => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [cutOfDate, setCutOfDate] = useState(""); // Cut of Date
@@ -32,6 +28,8 @@ const PosHistory = () => {
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [token, setToken] = useState(null);
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
 
   useEffect(() => {
     // slic login api token get
@@ -117,129 +115,37 @@ const PosHistory = () => {
   // Calculate amounts based on IN and SR transactions with dynamic VAT handling
   const calculateAmounts = (transactions) => {
     let totalINAmount = 0;
+    let totalINAmountWithVat = 0;
     let totalSRAmount = 0;
+    let totalSRAmountWithVat = 0;
+
+    // Get VAT rate from context, convert percentage to decimal
+    const vatRate = taxAmount ? parseFloat(taxAmount) / 100 : 0.15; // Default to 15% if not set
 
     transactions.forEach((transaction) => {
-      // Determine VAT rate for each transaction, defaulting to 15% if VatNumber is not provided
-      const vatRate = transaction.VatNumber
-        ? parseFloat(transaction.VatNumber) / 100
-        : 0.15;
-      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+      // Calculate base amount and VAT amount
+      const baseAmount = transaction.PendingAmount;
+      const vatAmount = baseAmount * vatRate;
+      const totalWithVat = baseAmount + vatAmount;
 
-      // Check transaction code and update the respective totals
+      // Update totals based on transaction type
       if (transaction.TransactionCode.endsWith("IN")) {
-        totalINAmount += transaction.PendingAmount * vatMultiplier;
+        totalINAmount += baseAmount;
+        totalINAmountWithVat += totalWithVat;
       } else if (transaction.TransactionCode.endsWith("SR")) {
-        totalSRAmount += transaction.PendingAmount * vatMultiplier;
+        totalSRAmount += baseAmount;
+        totalSRAmountWithVat += totalWithVat;
       }
     });
 
-    // Calculate remaining amount
-    const remainingAmount = totalINAmount - totalSRAmount;
+    // Calculate remaining amounts with VAT
+    const remainingAmountWithVat = totalINAmountWithVat - totalSRAmountWithVat;
 
     // Update state with calculated values
-    setTotalInvoiceAmount(totalINAmount.toFixed(2));
-    setExchangeAmount(totalSRAmount.toFixed(2));
-    setRemainingAmount(remainingAmount.toFixed(2));
+    setTotalInvoiceAmount(totalINAmountWithVat.toFixed(2));
+    setExchangeAmount(totalSRAmountWithVat.toFixed(2));
+    setRemainingAmount(remainingAmountWithVat.toFixed(2));
   };
-
-  // const handleGenerateReceipt = async () => {
-  //   // Extract the necessary fields from the data
-  //   const mappedData = data.map((row) => ({
-  //     id: row.id,
-  //     AdjAmount: row.AdjAmount * 1.15,
-  //     DocNo: row.DocNo,
-  //     TransactionCode: row.TransactionCode,
-  //     PendingAmount: row.PendingAmount * 1.15,
-  //   }));
-  //   // console.log(mappedData)
-
-  //   // console.log(
-  //   //   "Total Amount with vat",
-  //   //   totalInvoiceAmount,
-  //   //   "Exchange Amount",
-  //   //   exchangeAmount,
-  //   //   "Remaining Amount",
-  //   //   remainingAmount
-  //   // );
-
-  //   const requestData = {
-  //     _keyword_: "BANKRCPTBLKCSH",
-  //     _secret_key_: "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //     data: [
-  //       {
-  //         Company: "SLIC",
-  //         UserId: "SYSADMIN",
-  //         Department: "011",
-  //         TransactionCode: "BRV",
-  //         Division: "100",
-  //         // BankApproverCode: "CIUB0000266",
-  //         CashCardFlag: "CASH",
-  //         ReceiptAmt: totalInvoiceAmount,
-  //         CustomerId: selectedInvoice,
-  //         MatchingTransactions: mappedData.map((transaction) => ({
-  //           DocNo: transaction.DocNo,
-  //           TransactionCode: transaction.TransactionCode,
-  //           PendingAmount: transaction.PendingAmount,
-  //           AdjAmount: transaction.AdjAmount,
-  //         })),
-  //       },
-  //     ],
-  //     COMPANY: "SLIC",
-  //     USERID: slicUserData?.UserLoginID,
-  //     APICODE: "BANKRCPTVOUCHERBULK",
-  //     LANG: "ENG",
-  //   };
-
-  //   try {
-  //     setLoading(true);
-  //     const receiptResponse = await ErpTeamRequest.post(
-  //       "/slicuat05api/v1/postData",
-  //       requestData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-  //     toast.success("Receipt generated successfully!");
-
-  //     const receiptIds = mappedData.map((item) => item.id);
-  //     const updateRequestData = {
-  //       ids: receiptIds,
-  //     };
-  //     // console.log(updateRequestData)
-
-  //     try {
-  //       const res = await newRequest.post(
-  //         "/invoice/v1/updateReceiptStatus",
-  //         updateRequestData
-  //       );
-  //       toast.success(
-  //         res?.data?.message || "Receipt status updated successfully!"
-  //       );
-
-  //       fetchCustomerCodes();
-  //       setSelectedInvoice([]);
-  //       setTotalInvoiceAmount(0);
-  //       setExchangeAmount(0);
-  //       setRemainingAmount(0);
-  //       setData([]);
-  //     } catch (errIdsApi) {
-  //       toast.error(
-  //         errIdsApi?.response?.data?.error || "Failed to update receipt status."
-  //       );
-  //     }
-
-  //     setLoading(false);
-  //   } catch (err) {
-  //     // Handle errors from the first API
-  //     setLoading(false);
-  //     toast.error(
-  //       err?.response?.data?.message || "Failed to generate receipt."
-  //     );
-  //   }
-  // };
 
   const handleRowClickInParent = async () => {};
 
@@ -339,29 +245,26 @@ const PosHistory = () => {
       salesInvoiceTitle = "CREDIT NOTE";
     }
 
-    // Get VAT rate from VatNumber or use default (15%)
-    const vatRate = invoiceHeader?.VatNumber
-      ? parseFloat(invoiceHeader.VatNumber) / 100
-      : 0.15;
+    // Get VAT rate from context or use default (15%)
+    const vatRate = taxAmount ? parseFloat(taxAmount) / 100 : 0.15;
+    const vatPercentageDisplay = taxAmount || "15"; // For display purposes
 
-      const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
-    // Calculate total VAT
+    // Calculate totals with dynamic VAT rate
     let totalGrossAmount = 0;
     let totalVAT = 0;
     let totalAmountWithVAT = 0;
 
     // Loop through invoiceDetails and calculate gross, VAT, and total amounts
     invoiceDetails.forEach((item) => {
-      console.log(item);
-      const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-      const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      const itemGross = item.ItemPrice * item.ItemQry;
+      const itemVAT = itemGross * vatRate;
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
 
-    totalAmountWithVAT = totalGrossAmount + totalVAT; // Total amount including VAT
+    totalAmountWithVAT = totalGrossAmount + totalVAT;
 
-    // Generate totals for exchange invoice
+    // Update totals content to show dynamic VAT percentage
     const totalsContent = `
       <div>
         <strong>Gross:</strong>
@@ -369,7 +272,7 @@ const PosHistory = () => {
         ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${vatPercentageDisplay}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVAT.toFixed(2)}
       </div>
@@ -384,10 +287,6 @@ const PosHistory = () => {
         ${DocNo}
       </div>
     `;
-
-
-
-
 
     const html = `
       <html>
@@ -566,7 +465,7 @@ const PosHistory = () => {
                   <td style="border-bottom: none;">${item.ItemQry}</td>
                   <td style="border-bottom: none;">${item.ItemPrice}</td>
                   <td style="border-bottom: none;">${(
-                    item.ItemPrice * vatMultiplier
+                    item.ItemPrice * vatRate
                   ).toFixed(2)}</td>
                 </tr>
                 <tr>

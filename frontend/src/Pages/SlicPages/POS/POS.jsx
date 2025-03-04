@@ -1804,22 +1804,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${parseFloat(netWithOutVatExchange.toFixed(2))}
+          ${parseFloat(netWithOutVatExchange).toFixed(2)}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${parseFloat(totalWithOutExchange.toFixed(2))}
+          ${parseFloat(totalWithOutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
+          ${parseFloat(totolAmountWithoutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${parseFloat(totolAmountWithoutExchange.toFixed(2))}
+          ${parseFloat(totolAmountWithoutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -1832,22 +1832,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${parseFloat(netWithOutVatDSalesNoInvoice.toFixed(2))}
+          ${parseFloat(netWithOutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${parseFloat(totalWithOutVatDSalesNoInvoice.toFixed(2))}
+          ${parseFloat(totalWithOutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice.toFixed(2))}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -3214,27 +3214,26 @@ const POS = () => {
       let totalVat = 0;
 
       invoiceData.forEach((item) => {
-        // Calculate net amount without VAT
-        const itemNet = item.ItemPrice * item.Qty;
-        totalNet += itemNet;
+        // Calculate net amount (Item Price * Quantity)
+        totalNet += parseFloat((item.ItemPrice * item.Qty).toFixed(2));
         
-        // Calculate VAT amount
-        const itemVat = (item.ItemPrice * taxAmount) / 100;
-        totalVat += itemVat * item.Qty;
+        // Use the VAT directly from the item and multiply by quantity
+        totalVat += parseFloat((item.VAT * item.Qty).toFixed(2));
       });
 
-      // Convert to numbers before setting state to avoid string concatenation
-      const netAmount = parseFloat(totalNet.toFixed(2));
-      const vatAmount = parseFloat(totalVat.toFixed(2));
-      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
+      // Format the numbers with 2 decimal places
+      const netAmount = totalNet.toFixed(2);
+      const vatAmount = totalVat.toFixed(2);
+      // Calculate total by adding the formatted numbers to match the grid's precision
+      const totalAmount = (parseFloat(netAmount) + parseFloat(vatAmount)).toFixed(2);
 
-      setNetWithOutExchange(netAmount);
-      setTotalWithOutExchange(vatAmount);
-      setTotolAmountWithoutExchange(totalAmount);
+      setNetWithOutExchange(netAmount);          // 65.00
+      setTotalWithOutExchange(vatAmount);        // 9.75
+      setTotolAmountWithoutExchange(totalAmount); // 74.75
     };
 
     calculateTotals();
-  }, [invoiceData, taxAmount]);
+  }, [invoiceData]);
 
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
@@ -3341,27 +3340,28 @@ const POS = () => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-  
+
       exchangeData.forEach((item) => {
         // Calculate net amount without VAT
         const itemNet = item.ItemPrice * item.Qty;
         totalNet += itemNet;
-        
+
         // Calculate VAT amount based on tax rate
         const itemVat = (item.ItemPrice * taxAmount) / 100;
         totalVat += itemVat * item.Qty;
       });
-  
+
       // Convert to numbers and maintain precision
-      const netAmount = parseFloat(totalNet.toFixed(2));
-      const vatAmount = parseFloat(totalVat.toFixed(2));
+      const netAmount = parseFloat(Number(totalNet).toFixed(2));
+      const vatAmount = parseFloat(Number(totalVat).toFixed(2));
+
       const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
-  
+
       setNetWithVat(netAmount);
       setTotalVat(vatAmount);
       setTotalAmountWithVat(totalAmount);
     };
-  
+
     // Only calculate when there is exchange data
     if (exchangeData.length > 0) {
       calculateExchangeTotals();
@@ -3429,7 +3429,7 @@ const POS = () => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-  
+
       DSalesNoInvoiceData.forEach((item) => {
         // Calculate net amount without VAT
         totalNet += item.ItemPrice * item.Qty;
@@ -3437,12 +3437,12 @@ const POS = () => {
         const itemVat = (item.ItemPrice * taxAmount) / 100;
         totalVat += itemVat * item.Qty;
       });
-  
+
       setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
       setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
       setTotolAmountWithoutVatDSalesNoInvoice((totalNet + totalVat).toFixed(2));
     };
-  
+
     calculateTotals();
   }, [DSalesNoInvoiceData, taxAmount]);
 
