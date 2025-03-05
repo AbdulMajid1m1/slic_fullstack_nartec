@@ -3214,27 +3214,26 @@ const POS = () => {
       let totalVat = 0;
 
       invoiceData.forEach((item) => {
-        // Calculate net amount without VAT
-        const itemNet = item.ItemPrice * item.Qty;
-        totalNet += itemNet;
-
-        // Calculate VAT amount
-        const itemVat = (item.ItemPrice * taxAmount) / 100;
-        totalVat += itemVat * item.Qty;
+        // Calculate net amount (Item Price * Quantity)
+        totalNet += parseFloat((item.ItemPrice * item.Qty).toFixed(2));
+        
+        // Use the VAT directly from the item and multiply by quantity
+        totalVat += parseFloat((item.VAT * item.Qty).toFixed(2));
       });
 
-      // Convert to numbers before setting state to avoid string concatenation
-      const netAmount = parseFloat(totalNet).toFixed(2);
-      const vatAmount = parseFloat(totalVat).toFixed(2);
-      const totalAmount = parseFloat((netAmount + vatAmount)).toFixed(2);
+      // Format the numbers with 2 decimal places
+      const netAmount = totalNet.toFixed(2);
+      const vatAmount = totalVat.toFixed(2);
+      // Calculate total by adding the formatted numbers to match the grid's precision
+      const totalAmount = (parseFloat(netAmount) + parseFloat(vatAmount)).toFixed(2);
 
-      setNetWithOutExchange(netAmount);
-      setTotalWithOutExchange(vatAmount);
-      setTotolAmountWithoutExchange(totalAmount);
+      setNetWithOutExchange(netAmount);          // 65.00
+      setTotalWithOutExchange(vatAmount);        // 9.75
+      setTotolAmountWithoutExchange(totalAmount); // 74.75
     };
 
     calculateTotals();
-  }, [invoiceData, taxAmount]);
+  }, [invoiceData]);
 
   // New function to handle Qty changes
   const handleQtyChange = (index, newQty) => {
