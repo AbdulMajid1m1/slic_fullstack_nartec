@@ -753,14 +753,35 @@ const POS = () => {
             const stockData = stockStatusResponse?.data;
             const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
 
-            // Update the grid with available stock info
-            setData((prevData) =>
-              prevData.map((item) =>
-                item.SKU === ItemCode
-                  ? { ...item, AvailableStock: availableStock }
-                  : item
-              )
-            );
+            // Update the grid with available stock info only for the current item
+            setData((prevData) => {
+              const existingItemIndex = prevData.findIndex(
+                (item) => item.Barcode === GTIN
+              );
+
+              if (existingItemIndex !== -1) {
+                // If item exists, only update that specific item
+                const updatedData = [...prevData];
+                updatedData[existingItemIndex] = {
+                  ...updatedData[existingItemIndex],
+                  AvailableStock: availableStock
+                };
+                return updatedData;
+              } else {
+                // If it's a new item, add it with the stock information
+                return [...prevData, {
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  DescriptionArabic: ArabicName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: (itemPrice * taxAmount) / 100,
+                  AvailableStock: availableStock
+                }];
+              }
+            });
 
           } catch (stockStatusError) {
             toast.error(
