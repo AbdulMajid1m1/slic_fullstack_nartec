@@ -196,6 +196,8 @@ const SlicFirstScreen = () => {
       locations = ["FG201", "FG504"];
     } else if (showroom === "Jubail Showroom") {
       locations = ["FG202", "FG505"];
+    } else if (showroom === "Riyadh Showroom") {
+      locations = ["FG206"];
     }
 
     setStockLocations(locations);
@@ -335,6 +337,7 @@ const SlicFirstScreen = () => {
                   <option value="Factory Showroom">Factory Showroom</option>
                   <option value="Khobar Showroom">Khobar Showroom</option>
                   <option value="Jubail Showroom">Jubail Showroom</option>
+                  <option value="Riyadh Showroom">Riyadh Showroom</option>
                   {/* {locations.map((location) => (
                     <option>{location?.LOCN_CODE} - {location?.LOCN_NAME}</option>
                   ))} */}
