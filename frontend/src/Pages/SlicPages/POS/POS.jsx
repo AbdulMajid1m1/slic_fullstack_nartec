@@ -12,8 +12,7 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
-import { FaExchangeAlt, FaTrash } from "react-icons/fa";
-import { MdRemoveCircleOutline } from "react-icons/md";
+import { FaExchangeAlt } from "react-icons/fa";
 import { MdRemoveCircle } from "react-icons/md";
 import html2pdf from "html2pdf.js";
 import MobileNumberPopUp from "./MobileNumberPopUp";
@@ -51,28 +50,6 @@ const POS = () => {
       setSelectedRowData(DSalesNoInvoiceData[index]); // Save the row data from data (for sales invoices)
     }
   };
-
-  // useEffect(() => {
-  //   const checkSession = async () => {
-  //     try {
-  //       // const response = await fetch(
-  //       //   "http://localhost:1100/api/whatsapp/checkSession"
-  //       // );
-  //       const reponse = await newRequest.get("/whatsapp/checkSession");
-  //       console.log(reponse);
-  //       const data = reponse.data;
-  //       if (data.status === "failure" && data.qrCode) {
-  //         setQrCode(data.qrCode);
-  //         console.log("QR code:", data.qrCode);
-  //         setShowPopup(true);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking session:", error);
-  //     }
-  //   };
-
-  //   checkSession();
-  // }, []);
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -197,12 +174,6 @@ const POS = () => {
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const fetchTransactionCodes = async () => {
     try {
-      // const response = await newRequest.get(
-      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
-      // );
-      // console.log(response.data?.data);
-      // setTransactionCodes(response.data?.data);
-
       const response = await newRequest.get(
         `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
       );
@@ -261,12 +232,6 @@ const POS = () => {
     console.log(value);
     setSelectedCustomerName(value);
   };
-
-  // useEffect(() => {
-  //   if (selectedTransactionCode?.TXN_CODE) {
-  //     fetchCustomerBasedonTransaction();
-  //   }
-  // }, [selectedTransactionCode?.TXN_CODE]);
 
   const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] =
     useState([]);
@@ -342,10 +307,6 @@ const POS = () => {
       }
     }
   }, [selectedTransactionCode?.TXN_CODE]);
-  
-  // useEffect(() => {
-  //   fetchCustomerNames();
-  // }, []);
 
   useEffect(() => {
     if (selectedSalesType === "BTOC CUSTOMER") {
@@ -575,10 +536,6 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            // P_CUST_CODE:
-            //   selectedSalesReturnType === "DIRECT RETURN"
-            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-            //     : selectedCustomerName?.CUSTOMERCODE,
             P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
@@ -616,7 +573,6 @@ const POS = () => {
             JSON.stringify(storedData)
           );
 
-          // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
           const vat = itemPrice * 0.15;
@@ -807,17 +763,10 @@ const POS = () => {
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
   const handleShowCreatePopup = () => {
-    // if (!isCreatePopupVisible) {
-    // if (!data || data.length === 0) {
-    //   toast.warning(
-    //     "The datagrid is empty. Please ensure data is available before proceeding."
-    //   );
-    // } else {
     setStoreDatagridData([...data]);
     setStoreInvoiceDatagridData([...invoiceData]);
 
     setCreatePopupVisibility(true);
-    // }
   };
 
   const [apiResponse, setApiResponse] = useState(null);
@@ -845,20 +794,6 @@ const POS = () => {
 
     setSelectedRowData(rowData);
     setIsExchangeItemPopupVisible(true);
-
-    // if (selectedSalesReturnType === "DIRECT RETURN") {
-    //   toast.info(
-    //     "You don't select the Sales Return type return with exchange",
-    //     {}
-    //   );
-    //   setIsExchangeItemPopupVisible(false);
-    // } else {
-    //   setSelectedRowData(rowData);
-    //   setIsExchangeItemPopupVisible(true);
-    // }
-
-    // setSelectedRowData(rowData); // Store the selected row data to pass to the popup
-    // setIsExchangeItemPopupVisible(true);
   };
 
   const [
@@ -892,13 +827,8 @@ const POS = () => {
     setMobileNo("");
     setRemarks("");
     setVat("");
-    // setSelectedCustomerName(null);
     setSelectedTransactionCode("");
     setInvoiceNumber(generateInvoiceNumber());
-
-    // setTotalAmountWithVat(0);
-    // setNetWithVat(0);
-    // setTotalVat(0);
 
     setNetWithOutExchange(0);
     setTotalWithOutExchange(0);
@@ -982,7 +912,6 @@ const POS = () => {
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1006,7 +935,6 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
-          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -1040,19 +968,11 @@ const POS = () => {
 
         // Construct the master and details data for Sales Return
         const master = {
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
-          // ItemSysID: exchangeData[0]?.ItemCode,
           ItemSysID: masterItemSysID,
-          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          // CustomerCode:
-          //   selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1072,22 +992,14 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo:
-          //   invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
           InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
-          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          // CustomerCode:
-          //   selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: slicUserData?.UserLoginID,
-          // ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
           ItemSKU: isExchangeClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
@@ -1118,17 +1030,11 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
           InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
-          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          // CustomerCode:
-          //   selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1148,14 +1054,9 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
           InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
-          // CustomerCode:
-          //   selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -1189,17 +1090,11 @@ const POS = () => {
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          // InvoiceNo: invoiceNumber,
           InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
-          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
-          // CustomerCode: 
-          // selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1219,21 +1114,15 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          // InvoiceNo: invoiceNumber,
           InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
-          // CustomerCode: 
-          // selectedSalesReturnType === "DIRECT RETURN"
-          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "B2C CUSTOMER",
           UserID: slicUserData?.UserLoginID,
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
-          // ItemUnit: "PCS",
           ItemSize: item.ItemSize,
           ITEMRATE: item.ItemPrice,
           ItemPrice: item.ItemPrice,
@@ -1252,14 +1141,14 @@ const POS = () => {
         "/invoice/v1/saveInvoice",
         invoiceAllData
       );
-      console.log("invoice body", invoiceAllData);
-      console.log("Record saved successfully:", saveInvoiceResponse.data);
+      // console.log("invoice body", invoiceAllData);
+      // console.log("Record saved successfully:", saveInvoiceResponse.data);
 
       toast.success(
         saveInvoiceResponse?.data?.message || "Invoice saved successfully"
       );
     } catch (error) {
-      console.error("Error saving record:", error);
+      // console.error("Error saving record:", error);
       toast.error("Error saving record");
     }
   };
@@ -1329,10 +1218,7 @@ const POS = () => {
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       console.log(qrCodeDataFromApi);
       setZatcaQrcode(qrCodeDataFromApi);
-      // setZatchaQrcodeExchange(qrCodeDataFromApi);
-      // handlePrintSalesInvoice(qrCodeDataFromApi);
 
-      // insertInvoiceRecord();
       setIsConfirmDisabled(false);
       setIsTenderCashEnabled(false);
       toast.success("Invoice generated successfully!");
@@ -1398,9 +1284,8 @@ const POS = () => {
       setTotalAmountWithVat(totalNet + totalVat);
     };
 
-    // calculateTotals();
     if (data.length > 0) {
-      calculateTotals(); // Only calculate when there is data
+      calculateTotals();
     }
   }, [data]);
 
@@ -1505,13 +1390,13 @@ const POS = () => {
       `;
     }
 
-    console.log("selectedSalesType", selectedSalesType);
-    console.log("customerName", customerName);
-    console.log("vat", vat);
-    console.log("invoiceNumber", invoiceNumber);
-    console.log("currentTime", currentTime);
-    console.log("invoiceData", invoiceData);
-    console.log("DSalesNoInvoiceData", DSalesNoInvoiceData);
+    // console.log("selectedSalesType", selectedSalesType);
+    // console.log("customerName", customerName);
+    // console.log("vat", vat);
+    // console.log("invoiceNumber", invoiceNumber);
+    // console.log("currentTime", currentTime);
+    // console.log("invoiceData", invoiceData);
+    // console.log("DSalesNoInvoiceData", DSalesNoInvoiceData);
 
     const html = `
       <html>
@@ -1822,8 +1707,6 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
-      // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
-      // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
         qrCodeData,
@@ -1838,7 +1721,6 @@ const POS = () => {
           }
         }
       );
-      // setIsOpenOtpPopupVisible(false);
       // console.log(qrCodeData);
     };
 
@@ -2486,8 +2368,6 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
-      // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
-      // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
         qrCodeData,
@@ -2806,7 +2686,6 @@ const POS = () => {
   const [invoiceDataLoader, setInvoiceDataLoader] = useState("");
   // Fetch invoice details when searching by invoice number for a sales return
   const handleGetInvoiceDetails = async (invoiceNo) => {
-    // e.preventDefault();
     setInvoiceDataLoader(true);
 
     try {
@@ -2950,7 +2829,7 @@ const POS = () => {
           return updatedData;
         },
         [...prevData]
-      ); // Start with the current exchangeData
+      );
     });
   };
 
@@ -2973,7 +2852,7 @@ const POS = () => {
 
     // calculateTotals();
     if (exchangeData.length > 0) {
-      calculateExchangeTotals(); // Only calculate when there is exchange data
+      calculateExchangeTotals();
     }
   }, [exchangeData]);
 
@@ -3113,21 +2992,6 @@ const POS = () => {
       setErrorMessage("");
     }
 
-    // if (value.length === 0 || value.startsWith("0")) {
-    //   setMobileNo(value);
-
-    //   // Validate if it's 10 digits long
-    //   if (value.length === 10) {
-    //     setErrorMessage(""); // Clear error if exactly 10 digits
-    //   } else if (value.length < 10 && value.length > 0) {
-    //     setErrorMessage("Mobile must be 10 digits long.");
-    //   } else {
-    //     setErrorMessage(""); // Clear the error for empty input
-    //   }
-    // }
-    // else {
-    //   setErrorMessage("Mobile must start with 0.");
-    // }
   };
 
   return (
@@ -3257,34 +3121,6 @@ const POS = () => {
               </select>
             </div>
 
-            {/* Select Return or Exchange */}
-            {/* {(selectedSalesType === "DIRECT SALES RETURN" ||
-               selectedSalesType === "DSALES NO INVOICE" ||
-                selectedSalesType === "BTOC CUSTOMER") && (
-              <div>
-                <label
-                  className={`block text-gray-700 ${
-                    i18n.language === "ar"
-                      ? "direction-rtl"
-                      : "text-start direction-ltr"
-                  }`}
-                >
-                  {t("Sale Return Type")} *
-                </label>
-                <select
-                  className="w-full mt-1 p-2 border rounded border-gray-400"
-                  value={selectedSalesReturnType}
-                  onChange={(e) => setSelectedSalesReturnType(e.target.value)}
-                >
-                  {selectedSalesType !== "BTOC CUSTOMER" && (
-                    <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
-                  )}
-                  <option value="RETRUN WITH EXCHANGE">
-                    {t("RETURN WITH EXCHANGE")}
-                  </option>
-                </select>
-              </div>
-            )} */}
             <div>
               <label
                 className={`block text-gray-700 ${
@@ -3334,8 +3170,6 @@ const POS = () => {
                 readOnly
               />
             </div>
-            {/* </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"> */}
             <div>
               <label
                 className={`block text-gray-700 ${
@@ -3346,159 +3180,6 @@ const POS = () => {
               >
                 {t("Search Customer")}
               </label>
-              {/* {selectedSalesType === "DIRECT SALES RETURN" ||
-                selectedSalesType === "DSALES NO INVOICE" || 
-                 selectedSalesType === "BTOC CUSTOMER" ? (
-                  selectedSalesReturnType === "DIRECT RETURN" ? (
-                  // Show the combo box for DIRECT RETURN
-                  <Autocomplete
-                    id="field1"
-                    options={customerNameWithDirectInvoice}
-                    getOptionLabel={(option) =>
-                      option && option.CUST_CODE && option.CUST_NAME
-                        ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                        : ""
-                    }
-                    onChange={handleSearchCustomerNameWithDirectInvoice}
-                    value={
-                      customerNameWithDirectInvoice.find(
-                        (option) =>
-                          option?.CUST_CODE ===
-                          selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                      ) || null
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUST_CODE === value?.CUST_CODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={t("Search Customer ID")}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                ) : (
-                  // Show the combo box for RETURN WITH EXCHANGE
-                  <Autocomplete
-                    id="field1"
-                    options={searchCustomerName}
-                    getOptionLabel={(option) =>
-                      option && option.CUSTOMERCODE && option.TXN_NAME
-                        ? `${option.CUSTOMERCODE} - ${option.TXN_NAME}`
-                        : ""
-                    }
-                    onChange={handleSearchCustomerName}
-                    value={selectedCustomerName || null}
-                    isOptionEqualToValue={(option, value) =>
-                      option?.CUSTOMERCODE === value?.CUSTOMERCODE
-                    }
-                    onInputChange={(event, value) => {
-                      if (!value) {
-                        setSelectedCustomerName(""); // Clear selection when input is cleared
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        InputProps={{
-                          ...params.InputProps,
-                          className: "text-white",
-                        }}
-                        InputLabelProps={{
-                          ...params.InputLabelProps,
-                          style: { color: "white" },
-                        }}
-                        className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                        placeholder={t("Search Customer ID")}
-                        required
-                      />
-                    )}
-                    classes={{
-                      endAdornment: "text-white",
-                    }}
-                    sx={{
-                      "& .MuiAutocomplete-endAdornment": {
-                        color: "white",
-                      },
-                    }}
-                  />
-                )
-              ) : (
-                // otherwise in drect sales invoice
-                <Autocomplete
-                  id="field1"
-                  options={customerNameWithDirectInvoice}
-                  // getOptionLabel={(option) => option?.CUST_CODE || ""}
-                  getOptionLabel={(option) =>
-                    option && option.CUST_CODE && option.CUST_NAME
-                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                      : ""
-                  }
-                  onChange={handleSearchCustomerNameWithDirectInvoice}
-                  value={
-                    customerNameWithDirectInvoice.find(
-                      (option) =>
-                        option?.CUST_CODE ===
-                        selectedCustomeNameWithDirectInvoice?.CUST_CODE
-                    ) || null
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.CUST_CODE === value?.CUST_CODE
-                  }
-                  onInputChange={(event, value) => {
-                    if (!value) {
-                      setSelectedCustomeNameWithDirectInvoice(""); // Clear selection
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      InputProps={{
-                        ...params.InputProps,
-                        className: "text-white",
-                      }}
-                      InputLabelProps={{
-                        ...params.InputLabelProps,
-                        style: { color: "white" },
-                      }}
-                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                      placeholder={t("Search Customer ID")}
-                      required
-                    />
-                  )}
-                  classes={{
-                    endAdornment: "text-white",
-                  }}
-                  sx={{
-                    "& .MuiAutocomplete-endAdornment": {
-                      color: "white",
-                    },
-                  }}
-                />
-              )} */}
               {EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE) ? (
                 // Show the combo box for transactions EXIN, AXIN, EXSR, AXSR (location-based customer names)
                 <Autocomplete
@@ -3518,7 +3199,7 @@ const POS = () => {
                   }
                   onInputChange={(event, value) => {
                     if (!value) {
-                      setSelectedCustomerName(""); // Clear selection when input is cleared
+                      setSelectedCustomerName("");
                     }
                   }}
                   renderInput={(params) => (
@@ -3741,7 +3422,6 @@ const POS = () => {
                   }`}
                   placeholder={t("Mobile")}
                   value={mobileNo}
-                  // onChange={(e) => setMobileNo(e.target.value)}
                   onChange={handleMobileChange}
                 />
               </div>
@@ -4742,8 +4422,6 @@ const POS = () => {
                 >
                   {t("F3 - Tender Cash")}
                 </button>
-                {/* <button onClick={handlePrintSalesInvoice}>Print</button>
-                <button onClick={sendWhatsAppInvoice}>whatsApp Send</button> */}
               </div>
             </div>
           </div>
