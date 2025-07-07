@@ -1,24 +1,35 @@
 import React, { useEffect, useState } from "react";
 import SideNav from "../../../components/Sidebar/SideNav";
 import { useNavigate } from "react-router-dom";
-import { posHistoryInvoiceColumns } from "../../../utils/datatablesource";
+import {
+  posBulkCashreceiptInvoiceColumns,
+  posHistoryInvoiceColumns,
+} from "../../../utils/datatablesource";
 import DataTable from "../../../components/Datatable/Datatable";
 import newRequest from "../../../utils/userRequest";
 import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Autocomplete,
+  Button,
+  CircularProgress,
   TextField,
 } from "@mui/material";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import QRCode from "qrcode";
 import sliclogo from "../../../Images/sliclogo.png";
 import { useTranslation } from "react-i18next";
+import { newERPBaseUrl } from "../../../utils/config";
 import { useTaxContext } from "../../../Contexts/TaxContext";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
-const PosHistory = () => {
+const PosBulkCashReceipts = () => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [invoiceList, setInvoiceList] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [cutOfDate, setCutOfDate] = useState(""); // Cut of Date
@@ -30,6 +41,12 @@ const PosHistory = () => {
   const [token, setToken] = useState(null);
   const { taxAmount } = useTaxContext();
   // console.log(taxAmount);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
+    setCutOfDate(formattedDate);
+  }, []);
 
   useEffect(() => {
     // slic login api token get
@@ -53,42 +70,28 @@ const PosHistory = () => {
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
-      // console.log(adminData?.data?.user)
+      console.log(adminData?.data?.user);
     }
   }, []);
 
   // console.log(slicUserData?.SalesmanCode);
 
-  const fetchCustomerCodes = async () => {
+  const fetchPOSInvoiceMaster = async (customerCode) => {
     if (!cutOfDate) {
-      // toast.error("Please select a cutoff date");
       return;
     }
     setIsLoading(true);
     try {
       const response = await newRequest.get(
-        `/invoice/v1/getCustomersWithPendingReceipts?SalesLocationCode=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
-      );
-      const customerCodes = response?.data?.customerCodes || [];
-      console.log("history", customerCodes);
-      setInvoiceList(customerCodes);
-      setIsLoading(false);
-    } catch (err) {
-      setIsLoading(false);
-      toast.error(err?.response?.data?.message || "Something went Wrong");
-    }
-  };
-
-  // Fetch POS Invoice Master based on selected customer code
-  const fetchPOSInvoiceMaster = async (customerCode) => {
-    setIsLoading(true);
-    try {
-      const response = await newRequest.get(
-        `/invoice/v1/getPOSInvoiceMaster?filter[CustomerCode]=${customerCode}&filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}`
+        `/invoice/v1/getPOSInvoiceMaster?filter[SalesLocationCode]=${selectedLocation?.stockLocation}&cutoffDate=${cutOfDate}&filter[zatcaPayment_mode_id]=1&isBatchIdNull=true`
       );
       const posData = response?.data || [];
-      setData(posData);
-      console.log("posData", posData);
+      const dataWithTax = (response?.data || []).map(row => ({
+        ...row,
+        AmountWithTax: row.AdjAmount + (row.AdjAmount * taxAmount / 100)
+      }));
+      console.log(dataWithTax);
+      setData(dataWithTax);
       calculateAmounts(posData);
       setIsLoading(false);
     } catch (err) {
@@ -99,55 +102,205 @@ const PosHistory = () => {
     }
   };
 
-  const handleSelectAllInvoice = (event, value) => {
-    setSelectedInvoice(value || null);
-    console.log(value);
-    if (value) {
-      // Trigger POS Invoice Master API call based on selected customer code
-      fetchPOSInvoiceMaster(value);
-    }
-  };
-
   useEffect(() => {
-    fetchCustomerCodes();
-  }, [selectedLocation?.stockLocation, cutOfDate]);
+    fetchPOSInvoiceMaster();
+  }, [cutOfDate]);
 
-  // Calculate amounts based on IN and SR transactions with dynamic VAT handling
+  // Calculate amounts based on IN and SR transactions
   const calculateAmounts = (transactions) => {
     let totalINAmount = 0;
-    let totalINAmountWithVat = 0;
     let totalSRAmount = 0;
-    let totalSRAmountWithVat = 0;
-
-    // Get VAT rate from context, convert percentage to decimal
-    const vatRate = taxAmount ? parseFloat(taxAmount) / 100 : 0.15; // Default to 15% if not set
 
     transactions.forEach((transaction) => {
-      // Calculate base amount and VAT amount
-      const baseAmount = transaction.PendingAmount;
-      const vatAmount = baseAmount * vatRate;
-      const totalWithVat = baseAmount + vatAmount;
+      const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
-      // Update totals based on transaction type
       if (transaction.TransactionCode.endsWith("IN")) {
-        totalINAmount += baseAmount;
-        totalINAmountWithVat += totalWithVat;
+        totalINAmount += transaction.PendingAmount * vatMultiplier;
       } else if (transaction.TransactionCode.endsWith("SR")) {
-        totalSRAmount += baseAmount;
-        totalSRAmountWithVat += totalWithVat;
+        totalSRAmount += transaction.PendingAmount * vatMultiplier;
       }
     });
 
-    // Calculate remaining amounts with VAT
-    const remainingAmountWithVat = totalINAmountWithVat - totalSRAmountWithVat;
+    // Calculate remaining amount
+    const remainingAmount = totalINAmount - totalSRAmount;
 
     // Update state with calculated values
-    setTotalInvoiceAmount(totalINAmountWithVat.toFixed(2));
-    setExchangeAmount(totalSRAmountWithVat.toFixed(2));
-    setRemainingAmount(remainingAmountWithVat.toFixed(2));
+    setTotalInvoiceAmount(totalINAmount.toFixed(2));
+    setExchangeAmount(totalSRAmount.toFixed(2));
+    setRemainingAmount(remainingAmount.toFixed(2));
   };
 
-  const handleRowClickInParent = async () => {};
+
+  const handleGenerateReceipt = async () => {
+    if (parseFloat(remainingAmount) < 0) {
+      toast.error("Cannot generate receipt when remaining amount is negative");
+      return;
+    }
+
+    let totalRemainingAmount = 0;
+    let details = [];
+
+    // Group transactions by customer
+    const customerTransactions = data.reduce((acc, transaction) => {
+      const customerCode = transaction.CustomerCode || "";
+      if (!acc[customerCode]) {
+        acc[customerCode] = {
+          totalAmount: 0,
+          Company: "SLIC",
+          Sub_Acnt_Code: customerCode
+        };
+      }
+
+      const vatMultiplier = 1 + taxAmount / 100;
+      const amount = transaction.PendingAmount * vatMultiplier;
+
+      // Add for IN, subtract for SR
+      if (transaction.TransactionCode.endsWith("IN")) {
+        acc[customerCode].totalAmount += amount;
+        totalRemainingAmount += amount;
+      } else if (transaction.TransactionCode.endsWith("SR")) {
+        acc[customerCode].totalAmount -= amount;
+        totalRemainingAmount -= amount;
+      }
+
+      return acc;
+    }, {});
+
+    // Convert grouped transactions to details array
+    Object.values(customerTransactions).forEach(customer => {
+      if (customer.totalAmount !== 0) {  // Only add if there's a non-zero balance
+        details.push({
+          Dr_Cr_Flag: customer.totalAmount >= 0 ? "C" : "D",
+          Company: customer.Company,
+          Sub_Acnt_Code: customer.Sub_Acnt_Code,
+          Receipt_Amt: parseFloat(Math.abs(customer.totalAmount).toFixed(2)) // Ensures a float
+        });
+      }
+    });
+
+    // data.forEach((transaction) => {
+    //     const vatRate = transaction.VatNumber ? parseFloat(transaction.VatNumber) / 100 : 0.15;
+    //     const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
+
+    //     // Handle "IN" transactions
+    //     if (transaction.TransactionCode.endsWith("IN")) {
+    //         details.push({
+    //             Dr_Cr_Flag: "C",
+    //             Company: "SLIC",
+    //             Sub_Acnt_Code: transaction.CustomerCode || "",
+    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+    //         });
+    //         totalRemainingAmount += transaction.PendingAmount * vatMultiplier;
+    //     }
+    //     // Handle "SR" transactions
+    //     else if (transaction.TransactionCode.endsWith("SR")) {
+    //         details.push({
+    //             Dr_Cr_Flag: "D",
+    //             Company: "SLIC",
+    //             Sub_Acnt_Code: transaction.CustomerCode || "",
+    //             Receipt_Amt: (transaction.PendingAmount * vatMultiplier).toFixed(2),
+    //         });
+    //         totalRemainingAmount -= transaction.PendingAmount * vatMultiplier;
+    //     }
+    // });
+
+    // Add first object for total remaining amount
+    const remainingAmountObject = {
+      Dr_Cr_Flag: "D",
+      Company: "SLIC",
+      Sub_Acnt_Code: "",
+      Receipt_Amt: parseFloat(totalRemainingAmount.toFixed(2)),
+    };
+
+    // Add this object to the start of the details array
+    details.unshift(remainingAmountObject);
+
+    const requestData = {
+      url: newERPBaseUrl,
+      data: [
+        {
+          Company: "SLIC",
+          UserId: "SYSADMIN",
+          Department: "011",
+          TransactionCode: "BRV",
+          Division: "100",
+          Narration: slicUserData?.UserLoginID,
+          Details: details,
+        },
+      ],
+      COMPANY: "SLIC",
+      USERID: slicUserData?.UserLoginID,
+      APICODE: "BULKBRVCASHAPI",
+      LANG: "ENG",
+    };
+
+    console.log(requestData);
+
+    try {
+      setLoading(true);
+      const receiptResponse = await ErpTeamRequest.post(
+        "/slicuat05api/v1/postData",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const responseData = receiptResponse?.data?.message;
+
+      if (!responseData?.["Ref-No/SysID"] || !responseData?.["Document No"]) {
+        throw new Error("Required fields missing in ERP response.");
+      }
+
+      toast.success(
+        receiptResponse?.data?.message?.message || "Receipt generated successfully!"
+      );
+
+      const refNo = responseData["Ref-No/SysID"];
+      const docNo = responseData["Document No"];
+
+      const invoiceMasterIds = data.map((transaction) => transaction.id);
+
+      const batchRequestData = {
+        bulkCashDocNo: docNo,
+        bulkCashRefNo: `${refNo}`,
+        invoiceMasterIds: invoiceMasterIds,
+      };
+
+      console.log(batchRequestData);
+
+      try {
+        const batchResponse = await newRequest.post(
+          "/invoice/v1/createPOSInvoiceBatch",
+          batchRequestData
+        );
+
+        toast.success(
+          batchResponse?.data?.message || "POS Invoice Batch created successfully!"
+        );
+        // I call the print pdf function here
+        handlePrintPDF();
+      } catch (batchErr) {
+        toast.error(
+          batchErr?.response?.data?.message || "Failed to create POS Invoice Batch."
+        );
+      }
+
+      setLoading(false);
+      // clear the data
+      setData([]);
+      setTotalInvoiceAmount(0);
+      setExchangeAmount(0);
+      setRemainingAmount(0);
+    } catch (err) {
+      setLoading(false);
+      toast.error(err?.response?.data?.message || "Failed to generate receipt.");
+    }
+  };
+
+  const handleRowClickInParent = async () => { };
 
   // const [zatcaQrcode, setZatcaQrcode] = useState(null);
   const handleInvoiceGenerator = async (selectedRow) => {
@@ -169,17 +322,15 @@ const PosHistory = () => {
       // console.log("Fetched invoice data:", invoiceData);
 
       const { invoiceDetails, invoiceHeader } = invoiceData;
-      // Get VAT rate from VatNumber or use default (15%)
-      const vatRate = invoiceHeader?.VatNumber
-        ? parseFloat(invoiceHeader.VatNumber) / 100
-        : 0.15;
+
       let totalGrossAmount = 0;
       let totalVAT = 0;
 
       // Loop through invoiceDetails and calculate gross, VAT, and total amounts
       invoiceDetails.forEach((item) => {
         const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
-        const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+        // const itemVAT = itemGross * 0.15; // Calculate VAT for each item (15%)
+        const itemVAT = itemGross * taxAmount; // Calculate VAT for each item (15%)
         totalGrossAmount += itemGross;
         totalVAT += itemVAT;
       });
@@ -207,10 +358,9 @@ const PosHistory = () => {
 
       toast.success("Invoice generated and ready to print!");
     } catch (err) {
-      console.error(err);
       toast.error(
         err?.response?.data?.errors[0]?.msg ||
-          "An error occurred while generating the invoice"
+        "An error occurred while generating the invoice"
       );
     }
   };
@@ -245,26 +395,30 @@ const PosHistory = () => {
       salesInvoiceTitle = "CREDIT NOTE";
     }
 
-    // Get VAT rate from context or use default (15%)
-    const vatRate = taxAmount ? parseFloat(taxAmount) / 100 : 0.15;
-    const vatPercentageDisplay = taxAmount || "15"; // For display purposes
+    // Get VAT rate from VatNumber or use default (15%)
+    const vatRate = invoiceHeader?.VatNumber
+      ? parseFloat(invoiceHeader.VatNumber) / 100
+      : 0.15;
+    // const vatMultiplier = 1 + vatRate; // Multiplier for calculating total with VAT
+    const vatMultiplier = 1 + taxAmount / 100; // Multiplier for calculating total with VAT
 
-    // Calculate totals with dynamic VAT rate
+    // Calculate total VAT
     let totalGrossAmount = 0;
     let totalVAT = 0;
     let totalAmountWithVAT = 0;
 
     // Loop through invoiceDetails and calculate gross, VAT, and total amounts
     invoiceDetails.forEach((item) => {
-      const itemGross = item.ItemPrice * item.ItemQry;
-      const itemVAT = itemGross * vatRate;
+      const itemGross = item.ItemPrice * item.ItemQry; // Calculate gross amount for each item
+      // const itemVAT = itemGross * vatRate; // Calculate VAT for each item
+      const itemVAT = itemGross * taxAmount / 100; // Calculate VAT for each item
       totalGrossAmount += itemGross;
       totalVAT += itemVAT;
     });
 
-    totalAmountWithVAT = totalGrossAmount + totalVAT;
+    totalAmountWithVAT = totalGrossAmount + totalVAT; // Total amount including VAT
 
-    // Update totals content to show dynamic VAT percentage
+    // Generate totals for exchange invoice
     const totalsContent = `
       <div>
         <strong>Gross:</strong>
@@ -272,7 +426,7 @@ const PosHistory = () => {
         ${totalGrossAmount.toFixed(2)}
       </div>
       <div>
-        <strong>VAT (${vatPercentageDisplay}%):</strong>
+        <strong>VAT (15%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
         ${totalVAT.toFixed(2)}
       </div>
@@ -401,9 +555,8 @@ const PosHistory = () => {
           <div class="sales-invoice-title">${salesInvoiceTitle}</div>
           
           <div class="customer-info">
-            <div><span class="field-label">Customer: </span>${
-              invoiceHeader?.CustomerName
-            }</div>
+            <div><span class="field-label">Customer: </span>${invoiceHeader?.CustomerName
+      }</div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
                 ${invoiceHeader?.VatNumber}
@@ -458,15 +611,15 @@ const PosHistory = () => {
 
            <tbody>
            ${invoiceDetails
-             .map(
-               (item) => `
+        .map(
+          (item) => `
                 <tr>
                   <td style="border-bottom: none;">${item.ItemSKU}</td>
                   <td style="border-bottom: none;">${item.ItemQry}</td>
                   <td style="border-bottom: none;">${item.ItemPrice}</td>
                   <td style="border-bottom: none;">${(
-                    item.ItemPrice * item.ItemQry
-                  ).toFixed(2)}</td>
+              item.ItemPrice * vatMultiplier
+            ).toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -478,8 +631,8 @@ const PosHistory = () => {
                   </td>
                 </tr>
               `
-             )
-             .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -531,6 +684,84 @@ const PosHistory = () => {
     };
   };
 
+
+  const handlePrintPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt", // Use points for better control over dimensions
+      format: [1140, 600], // Custom page size
+    });
+
+    // Add title
+    doc.setFontSize(16);
+    doc.text("POS Bulk Cash Receipts", 40, 40);
+
+    // Define the columns and rows for the table
+    const columns = [
+      { header: "Invoice No", dataKey: "invoiceNo" },
+      { header: "Customer Name", dataKey: "customerName" },
+      { header: "Adjustment Amount", dataKey: "AdjAmount" },
+      { header: "Amount With Tax", dataKey: "AmountWithTax" },
+      { header: "Pending Amount", dataKey: "pendingAmount" },
+      { header: "Document No", dataKey: "DocNo" },
+      { header: "Transaction Code", dataKey: "transactionCode" },
+      { header: "Customer Code", dataKey: "customerCode" },
+      { header: "Transaction Type", dataKey: "transactionType" },
+      { header: "Mobile No", dataKey: "mobileNo" },
+    ];
+
+    const rows = data.map((row) => ({
+      invoiceNo: row.InvoiceNo,
+      customerName: row.CustomerName,
+      AdjAmount: row.AdjAmount,
+      AmountWithTax: row.AmountWithTax,
+      pendingAmount: row.PendingAmount,
+      DocNo: row.DocNo,
+      transactionCode: row.TransactionCode,
+      customerCode: row.CustomerCode,
+      transactionType: row.TransactionType,
+      mobileNo: row.MobileNo,
+    }));
+
+    // Add the table to the PDF
+    doc.autoTable({
+      columns,
+      body: rows,
+      startY: 60,
+      theme: 'grid',
+      styles: {
+        fontSize: 11, // Adjust font size
+        cellPadding: 5, // Adjust cell padding
+      },
+      headStyles: {
+        fillColor: [29, 47, 144], // Custom header color
+        textColor: [255, 255, 255], // White text
+      },
+      columnStyles: {
+        0: { cellWidth: 100 }, // Adjust column width
+        1: { cellWidth: 110 },
+        2: { cellWidth: 120 },
+        3: { cellWidth: 110 },
+        4: { cellWidth: 110 },
+        5: { cellWidth: 110 },
+        6: { cellWidth: 110 },
+        7: { cellWidth: 100 },
+        8: { cellWidth: 100 },
+        9: { cellWidth: 90 },
+      },
+    });
+
+    // Add totals at the end
+    doc.setFontSize(12);
+    doc.text(`Total Invoice Amount With VAT: ${totalInvoiceAmount}`, 40, doc.lastAutoTable.finalY + 20);
+    doc.text(`Exchange Amount: ${exchangeAmount}`, 40, doc.lastAutoTable.finalY + 40);
+    doc.text(`Remaining Amount: ${remainingAmount}`, 40, doc.lastAutoTable.finalY + 60);
+
+    // Save the PDF
+    doc.save("POS_Bulk_Cash_Receipts.pdf");
+  };
+
+
   return (
     <SideNav>
       <div className="p-3 h-full">
@@ -538,15 +769,13 @@ const PosHistory = () => {
           <div className="h-auto w-full">
             <div className="h-auto w-full bg-white shadow-xl rounded-md">
               <div
-                className={`sm:flex p-4 gap-2 w-full ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`sm:flex p-4 gap-2 w-full ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
-                <div className="flex flex-col w-full">
+                <div className="flex flex-col sm:w-[50%] w-full">
                   <label
-                    className={`font-sans font-semibold text-sm text-secondary ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
+                    className={`font-sans font-semibold text-sm text-secondary ${i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                   >
                     {t("Cut Of Date")}
                   </label>
@@ -558,39 +787,16 @@ const PosHistory = () => {
                   />
                 </div>
 
-                <div className="flex flex-col w-full">
-                  <label
-                    className={`font-sans font-semibold text-sm text-secondary ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
-                  >
-                    {t("Customer Codes")}
-                  </label>
-                  <Autocomplete
-                    id="customerCodeId"
-                    options={invoiceList}
-                    getOptionLabel={(option) => option || ""}
-                    onChange={handleSelectAllInvoice}
-                    value={selectedInvoice}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        className="bg-gray-50 border border-gray-300 text-black text-xs rounded-sm"
-                        placeholder={t("Select any Customer Code")}
-                        required
-                      />
-                    )}
-                  />
-                </div>
-
-                {/* <div className="flex justify-center items-center sm:w-[40%] w-full mt-4">
+                <div className="flex justify-center items-center sm:w-[20%] w-full mt-4">
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: selectedInvoice ? "#021F69" : "#d3d3d3",
-                      color: selectedInvoice ? "#ffffff" : "#a9a9a9",
+                      backgroundColor:
+                        loading || data.length === 0 ? "#9ca3af" : "#1d2f90",
+                      color: "#ffffff",
                     }}
-                    disabled={!selectedInvoice || loading}
+                    disabled={loading || data.length === 0}
+                    // disabled={loading}
                     className="w-full"
                     onClick={handleGenerateReceipt}
                     endIcon={
@@ -601,7 +807,7 @@ const PosHistory = () => {
                   >
                     {t("Generate Receipt")}
                   </Button>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>
@@ -616,8 +822,8 @@ const PosHistory = () => {
           >
             <DataTable
               data={data}
-              title={t("POS History")}
-              columnsName={posHistoryInvoiceColumns(t)}
+              title={t("POS Bulk Cash Receipts")}
+              columnsName={posBulkCashreceiptInvoiceColumns(t)}
               loading={isLoading}
               secondaryColor="secondary"
               checkboxSelection="disabled"
@@ -642,47 +848,41 @@ const PosHistory = () => {
           </div>
         </div>
         <div
-          className={`flex  ${
-            i18n.language === "ar" ? " justify-start" : "justify-end"
-          }`}
+          className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"
+            }`}
         >
           <div className="bg-white p-4 rounded shadow-md sm:w-[60%] w-full">
             <div className="flex flex-col gap-4">
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
-                  {t("Total Invoice Amount WithVAT(%)")}:
+                  {t("Total Invoice Amount WithVAT")}:
                 </label>
                 <input
                   type="text"
                   value={totalInvoiceAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100 w-[60%] ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
 
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
                   {t("Exchange Amount")}
                 </label>
@@ -690,23 +890,20 @@ const PosHistory = () => {
                   type="text"
                   value={exchangeAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100 w-[60%]  ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
 
               <div
-                className={`flex justify-between items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <label
-                  className={`block text-gray-700 font-bold ${
-                    i18n.language === "ar"
+                  className={`block text-gray-700 font-bold ${i18n.language === "ar"
                       ? "direction-rtl"
                       : "text-start direction-ltr"
-                  }`}
+                    }`}
                 >
                   {t("Remaining Amount")}
                 </label>
@@ -714,9 +911,8 @@ const PosHistory = () => {
                   type="text"
                   value={remainingAmount}
                   readOnly
-                  className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                    i18n.language === "ar" ? "text-start" : "text-end"
-                  }`}
+                  className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? "text-start" : "text-end"
+                    }`}
                 />
               </div>
             </div>
@@ -749,4 +945,4 @@ const PosHistory = () => {
   );
 };
 
-export default PosHistory;
+export default PosBulkCashReceipts;

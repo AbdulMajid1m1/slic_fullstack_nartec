@@ -51,7 +51,6 @@ const F3TenderCashPopUp = ({
   handleZatcaInvoiceGenerator,
   newInvoiceNumber,
 }) => {
-
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
@@ -72,7 +71,6 @@ const F3TenderCashPopUp = ({
   const paymentModes = JSON.parse(PaymentModels);
   const ExamptionReason = sessionStorage.getItem("selectedExamptionReason");
   const examptReason = ExamptionReason ? JSON.parse(ExamptionReason) : "";
-
 
   useEffect(() => {
     // slic login api token get
@@ -98,20 +96,18 @@ const F3TenderCashPopUp = ({
     }
   }, []);
 
-
   useEffect(() => {
     // slic our user data
-    const slicUser = sessionStorage.getItem('slicUserData');
+    const slicUser = sessionStorage.getItem("slicUserData");
     const adminData = JSON.parse(slicUser);
     if (JSON.stringify(adminData) !== JSON.stringify(slicUserData)) {
       setSlicUserData(adminData?.data?.user);
-      console.log(adminData?.data?.user)
+      console.log(adminData?.data?.user);
     }
   }, []);
 
   // console.log(slicUserData?.SalesmanCode);
   // console.log(examptReason)
-
 
   const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
   // Function to determine the correct customer code based on transaction type
@@ -123,7 +119,6 @@ const F3TenderCashPopUp = ({
     // Otherwise, use selectedCustomeNameWithDirectInvoice (fetched from the general customer API)
     return selectedCustomeNameWithDirectInvoice?.CUST_CODE;
   };
-
 
   useEffect(() => {
     if (isVisible) {
@@ -164,11 +159,15 @@ const F3TenderCashPopUp = ({
     setLoading(true);
 
     try {
+      // Check if customer is eligible for discount
+      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+
       const items = storeDatagridData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
         Qty: `${item.Qty}`,
-        Rate: `${item?.ItemPrice}`,
+        Rate: isBuy2Get1Customer ? parseFloat(item.DiscountedPrice).toFixed(2) : parseFloat(item.ItemPrice).toFixed(2),
+        // Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
 
@@ -232,7 +231,7 @@ const F3TenderCashPopUp = ({
         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES INVOICE");
       }
       // Call insertInvoiceRecord with both documentNo and headSysId
-      insertInvoiceRecord(documentNo, headSysId);
+      // insertInvoiceRecord(documentNo, headSysId);
 
       // Call the Bank API after successful sales invoice
       if (paymentModes.code === "4" || paymentModes.code === "5") {
@@ -250,7 +249,7 @@ const F3TenderCashPopUp = ({
               BankApproverCode: bankApprovedCode,
               CashCardFlag: "CARD",
               ReceiptAmt: totalAmountWithVat,
-              CustomerId: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+              CustomerId: customerCode,
               MatchingTransactions: [
                 {
                   DocNo: documentNo,
@@ -268,23 +267,47 @@ const F3TenderCashPopUp = ({
         };
 
         console.log(bankReceiptBody);
+        try {
+          const bankRes = await ErpTeamRequest.post(
+            "/slicuat05api/v1/postData",
+            bankReceiptBody,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          console.log("Bank Receipt for Sales Invoice processed");
+          const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+          const bankheadSysId = bankRes?.data?.message?.["Document No"];
 
-        const bankRes = await ErpTeamRequest.post(
-          "/slicuat05api/v1/postData",
-          bankReceiptBody,
-          {
-            headers: { Authorization: `Bearer ${token}` },
+          // If bankDocumentNo is missing, show an error and stop
+          if (!bankDocumentNo) {
+            toast.error("Error in Bank API: Missing Document No");
+            setLoading(false);
+            return;
           }
-        );
-        console.log("Bank Receipt for Sales Invoice processed");
-        const bankDocumentNo = bankRes?.data?.message?.["Document No"];
 
-        // If bankDocumentNo is missing, show an error and stop
-        if (!bankDocumentNo) {
-          toast.error("Error in Bank API: Missing Document No");
+          // Call insertInvoiceRecord with bankheadSysId if API is successful
+          insertInvoiceRecord(documentNo, headSysId, bankheadSysId);
+        } catch (error) {
+          console.error("Error in Bank API:", error);
+          // On API error, call insertInvoiceRecord without bankheadSysId
+          insertInvoiceRecord(documentNo, headSysId);
+
+          // Log the error using /createErrorLogs API
+          try {
+            await newRequest.post("/invoice/v1/createErrorLogs", {
+              inDocumentNo: documentNo.toString(),
+              inRefSysId: headSysId.toString(),
+              transactionType: "DIRECT SALES INVOICE",
+            });
+          } catch (error) {
+            console.error("Error in createErrorLogs API:", error);
+          }
           setLoading(false);
-          return;
         }
+      } else {
+        // Insert the invoice record using the regular headSysId
+        insertInvoiceRecord(documentNo, headSysId);
       }
 
       showOtpPopup(res?.data);
@@ -294,6 +317,7 @@ const F3TenderCashPopUp = ({
       handleInvoiceGenerator();
       setLoading(false);
     } catch (err) {
+      console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
@@ -323,326 +347,17 @@ const F3TenderCashPopUp = ({
       // console.error("Error archiving invoice:", err);
       toast.error(
         err?.response?.data?.error ||
-        err?.response?.data?.message ||
-        "Error In Archived The Data"
+          err?.response?.data?.message ||
+          "Error In Archived The Data"
       );
     }
   };
 
-  // const handleSubmitDirectSalesReturn = async () => {
-  //   setLoading(true);
-  //   console.log("Direct Sales Return Data", exchangeData);
-  //   try {
-  //     const firstDataGridItem = exchangeData.map((item) => ({
-  //       "Item-Code": item.SKU || item.ItemCode,
-  //       Size: item.ItemSize,
-  //       Qty: `${item.Qty}`,
-  //       Rate: `${item?.ItemPrice}`,
-  //       UserId: "SYSADMIN",
-  //     }));
-
-  //     const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
-  //       "Item-Code": item.SKU,
-  //       Size: item.ItemSize,
-  //       Qty: `${item.Qty}`,
-  //       Rate: `${item?.ItemPrice}`,
-  //       UserId: "SYSADMIN",
-  //     }));
-
-  //     const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
-  //     const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
-
-  //     // Body for the sales return (EXSR)
-  //     const salesReturnBody = {
-  //       _keyword_: "salesreturn",
-  //       "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //       data: [
-  //         {
-  //           Company: "SLIC",
-  //           TransactionCode: selectTransactionCode,
-  //           CustomerCode:
-  //             selectedSalesReturnType === "DIRECT RETURN"
-  //               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //               : selectedCustomerCode?.CUSTOMERCODE,
-  //           SalesLocationCode: selectedLocation?.stockLocation,
-  //           DeliveryLocationCode: selectedLocation?.stockLocation,
-  //           UserId: "SYSADMIN",
-  //           CustomerName: invoiceHeaderData?.CustomerCode,
-  //           MobileNo: invoiceHeaderData?.MobileNo,
-  //           Remarks: invoiceHeaderData?.Remarks,
-  //           PosRefNo: invoiceHeaderData?.InvoiceNo,
-  //           ZATCAPaymentMode: paymentModes.code,
-  //           TaxExemptionReason: examptReason?.name || "",
-  //           SalesmanCode: slicUserData?.SalesmanCode,
-  //           Item: SecondDataGridItem,
-  //         },
-  //       ],
-  //       COMPANY: "SLIC",
-  //       USERID: slicUserData?.UserLoginID,
-  //       APICODE: "SALESRETURN",
-  //       LANG: "ENG",
-  //     };
-
-  //     if (isExchangeClick) {
-  //       // Exchange scenario: Call both Sales Return and Invoice APIs
-  //       const exsrRes = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesReturnBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Sales Return Response (EXSR):", exsrRes?.data);
-
-  //       const exsrDocumentNo = exsrRes?.data?.message?.["Document No"];
-  //       if (!exsrDocumentNo) {
-  //         toast.error("Error in Sales Return API: Missing Document No");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       // Body for the invoice (EXIN)
-  //       const salesInvoiceBody = {
-  //         _keyword_: "Invoice",
-  //         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //         data: [
-  //           {
-  //             Company: "SLIC",
-  //             TransactionCode: modifiedTransactionCode,
-  //             CustomerCode:
-  //               selectedSalesReturnType === "DIRECT RETURN"
-  //                 ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                 : selectedCustomerCode?.CUSTOMERCODE,
-  //             SalesLocationCode: selectedLocation?.stockLocation,
-  //             DeliveryLocationCode: selectedLocation?.stockLocation,
-  //             UserId: "SYSADMIN",
-  //             CustomerName: invoiceHeaderData?.CustomerCode,
-  //             MobileNo: invoiceHeaderData?.MobileNo,
-  //             Remarks: invoiceHeaderData?.Remarks,
-  //             PosRefNo: invoiceHeaderData?.InvoiceNo,
-  //             ZATCAPaymentMode: paymentModes.code,
-  //             TaxExemptionReason: examptReason?.name || "", // Invoice specific field
-  //             SalesmanCode: slicUserData?.SalesmanCode,
-  //             Item: firstDataGridItem,
-  //           },
-  //         ],
-  //         COMPANY: "SLIC",
-  //         USERID: slicUserData?.UserLoginID,
-  //         APICODE: "INVOICE",
-  //         LANG: "ENG",
-  //       };
-
-  //       // Call the Invoice API (EXIN)
-  //       const exinRes = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesInvoiceBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Invoice Response (EXIN):", exinRes?.data);
-
-  //       const exinDocumentNo = exinRes?.data?.message["Document No"];
-
-  //       if (!exinDocumentNo) {
-  //         toast.error("Error in Invoice API: Missing Document No");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       const documentNo = exinRes?.data?.message["Document No"];
-  //       const headSysId = exinRes?.data?.message["Ref-No/SysID"];
-  //       if (documentNo || headSysId) {
-  //         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
-  //       }
-
-  //       insertInvoiceRecord(documentNo);
-
-  //       // after the Success response of return ERP api i call our own Archive Api
-  //       await handleArchiveInvoice();
-
-  //       // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
-  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
-  //         const bankReceiptBody = {
-  //           _keyword_: "BANKRCPTEX",
-  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //           data: [
-  //             {
-  //               Company: "SLIC",
-  //               UserId: "SYSADMIN",
-  //               Department: "011",
-  //               TransactionCode: "BRV",
-  //               Division: "100",
-  //               BankApproverCode: bankApprovedCode,
-  //               CashCardFlag: "CARD",
-  //               ReceiptAmt: totalAmountWithVat - totolAmountWithoutExchange,
-  //               CustomerId:
-  //                 selectedSalesReturnType === "DIRECT RETURN"
-  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                   : selectedCustomerCode?.CUSTOMERCODE,
-  //               MatchingTransactions: [
-  //                 {
-  //                   DocNo: exinDocumentNo,
-  //                   TransactionCode: modifiedTransactionCode,
-  //                   PendingAmount: totalAmountWithVat,
-  //                   AdjAmount: totalAmountWithVat,
-  //                 },
-  //                 {
-  //                   DocNo: exsrDocumentNo,
-  //                   TransactionCode: selectTransactionCode,
-  //                   PendingAmount: totolAmountWithoutExchange,
-  //                   AdjAmount: totolAmountWithoutExchange,
-  //                 },
-  //               ],
-  //             },
-  //           ],
-  //           COMPANY: "SLIC",
-  //           USERID: slicUserData?.UserLoginID,
-  //           APICODE: "BANKRECEIPTVOUCHER",
-  //           LANG: "ENG",
-  //         };
-
-  //         const bankRes = await ErpTeamRequest.post(
-  //           "/slicuat05api/v1/postData",
-  //           bankReceiptBody,
-  //           {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }
-  //         );
-
-  //         console.log("Bank Receipt processed for Exchange");
-
-  //         const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-
-  //         // If bankDocumentNo is missing, show an error and stop
-  //         if (!bankDocumentNo) {
-  //           toast.error("Error in Bank API: Missing Document No");
-  //           setLoading(false);
-  //           return;
-  //         }
-  //       } else {
-  //         console.log("No Bank API call for Exchange (Non-card/cash payment)");
-  //       }
-
-  //       showOtpPopup(exsrRes?.data);
-  //       handleCloseCreatePopup();
-  //       handleInvoiceGenerator();
-  //       handleZatcaInvoiceGenerator();
-  //       setLoading(false);
-  //     } else {
-  //       // Non-exchange scenario: Only call Sales Return API
-  //       const res = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesReturnBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Sales Return Response:", res?.data);
-
-  //       const documentNo = res?.data?.message["Document No"];
-  //       const headSysId = res?.data?.message["Ref-No/SysID"];
-  //       if (!documentNo) {
-  //         toast.error("Error in Sales Return API: Missing Document No");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       if (documentNo || headSysId) {
-  //         handleDocumentNoUpdate(documentNo, headSysId, "DIRECT SALES RETURN");
-  //       }
-
-  //       // insertInvoiceRecord(documentNo);
-
-  //       // Our Api
-  //       await handleArchiveInvoice();
-
-  //       showOtpPopup(res?.data);
-  //       handleCloseCreatePopup();
-  //       // handleClearData();
-  //       // handleClearInvoiceData();
-  //       handleInvoiceGenerator();
-  //       setLoading(false);
-
-  //       // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
-  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
-  //         const documentNo = res?.data?.message["Document No"];
-  //         const bankReceiptDI = {
-  //           _keyword_: "BANKRCPTDI",
-  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //           data: [
-  //             {
-  //               Company: "SLIC",
-  //               UserId: "SYSADMIN",
-  //               Department: "011",
-  //               TransactionCode: "BRV",
-  //               Division: "100",
-  //               BankApproverCode: bankApprovedCode,
-  //               CashCardFlag: "CARD",
-  //               ReceiptAmt: totolAmountWithoutExchange,
-  //               CustomerId:
-  //                 selectedSalesReturnType === "DIRECT RETURN"
-  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                   : selectedCustomerCode?.CUSTOMERCODE,
-  //               MatchingTransactions: [
-  //                 {
-  //                   DocNo: documentNo,
-  //                   TransactionCode: selectTransactionCode,
-  //                   PendingAmount: totolAmountWithoutExchange,
-  //                   AdjAmount: totolAmountWithoutExchange,
-  //                 },
-  //               ],
-  //             },
-  //           ],
-  //           COMPANY: "SLIC",
-  //           USERID: slicUserData?.UserLoginID,
-  //           APICODE: "BANKRECEIPTVOUCHER",
-  //           LANG: "ENG",
-  //         };
-
-  //         const bankRes = await ErpTeamRequest.post(
-  //           "/slicuat05api/v1/postData",
-  //           bankReceiptDI,
-  //           {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }
-  //         );
-
-  //         const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-
-  //         // If bankDocumentNo is missing, show an error and stop
-  //         if (!bankDocumentNo) {
-  //           toast.error("Error in Bank API: Missing Document No");
-  //           setLoading(false);
-  //           return;
-  //         }
-
-  //         // Complete the process
-  //         showOtpPopup(bankRes?.data);
-  //         handleCloseCreatePopup();
-  //         // handleClearData();
-  //         // handleClearInvoiceData();
-  //         handleInvoiceGenerator();
-  //         setLoading(false);
-  //         console.log(
-  //           "Bank Receipt processed for Direct Sales Return Debit/Credit"
-  //         );
-  //       } else {
-  //         console.log("Direct Sales Return - Cash (No Bank API Call)");
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //     toast.error(err?.response?.data?.message || "Something went wrong");
-  //     setLoading(false);
-  //   }
-  // };
-
-
   const handleSubmitDirectSalesReturn = async () => {
     setLoading(true);
     console.log("Direct Sales Return Data", exchangeData);
-  
+    // console.log(newInvoiceNumber);
+
     try {
       const firstDataGridItem = exchangeData.map((item) => ({
         "Item-Code": item.SKU || item.ItemCode,
@@ -651,7 +366,7 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-  
+
       const SecondDataGridItem = storeInvoiceDatagridData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
@@ -659,11 +374,11 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-  
+
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
       const customerCode = getCustomerCode();
-  
+
       // Body for the sales return (EXSR)
       const salesReturnBody = {
         _keyword_: "salesreturn",
@@ -695,7 +410,7 @@ const F3TenderCashPopUp = ({
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
-  
+
       if (isExchangeClick) {
         // Step 1: Call the Invoice API (EXIN)
         const salesInvoiceBody = {
@@ -728,7 +443,7 @@ const F3TenderCashPopUp = ({
           APICODE: "INVOICE",
           LANG: "ENG",
         };
-  
+
         const exinRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
           salesInvoiceBody,
@@ -737,26 +452,30 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Invoice Response (EXIN):", exinRes?.data);
-  
+
         const exinDocumentNo = exinRes?.data?.message["Document No"];
         const exinHeadSysId = exinRes?.data?.message["Ref-No/SysID"];
         const exinTransactionCode = exinRes?.data?.message["Transaction Code"];
-  
+
         if (!exinDocumentNo || !exinHeadSysId) {
           toast.error("Error in Invoice API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord for the EXIN response
-        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
-  
+        // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+
         // Call handleDocumentNoUpdate for EXIN
-        handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+        handleDocumentNoUpdate(
+          exinDocumentNo,
+          exinHeadSysId,
+          exinTransactionCode
+        );
 
         // after the Success response of return ERP api i call our own Archive Api
         await handleArchiveInvoice();
-  
+
         // Step 2: Call the Sales Return API (EXSR)
         const exsrRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
@@ -766,24 +485,31 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response (EXSR):", exsrRes?.data);
-  
+
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exsrHeadSysId = exsrRes?.data?.message["Ref-No/SysID"];
         const exsrTransactionCode = exsrRes?.data?.message["Transaction Code"];
-  
+
         if (!exsrDocumentNo || !exsrHeadSysId) {
-          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          toast.error(
+            "Error in Sales Return API: Missing Document No or SysID"
+          );
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord for the EXSR response
-        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
-  
+        // insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+
         // Call handleDocumentNoUpdate for EXSR
-        handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
-  
+        handleDocumentNoUpdate(
+          exsrDocumentNo,
+          exsrHeadSysId,
+          exsrTransactionCode
+        );
+
         // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -798,6 +524,7 @@ const F3TenderCashPopUp = ({
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
                 ReceiptAmt: totalAmountWithVat - totolAmountWithoutExchange,
+                // selectedTransactionCode?.TXN_CODE === "AXSR" ? 0.1 : totalAmountWithVat - totolAmountWithoutExchange,
                 // CustomerId:
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
@@ -807,8 +534,9 @@ const F3TenderCashPopUp = ({
                   {
                     DocNo: exinDocumentNo,
                     TransactionCode: modifiedTransactionCode,
-                    PendingAmount: totalAmountWithVat,
-                    AdjAmount: totalAmountWithVat,
+
+                    PendingAmount: totalAmountWithVat - totolAmountWithoutExchange,
+                    AdjAmount: totalAmountWithVat - totolAmountWithoutExchange,
                   },
                   {
                     DocNo: exsrDocumentNo,
@@ -824,28 +552,72 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-  
-          const bankRes = await ErpTeamRequest.post(
-            "/slicuat05api/v1/postData",
-            bankReceiptBody,
-            {
-              headers: { Authorization: `Bearer ${token}` },
+          try {
+            const bankRes = await ErpTeamRequest.post(
+              "/slicuat05api/v1/postData",
+              bankReceiptBody,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            console.log("Bank Receipt processed for Exchange");
+
+            const bankDocumentNo = bankRes?.data?.message?.["Document No"];
+            // bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+            bankHeadSysId = bankRes?.data?.message?.["Document No"];
+
+            if (!bankDocumentNo) {
+              toast.error("Error in Bank API: Missing Document No");
+              setLoading(false);
+              return;
             }
-          );
-  
-          console.log("Bank Receipt processed for Exchange");
-  
-          const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-  
-          if (!bankDocumentNo) {
-            toast.error("Error in Bank API: Missing Document No");
+          } catch (error) {
+            // Handle the API error gracefully
+            console.error("Error in Bank API:", error);
+            toast.error(
+              "Bank API call failed. Proceeding without bankHeadSysId."
+            );
+
+            // Log the error using /createErrorLogs API
+            try {
+              await newRequest.post("/invoice/v1/createErrorLogs", {
+                inDocumentNo: exinDocumentNo.toString(),
+                inRefSysId: exinHeadSysId.toString(),
+                srDocumentNo: exsrDocumentNo.toString(),
+                srRefSysId: exsrHeadSysId.toString(),
+                transactionType: "EXCHANGE",
+              });
+            } catch (error) {
+              console.error("Error in createErrorLogs API:", error);
+            }
+
+            // Fallback: Use a default bankHeadSysId or proceed without it
+            bankHeadSysId = "";
             setLoading(false);
-            return;
           }
+
+          // Save the IN API record after successful Bank API response
+          // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, bankHeadSysId, exinTransactionCode);
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
-  
+
+        // Save the IN API record after successful Bank API response
+        insertInvoiceRecord(
+          exinDocumentNo,
+          exinHeadSysId,
+          bankHeadSysId,
+          exinTransactionCode
+        );
+        // Save the EXSR API record after the Bank API response (if applicable)
+        insertInvoiceRecord(
+          exsrDocumentNo,
+          exsrHeadSysId,
+          bankHeadSysId,
+          exsrTransactionCode
+        );
+
         // Final steps
         showOtpPopup(exsrRes?.data);
         handleCloseCreatePopup();
@@ -862,27 +634,30 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response:", res?.data);
-  
+
         const documentNo = res?.data?.message["Document No"];
         const headSysId = res?.data?.message["Ref-No/SysID"];
         const transactionCode = res?.data?.message["Transaction Code"];
-  
+
         if (!documentNo || !headSysId) {
-          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          toast.error(
+            "Error in Sales Return API: Missing Document No or SysID"
+          );
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord
-        insertInvoiceRecord(documentNo, headSysId, transactionCode);
-  
+        // insertInvoiceRecord(documentNo, headSysId, transactionCode);
+
         // Call handleDocumentNoUpdate
         handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
 
         // Our Api
         await handleArchiveInvoice();
-  
+
         // Call Bank API if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
@@ -917,7 +692,7 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-  
+
           const bankRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptDI,
@@ -925,12 +700,14 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-  
+
           console.log(
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankRes?.data?.message?.["Document No"];
-  
+          // bankHeadSysId = bankRes?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankRes?.data?.message?.["Document No"];
+
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
@@ -939,7 +716,15 @@ const F3TenderCashPopUp = ({
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
-  
+
+        // Save the sales return record with the Bank reference ID if applicable
+        insertInvoiceRecord(
+          documentNo,
+          headSysId,
+          bankHeadSysId,
+          transactionCode
+        );
+
         showOtpPopup(res?.data);
         handleCloseCreatePopup();
         handleInvoiceGenerator();
@@ -950,347 +735,11 @@ const F3TenderCashPopUp = ({
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
-  };  
-
-  // Archive Api I call their
-  // const handleDSalesArchiveInvoice = async () => {
-  //   try {
-  //     const itemsToReturn = DSalesNoInvoiceData.map(item => ({
-  //       id: item.id,
-  //       qtyToReturn: item.Qty,
-  //     }));
-
-  //     const resInvoiceArchive = await newRequest.post('/invoice/v1/archiveInvoice', {
-  //       invoiceNo: searchInvoiceNumber,
-  //       itemsToReturn,
-  //     });
-
-  //     // console.log("Archive Invoice Response:", resInvoiceArchive.data);
-  //     toast.success(resInvoiceArchive?.data?.message || "Invoice archived successfully");
-  //   } catch (err) {
-  //     // console.error("Error archiving invoice:", err);
-  //     toast.error(err?.response?.data?.error || err?.response?.data?.message || "Error In Archived The Data");
-  //   }
-  // };
-
-  // DSALES no Invoice
-  // const handleSubmitDSalesInvoice = async () => {
-  //   setLoading(true);
-
-  //   try {
-  //     const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
-  //       "Item-Code": item.SKU,
-  //       Size: item.ItemSize,
-  //       Qty: `${item.Qty}`,
-  //       Rate: `${item?.ItemPrice}`,
-  //       UserId: "SYSADMIN",
-  //     }));
-
-  //     const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
-  //       "Item-Code": item.SKU,
-  //       Size: item.ItemSize,
-  //       Qty: `${item.Qty}`,
-  //       Rate: `${item?.ItemPrice}`,
-  //       UserId: "SYSADMIN",
-  //     }));
-
-  //     const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
-  //     const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
-
-  //     // Body for the sales return (EXSR)
-  //     const salesReturnBody = {
-  //       _keyword_: "salesreturn",
-  //       "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //       data: [
-  //         {
-  //           Company: "SLIC",
-  //           TransactionCode: `${selectTransactionCode}`,
-  //           CustomerCode:
-  //             selectedSalesReturnType === "DIRECT RETURN"
-  //               ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //               : selectedCustomerCode?.CUSTOMERCODE,
-  //           SalesLocationCode: selectedLocation?.stockLocation,
-  //           DeliveryLocationCode: selectedLocation?.stockLocation,
-  //           UserId: "SYSADMIN",
-  //           CustomerName: customerName,
-  //           MobileNo: mobileNo,
-  //           Remarks: remarks,
-  //           PosRefNo: invoiceNumber,
-  //           ZATCAPaymentMode: paymentModes.code,
-  //           TaxExemptionReason: examptReason?.name || "",
-  //           SalesmanCode: slicUserData?.SalesmanCode,
-  //           Item: SecondDataGridItem,
-  //         },
-  //       ],
-  //       COMPANY: "SLIC",
-  //       USERID: slicUserData?.UserLoginID,
-  //       APICODE: "SALESRETURN",
-  //       LANG: "ENG",
-  //     };
-
-  //     console.log("Sales Return", salesReturnBody);
-
-  //     if (isExchangeDSalesClick) {
-  //       // Exchange scenario: Call both Sales Return and Invoice APIs
-  //       const exsrRes = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesReturnBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Sales Return Response (EXSR):", exsrRes?.data);
-
-  //       const exsrDocumentNo = exsrRes?.data?.message["Document No"];
-  //       if (!exsrDocumentNo) {
-  //         toast.error("Error in Sales Return API: Missing Document No");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       const documentNo = exsrRes?.data?.message["Document No"];
-  //       const headSysId = exsrRes?.data?.message["Ref-No/SysID"];
-  //       if (documentNo || headSysId) {
-  //         handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
-  //       }
-
-  //       insertInvoiceRecord(documentNo);
-
-  //       // Body for the invoice (EXIN)
-  //       const salesInvoiceBody = {
-  //         _keyword_: "Invoice",
-  //         "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //         data: [
-  //           {
-  //             Company: "SLIC",
-  //             TransactionCode: `${modifiedTransactionCode}`,
-  //             CustomerCode:
-  //               selectedSalesReturnType === "DIRECT RETURN"
-  //                 ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                 : selectedCustomerCode?.CUSTOMERCODE,
-  //             SalesLocationCode: selectedLocation?.stockLocation,
-  //             DeliveryLocationCode: selectedLocation?.stockLocation,
-  //             UserId: "SYSADMIN",
-  //             CustomerName: customerName,
-  //             MobileNo: mobileNo,
-  //             Remarks: remarks,
-  //             PosRefNo: invoiceNumber,
-  //             ZATCAPaymentMode: paymentModes.code,
-  //             TaxExemptionReason: examptReason?.name || "", // Invoice specific field
-  //             SalesmanCode: slicUserData?.SalesmanCode,
-  //             Item: firstDataGridItem,
-  //           },
-  //         ],
-  //         COMPANY: "SLIC",
-  //         USERID: slicUserData?.UserLoginID,
-  //         APICODE: "INVOICE",
-  //         LANG: "ENG",
-  //       };
-
-  //       console.log("Sales Invoice", salesInvoiceBody);
-
-  //       // Call the Invoice API (EXIN)
-  //       const exinRes = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesInvoiceBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Invoice Response (EXIN):", exinRes?.data);
-
-  //       // Get document numbers for both EXSR and EXIN
-  //       const exinDocumentNo = exinRes?.data?.message["Document No"];
-
-  //       if (!exinDocumentNo) {
-  //         toast.error("Error in Invoice API: Missing Document No");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       // const documentNo = exinRes?.data?.message["Document No"];
-  //       // const headSysId = exinRes?.data?.message["Ref-No/SysID"];
-  //       // if (documentNo || headSysId) {
-  //       //   handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
-  //       // }
-
-  //       // insertInvoiceRecord(documentNo);
-
-  //       // Call Bank API for Exchange (EXSR + EXIN) Call Bank API for Exchange only if paymentModes.code === "4" or "5"
-  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
-  //         const bankReceiptBody = {
-  //           _keyword_: "BANKRCPTEX",
-  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //           data: [
-  //             {
-  //               Company: "SLIC",
-  //               UserId: "SYSADMIN",
-  //               Department: "011",
-  //               TransactionCode: "BRV",
-  //               Division: "100",
-  //               BankApproverCode: bankApprovedCode,
-  //               CashCardFlag: "CARD",
-  //               ReceiptAmt:
-  //                 totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
-  //               CustomerId:
-  //                 selectedSalesReturnType === "DIRECT RETURN"
-  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                   : selectedCustomerCode?.CUSTOMERCODE,
-  //               MatchingTransactions: [
-  //                 {
-  //                   DocNo: exinDocumentNo,
-  //                   TransactionCode: modifiedTransactionCode,
-  //                   PendingAmount: totalAmountWithVat,
-  //                   AdjAmount: totalAmountWithVat,
-  //                 },
-  //                 {
-  //                   DocNo: exsrDocumentNo,
-  //                   TransactionCode: selectTransactionCode,
-  //                   PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
-  //                   AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
-  //                 },
-  //               ],
-  //             },
-  //           ],
-  //           COMPANY: "SLIC",
-  //           USERID: slicUserData?.UserLoginID,
-  //           APICODE: "BANKRECEIPTVOUCHER",
-  //           LANG: "ENG",
-  //         };
-
-  //         console.log("Bank Api", bankReceiptBody);
-
-  //         const bankApiResponse = await ErpTeamRequest.post(
-  //           "/slicuat05api/v1/postData",
-  //           bankReceiptBody,
-  //           {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }
-  //         );
-
-  //         console.log("Bank Receipt processed for Exchange");
-  //         const bankDocumentNo =
-  //           bankApiResponse?.data?.message?.["Document No"];
-
-  //         // If bankDocumentNo is missing, show an error and stop
-  //         if (!bankDocumentNo) {
-  //           toast.error("Error in Bank API: Missing Document No");
-  //           setLoading(false);
-  //           return;
-  //         }
-  //       } else {
-  //         console.log("No Bank API call for Exchange (Non-card/cash payment)");
-  //       }
-
-  //       showOtpPopup(exsrRes?.data);
-  //       handleCloseCreatePopup();
-  //       handleInvoiceGenerator();
-  //       handleZatcaInvoiceGenerator();
-  //       setLoading(false);
-  //     } else {
-  //       // Non-exchange scenario: Only call Sales Return API
-  //       const res = await ErpTeamRequest.post(
-  //         "/slicuat05api/v1/postData",
-  //         salesReturnBody,
-  //         {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         }
-  //       );
-  //       console.log("Sales Return Response:", res?.data);
-
-  //       const documentNo = res?.data?.message["Document No"];
-  //       const headSysId = res?.data?.message["Ref-No/SysID"];
-
-  //       if (!documentNo || !headSysId) {
-  //         toast.error(
-  //           "Error in Sales Return API: Missing Document No or SysID"
-  //         );
-  //         setLoading(false);
-  //         return;
-  //       }
-  //       if (documentNo || headSysId) {
-  //         handleDocumentNoUpdate(documentNo, headSysId, "DSALES NO INVOICE");
-  //       }
-
-  //       insertInvoiceRecord(documentNo);
-
-  //       // For Direct Sales Return Debit/Credit (paymentModes.code === 4 or 5)
-  //       if (paymentModes.code === "4" || paymentModes.code === "5") {
-  //         const documentNo = res?.data?.message["Document No"];
-  //         const bankReceiptDI = {
-  //           _keyword_: "BANKRCPTDI",
-  //           "_secret-key_": "2bf52be7-9f68-4d52-9523-53f7f267153b",
-  //           data: [
-  //             {
-  //               Company: "SLIC",
-  //               UserId: "SYSADMIN",
-  //               Department: "011",
-  //               TransactionCode: "BRV",
-  //               Division: "100",
-  //               BankApproverCode: bankApprovedCode,
-  //               CashCardFlag: "CARD",
-  //               ReceiptAmt: totolAmountWithoutVatDSalesNoInvoice,
-  //               CustomerId:
-  //                 selectedSalesReturnType === "DIRECT RETURN"
-  //                   ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
-  //                   : selectedCustomerCode?.CUSTOMERCODE,
-  //               MatchingTransactions: [
-  //                 {
-  //                   DocNo: documentNo,
-  //                   TransactionCode: selectTransactionCode,
-  //                   PendingAmount: totolAmountWithoutVatDSalesNoInvoice,
-  //                   AdjAmount: totolAmountWithoutVatDSalesNoInvoice,
-  //                 },
-  //               ],
-  //             },
-  //           ],
-  //           COMPANY: "SLIC",
-  //           USERID: slicUserData?.UserLoginID,
-  //           APICODE: "BANKRECEIPTVOUCHER",
-  //           LANG: "ENG",
-  //         };
-
-  //         const bankApiRes = await ErpTeamRequest.post(
-  //           "/slicuat05api/v1/postData",
-  //           bankReceiptDI,
-  //           {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }
-  //         );
-
-  //         console.log(
-  //           "Bank Receipt processed for Direct Sales Return Debit/Credit"
-  //         );
-  //         const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
-
-  //         // If bankDocumentNo is missing, show an error and stop
-  //         if (!bankDocumentNo) {
-  //           toast.error("Error in Bank API: Missing Document No");
-  //           setLoading(false);
-  //           return;
-  //         }
-
-  //       } else {
-  //         console.log("Direct Sales Return - Cash (No Bank API Call)");
-  //       }
-  //       // Complete the process
-  //       showOtpPopup(res?.data);
-  //       handleCloseCreatePopup();
-  //       // handleClearData();
-  //       // handleClearInvoiceData();
-  //       handleInvoiceGenerator();
-  //       setLoading(false);
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //     toast.error(err?.response?.data?.message || "Something went wrong");
-  //     setLoading(false);
-  //   }
-  // };
+  };
 
   const handleSubmitDSalesInvoice = async () => {
     setLoading(true);
-  
+
     try {
       const firstDataGridItem = dSalesNoInvoiceexchangeData.map((item) => ({
         "Item-Code": item.SKU,
@@ -1299,7 +748,7 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-  
+
       const SecondDataGridItem = DSalesNoInvoiceData.map((item) => ({
         "Item-Code": item.SKU,
         Size: item.ItemSize,
@@ -1307,7 +756,7 @@ const F3TenderCashPopUp = ({
         Rate: `${item?.ItemPrice}`,
         UserId: "SYSADMIN",
       }));
-  
+
       const selectTransactionCode = selectedTransactionCode?.TXN_CODE;
       const modifiedTransactionCode = selectTransactionCode.slice(0, -2) + "IN";
       const customerCode = getCustomerCode();
@@ -1343,7 +792,7 @@ const F3TenderCashPopUp = ({
         APICODE: "SALESRETURN",
         LANG: "ENG",
       };
-  
+
       // Body for the invoice (EXIN)
       const salesInvoiceBody = {
         _keyword_: "Invoice",
@@ -1375,7 +824,7 @@ const F3TenderCashPopUp = ({
         APICODE: "INVOICE",
         LANG: "ENG",
       };
-  
+
       if (isExchangeDSalesClick) {
         // Step 1: Call the Invoice API (EXIN)
         const exinRes = await ErpTeamRequest.post(
@@ -1386,23 +835,27 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Invoice Response (EXIN):", exinRes?.data);
-  
+
         const exinDocumentNo = exinRes?.data?.message["Document No"];
         const exinHeadSysId = exinRes?.data?.message["Ref-No/SysID"];
         const exinTransactionCode = exinRes?.data?.message["Transaction Code"];
-  
+
         if (!exinDocumentNo || !exinHeadSysId) {
           toast.error("Error in Invoice API: Missing Document No or SysID");
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord for the EXIN response
-        insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
-  
+        // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, exinTransactionCode);
+
         // Call handleDocumentNoUpdate for EXIN
-        handleDocumentNoUpdate(exinDocumentNo, exinHeadSysId, exinTransactionCode);
-  
+        handleDocumentNoUpdate(
+          exinDocumentNo,
+          exinHeadSysId,
+          exinTransactionCode
+        );
+
         // Step 2: Call the Sales Return API (EXSR)
         const exsrRes = await ErpTeamRequest.post(
           "/slicuat05api/v1/postData",
@@ -1412,24 +865,31 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response (EXSR):", exsrRes?.data);
-  
+
         const exsrDocumentNo = exsrRes?.data?.message["Document No"];
         const exsrHeadSysId = exsrRes?.data?.message["Ref-No/SysID"];
         const exsrTransactionCode = exsrRes?.data?.message["Transaction Code"];
-  
+
         if (!exsrDocumentNo || !exsrHeadSysId) {
-          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          toast.error(
+            "Error in Sales Return API: Missing Document No or SysID"
+          );
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord for the EXSR response
-        insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
-  
+        // insertInvoiceRecord(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
+
         // Call handleDocumentNoUpdate for EXSR
-        handleDocumentNoUpdate(exsrDocumentNo, exsrHeadSysId, exsrTransactionCode);
-  
+        handleDocumentNoUpdate(
+          exsrDocumentNo,
+          exsrHeadSysId,
+          exsrTransactionCode
+        );
+
         // Step 3: Call Bank API for Exchange if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptBody = {
             _keyword_: "BANKRCPTEX",
@@ -1443,19 +903,19 @@ const F3TenderCashPopUp = ({
                 Division: "100",
                 BankApproverCode: bankApprovedCode,
                 CashCardFlag: "CARD",
-                ReceiptAmt:
-                  totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
+                ReceiptAmt: totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
                 // CustomerId:
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
                 //     : selectedCustomerCode?.CUSTOMERCODE,
-                CustomerCode: customerCode,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: exinDocumentNo,
                     TransactionCode: modifiedTransactionCode,
-                    PendingAmount: totalAmountWithVat,
-                    AdjAmount: totalAmountWithVat,
+
+                    PendingAmount: totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
+                    AdjAmount: totalAmountWithVat - totolAmountWithoutVatDSalesNoInvoice,
                   },
                   {
                     DocNo: exsrDocumentNo,
@@ -1471,34 +931,78 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-  
+
           console.log("Bank Api", bankReceiptBody);
-  
-          const bankApiResponse = await ErpTeamRequest.post(
-            "/slicuat05api/v1/postData",
-            bankReceiptBody,
-            {
-              headers: { Authorization: `Bearer ${token}` },
+          try {
+            const bankApiResponse = await ErpTeamRequest.post(
+              "/slicuat05api/v1/postData",
+              bankReceiptBody,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            console.log("Bank Receipt processed for Exchange");
+            const bankDocumentNo =
+              bankApiResponse?.data?.message?.["Document No"];
+            // bankHeadSysId = bankApiResponse?.data?.message?.["Ref-No/SysID"];
+            bankHeadSysId = bankApiResponse?.data?.message?.["Document No"];
+
+            if (!bankDocumentNo) {
+              toast.error("Error in Bank API: Missing Document No");
+              setLoading(false);
+              return;
             }
-          );
-  
-          console.log("Bank Receipt processed for Exchange");
-          const bankDocumentNo = bankApiResponse?.data?.message?.["Document No"];
-  
-          if (!bankDocumentNo) {
-            toast.error("Error in Bank API: Missing Document No");
+          } catch (error) {
+            // Handle the API error gracefully
+            console.error("Error in Bank API:", error);
+            toast.error(
+              "Bank API call failed. Proceeding without bankHeadSysId."
+            );
+
+            // Log the error using /createErrorLogs API
+            try {
+              await newRequest.post("/invoice/v1/createErrorLogs", {
+                inDocumentNo: exinDocumentNo.toString(),
+                inRefSysId: exinHeadSysId.toString(),
+                srDocumentNo: exsrDocumentNo.toString(),
+                srRefSysId: exsrHeadSysId.toString(),
+                transactionType: "DSALES EXCHANGE",
+              });
+            } catch (error) {
+              console.error("Error in createErrorLogs API:", error);
+            }
+
+            // Fallback: Use a default bankHeadSysId or proceed without it
+            bankHeadSysId = "";
             setLoading(false);
-            return;
           }
+
+          // Save the IN API record after successful Bank API response
+          // insertInvoiceRecord(exinDocumentNo, exinHeadSysId, bankHeadSysId, exinTransactionCode);
         } else {
           console.log("No Bank API call for Exchange (Non-card/cash payment)");
         }
-  
+
+        // Save the IN API record after successful Bank API response
+        insertInvoiceRecord(
+          exinDocumentNo,
+          exinHeadSysId,
+          bankHeadSysId,
+          exinTransactionCode
+        );
+        // Save the EXSR API record after the Bank API response (if applicable)
+        insertInvoiceRecord(
+          exsrDocumentNo,
+          exsrHeadSysId,
+          bankHeadSysId,
+          exsrTransactionCode
+        );
+
         showOtpPopup(exsrRes?.data);
         handleInvoiceGenerator();
         handleZatcaInvoiceGenerator();
         setLoading(false);
-
       } else {
         // Non-exchange scenario: Only call Sales Return API
         const res = await ErpTeamRequest.post(
@@ -1509,24 +1013,27 @@ const F3TenderCashPopUp = ({
           }
         );
         console.log("Sales Return Response:", res?.data);
-  
+
         const documentNo = res?.data?.message["Document No"];
         const headSysId = res?.data?.message["Ref-No/SysID"];
         const transactionCode = res?.data?.message["Transaction Code"];
-  
+
         if (!documentNo || !headSysId) {
-          toast.error("Error in Sales Return API: Missing Document No or SysID");
+          toast.error(
+            "Error in Sales Return API: Missing Document No or SysID"
+          );
           setLoading(false);
           return;
         }
-  
+
         // Call insertInvoiceRecord
-        insertInvoiceRecord(documentNo, headSysId, transactionCode);
-  
+        // insertInvoiceRecord(documentNo, headSysId, transactionCode);
+
         // Call handleDocumentNoUpdate
         handleDocumentNoUpdate(documentNo, headSysId, transactionCode);
-  
+
         // Call Bank API if paymentModes.code is 4 or 5
+        let bankHeadSysId = "";
         if (paymentModes.code === "4" || paymentModes.code === "5") {
           const bankReceiptDI = {
             _keyword_: "BANKRCPTDI",
@@ -1545,7 +1052,7 @@ const F3TenderCashPopUp = ({
                 //   selectedSalesReturnType === "DIRECT RETURN"
                 //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
                 //     : selectedCustomerCode?.CUSTOMERCODE,
-                CustomerCode: customerCode,
+                CustomerId: customerCode,
                 MatchingTransactions: [
                   {
                     DocNo: documentNo,
@@ -1561,7 +1068,7 @@ const F3TenderCashPopUp = ({
             APICODE: "BANKRECEIPTVOUCHER",
             LANG: "ENG",
           };
-  
+
           const bankApiRes = await ErpTeamRequest.post(
             "/slicuat05api/v1/postData",
             bankReceiptDI,
@@ -1569,12 +1076,14 @@ const F3TenderCashPopUp = ({
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-  
+
           console.log(
             "Bank Receipt processed for Direct Sales Return Debit/Credit"
           );
           const bankDocumentNo = bankApiRes?.data?.message?.["Document No"];
-  
+          // bankHeadSysId = bankApiRes?.data?.message?.["Ref-No/SysID"];
+          bankHeadSysId = bankApiRes?.data?.message?.["Document No"];
+
           if (!bankDocumentNo) {
             toast.error("Error in Bank API: Missing Document No");
             setLoading(false);
@@ -1583,19 +1092,27 @@ const F3TenderCashPopUp = ({
         } else {
           console.log("Direct Sales Return - Cash (No Bank API Call)");
         }
-  
+
+        // Save the sales return record with the Bank reference ID if applicable
+        insertInvoiceRecord(
+          documentNo,
+          headSysId,
+          bankHeadSysId,
+          transactionCode
+        );
+
         showOtpPopup(res?.data);
         handleInvoiceGenerator();
       }
-  
+
       setLoading(false);
     } catch (err) {
       console.log(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
       setLoading(false);
     }
-  };  
-  
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -1627,7 +1144,7 @@ const F3TenderCashPopUp = ({
   const validateForm = () => {
     if (
       (paymentModes.code === "4" || paymentModes.code === "5") &&
-      bankApprovedCode.length < 4
+      bankApprovedCode.length < 12
     ) {
       setIsPrintEnabled(false);
     } else {
@@ -1747,17 +1264,6 @@ const F3TenderCashPopUp = ({
 
                         {selectedSalesType === "DIRECT SALES RETURN"
                           ? storeInvoiceDatagridData?.map((item, index) => (
-                            <div
-                              key={index}
-                              className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
-                            >
-                              <p className="text-sm">{item.SKU}</p>
-                              <p className="text-sm">{item.ItemSize}</p>
-                              <p className="text-sm">{item.ItemPrice}</p>
-                            </div>
-                          ))
-                          : selectedSalesType === "DSALES NO INVOICE"
-                            ? DSalesNoInvoiceData?.map((item, index) => (
                               <div
                                 key={index}
                                 className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
@@ -1767,7 +1273,18 @@ const F3TenderCashPopUp = ({
                                 <p className="text-sm">{item.ItemPrice}</p>
                               </div>
                             ))
-                            : storeDatagridData?.map((item, index) => (
+                          : selectedSalesType === "DSALES NO INVOICE"
+                          ? DSalesNoInvoiceData?.map((item, index) => (
+                              <div
+                                key={index}
+                                className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
+                              >
+                                <p className="text-sm">{item.SKU}</p>
+                                <p className="text-sm">{item.ItemSize}</p>
+                                <p className="text-sm">{item.ItemPrice}</p>
+                              </div>
+                            ))
+                          : storeDatagridData?.map((item, index) => (
                               <div
                                 key={index}
                                 className="grid grid-cols-3 gap-2 border-t border-gray-300 p-2"
@@ -1837,17 +1354,26 @@ const F3TenderCashPopUp = ({
                         {selectedSalesType === "DIRECT SALES INVOICE" && (
                           <>
                             {paymentModes.code === "4" ||
-                              paymentModes.code === "5" ? (
+                            paymentModes.code === "5" ? (
                               <>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Cash")}</p>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
+                                    {t("Cash")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={
                                       paymentModes.name || "Payment Mode"
                                     }
@@ -1856,48 +1382,71 @@ const F3TenderCashPopUp = ({
                                 </div>
                                 {/* Total Amount in the middle */}
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Total Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Total Amount"
                                   />
                                 </div>
                                 {/* Change for credit/debit is always 0 */}
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Change")}</p>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
+                                    {t("Change")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={0}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Change"
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Bank Approval Code")}
                                   </p>
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={bankApprovedCode}
                                     onChange={(e) =>
                                       setBankApprovedCode(e.target.value)
                                     }
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Enter Bank Approval Code"
                                   />
                                 </div>
@@ -1906,40 +1455,64 @@ const F3TenderCashPopUp = ({
                               <>
                                 {/* Cash Payment */}
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Cash")}</p>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
+                                    {t("Cash")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={cashAmount}
                                     onChange={(e) =>
                                       setCashAmount(e.target.value)
                                     }
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={
                                       paymentModes.name || "Payment Mode"
                                     }
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Total Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={totalAmountWithVat}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Total Amount"
                                   />
                                 </div>
                                 {/* Change for cash payment */}
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>{t("Change")}</p>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
+                                    {t("Change")}
+                                  </p>
                                   <input
                                     type="text"
                                     value={
@@ -1947,10 +1520,11 @@ const F3TenderCashPopUp = ({
                                       Number(totalAmountWithVat)
                                     }
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Change"
                                   />
                                 </div>
@@ -1999,17 +1573,22 @@ const F3TenderCashPopUp = ({
                             {!isExchangeClick && (
                               <div className="mb-3">
                                 <p
-                                  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
                                 >
                                   {t("Return Amount")}
                                 </p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutExchange}
-                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
                                       ? "text-end"
                                       : "text-start"
-                                    }`}
+                                  }`}
                                   placeholder={
                                     paymentModes.name || `${t("Payment Mode")}`
                                   }
@@ -2021,31 +1600,45 @@ const F3TenderCashPopUp = ({
                             {isExchangeClick && (
                               <>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Exchange Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={grossAmount}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={t("Total Amount")}
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Return Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutExchange}
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={
                                       paymentModes.name ||
                                       `${t("Payment Mode")}`
@@ -2054,7 +1647,13 @@ const F3TenderCashPopUp = ({
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Difference")}
                                   </p>
                                   <input
@@ -2063,10 +1662,11 @@ const F3TenderCashPopUp = ({
                                       grossAmount - totolAmountWithoutExchange
                                     }
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={t("Difference")}
                                   />
                                 </div>
@@ -2075,24 +1675,31 @@ const F3TenderCashPopUp = ({
                             {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
                             {(paymentModes.code === "4" ||
                               paymentModes.code === "5") && (
-                                <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
-                                    {t("Bank Approval Code")}
-                                  </p>
-                                  <input
-                                    type="text"
-                                    value={bankApprovedCode}
-                                    onChange={(e) =>
-                                      setBankApprovedCode(e.target.value)
-                                    }
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
-                                        ? "text-end"
-                                        : "text-start"
-                                      }`}
-                                    placeholder={t("Enter Bank Approval Code")}
-                                  />
-                                </div>
-                              )}
+                              <div className="mb-3">
+                                <p
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
+                                  {t("Bank Approval Code")}
+                                </p>
+                                <input
+                                  type="number"
+                                  value={bankApprovedCode}
+                                  onChange={(e) =>
+                                    setBankApprovedCode(e.target.value)
+                                  }
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                  placeholder={t("Enter Bank Approval Code")}
+                                />
+                              </div>
+                            )}
                           </>
                         )}
 
@@ -2133,16 +1740,23 @@ const F3TenderCashPopUp = ({
 
                             {!isExchangeDSalesClick && (
                               <div className="mb-3">
-                                <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                <p
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
                                   {t("Return Amount")}
                                 </p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutVatDSalesNoInvoice}
-                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
                                       ? "text-end"
                                       : "text-start"
-                                    }`}
+                                  }`}
                                   placeholder={
                                     paymentModes.name || `${t("Payment Mode")}`
                                   }
@@ -2154,31 +1768,45 @@ const F3TenderCashPopUp = ({
                             {isExchangeDSalesClick && (
                               <>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Exchange Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={grossAmount}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={t("Total Amount")}
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Return Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutVatDSalesNoInvoice}
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={
                                       paymentModes.name ||
                                       `${t("Payment Mode")}`
@@ -2187,7 +1815,13 @@ const F3TenderCashPopUp = ({
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Difference")}
                                   </p>
                                   <input
@@ -2197,10 +1831,11 @@ const F3TenderCashPopUp = ({
                                       totolAmountWithoutVatDSalesNoInvoice
                                     }
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Difference"
                                   />
                                 </div>
@@ -2209,42 +1844,55 @@ const F3TenderCashPopUp = ({
                             {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
                             {(paymentModes.code === "4" ||
                               paymentModes.code === "5") && (
-                                <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
-                                    {t("Bank Approval Code")}
-                                  </p>
-                                  <input
-                                    type="text"
-                                    value={bankApprovedCode}
-                                    onChange={(e) =>
-                                      setBankApprovedCode(e.target.value)
-                                    }
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
-                                        ? "text-end"
-                                        : "text-start"
-                                      }`}
-                                    placeholder={t("Enter Bank Approval Code")}
-                                  />
-                                </div>
-                              )}
+                              <div className="mb-3">
+                                <p
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
+                                  {t("Bank Approval Code")}
+                                </p>
+                                <input
+                                  type="number"
+                                  value={bankApprovedCode}
+                                  onChange={(e) =>
+                                    setBankApprovedCode(e.target.value)
+                                  }
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                  placeholder={t("Enter Bank Approval Code")}
+                                />
+                              </div>
+                            )}
                           </>
                         )}
-
 
                         {selectedSalesType === "BTOC CUSTOMER" && (
                           <>
                             {!isExchangeDSalesClick && (
                               <div className="mb-3">
-                                <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                <p
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
                                   {t("Return Amount")}
                                 </p>
                                 <input
                                   type="text"
                                   value={totolAmountWithoutVatDSalesNoInvoice}
-                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
                                       ? "text-end"
                                       : "text-start"
-                                    }`}
+                                  }`}
                                   placeholder={
                                     paymentModes.name || `${t("Payment Mode")}`
                                   }
@@ -2256,31 +1904,45 @@ const F3TenderCashPopUp = ({
                             {isExchangeDSalesClick && (
                               <>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Exchange Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={grossAmount}
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={t("Total Amount")}
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Return Amount")}
                                   </p>
                                   <input
                                     type="text"
                                     value={totolAmountWithoutVatDSalesNoInvoice}
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder={
                                       paymentModes.name ||
                                       `${t("Payment Mode")}`
@@ -2289,7 +1951,13 @@ const F3TenderCashPopUp = ({
                                   />
                                 </div>
                                 <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
+                                  <p
+                                    className={`font-semibold ${
+                                      i18n.language === "ar"
+                                        ? "text-end"
+                                        : "text-start"
+                                    }`}
+                                  >
                                     {t("Difference")}
                                   </p>
                                   <input
@@ -2299,10 +1967,11 @@ const F3TenderCashPopUp = ({
                                       totolAmountWithoutVatDSalesNoInvoice
                                     }
                                     readOnly
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
+                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                      i18n.language === "ar"
                                         ? "text-end"
                                         : "text-start"
-                                      }`}
+                                    }`}
                                     placeholder="Difference"
                                   />
                                 </div>
@@ -2311,24 +1980,31 @@ const F3TenderCashPopUp = ({
                             {/* Bank Approval Code (shown at the end for paymentModes code 4 or 5) */}
                             {(paymentModes.code === "4" ||
                               paymentModes.code === "5") && (
-                                <div className="mb-3">
-                                  <p  className={`font-semibold ${i18n.language === "ar" ? "text-end"  : "text-start" }`}>
-                                    {t("Bank Approval Code")}
-                                  </p>
-                                  <input
-                                    type="text"
-                                    value={bankApprovedCode}
-                                    onChange={(e) =>
-                                      setBankApprovedCode(e.target.value)
-                                    }
-                                    className={`w-full border border-gray-300 px-2 py-2 rounded-md ${i18n.language === "ar"
-                                        ? "text-end"
-                                        : "text-start"
-                                      }`}
-                                    placeholder={t("Enter Bank Approval Code")}
-                                  />
-                                </div>
-                              )}
+                              <div className="mb-3">
+                                <p
+                                  className={`font-semibold ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                >
+                                  {t("Bank Approval Code")}
+                                </p>
+                                <input
+                                  type="number"
+                                  value={bankApprovedCode}
+                                  onChange={(e) =>
+                                    setBankApprovedCode(e.target.value)
+                                  }
+                                  className={`w-full border border-gray-300 px-2 py-2 rounded-md ${
+                                    i18n.language === "ar"
+                                      ? "text-end"
+                                      : "text-start"
+                                  }`}
+                                  placeholder={t("Enter Bank Approval Code")}
+                                />
+                              </div>
+                            )}
                           </>
                         )}
                       </div>

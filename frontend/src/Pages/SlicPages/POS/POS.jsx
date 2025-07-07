@@ -12,12 +12,16 @@ import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 import { Autocomplete, TextField } from "@mui/material";
 import ExchangeItemPopUp from "./ExchangeItemPopUp";
 import ConfirmTransactionPopUp from "./ConfirmTransactionPopUp";
-import { FaExchangeAlt } from "react-icons/fa";
+import { FaExchangeAlt, FaTrash } from "react-icons/fa";
+import { MdRemoveCircleOutline } from "react-icons/md";
 import { MdRemoveCircle } from "react-icons/md";
 import html2pdf from "html2pdf.js";
 import MobileNumberPopUp from "./MobileNumberPopUp";
 import QRCodePopup from "../../../components/WhatsAppQRCode/QRCodePopup";
 import { useTranslation } from "react-i18next";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const POS = () => {
   const { t, i18n } = useTranslation();
@@ -29,12 +33,37 @@ const POS = () => {
   const [customerName, setCustomerName] = useState("");
   const [mobileNo, setMobileNo] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [vat, setVat] = useState("");
+  const [vat, setVat] = useState(15);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedSalesType, setSelectedSalesType] = useState(
     "DIRECT SALES INVOICE"
   );
+  const { taxAmount } = useTaxContext();
+  // console.log(taxAmount);
+
+  // Add this function near other state declarations
+  const [discountedTotal, setDiscountedTotal] = useState(0);
+  // Add this function to calculate discount
+  const calculateDiscount = (items, totalQty) => {
+    // Check if selected customer is Buy 2 Get 1 Free customer
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+
+    // const isBuy2Get1Customer = true;
+
+    if (!isBuy2Get1Customer || totalQty !== 3) {
+      return 0;
+    }
+
+    // Find lowest price item
+    const lowestPrice = Math.min(...items.map(item => Number(item.ItemPrice)));
+    return lowestPrice;
+  };
+
+
   const [selectedSalesReturnType, setSelectedSalesReturnType] =
     useState("RETRUN WITH EXCHANGE");
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -51,70 +80,92 @@ const POS = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const checkSession = async () => {
+  //     try {
+  //       // const response = await fetch(
+  //       //   "http://localhost:1100/api/whatsapp/checkSession"
+  //       // );
+  //       const reponse = await newRequest.get("/whatsapp/checkSession");
+  //       console.log(reponse);
+  //       const data = reponse.data;
+  //       if (data.status === "failure" && data.qrCode) {
+  //         setQrCode(data.qrCode);
+  //         console.log("QR code:", data.qrCode);
+  //         setShowPopup(true);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking session:", error);
+  //     }
+  //   };
+
+  //   checkSession();
+  // }, []);
+
   const handleClosePopup = () => {
     setShowPopup(false);
   };
 
 
-    // picked current date and time
-    const [currentTime, setCurrentTime] = useState("");
-    const [todayDate, setTodayDate] = useState("");
-    const [invoiceNumber, setInvoiceNumber] = useState("");
-    const [newInvoiceNumber, setNewInvoiceNumber] = useState("");
-  
-    // Function to generate invoice number based on date and time
-    const generateInvoiceNumber = () => {
-      const now = new Date();
-      const timestamp = Date.now();
-      return `${timestamp}`;
-    };
-  
-    useEffect(() => {
-      const updateTime = () => {
-        const now = new Date();
-        setTodayDate(now.toISOString());
-        setCurrentTime(
-          now.toLocaleString("en-US", {
-            dateStyle: "short",
-            timeStyle: "medium",
-          })
-        );
-      };
-  
-      setInvoiceNumber(generateInvoiceNumber());
-      updateTime();
-      const intervalId = setInterval(updateTime, 1000);
-  
-      return () => clearInterval(intervalId);
-    }, []);
+  // picked current date and time
+  const [currentTime, setCurrentTime] = useState("");
+  const [todayDate, setTodayDate] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [newInvoiceNumber, setNewInvoiceNumber] = useState("");
 
-    // Function to generate invoice New number based on date and time
-    const generateNewInvoiceNumber = () => {
-      const now = new Date();
-      const timestamp = Date.now();
-      return `${timestamp}`;
-    };
-  
-    useEffect(() => {
-      const updateTime = () => {
-        const now = new Date();
-        setTodayDate(now.toISOString());
-        setCurrentTime(
-          now.toLocaleString("en-US", {
-            dateStyle: "short",
-            timeStyle: "medium",
-          })
-        );
-      };
-  
-      setNewInvoiceNumber(generateInvoiceNumber());
-      updateTime();
-      const intervalId = setInterval(updateTime, 1000);
-      
-      return () => clearInterval(intervalId);
-    }, []);
+  // Function to generate invoice number based on date and time
+  const generateInvoiceNumber = () => {
+    const now = new Date();
+    const timestamp = Date.now();
+    return `${timestamp}`;
+  };
 
-      
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTodayDate(now.toISOString());
+      setCurrentTime(
+        now.toLocaleString("en-US", {
+          dateStyle: "short",
+          timeStyle: "medium",
+        })
+      );
+    };
+
+    setInvoiceNumber(generateInvoiceNumber());
+    updateTime();
+    const intervalId = setInterval(updateTime, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Function to generate invoice New number based on date and time
+  // const generateNewInvoiceNumber = () => {
+  //   const now = new Date();
+  //   const timestamp = Date.now();
+  //   return `${timestamp}`;
+  // };
+
+  // useEffect(() => {
+  //   const updateTime = () => {
+  //     const now = new Date();
+  //     setTodayDate(now.toISOString());
+  //     setCurrentTime(
+  //       now.toLocaleString("en-US", {
+  //         dateStyle: "short",
+  //         timeStyle: "medium",
+  //       })
+  //     );
+  //   };
+
+  //   setNewInvoiceNumber(generateInvoiceNumber());
+  //   updateTime();
+  //   const intervalId = setInterval(updateTime, 1000);
+
+  //   return () => clearInterval(intervalId);
+  // }, []);
+
+
 
   const [isExchangeClick, setIsExchangeClick] = useState(false);
   const [isExchangeDSalesClick, setIsExchangeDSalesClick] = useState(false);
@@ -124,14 +175,20 @@ const POS = () => {
     if (action === "exchange") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     } else if (action === "exchange Dsales") {
       handleShowExhangeItemPopup(selectedRowData);
       setIsExchangeDSalesClick(true);
-      generateNewInvoiceNumber();
+      // generateNewInvoiceNumber();
     }
     // console.log(action);
     // console.log("isButtonClick", isExchangeClick);
+  };
+
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
+  const handlePaymentModeUpdate = (newPaymentMode) => {
+    setSelectedPaymentMode(newPaymentMode);
+    sessionStorage.setItem("selectedPaymentModels", JSON.stringify(newPaymentMode));
   };
 
   useEffect(() => {
@@ -143,6 +200,7 @@ const POS = () => {
       }
     }
 
+
     const storedLocationData = sessionStorage.getItem("selectedLocation");
     if (storedLocationData) {
       const locationData = JSON.parse(storedLocationData);
@@ -151,7 +209,21 @@ const POS = () => {
       }
       // console.log(locationData)
     }
+
+    const storedPaymentMode = sessionStorage.getItem("selectedPaymentModels");
+    if (storedPaymentMode) {
+      setSelectedPaymentMode(JSON.parse(storedPaymentMode));
+    }
+
+    // console.log(taxAmount);
+
   }, []);
+
+  useEffect(() => {
+    if (selectedPaymentMode) {
+      console.log("selected mode", selectedPaymentMode)
+    }
+  }, [selectedPaymentMode])
 
   const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
@@ -174,6 +246,12 @@ const POS = () => {
   const [selectedTransactionCode, setSelectedTransactionCode] = useState("");
   const fetchTransactionCodes = async () => {
     try {
+      // const response = await newRequest.get(
+      //   `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.LOCN_CODE}`
+      // );
+      // console.log(response.data?.data);
+      // setTransactionCodes(response.data?.data);
+
       const response = await newRequest.get(
         `/transactions/v1/byLocationCode?locationCode=${selectedLocation?.stockLocation}`
       );
@@ -219,7 +297,7 @@ const POS = () => {
         `/transactions/v1/all?TXN_CODE=${selectedTransactionCode?.TXN_CODE}&TXNLOCATIONCODE=${selectedLocation?.stockLocation}`
       );
       const allCustomers = response?.data?.data;
-      console.log(allCustomers)
+      // console.log(allCustomers)
 
       setSearchCustomerName(allCustomers);
     } catch (err) {
@@ -232,6 +310,12 @@ const POS = () => {
     console.log(value);
     setSelectedCustomerName(value);
   };
+
+  // useEffect(() => {
+  //   if (selectedTransactionCode?.TXN_CODE) {
+  //     fetchCustomerBasedonTransaction();
+  //   }
+  // }, [selectedTransactionCode?.TXN_CODE]);
 
   const [customerNameWithDirectInvoice, setCustomerNameWithDirectInvoice] =
     useState([]);
@@ -284,7 +368,7 @@ const POS = () => {
   };
 
   const handleSearchCustomerNameWithDirectInvoice = (event, value) => {
-    // console.log(value);
+    console.log(value);
     setSelectedCustomeNameWithDirectInvoice(value);
   };
 
@@ -308,6 +392,10 @@ const POS = () => {
     }
   }, [selectedTransactionCode?.TXN_CODE]);
 
+  // useEffect(() => {
+  //   fetchCustomerNames();
+  // }, []);
+
   useEffect(() => {
     if (selectedSalesType === "BTOC CUSTOMER") {
       fetchB2CCustomerNames();
@@ -316,21 +404,204 @@ const POS = () => {
 
 
   // Fetch barcode data from API
+  // const handleGetBarcodes = async (e) => {
+  //   e.preventDefault();
+
+  //   // Dynamically determine the CustomerCode based on the selected transaction code
+  //   const customerCode =
+  //   EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+  //     ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+  //     : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+
+  //   // console.log("direct sales invoice ", customerCode)
+  //   if (!selectedTransactionCode?.TXN_CODE) {
+  //     toast.error("Please select a transaction code first.");
+  //     setIsExchangeItemPopupVisible(false);
+  //     return;
+  //   }
+  //   if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
+  //     toast.error("Please select a customer code first.");
+  //     setIsExchangeItemPopupVisible(false);
+  //     return;
+  //   }
+
+  //   // if(vat === "") {
+  //   //   toast.info("Please add Vat Dynamically for all transactions");
+  //   //   return;
+  //   // }
+
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await newRequest.get(
+  //       `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
+  //     );
+  //     const data = response?.data?.data;
+
+  //     if (data) {
+  //       const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
+
+  //       // Call the second API
+  //       const secondApiBody = {
+  //         filter: {
+  //           P_COMP_CODE: "SLIC",
+  //           P_ITEM_CODE: ItemCode,
+  //           // P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
+  //           P_CUST_CODE: customerCode,
+  //           P_GRADE_CODE_1: ProductSize,
+  //         },
+  //         M_COMP_CODE: "SLIC",
+  //         M_USER_ID: "SYSADMIN",
+  //         APICODE: "PRICELIST",
+  //         M_LANG_CODE: "ENG",
+  //       };
+
+  //       try {
+  //         const secondApiResponse = await ErpTeamRequest.post(
+  //           "/slicuat05api/v1/getApi",
+  //           secondApiBody,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //           }
+  //         );
+  //         const secondApiData = secondApiResponse?.data;
+  //         // console.log(secondApiData);
+
+  //         let storedData = sessionStorage.getItem("secondApiResponses");
+  //         storedData = storedData ? JSON.parse(storedData) : {};
+
+  //         const itemRates = secondApiData.map(
+  //           (item) => item?.PRICELIST?.PLI_RATE
+  //         );
+
+  //         storedData[ItemCode] = itemRates;
+
+  //         sessionStorage.setItem(
+  //           "secondApiResponses",
+  //           JSON.stringify(storedData)
+  //         );
+
+  //         const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
+  //         const vat = itemPrice * taxAmount / 100;
+  //         const total = itemPrice + vat;
+
+  //         // Set data in state
+  //         setData((prevData) => {
+  //           const existingItemIndex = prevData.findIndex(
+  //             (item) => item.Barcode === GTIN
+  //           );
+
+  //           if (existingItemIndex !== -1) {
+  //             const updatedData = [...prevData];
+  //             updatedData[existingItemIndex] = {
+  //               ...updatedData[existingItemIndex],
+  //               Qty: updatedData[existingItemIndex].Qty + 1,
+  //               Total:
+  //                 (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
+  //             };
+  //             return updatedData;
+  //           } else {
+  //             return [
+  //               ...prevData,
+  //               {
+  //                 SKU: ItemCode,
+  //                 Barcode: GTIN,
+  //                 Description: EnglishName,
+  //                 DescriptionArabic: ArabicName,
+  //                 ItemSize: ProductSize,
+  //                 Qty: 1,
+  //                 ItemPrice: itemPrice,
+  //                 VAT: vat,
+  //                 Total: total,
+  //               },
+  //             ];
+  //           }
+  //         });
+
+  //         // Now, call the stock status API after second API success
+  //         const stockStatusBody = {
+  //           filter: {
+  //             M_COMP_CODE: "SLIC",
+  //             P_LOCN_CODE: selectedLocation?.stockLocation,
+  //             P_ITEM_CODE: ItemCode,
+  //             P_GRADE_1: ProductSize,
+  //             P_GRADE_2: "NA",
+  //           },
+  //           M_COMP_CODE: "SLIC",
+  //           M_USER_ID: "SYSADMIN",
+  //           APICODE: "STOCKSTATUS",
+  //           M_LANG_CODE: "ENG",
+  //         };
+
+  //         try {
+  //           const stockStatusResponse = await ErpTeamRequest.post(
+  //             "/slicuat05api/v1/getApi",
+  //             stockStatusBody,
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${token}`,
+  //               },
+  //             }
+  //           );
+
+  //           const stockData = stockStatusResponse?.data;
+  //           // console.log(stockData);
+
+  //           // Check the available stock
+  //           const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
+
+  //           // Update the grid with available stock info
+  //           setData((prevData) =>
+  //             prevData.map((item) =>
+  //               item.SKU === ItemCode
+  //                 ? { ...item, AvailableStock: availableStock }
+  //                 : item
+  //             )
+  //           );
+
+  //         } catch (stockStatusError) {
+  //           toast.error(
+  //             stockStatusError?.response?.data?.message ||
+  //               "An error occurred while fetching stock status"
+  //           );
+  //         }
+
+  //       } catch (secondApiError) {
+  //         toast.error(
+  //           secondApiError?.response?.data?.message ||
+  //             "An error occurred while calling the second API"
+  //         );
+  //       }
+
+  //       // Clear the barcode state after the response
+  //       setBarcode("");
+  //     } else {
+  //       setData([]);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error?.response?.data?.message || "An error occurred");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // Main barcode handling function
   const handleGetBarcodes = async (e) => {
     e.preventDefault();
 
     // Dynamically determine the CustomerCode based on the selected transaction code
     const customerCode =
-    EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
-      ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
-      : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
-    
-    // console.log("direct sales invoice ", customerCode)
+      EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+        ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+        : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+
     if (!selectedTransactionCode?.TXN_CODE) {
       toast.error("Please select a transaction code first.");
       setIsExchangeItemPopupVisible(false);
       return;
     }
+
     if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
       toast.error("Please select a customer code first.");
       setIsExchangeItemPopupVisible(false);
@@ -352,7 +623,6 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            // P_CUST_CODE: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
             P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
@@ -373,7 +643,6 @@ const POS = () => {
             }
           );
           const secondApiData = secondApiResponse?.data;
-          // console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
@@ -390,40 +659,69 @@ const POS = () => {
           );
 
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
-          const vat = itemPrice * 0.15;
-          const total = itemPrice + vat;
+          const vat = itemPrice * 15 / 100;
 
-          // Set data in state
           setData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
             );
 
+            let newData;
             if (existingItemIndex !== -1) {
-              const updatedData = [...prevData];
-              updatedData[existingItemIndex] = {
-                ...updatedData[existingItemIndex],
-                Qty: updatedData[existingItemIndex].Qty + 1,
-                Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
+              // Update existing item
+              newData = [...prevData];
+              newData[existingItemIndex] = {
+                ...newData[existingItemIndex],
+                Qty: newData[existingItemIndex].Qty + 1,
               };
-              return updatedData;
             } else {
-              return [
-                ...prevData,
-                {
-                  SKU: ItemCode,
-                  Barcode: GTIN,
-                  Description: EnglishName,
-                  DescriptionArabic: ArabicName,
-                  ItemSize: ProductSize,
-                  Qty: 1,
-                  ItemPrice: itemPrice,
-                  VAT: vat,
-                  Total: total,
-                },
-              ];
+              // Add new item
+              const newItem = {
+                SKU: ItemCode,
+                Barcode: GTIN,
+                Description: EnglishName,
+                DescriptionArabic: ArabicName,
+                ItemSize: ProductSize,
+                Qty: 1,
+                ItemPrice: itemPrice,
+                // VAT: vat,
+                VAT: (itemPrice * taxAmount) / 100,
+              };
+              newData = [...prevData, newItem];
             }
+
+            // Calculate total quantity across all items
+            const totalQty = newData.reduce((sum, item) => sum + item.Qty, 0);
+            console.log("Total Quantity:", totalQty);
+
+            // Prevent more than 3 items
+            const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+            // const isBuy2Get1Customer = true;
+            if (isBuy2Get1Customer && totalQty > 3) {
+              toast.error("Maximum 3 items allowed for Buy 2 Get 1 Free offer");
+              setBarcode("");
+              return prevData;
+            }
+
+            // Calculate discount using newData
+            const discount = calculateDiscount(newData, totalQty);
+            const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
+            setDiscountedTotal(discount);
+            console.log("discount", discount)
+
+            // Update totals for all items including discount
+            return newData.map(item => {
+              const discountedPrice = item.ItemPrice - discountPerItem;
+              const newVat = (discountedPrice * taxAmount) / 100; // Recalculate VAT based on discounted price
+
+              return {
+                ...item,
+                DiscountedPrice: discountedPrice,
+                VAT: newVat,
+                Total: (discountedPrice + newVat) * item.Qty,
+                Discount: discountPerItem
+              };
+            });
           });
 
           // Now, call the stock status API after second API success
@@ -453,36 +751,53 @@ const POS = () => {
             );
 
             const stockData = stockStatusResponse?.data;
-            // console.log(stockData);
-
-            // Check the available stock
             const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
 
-            // Update the grid with available stock info
-            setData((prevData) =>
-              prevData.map((item) =>
-                item.SKU === ItemCode
-                  ? { ...item, AvailableStock: availableStock }
-                  : item
-              )
-            );
+            // Update the grid with available stock info only for the current item
+            setData((prevData) => {
+              const existingItemIndex = prevData.findIndex(
+                (item) => item.Barcode === GTIN
+              );
+
+              if (existingItemIndex !== -1) {
+                // If item exists, only update that specific item
+                const updatedData = [...prevData];
+                updatedData[existingItemIndex] = {
+                  ...updatedData[existingItemIndex],
+                  AvailableStock: availableStock
+                };
+                return updatedData;
+              } else {
+                // If it's a new item, add it with the stock information
+                return [...prevData, {
+                  SKU: ItemCode,
+                  Barcode: GTIN,
+                  Description: EnglishName,
+                  DescriptionArabic: ArabicName,
+                  ItemSize: ProductSize,
+                  Qty: 1,
+                  ItemPrice: itemPrice,
+                  VAT: (itemPrice * taxAmount) / 100,
+                  AvailableStock: availableStock
+                }];
+              }
+            });
 
           } catch (stockStatusError) {
             toast.error(
               stockStatusError?.response?.data?.message ||
-                "An error occurred while fetching stock status"
+              "An error occurred while fetching stock status"
             );
           }
 
+          // Clear the barcode state after the response
+          setBarcode("");
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
+            "An error occurred while calling the second API"
           );
         }
-
-        // Clear the barcode state after the response
-        setBarcode("");
       } else {
         setData([]);
       }
@@ -505,9 +820,9 @@ const POS = () => {
 
     // Dynamically determine the CustomerCode based on the selected transaction code
     const customerCode =
-    EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
-      ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
-      : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+      EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+        ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+        : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
 
     if (!selectedTransactionCode?.TXN_CODE) {
       toast.error("Please select a transaction code first.");
@@ -536,6 +851,10 @@ const POS = () => {
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
+            // P_CUST_CODE:
+            //   selectedSalesReturnType === "DIRECT RETURN"
+            //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+            //     : selectedCustomerName?.CUSTOMERCODE,
             P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
@@ -573,9 +892,9 @@ const POS = () => {
             JSON.stringify(storedData)
           );
 
+          // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
 
@@ -616,7 +935,7 @@ const POS = () => {
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
+            "An error occurred while calling the second API"
           );
         }
         // barcode state empty once response is true
@@ -635,8 +954,8 @@ const POS = () => {
   // Btoc Customer Function
   const handleGetBtocCustomerBarcodes = async (e) => {
     e.preventDefault();
-    
-    if(!selectedBtocCustomer) {
+
+    if (!selectedBtocCustomer) {
       toast.error("Please select a B2C Customer");
       return;
     }
@@ -696,7 +1015,7 @@ const POS = () => {
           // const itemPrice = secondApiData[0].ItemRate?.RATE;
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
           // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
-          const vat = itemPrice * 0.15;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
 
@@ -737,7 +1056,7 @@ const POS = () => {
         } catch (secondApiError) {
           toast.error(
             secondApiError?.response?.data?.message ||
-              "An error occurred while calling the second API"
+            "An error occurred while calling the second API"
           );
         }
         // barcode state empty once response is true
@@ -762,10 +1081,29 @@ const POS = () => {
   const [isCreatePopupVisible, setCreatePopupVisibility] = useState(false);
   const [storeDatagridData, setStoreDatagridData] = useState([]);
   const [storeInvoiceDatagridData, setStoreInvoiceDatagridData] = useState([]);
-  const handleShowCreatePopup = () => {
-    setStoreDatagridData([...data]);
-    setStoreInvoiceDatagridData([...invoiceData]);
+  // const handleShowCreatePopup = () => {
+  //   setStoreDatagridData([...data]);
+  //   setStoreInvoiceDatagridData([...invoiceData]);
 
+  //   setCreatePopupVisibility(true);
+  // };
+  const handleShowCreatePopup = () => {
+    const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+    // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+    //                         selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+
+    // Store data with correct prices
+    const updatedData = data.map(item => ({
+      ...item,
+      ItemPrice: isBuy2Get1Customer ? (item.DiscountedPrice || item.ItemPrice) : item.ItemPrice,
+      Total: isBuy2Get1Customer ?
+        ((item.DiscountedPrice || item.ItemPrice) * item.Qty) :
+        (item.ItemPrice * item.Qty)
+    }));
+
+    setStoreDatagridData(updatedData);
+    setStoreInvoiceDatagridData([...invoiceData]);
     setCreatePopupVisibility(true);
   };
 
@@ -785,7 +1123,7 @@ const POS = () => {
       setIsExchangeItemPopupVisible(false);
       return;
     }
-  
+
     if (!selectedCustomeNameWithDirectInvoice?.CUST_CODE && !selectedCustomerName?.CUSTOMERCODE) {
       toast.error("Please select a customer code first.");
       setIsExchangeItemPopupVisible(false);
@@ -794,6 +1132,20 @@ const POS = () => {
 
     setSelectedRowData(rowData);
     setIsExchangeItemPopupVisible(true);
+
+    // if (selectedSalesReturnType === "DIRECT RETURN") {
+    //   toast.info(
+    //     "You don't select the Sales Return type return with exchange",
+    //     {}
+    //   );
+    //   setIsExchangeItemPopupVisible(false);
+    // } else {
+    //   setSelectedRowData(rowData);
+    //   setIsExchangeItemPopupVisible(true);
+    // }
+
+    // setSelectedRowData(rowData); // Store the selected row data to pass to the popup
+    // setIsExchangeItemPopupVisible(true);
   };
 
   const [
@@ -818,7 +1170,7 @@ const POS = () => {
     setData([]);
   };
 
-  
+
 
   const resetState = () => {
     setData([]);
@@ -827,8 +1179,13 @@ const POS = () => {
     setMobileNo("");
     setRemarks("");
     setVat("");
+    // setSelectedCustomerName(null);
     setSelectedTransactionCode("");
     setInvoiceNumber(generateInvoiceNumber());
+
+    // setTotalAmountWithVat(0);
+    // setNetWithVat(0);
+    // setTotalVat(0);
 
     setNetWithOutExchange(0);
     setTotalWithOutExchange(0);
@@ -893,25 +1250,36 @@ const POS = () => {
     }
   };
 
-  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId, transactionCode) => {
+  const insertInvoiceRecord = async (newDocumentNo, newHeadSysId, bankHeadSysId, transactionCode) => {
     try {
       let invoiceAllData;
 
       // Dynamically determine the CustomerCode based on the selected transaction code
       const customerCode =
-      EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
-        ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
-        : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
+        EX_TRANSACTION_CODES.includes(selectedTransactionCode?.TXN_CODE)
+          ? selectedCustomerName?.CUSTOMERCODE // For EX/AX transactions
+          : selectedCustomeNameWithDirectInvoice?.CUST_CODE; // For other transactions
 
 
       if (selectedSalesType === "DIRECT SALES INVOICE") {
+
+        // Check if customer is eligible for discount
+        const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+        // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+        //                     selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+        //                     selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+        // Calculate total amount considering discounts if applicable
+        const totalAmount = isBuy2Get1Customer ? parseFloat(netWithVat) : parseFloat(data.reduce((sum, item) => sum + (item.ItemPrice * item.Qty), 0));
+
         // Construct the master and details data for Sales Invoice
         const master = {
+
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: data[0]?.SKU,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
+          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -922,8 +1290,14 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: netWithVat,
-          AdjAmount: netWithVat,
+          // PendingAmount: parseFloat(netWithVat),
+          // AdjAmount: parseFloat(netWithVat),
+          PendingAmount: parseFloat(parseFloat(totalAmount).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(totalAmount).toFixed(2)),
+
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
 
         const details = data.map((item, index) => ({
@@ -935,6 +1309,7 @@ const POS = () => {
           InvoiceNo: invoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: selectedTransactionCode?.TXN_CODE,
+          // CustomerCode: selectedCustomeNameWithDirectInvoice?.CUST_CODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -943,8 +1318,16 @@ const POS = () => {
           ItemSKU: item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice,
-          ItemPrice: item.ItemPrice,
+          // ITEMRATE: item.ItemPrice,
+          // ItemPrice: item.ItemPrice,
+          ITEMRATE: isBuy2Get1Customer
+            ? parseFloat((item.DiscountedPrice || item.ItemPrice).toFixed(2))
+            : parseFloat(item.ItemPrice.toFixed(2)),
+
+          ItemPrice: isBuy2Get1Customer
+            ? parseFloat((item.DiscountedPrice || item.ItemPrice).toFixed(2))
+            : parseFloat(item.ItemPrice.toFixed(2)),
+
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -956,7 +1339,7 @@ const POS = () => {
       } else if (selectedSalesType === "DIRECT SALES RETURN") {
         // Check the last two digits of the transactionCode to decide which data to use
         const dataToUse = transactionCode.slice(-2) === "IN" ? exchangeData : invoiceData;
-        
+
         // Determine the values for PendingAmount and AdjAmount based on transactionCode
         const amountToUse = transactionCode.slice(-2) === "IN" ? netWithVat : netWithOutVatExchange;
 
@@ -964,15 +1347,24 @@ const POS = () => {
         const masterItemSysID = dataToUse[0]?.SKU || dataToUse[0]?.ItemCode;
 
         const currentInvoiceNumber =
-        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+          // transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
+          transactionCode.slice(-2) === "IN" ? invoiceNumber : invoiceHeaderData?.invoiceHeader?.InvoiceNo;
 
         // Construct the master and details data for Sales Return
         const master = {
-          InvoiceNo: currentInvoiceNumber, 
+          InvoiceNo:
+            invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber, 
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
+          // ItemSysID: exchangeData[0]?.ItemCode,
           ItemSysID: masterItemSysID,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -982,8 +1374,12 @@ const POS = () => {
           TransactionDate: todayDate,
           CustomerName: invoiceHeaderData?.invoiceHeader?.CustomerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
 
         const details = dataToUse.map((item, index) => ({
@@ -992,19 +1388,26 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceHeaderData?.invoiceHeader?.InvoiceNo || invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "RETURN",
           UserID: slicUserData?.UserLoginID,
+          // ItemSKU: isExchangeClick ? item.ItemCode : item.SKU,
           ItemSKU: isExchangeClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice,
-          ItemPrice: item.ItemPrice,
+          ITEMRATE: parseFloat(item.ItemPrice.toFixed(2)),
+          ItemPrice: parseFloat(item.ItemPrice.toFixed(2)),
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1026,15 +1429,21 @@ const POS = () => {
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
         const currentInvoiceNumber =
-        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
+          transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1045,8 +1454,12 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -1054,9 +1467,14 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
+          // CustomerCode:
+          //   selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
@@ -1065,8 +1483,8 @@ const POS = () => {
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
           ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice,
-          ItemPrice: item.ItemPrice,
+          ITEMRATE: parseFloat(item.ItemPrice.toFixed(2)),
+          ItemPrice: parseFloat(item.ItemPrice.toFixed(2)),
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1086,15 +1504,21 @@ const POS = () => {
         const masterItemSysID = dataToUseDSales[0]?.SKU || dataToUseDSales[0]?.ItemCode;
 
         const currentInvoiceNumber =
-        transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
+          transactionCode.slice(-2) === "IN" ? newInvoiceNumber : invoiceNumber;
 
         // Construct the master and details data for DSALES NO INVOICE
         const master = {
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: masterItemSysID,
+          // TransactionCode: selectedTransactionCode?.TXN_CODE,
           TransactionCode: transactionCode,
+          // CustomerCode: 
+          // selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: remarks,
@@ -1105,8 +1529,12 @@ const POS = () => {
           VatNumber: vat,
           CustomerName: customerName,
           DocNo: newDocumentNo,
-          PendingAmount: amountToUse,
-          AdjAmount: amountToUse,
+          PendingAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+          AdjAmount: parseFloat(parseFloat(amountToUse).toFixed(2)),
+
+          zatcaPayment_mode_id: `${selectedPaymentMode?.code}`,
+          zatcaPayment_mode_name: `${selectedPaymentMode?.name}`,
+          BRV_REF_NO: `${bankHeadSysId}` || "",
         };
         const details = dataToUseDSales.map((item, index) => ({
           Rec_Num: index + 1,
@@ -1114,18 +1542,25 @@ const POS = () => {
           SNo: index + 1,
           DeliveryLocationCode: selectedLocation?.stockLocation,
           ItemSysID: item.SKU || item.ItemCode,
-          InvoiceNo: currentInvoiceNumber,
+          InvoiceNo: invoiceNumber,
+          // InvoiceNo: currentInvoiceNumber,
           Head_SYS_ID: `${newHeadSysId}`,
           TransactionCode: transactionCode,
+          // CustomerCode: 
+          // selectedSalesReturnType === "DIRECT RETURN"
+          //     ? selectedCustomeNameWithDirectInvoice?.CUST_CODE
+          //     : selectedCustomerName?.CUSTOMERCODE,
           CustomerCode: customerCode,
           SalesLocationCode: selectedLocation?.stockLocation,
           Remarks: item.Description,
           TransactionType: "B2C CUSTOMER",
           UserID: slicUserData?.UserLoginID,
           ItemSKU: isExchangeDSalesClick ? item.SKU : item.SKU,
+          // ItemUnit: "PCS",
           ItemSize: item.ItemSize,
-          ITEMRATE: item.ItemPrice,
-          ItemPrice: item.ItemPrice,
+          ITEMRATE: Number(Number(item.ItemPrice).toFixed(2)),
+          ItemPrice: Number(Number(item.ItemPrice).toFixed(2)),
+
           ItemQry: item.Qty,
           TransactionDate: todayDate,
         }));
@@ -1141,14 +1576,14 @@ const POS = () => {
         "/invoice/v1/saveInvoice",
         invoiceAllData
       );
-      // console.log("invoice body", invoiceAllData);
-      // console.log("Record saved successfully:", saveInvoiceResponse.data);
+      console.log("invoice body", invoiceAllData);
+      console.log("Record saved successfully:", saveInvoiceResponse.data);
 
       toast.success(
         saveInvoiceResponse?.data?.message || "Invoice saved successfully"
       );
     } catch (error) {
-      // console.error("Error saving record:", error);
+      console.error("Error saving record:", error);
       toast.error("Error saving record");
     }
   };
@@ -1186,24 +1621,24 @@ const POS = () => {
         case "DIRECT SALES INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totalAmountWithVat,
-            vatTotal: Number(totalVat),
+            totalWithVat: parseFloat(parseFloat(totalAmountWithVat).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalVat).toFixed(2)),
           };
           break;
 
         case "DIRECT SALES RETURN":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutExchange,
-            vatTotal: Number(totalWithOutExchange),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutExchange).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutExchange).toFixed(2)),
           };
           break;
 
         case "DSALES NO INVOICE":
           payload = {
             invoiceDate: todayDate,
-            totalWithVat: totolAmountWithoutVatDSalesNoInvoice,
-            vatTotal: Number(totalWithOutVatDSalesNoInvoice),
+            totalWithVat: parseFloat(parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)),
+            vatTotal: parseFloat(parseFloat(totalWithOutVatDSalesNoInvoice).toFixed(2)),
           };
           break;
 
@@ -1218,7 +1653,10 @@ const POS = () => {
       const qrCodeDataFromApi = res?.data?.qrCodeData;
       console.log(qrCodeDataFromApi);
       setZatcaQrcode(qrCodeDataFromApi);
+      // setZatchaQrcodeExchange(qrCodeDataFromApi);
+      // handlePrintSalesInvoice(qrCodeDataFromApi);
 
+      // insertInvoiceRecord();
       setIsConfirmDisabled(false);
       setIsTenderCashEnabled(false);
       toast.success("Invoice generated successfully!");
@@ -1226,8 +1664,8 @@ const POS = () => {
     } catch (err) {
       console.log(err);
       toast.error(
-        err?.response?.data?.errors[0] ||
-          "An error occurred while generating the invoice"
+        err?.response?.data?.error ||
+        "An error occurred while generating the invoice"
       );
       setInvoiceLoader(false);
     }
@@ -1246,8 +1684,8 @@ const POS = () => {
 
     let payload = {
       invoiceDate: todayDate,
-      totalWithVat: totalAmountWithVat,
-      vatTotal: Number(totalVat),
+      totalWithVat: parseFloat(Number(totalAmountWithVat.toFixed(2))),
+      vatTotal: parseFloat(Number(totalVat).toFixed(2)),
     };
 
     try {
@@ -1261,7 +1699,7 @@ const POS = () => {
       console.log(err);
       toast.error(
         err?.response?.data?.errors[0] ||
-          "An error occurred while generating the invoice"
+        "An error occurred while generating the invoice"
       );
     } finally {
       setInvoiceLoader(false);
@@ -1269,25 +1707,63 @@ const POS = () => {
   };
 
   // Calculate totals for Net with VAT, Total VAT, and Total Amount with VAT
+  //   useEffect(() => {
+  //     const calculateTotals = () => {
+  //       let totalNet = 0;
+  //       let totalVat = 0;
+
+  //       data.forEach((item) => {
+  //         totalNet += item.ItemPrice * item.Qty;
+  //         totalVat += item.VAT * item.Qty;
+  //       });
+  //       // data.forEach((item) => {
+  //       //   const itemTotal = item.ItemPrice * item.Qty;
+  //       //   totalNet += itemTotal;
+  //       //   const vatRate = parseFloat(vat) / 100 || 0;
+  //       //   totalVat += itemTotal * vatRate;
+  //       // });
+
+  //       setNetWithVat(totalNet.toFixed(2));
+  //       setTotalVat(totalVat.toFixed(2));
+  //       setTotalAmountWithVat(totalNet + totalVat);
+  //     };
+
+  //     // calculateTotals();
+  //     if (data.length > 0) {
+  //       calculateTotals(); // Only calculate when there is data
+  //     }
+  //   // }, [data, vat]);
+  // }, [data]);
+
+  // Direct Sales Invoice with discount 
   useEffect(() => {
     const calculateTotals = () => {
+      const totalQty = data.reduce((sum, item) => sum + item.Qty, 0);
+      const discount = calculateDiscount(data, totalQty);
+      const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
+
       let totalNet = 0;
       let totalVat = 0;
+      let totalAmount = 0;
 
       data.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        const discountedPrice = item.ItemPrice - discountPerItem;
+        const itemVat = (discountedPrice * taxAmount) / 100;
+
+        totalNet += discountedPrice * item.Qty;
+        totalVat += itemVat * item.Qty;
+        totalAmount += (discountedPrice + itemVat) * item.Qty;
       });
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
-      setTotalAmountWithVat(totalNet + totalVat);
+      setNetWithVat(totalNet.toFixed(2));
+      setTotalVat(totalVat.toFixed(2));
+      setTotalAmountWithVat(totalAmount.toFixed(2));
+      setDiscountedTotal(discount.toFixed(2));
     };
 
-    if (data.length > 0) {
-      calculateTotals();
-    }
-  }, [data]);
+    calculateTotals();
+  }, [data, selectedCustomeNameWithDirectInvoice, taxAmount]);
+
 
   const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null);
   const [isReceiptPrinted, setIsReceiptPrinted] = useState(false);
@@ -1305,27 +1781,39 @@ const POS = () => {
     let totalsContent;
 
     if (selectedSalesType === "DIRECT SALES INVOICE") {
+      const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
+      // const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free") || 
+      //                       selectedCustomeNameWithDirectInvoice?.CUST_CODE === "CL100948" ||
+      //                       selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Miscelleneous Customers - Khobar Showroom");
+
       totalsContent = `
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithVat}
+          ${parseFloat(netWithVat).toFixed(2)}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalVat}
+          ${parseFloat(totalVat).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totalAmountWithVat}
+          ${parseFloat(totalAmountWithVat).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totalAmountWithVat}
+          ${parseFloat(totalAmountWithVat).toFixed(2)}
         </div>
+        ${isBuy2Get1Customer ? `
+          <div>
+            <strong>Discount:</strong>
+            <div class="arabic-label">خصم</div>
+            ${parseFloat(discountedTotal).toFixed(2)}
+          </div>
+        ` : ''}
         <div>
           <strong>Change Due:</strong>
           <div class="arabic-label">المتبقي</div>
@@ -1337,22 +1825,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatExchange}
+          ${parseFloat(netWithOutVatExchange).toFixed(2)}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutExchange}
+          ${parseFloat(totalWithOutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutExchange}
+          ${parseFloat(totolAmountWithoutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutExchange}
+          ${parseFloat(totolAmountWithoutExchange).toFixed(2)}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -1365,22 +1853,22 @@ const POS = () => {
         <div>
           <strong>Gross:</strong>
           <div class="arabic-label">(ريال) المجموع</div>
-          ${netWithOutVatDSalesNoInvoice}
+          ${parseFloat(netWithOutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
-          <strong>VAT (15%):</strong>
+          <strong>VAT (${taxAmount || 0}%):</strong>
           <div class="arabic-label">ضريبة القيمة المضافة</div>
-          ${totalWithOutVatDSalesNoInvoice}
+          ${parseFloat(totalWithOutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Total Amount With VAT:</strong>
           <div class="arabic-label">المجموع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Paid:</strong>
           <div class="arabic-label">المدفوع</div>
-          ${totolAmountWithoutVatDSalesNoInvoice}
+          ${parseFloat(totolAmountWithoutVatDSalesNoInvoice).toFixed(2)}
         </div>
         <div>
           <strong>Change Due:</strong>
@@ -1390,13 +1878,13 @@ const POS = () => {
       `;
     }
 
-    // console.log("selectedSalesType", selectedSalesType);
-    // console.log("customerName", customerName);
-    // console.log("vat", vat);
-    // console.log("invoiceNumber", invoiceNumber);
-    // console.log("currentTime", currentTime);
-    // console.log("invoiceData", invoiceData);
-    // console.log("DSalesNoInvoiceData", DSalesNoInvoiceData);
+    console.log("selectedSalesType", selectedSalesType);
+    console.log("customerName", customerName);
+    console.log("vat", vat);
+    console.log("invoiceNumber", invoiceNumber);
+    console.log("currentTime", currentTime);
+    console.log("invoiceData", invoiceData);
+    console.log("DSalesNoInvoiceData", DSalesNoInvoiceData);
 
     const html = `
       <html>
@@ -1509,54 +1997,49 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE"
-                ? "Sales Invoice"
-                : "CREDIT NOTE"
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE"
+        ? "Sales Invoice"
+        : "CREDIT NOTE"
+      }
           </div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE" || 
-              selectedSalesType === "BTOC CUSTOMER"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${
-                  selectedSalesType === "DIRECT SALES INVOICE" ||
-                  selectedSalesType === "DSALES NO INVOICE" || 
-                  selectedSalesType === "BTOC CUSTOMER"
-                    ? vat
-                    : invoiceHeaderData?.invoiceHeader?.VatNumber
-                }
+                ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${
-                    selectedSalesType === "DIRECT SALES INVOICE" ||
-                    selectedSalesType === "DSALES NO INVOICE" ||
-                    selectedSalesType === "BTOC CUSTOMER"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                  }
+                  ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
                 <div><span class="field-label">Receipt: </span>
-                 ${
-                   selectedSalesType === "DIRECT SALES INVOICE" ||
-                   selectedSalesType === "DSALES NO INVOICE" || 
-                   selectedSalesType === "BTOC CUSTOMER"
-                     ? invoiceNumber
-                     : searchInvoiceNumber
-                 }
+                 ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? invoiceNumber
+        : searchInvoiceNumber
+      }
                 </div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
@@ -1597,18 +2080,15 @@ const POS = () => {
             </thead>
 
            <tbody>
-           ${
-             selectedSalesType === "DIRECT SALES RETURN"
-               ? invoiceData
-                   .map(
-                     (item) => `
+           ${selectedSalesType === "DIRECT SALES RETURN"
+        ? invoiceData
+          .map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                      <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -1623,18 +2103,16 @@ const POS = () => {
                       </td>
                     </tr>
                   `
-                   )
-                   .join("")
-               : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-               ? DSalesNoInvoiceData.map(
-                   (item) => `
+          )
+          .join("")
+        : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+          ? DSalesNoInvoiceData.map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                      <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -1649,17 +2127,15 @@ const POS = () => {
                       </td>
                     </tr>
                   `
-                 ).join("")
-               : data
-                   .map(
-                     (item) => `
+          ).join("")
+          : data
+            .map(
+              (item) => `
                        <tr>
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
-                        <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${
-                          item.ItemPrice * item.Qty
-                        }</td>
+                        <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                        <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -1674,9 +2150,9 @@ const POS = () => {
                         </td>
                       </tr>
                      `
-                   )
-                   .join("")
-           }          
+            )
+            .join("")
+      }          
             </tbody>
           </table>
           <div class="total-section">
@@ -1707,6 +2183,8 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
+      // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
+      // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
         qrCodeData,
@@ -1721,6 +2199,7 @@ const POS = () => {
           }
         }
       );
+      // setIsOpenOtpPopupVisible(false);
       // console.log(qrCodeData);
     };
 
@@ -1843,54 +2322,49 @@ const POS = () => {
           </div>
 
           <div class="sales-invoice-title">
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE"
-                ? "Sales Invoice"
-                : "CREDIT NOTE"
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE"
+        ? "Sales Invoice"
+        : "CREDIT NOTE"
+      }
           </div>
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DIRECT SALES INVOICE" ||
-              selectedSalesType === "DSALES NO INVOICE" || 
-              selectedSalesType === "BTOC CUSTOMER"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
               <div style="display: flex; justify-content: space-between;">
                 <div><span class="field-label">VAT#: </span>
-                  ${
-                    selectedSalesType === "DIRECT SALES INVOICE" ||
-                    selectedSalesType === "DSALES NO INVOICE" ||
-                    selectedSalesType === "BTOC CUSTOMER"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                    }
+                  ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
                 </div>
                 <div class="arabic-label" style="text-align: right; direction: rtl;">
                   <span class="field-label">الرقم الضريبي#:</span>
-                    ${
-                      selectedSalesType === "DIRECT SALES INVOICE" ||
-                      selectedSalesType === "DSALES NO INVOICE" ||
-                      selectedSalesType === "BTOC CUSTOMER"
-                        ? vat
-                        : invoiceHeaderData?.invoiceHeader?.VatNumber
-                      }
+                    ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
                   </div>
                 </div>
                 <div class="customer-invoiceNumber">
                   <div>
                     <div><span class="field-label">Receipt: </span>
-                    ${
-                      selectedSalesType === "DIRECT SALES INVOICE" ||
-                      selectedSalesType === "DSALES NO INVOICE" ||
-                      selectedSalesType === "BTOC CUSTOMER"
-                        ? invoiceNumber
-                        : searchInvoiceNumber
-                      }
+                    ${selectedSalesType === "DIRECT SALES INVOICE" ||
+        selectedSalesType === "DSALES NO INVOICE" ||
+        selectedSalesType === "BTOC CUSTOMER"
+        ? invoiceNumber
+        : searchInvoiceNumber
+      }
                   </div>
                   <div><span class="field-label">Date: </span>${currentTime}</div>
                 </div>
@@ -1931,18 +2405,15 @@ const POS = () => {
             </thead>
 
            <tbody>
-           ${
-             selectedSalesType === "DIRECT SALES RETURN"
-               ? invoiceData
-                   .map(
-                     (item) => `
+           ${selectedSalesType === "DIRECT SALES RETURN"
+        ? invoiceData
+          .map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                      <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -1957,18 +2428,16 @@ const POS = () => {
                       </td>
                     </tr>
                   `
-                   )
-                   .join("")
-               : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-               ? DSalesNoInvoiceData.map(
-                   (item) => `
+          )
+          .join("")
+        : selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+          ? DSalesNoInvoiceData.map(
+            (item) => `
                     <tr>
                       <td style="border-bottom: none;">${item.SKU}</td>
                       <td style="border-bottom: none;">${item.Qty}</td>
-                      <td style="border-bottom: none;">${item.ItemPrice}</td>
-                      <td style="border-bottom: none;">${
-                        item.ItemPrice * item.Qty
-                      }</td>
+                      <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                      <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -1983,17 +2452,15 @@ const POS = () => {
                       </td>
                     </tr>
                   `
-                 ).join("")
-               : data
-                   .map(
-                     (item) => `
+          ).join("")
+          : data
+            .map(
+              (item) => `
                        <tr>
                         <td style="border-bottom: none;">${item.SKU}</td>
                         <td style="border-bottom: none;">${item.Qty}</td>
-                        <td style="border-bottom: none;">${item.ItemPrice}</td>
-                        <td style="border-bottom: none;">${
-                          item.ItemPrice * item.Qty
-                        }</td>
+                        <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                        <td style="border-bottom: none;">${(item.ItemPrice * item.Qty).toFixed(2)}</td>
                       </tr>
                       <tr>
                         <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -2008,9 +2475,9 @@ const POS = () => {
                         </td>
                       </tr>
                      `
-                   )
-                   .join("")
-           }          
+            )
+            .join("")
+      }          
             </tbody>
           </table>
           <div class="total-section">
@@ -2101,7 +2568,10 @@ const POS = () => {
     const printWindow = window.open("", "Print Window", "height=800,width=800");
 
     // Generate QR code data URL
-    const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    // const qrCodeDataURL = await QRCode.toDataURL(`${invoiceNumber}`);
+    const qrCodeDataURL = await QRCode.toDataURL(`${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+      ? invoiceNumber
+      : searchInvoiceNumber}`);
 
     const qrCodeDatazatcaExchange = await QRCode.toDataURL(`${qrCodeData}`);
 
@@ -2115,22 +2585,22 @@ const POS = () => {
       <div>
         <strong>Gross:</strong>
         <div class="arabic-label">(ريال) المجموع</div>
-        ${netWithVat}
+        ${netWithVat.toFixed(2)}
       </div>
       <div>
-        <strong>VAT (15%):</strong>
+        <strong>VAT (${taxAmount || 0}%):</strong>
         <div class="arabic-label">ضريبة القيمة المضافة</div>
-        ${totalVat}
+        ${totalVat.toFixed(2)}
       </div>
       <div>
         <strong>Total Amount With VAT:</strong>
         <div class="arabic-label">المجموع</div>
-        ${totalAmountWithVat}
+        ${totalAmountWithVat.toFixed(2)}
       </div>
       <div>
         <strong>Paid:</strong>
         <div class="arabic-label">المدفوع</div>
-        ${totalAmountWithVat}
+        ${totalAmountWithVat.toFixed(2)}
       </div>
       <div>
         <strong>Change Due:</strong>
@@ -2255,32 +2725,31 @@ const POS = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${
-                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                    ? vat
-                    : invoiceHeaderData?.invoiceHeader?.VatNumber
-                }
+                ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${
-                    selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                  }
+                  ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? invoiceNumber
+        : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -2321,13 +2790,13 @@ const POS = () => {
 
             <tbody>
               ${exchangeDataToUse
-                .map(
-                  (item) => `
+        .map(
+          (item) => `
                   <tr>
                     <td style="border-bottom: none;">${item.SKU}</td>
                     <td style="border-bottom: none;">${item.Qty}</td>
-                    <td style="border-bottom: none;">${item.ItemPrice}</td>
-                    <td style="border-bottom: none;">${item.Total}</td>
+                    <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                    <td style="border-bottom: none;">${parseFloat(item.Total).toFixed(2)}</td>
                   </tr>
                   <tr>
                     <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -2342,8 +2811,8 @@ const POS = () => {
                     </td>
                   </tr>
                 `
-                )
-                .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -2368,6 +2837,8 @@ const POS = () => {
     // Wait until the print window has loaded fully
     printWindow.onload = () => {
       const qrCodeCanvas = printWindow.document.getElementById("qrcode-canvas");
+      // let newQR='ARBOYXJ0ZWMgU29sdXRpb25zAg8zMDA0NTY0MTY1MDAwMDMDFDIwMjQtMDgtMTdUMTI6MDA6MDBaBAcxMDAwLjAwBQMxNTAGQGQzMzlkZDlkZGZkZTQ5MDI1NmM3OTVjOTFlM2RmZjBiNGQ2MTAyYjhhMGM4OTYxYzhhNGExNDE1YjZhZGMxNjYHjjMwNDUwMjIxMDBjZjk1MjkwMzc2ZTM5MjgzOGE4ZGYwMjc2YTdiMjEyYmUzMjMyNzAxNjFlNWFjYWY0MGNjOTgwMGJjNzJjNTY4MDIyMDQzYzEyZjEzMTdiZjMxN2Q2YWZkNTAwNTgxNDRlMjdmOTczNWUzZDZlMDYzYWI0MTk2YWU5YWQyZDlhMWVhN2MIgjA0OWM2MDM2NmQxNDg5NTdkMzAwMWQzZDQxNGI0NGIxYjA1MGY0NWZlODJjNDBkZTE4ZWI3NWM2M2Y1YzU2MjRmNDM3NzY0MWFjY2JlZmJiNDlhNGE4MmM1ZDAxY2YyMDRkNTdhMzEzODE1N2RmZDJmNmFlOTIzYjkzMjZiZmI5NWI='
+      // Generate the QR code using the `qrcode` library
       QRCode.toCanvas(
         qrCodeCanvas,
         qrCodeData,
@@ -2508,32 +2979,31 @@ const POS = () => {
           
           <div class="customer-info">
             <div><span class="field-label">Customer: </span>
-            ${
-              selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                ? customerName
-                : invoiceHeaderData?.invoiceHeader?.CustomerName
-            }
+            ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? customerName
+        : invoiceHeaderData?.invoiceHeader?.CustomerName
+      }
             </div>
             <div style="display: flex; justify-content: space-between;">
               <div><span class="field-label">VAT#: </span>
-                ${
-                  selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                    ? vat
-                    : invoiceHeaderData?.invoiceHeader?.VatNumber
-                }
+                ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
               <div class="arabic-label" style="text-align: right; direction: rtl;">
                 <span class="field-label">الرقم الضريبي#:</span>
-                  ${
-                    selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
-                      ? vat
-                      : invoiceHeaderData?.invoiceHeader?.VatNumber
-                  }
+                  ${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? vat
+        : invoiceHeaderData?.invoiceHeader?.VatNumber
+      }
               </div>
             </div>
             <div class="customer-invoiceNumber">
               <div>
-                <div><span class="field-label">Receipt: </span>${invoiceNumber}</div>
+                <div><span class="field-label">Receipt: </span>${selectedSalesType === "DSALES NO INVOICE" || selectedSalesType === "BTOC CUSTOMER"
+        ? invoiceNumber
+        : searchInvoiceNumber}</div>
                 <div><span class="field-label">Date: </span>${currentTime}</div>
               </div>
               <div class="customer-invocieQrcode">
@@ -2574,13 +3044,13 @@ const POS = () => {
 
             <tbody>
               ${exchangeDataToUse
-                .map(
-                  (item) => `
+        .map(
+          (item) => `
                   <tr>
                     <td style="border-bottom: none;">${item.SKU}</td>
                     <td style="border-bottom: none;">${item.Qty}</td>
-                    <td style="border-bottom: none;">${item.ItemPrice}</td>
-                    <td style="border-bottom: none;">${item.Total}</td>
+                    <td style="border-bottom: none;">${parseFloat(item.ItemPrice).toFixed(2)}</td>
+                    <td style="border-bottom: none;">${parseFloat(item.Total).toFixed(2)}</td>
                   </tr>
                   <tr>
                     <td colspan="4" style="text-align: left; padding-left: 20px;">
@@ -2595,8 +3065,8 @@ const POS = () => {
                     </td>
                   </tr>
                 `
-                )
-                .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
           <div class="total-section">
@@ -2690,7 +3160,6 @@ const POS = () => {
 
     try {
       const response = await newRequest.get(
-        // `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}`
         `/invoice/v1/headers-and-line-items?InvoiceNo=${invoiceNo}&TransactionCode=IN`
       );
       const data = response?.data?.data;
@@ -2699,24 +3168,29 @@ const POS = () => {
       setSearchInvoiceNumber(invoiceNo);
       if (data) {
         const invoiceDetails = data.invoiceDetails;
-
         setInvoiceData(
           invoiceDetails.map((item) => {
-            const vat = item.ItemPrice * 0.15;
+            const vat = item.ItemPrice * taxAmount / 100;
             const total = item.ItemPrice * item.ItemQry + vat * item.ItemQry;
+
+            // Check if the transaction code is not "AXSR"
+            const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
+            const finalItemPrice = isAXSR ? 0 : item.ItemPrice;
+            const finalVAT = isAXSR ? 0 : vat;
+            const finalTotal = isAXSR ? 0 : total;
 
             return {
               id: item.id,
               SKU: item.ItemSKU,
-              Barcode: item.InvoiceNo, // Assuming InvoiceNo acts as the barcode in this case
+              Barcode: item.InvoiceNo,
               Description: item.Remarks || "No description",
               DescriptionArabic: item.Remarks || "No description",
               ItemSize: item.ItemSize,
               Qty: item?.ItemQry,
               originalQty: item.ItemQry,
-              ItemPrice: item.ItemPrice,
-              VAT: vat,
-              Total: total,
+              ItemPrice: finalItemPrice,
+              VAT: finalVAT,
+              Total: finalTotal,
             };
           })
         );
@@ -2736,20 +3210,47 @@ const POS = () => {
   };
 
   // Sales return Calculation without exhange
+  // useEffect(() => {
+  //   const calculateTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     invoiceData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+
+  //     setNetWithOutExchange(totalNet.toFixed(2));
+  //     setTotalWithOutExchange(totalVat.toFixed(2));
+  //     setTotolAmountWithoutExchange(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   calculateTotals();
+  // }, [invoiceData]);
+
+  // Sales return Calculation without exchange
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
 
       invoiceData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate net amount (Item Price * Quantity)
+        totalNet += parseFloat((item.ItemPrice * item.Qty).toFixed(2));
+        
+        // Use the VAT directly from the item and multiply by quantity
+        totalVat += parseFloat((item.VAT * item.Qty).toFixed(2));
       });
-      // console.log(exchangeData)
 
-      setNetWithOutExchange(totalNet);
-      setTotalWithOutExchange(totalVat);
-      setTotolAmountWithoutExchange(totalNet + totalVat);
+      // Format the numbers with 2 decimal places
+      const netAmount = totalNet.toFixed(2);
+      const vatAmount = totalVat.toFixed(2);
+      // Calculate total by adding the formatted numbers to match the grid's precision
+      const totalAmount = (parseFloat(netAmount) + parseFloat(vatAmount)).toFixed(2);
+
+      setNetWithOutExchange(netAmount);          // 65.00
+      setTotalWithOutExchange(vatAmount);        // 9.75
+      setTotolAmountWithoutExchange(totalAmount); // 74.75
     };
 
     calculateTotals();
@@ -2829,32 +3330,69 @@ const POS = () => {
           return updatedData;
         },
         [...prevData]
-      );
+      ); // Start with the current exchangeData
     });
   };
 
   // exchange calculation
+  // useEffect(() => {
+  //   const calculateExchangeTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     exchangeData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     // console.log(exchangeData)
+
+  //     setNetWithVat(parseFloat(totalNet.toFixed(2)));
+  //     setTotalVat(parseFloat(totalVat.toFixed(2)));
+  //     setTotalAmountWithVat(parseFloat(totalNet.toFixed(2)) + parseFloat(totalVat.toFixed(2)));
+  //   };
+
+  //   // calculateTotals();
+  //   if (exchangeData.length > 0) {
+  //     calculateExchangeTotals(); // Only calculate when there is exchange data
+  //   }
+  // }, [exchangeData]);
+
   useEffect(() => {
     const calculateExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
 
       exchangeData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
-      });
-      // console.log(exchangeData)
+        // Calculate net amount without VAT
+        const itemNet = item.ItemPrice * item.Qty;
+        totalNet += itemNet;
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
-      setTotalAmountWithVat(totalNet + totalVat);
+        // Calculate VAT amount based on tax rate
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
+      });
+
+      // Convert to numbers and maintain precision
+      const netAmount = parseFloat(Number(totalNet).toFixed(2));
+      const vatAmount = parseFloat(Number(totalVat).toFixed(2));
+
+      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
+
+      setNetWithVat(netAmount);
+      setTotalVat(vatAmount);
+      setTotalAmountWithVat(totalAmount);
     };
 
-    // calculateTotals();
+    // Only calculate when there is exchange data
     if (exchangeData.length > 0) {
       calculateExchangeTotals();
+    } else {
+      // Reset values when no exchange data
+      setNetWithVat(0);
+      setTotalVat(0);
+      setTotalAmountWithVat(0);
     }
-  }, [exchangeData]);
+  }, [exchangeData, taxAmount]);
 
   // DSALES no Invoice Exchange
   const [dSalesNoInvoiceexchangeData, setDSalesNoInvoiceexchangeData] =
@@ -2889,47 +3427,99 @@ const POS = () => {
   };
 
   // DSales No Invoice Calculation
+  // useEffect(() => {
+  //   const calculateTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     DSalesNoInvoiceData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     // console.log(exchangeData)
+
+  //     setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
+  //     setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
+  //     setTotolAmountWithoutVatDSalesNoInvoice(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   calculateTotals();
+  // }, [DSalesNoInvoiceData]);
+
   useEffect(() => {
     const calculateTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
 
       DSalesNoInvoiceData.forEach((item) => {
+        // Calculate net amount without VAT
         totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
+        // Calculate VAT amount
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
       });
-      // console.log(exchangeData)
 
-      setNetWithOutVatDSalesNoInvoice(totalNet);
-      setTotalWithOutVatDSalesNoInvoice(totalVat);
-      setTotolAmountWithoutVatDSalesNoInvoice(totalNet + totalVat);
+      setNetWithOutVatDSalesNoInvoice(totalNet.toFixed(2));
+      setTotalWithOutVatDSalesNoInvoice(totalVat.toFixed(2));
+      setTotolAmountWithoutVatDSalesNoInvoice((totalNet + totalVat).toFixed(2));
     };
 
     calculateTotals();
-  }, [DSalesNoInvoiceData]);
+  }, [DSalesNoInvoiceData, taxAmount]);
 
   // DSALES No Invocie Exchange calculation
+  // useEffect(() => {
+  //   const calculateDSalesExchangeTotals = () => {
+  //     let totalNet = 0;
+  //     let totalVat = 0;
+
+  //     // console.log(dSalesNoInvoiceexchangeData);
+  //     dSalesNoInvoiceexchangeData.forEach((item) => {
+  //       totalNet += item.ItemPrice * item.Qty;
+  //       totalVat += item.VAT * item.Qty;
+  //     });
+  //     console.log(dSalesNoInvoiceexchangeData)
+
+
+  //     setNetWithVat(totalNet.toFixed(2));
+  //     setTotalVat(totalVat.toFixed(2));
+  //     setTotalAmountWithVat(totalNet.toFixed(2) + totalVat.toFixed(2));
+  //   };
+
+  //   // calculateTotals();
+  //   if (dSalesNoInvoiceexchangeData.length > 0) {
+  //     calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
+  //   }
+  // }, [dSalesNoInvoiceexchangeData]);
+
+  // DSALES No Invoice Exchange calculation
   useEffect(() => {
     const calculateDSalesExchangeTotals = () => {
       let totalNet = 0;
       let totalVat = 0;
-      console.log(dSalesNoInvoiceexchangeData);
-      dSalesNoInvoiceexchangeData.forEach((item) => {
-        totalNet += item.ItemPrice * item.Qty;
-        totalVat += item.VAT * item.Qty;
-      });
-      // console.log(dSalesNoInvoiceexchangeData)
 
-      setNetWithVat(totalNet);
-      setTotalVat(totalVat);
-      setTotalAmountWithVat(totalNet + totalVat);
+      dSalesNoInvoiceexchangeData.forEach((item) => {
+        // Calculate net amount without VAT
+        totalNet += item.ItemPrice * item.Qty;
+        // Calculate VAT amount
+        const itemVat = (item.ItemPrice * taxAmount) / 100;
+        totalVat += itemVat * item.Qty;
+      });
+
+      // Convert to numbers before setting state to avoid string concatenation
+      const netAmount = parseFloat(totalNet.toFixed(2));
+      const vatAmount = parseFloat(totalVat.toFixed(2));
+      const totalAmount = parseFloat((netAmount + vatAmount).toFixed(2));
+
+      setNetWithVat(netAmount);
+      setTotalVat(vatAmount);
+      setTotalAmountWithVat(totalAmount);
     };
 
-    // calculateTotals();
     if (dSalesNoInvoiceexchangeData.length > 0) {
-      calculateDSalesExchangeTotals(); // Only calculate when there is exchange data
+      calculateDSalesExchangeTotals();
     }
-  }, [dSalesNoInvoiceexchangeData]);
+  }, [dSalesNoInvoiceexchangeData, taxAmount]);
 
   // handleDelete
   const handleDeleteExchangeData = (index) => {
@@ -2950,6 +3540,8 @@ const POS = () => {
     setNetWithVat(0);
     setTotalVat(0);
     setTotalAmountWithVat(0);
+
+    setInvoiceNumber(generateInvoiceNumber());
   }, [selectedSalesType]);
 
   // I checking the invoice number and customer code if customer code is found in this invoice number then input feild is prefilled
@@ -2979,19 +3571,37 @@ const POS = () => {
   }, [invoiceHeaderData]);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const handleMobileChange = (e) => {
-    const value = e.target.value;
-    setMobileNo(value);
+  const handleMobileChange = (value) => {
+    // Reset error message
+    setErrorMessage("");
 
-    // Validate if the mobile number is exactly 10 digits long
-    if (value.length === 10) {
-      setErrorMessage("");
-    } else if (value.length < 10 && value.length > 0) {
-      setErrorMessage("Mobile must be 10 digits long.");
-    } else {
-      setErrorMessage("");
+    // Check if the country code is for Saudi Arabia
+    if (value.startsWith("966")) {
+      // Check for mobile number (should start with '9665')
+      if (value.length > 1 && value[3] !== "5") {
+        setErrorMessage("Mobile number must start with 9665");
+      }
+
+      // Check for maximum length (12 digits including country code)
+      if (value.length > 12) {
+        setErrorMessage("Number must be a maximum of 12 digits");
+      }
     }
 
+    // Set the mobile number
+    setMobileNo(value);
+
+    // const value = e.target.value;
+    // setMobileNo(value);
+
+    // // Validate if the mobile number is exactly 10 digits long
+    // if (value.length === 10) {
+    //   setErrorMessage("");
+    // } else if (value.length < 10 && value.length > 0) {
+    //   setErrorMessage("Mobile must be 10 digits long.");
+    // } else {
+    //   setErrorMessage("");
+    // }
   };
 
   return (
@@ -2999,9 +3609,8 @@ const POS = () => {
       <div className="p-4 bg-gray-100 min-h-screen">
         <div className="bg-white p-6 shadow-md">
           <div
-            className={`px-3 py-3 flex justify-between bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5 ${
-              i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-            }`}
+            className={`px-3 py-3 flex justify-between bg-secondary shadow font-semibold font-sans rounded-sm text-gray-100 lg:px-5 ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+              }`}
           >
             <span>
               {selectedSalesType === "DIRECT SALES INVOICE"
@@ -3012,9 +3621,8 @@ const POS = () => {
           </div>
 
           <div
-            className={`mb-4 mt-4 flex justify-between ${
-              i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-            }`}
+            className={`mb-4 mt-4 flex justify-between ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+              }`}
           >
             <h2 className="text-2xl font-semibold bg-yellow-100 px-2 py-1">
               {selectedSalesType === "DIRECT SALES INVOICE"
@@ -3031,11 +3639,10 @@ const POS = () => {
             <div>
               <label
                 htmlFor="transactionId"
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Transactions Codes")} *
               </label>
@@ -3093,11 +3700,10 @@ const POS = () => {
             {/* Sale Selection */}
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Sale Type")} *
               </label>
@@ -3121,13 +3727,40 @@ const POS = () => {
               </select>
             </div>
 
+            {/* Select Return or Exchange */}
+            {/* {(selectedSalesType === "DIRECT SALES RETURN" ||
+               selectedSalesType === "DSALES NO INVOICE" ||
+                selectedSalesType === "BTOC CUSTOMER") && (
+              <div>
+                <label
+                  className={`block text-gray-700 ${
+                    i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                  }`}
+                >
+                  {t("Sale Return Type")} *
+                </label>
+                <select
+                  className="w-full mt-1 p-2 border rounded border-gray-400"
+                  value={selectedSalesReturnType}
+                  onChange={(e) => setSelectedSalesReturnType(e.target.value)}
+                >
+                  {selectedSalesType !== "BTOC CUSTOMER" && (
+                    <option value="DIRECT RETURN">{t("DIRECT RETURN")}</option>
+                  )}
+                  <option value="RETRUN WITH EXCHANGE">
+                    {t("RETURN WITH EXCHANGE")}
+                  </option>
+                </select>
+              </div>
+            )} */}
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Sales Locations")} *
               </label>
@@ -3147,11 +3780,10 @@ const POS = () => {
             </div>
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Invoice")} #
               </label>
@@ -3170,13 +3802,14 @@ const POS = () => {
                 readOnly
               />
             </div>
+            {/* </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"> */}
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Search Customer")}
               </label>
@@ -3199,7 +3832,7 @@ const POS = () => {
                   }
                   onInputChange={(event, value) => {
                     if (!value) {
-                      setSelectedCustomerName("");
+                      setSelectedCustomerName(""); // Clear selection when input is cleared
                     }
                   }}
                   renderInput={(params) => (
@@ -3281,72 +3914,70 @@ const POS = () => {
             {selectedSalesType === "BTOC CUSTOMER" && (
               <div>
                 <label
-                  className={`block text-gray-700 ${
-                    i18n.language === "ar"
-                      ? "direction-rtl"
-                      : "text-start direction-ltr"
-                  }`}
+                  className={`block text-gray-700 ${i18n.language === "ar"
+                    ? "direction-rtl"
+                    : "text-start direction-ltr"
+                    }`}
                 >
                   {t("Search B2C Customer")}
                 </label>
-              <Autocomplete
-                id="field1"
-                options={btocCustomer}
-                getOptionLabel={(option) =>
-                  option && option.CUST_CODE && option.CUST_NAME
-                    ? `${option.CUST_CODE} - ${option.CUST_NAME}`
-                    : ""
-                }
-                onChange={handleBtocCustomer}
-                value={
-                  btocCustomer.find(
-                    (option) =>
-                      option?.CUST_CODE ===
-                        selectedBtocCustomer?.CUST_CODE
-                  ) || null
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option?.CUST_CODE === value?.CUST_CODE
-                }
-                onInputChange={(event, value) => {
-                  if (!value) {
-                    setSelectedBtocCustomer(""); // Clear selection
+                <Autocomplete
+                  id="field1"
+                  options={btocCustomer}
+                  getOptionLabel={(option) =>
+                    option && option.CUST_CODE && option.CUST_NAME
+                      ? `${option.CUST_CODE} - ${option.CUST_NAME}`
+                      : ""
                   }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    InputProps={{
-                      ...params.InputProps,
-                      className: "text-white",
-                    }}
-                    InputLabelProps={{
-                      ...params.InputLabelProps,
-                      style: { color: "white" },
-                    }}
-                    className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
-                    placeholder={t("Search B2C Customer ID")}
-                    required
-                  />
-                )}
-                classes={{
-                  endAdornment: "text-white",
-                }}
-                sx={{
-                  "& .MuiAutocomplete-endAdornment": {
-                    color: "white",
-                  },
-                }}
-              />
-             </div>
-            )}  
+                  onChange={handleBtocCustomer}
+                  value={
+                    btocCustomer.find(
+                      (option) =>
+                        option?.CUST_CODE ===
+                        selectedBtocCustomer?.CUST_CODE
+                    ) || null
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option?.CUST_CODE === value?.CUST_CODE
+                  }
+                  onInputChange={(event, value) => {
+                    if (!value) {
+                      setSelectedBtocCustomer(""); // Clear selection
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      InputProps={{
+                        ...params.InputProps,
+                        className: "text-white",
+                      }}
+                      InputLabelProps={{
+                        ...params.InputLabelProps,
+                        style: { color: "white" },
+                      }}
+                      className="bg-gray-50 border border-gray-300 text-white text-xs rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 md:p-2.5"
+                      placeholder={t("Search B2C Customer ID")}
+                      required
+                    />
+                  )}
+                  classes={{
+                    endAdornment: "text-white",
+                  }}
+                  sx={{
+                    "& .MuiAutocomplete-endAdornment": {
+                      color: "white",
+                    },
+                  }}
+                />
+              </div>
+            )}
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Delivery")} *
               </label>
@@ -3355,36 +3986,33 @@ const POS = () => {
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
                     ? invoiceHeaderData?.invoiceHeader?.DeliveryLocationCode ||
-                      ""
+                    ""
                     : `${selectedLocation?.stockLocation} - ${selectedLocation?.showroom}`
                 }
-                className={`${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
-                }
+                className={`${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                  : "w-full mt-1 p-2 border rounded border-gray-400 bg-white placeholder:text-black"
+                  }
                     ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 readOnly={selectedSalesType === "DIRECT SALES RETURN"} // Disable if Sales Return
               />
             </div>
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Customer Name")}*
               </label>
               <input
                 type="text"
                 onChange={(e) => setCustomerName(e.target.value)}
-                className={`${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
-                    : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
-                }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
+                className={`${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200 w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black"
+                  : "w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black"
+                  }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 placeholder="Walk-in customer"
                 value={
                   selectedSalesType === "DIRECT SALES RETURN"
@@ -3395,9 +4023,8 @@ const POS = () => {
               />
             </div>
             <div
-              className={`flex items-center ${
-                i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-              }`}
+              className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
             >
               <div
                 className={
@@ -3407,15 +4034,40 @@ const POS = () => {
                 }
               >
                 <label
-                  className={`block text-gray-700 ${
-                    i18n.language === "ar"
-                      ? "direction-rtl"
-                      : "text-start direction-ltr"
-                  }`}
+                  className={`block text-gray-700 ${i18n.language === "ar"
+                    ? "direction-rtl"
+                    : "text-start direction-ltr"
+                    }`}
                 >
                   {t("Mobile")} *
                 </label>
-                <input
+                <div
+                  className={`w-full mt-1 p-1 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"
+                    }`}
+                >
+                  <PhoneInput
+                    international
+                    country={"sa"}
+                    defaultCountry={"sa"}
+                    value={mobileNo}
+                    onChange={handleMobileChange}
+                    inputProps={{
+                      id: "mobile",
+                      placeholder: "Mobile Number",
+                      autoComplete: "off",
+                    }}
+                    inputStyle={{
+                      backgroundColor: "#c6f6d5",
+                      color: "black",
+                      textAlign: i18n.language === "ar" ? "right" : "left",
+                      width: "100%",
+                      borderRadius: "0px",
+                      border: "none",
+                    }}
+                    required
+                  />
+                </div>
+                {/* <input
                   type="number"
                   className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
                     i18n.language === "ar" ? "text-end" : "text-start"
@@ -3423,7 +4075,7 @@ const POS = () => {
                   placeholder={t("Mobile")}
                   value={mobileNo}
                   onChange={handleMobileChange}
-                />
+                /> */}
               </div>
               {selectedSalesType === "DIRECT SALES RETURN" && (
                 <button
@@ -3437,17 +4089,15 @@ const POS = () => {
             {selectedSalesType === "DIRECT SALES INVOICE" ? (
               <form
                 onSubmit={handleGetBarcodes}
-                className={`flex items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div className="w-full">
                   <label
-                    className={`block text-gray-700 ${
-                      i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
-                    }`}
+                    className={`block text-gray-700 ${i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                      }`}
                   >
                     {t("Scan Barcode")}
                   </label>
@@ -3456,9 +4106,8 @@ const POS = () => {
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                     placeholder={t("Enter Barcode")}
                   />
                 </div>
@@ -3472,17 +4121,15 @@ const POS = () => {
             ) : selectedSalesType === "DSALES NO INVOICE" ? (
               <form
                 onSubmit={handleGetNoInvoiceBarcodes}
-                className={`flex items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div className="w-full">
                   <label
-                    className={`block text-gray-700 ${
-                      i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
-                    }`}
+                    className={`block text-gray-700 ${i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                      }`}
                   >
                     {t("Scan Barcode (No Invoice)")}
                   </label>
@@ -3491,9 +4138,8 @@ const POS = () => {
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                     placeholder={t("Enter Barcode (No Invoice)")}
                   />
                 </div>
@@ -3508,17 +4154,15 @@ const POS = () => {
               <form
                 // i call the btoc customer function 
                 onSubmit={handleGetBtocCustomerBarcodes}
-                className={`flex items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div className="w-full">
                   <label
-                    className={`block text-gray-700 ${
-                      i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
-                    }`}
+                    className={`block text-gray-700 ${i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                      }`}
                   >
                     {t("Scan Barcode (Btoc Customer)")}
                   </label>
@@ -3527,9 +4171,8 @@ const POS = () => {
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     required
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                     placeholder={t("Enter Barcode (Btoc Customer)")}
                   />
                 </div>
@@ -3543,17 +4186,15 @@ const POS = () => {
             ) : (
               <form
                 onSubmit={handleSearchInvoice}
-                className={`flex items-center ${
-                  i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div className="w-full">
                   <label
-                    className={`block text-gray-700 ${
-                      i18n.language === "ar"
-                        ? "direction-rtl"
-                        : "text-start direction-ltr"
-                    }`}
+                    className={`block text-gray-700 ${i18n.language === "ar"
+                      ? "direction-rtl"
+                      : "text-start direction-ltr"
+                      }`}
                   >
                     {t("Scan Invoice")}
                   </label>
@@ -3563,9 +4204,8 @@ const POS = () => {
                     onChange={(e) => setSearchInvoiceNumber(e.target.value)}
                     required
                     placeholder={t("Enter Invoice Number")}
-                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${
-                      i18n.language === "ar" ? "text-end" : "text-start"
-                    }`}
+                    className={`w-full mt-1 p-2 border rounded border-gray-400 bg-green-200 placeholder:text-black  ${i18n.language === "ar" ? "text-end" : "text-start"
+                      }`}
                   />
                 </div>
                 <button
@@ -3579,11 +4219,10 @@ const POS = () => {
 
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("Remarks")} *
               </label>
@@ -3594,11 +4233,10 @@ const POS = () => {
                     ? invoiceHeaderData?.invoiceHeader?.Remarks || ""
                     : remarks
                 }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
-                }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
+                  }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 placeholder={t("Remarks")}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 onChange={(e) => setRemarks(e.target.value)}
@@ -3606,11 +4244,10 @@ const POS = () => {
             </div>
             <div>
               <label
-                className={`block text-gray-700 ${
-                  i18n.language === "ar"
-                    ? "direction-rtl"
-                    : "text-start direction-ltr"
-                }`}
+                className={`block text-gray-700 ${i18n.language === "ar"
+                  ? "direction-rtl"
+                  : "text-start direction-ltr"
+                  }`}
               >
                 {t("VAT")} #
               </label>
@@ -3621,18 +4258,17 @@ const POS = () => {
                     ? invoiceHeaderData?.invoiceHeader?.VatNumber || ""
                     : vat
                 }
-                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${
-                  selectedSalesType === "DIRECT SALES RETURN"
-                    ? "bg-gray-200"
-                    : "bg-green-200"
-                }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
+                className={`w-full mt-1 p-2 border rounded border-gray-400 placeholder:text-black ${selectedSalesType === "DIRECT SALES RETURN"
+                  ? "bg-gray-200"
+                  : "bg-green-200"
+                  }  ${i18n.language === "ar" ? "text-end" : "text-start"}`}
                 disabled={selectedSalesType === "DIRECT SALES RETURN"}
                 placeholder={t("VAT")}
                 onChange={(e) => setVat(e.target.value)}
               />
             </div>
             {errorMessage && (
-              <p className="text-red-500 text-sm -mt-4">{errorMessage}</p>
+              <p className="text-red-500 text-sm -mt-6">{errorMessage}</p>
             )}
           </div>
           {selectedSalesType === "DIRECT SALES INVOICE" && (
@@ -3647,7 +4283,8 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
+                    <th className="px-4 py-2">{t("Discount")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
@@ -3670,9 +4307,10 @@ const POS = () => {
                         <td className="border px-4 py-2">{row.ItemSize}</td>
                         <td className="border px-4 py-2">{row.AvailableStock}</td>
                         <td className="border px-4 py-2">{row.Qty}</td>
-                        <td className="border px-4 py-2">{row.ItemPrice}</td>
-                        <td className="border px-4 py-2">{row.VAT}</td>
-                        <td className="border px-4 py-2">{row.Total}</td>
+                        <td className="border px-4 py-2">{Number(row.ItemPrice).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{Number(row.VAT).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{row.Discount}</td>
+                        <td className="border px-4 py-2">{Number(row.Total).toFixed(2)}</td>
                         <td className="border px-4 py-2 text-center">
                           <button onClick={() => handleDelete(index)}>
                             <MdRemoveCircle className="text-secondary text-xl hover:text-red-500" />
@@ -3684,23 +4322,20 @@ const POS = () => {
                 )}
               </table>
               <div
-                className={`flex  ${
-                  i18n.language === "ar" ? "justify-start" : "justify-end"
-                }`}
+                className={`flex  ${i18n.language === "ar" ? "justify-start" : "justify-end"
+                  }`}
               >
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Net Without VAT")}:
                       </label>
@@ -3708,23 +4343,20 @@ const POS = () => {
                         type="text"
                         value={netWithVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total VAT")}:
                       </label>
@@ -3732,23 +4364,20 @@ const POS = () => {
                         type="text"
                         value={totalVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total Amount With VAT")}:
                       </label>
@@ -3756,9 +4385,8 @@ const POS = () => {
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
                   </div>
@@ -3778,7 +4406,7 @@ const POS = () => {
                     <th className="px-4 py-2">{t("Item Size")}</th>
                     <th className="px-4 py-2">{t("Qty")}</th>
                     <th className="px-4 py-2">{t("Item Price")}</th>
-                    <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                    <th className="px-4 py-2">{t("VAT")}</th>
                     <th className="px-4 py-2">{t("Total")}</th>
                     <th className="px-4 py-2">{t("Action")}</th>
                   </tr>
@@ -3812,9 +4440,9 @@ const POS = () => {
                             className="w-full text-center border rounded p-1"
                           />
                         </td>
-                        <td className="border px-4 py-2">{row.ItemPrice}</td>
-                        <td className="border px-4 py-2">{row.VAT}</td>
-                        <td className="border px-4 py-2">{row.Total}</td>
+                        <td className="border px-4 py-2">{parseFloat(row.ItemPrice).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{parseFloat(row.VAT).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{parseFloat(row.Total).toFixed(2)}</td>
                         <td className="border px-4 py-2 text-center relative">
                           <button
                             onClick={() => handleActionClick(index)}
@@ -3854,23 +4482,20 @@ const POS = () => {
               </table>
               {/* Total show without exchange */}
               <div
-                className={`flex  ${
-                  i18n.language === "ar" ? " justify-start" : "justify-end"
-                }`}
+                className={`flex  ${i18n.language === "ar" ? " justify-start" : "justify-end"
+                  }`}
               >
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Net Without VAT")}:
                       </label>
@@ -3878,23 +4503,20 @@ const POS = () => {
                         type="text"
                         value={netWithOutVatExchange}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total VAT")}:
                       </label>
@@ -3902,23 +4524,20 @@ const POS = () => {
                         type="text"
                         value={totalWithOutExchange}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total Amount With VAT")}:
                       </label>
@@ -3926,9 +4545,8 @@ const POS = () => {
                         type="text"
                         value={totolAmountWithoutExchange}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
                   </div>
@@ -3954,7 +4572,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -3972,9 +4590,9 @@ const POS = () => {
                         <td className="border px-4 py-2">{item.ItemSize}</td>
                         <td className="border px-4 py-2">{item?.FreeStock}</td>
                         <td className="border px-4 py-2">{item?.Qty}</td>
-                        <td className="border px-4 py-2">{item.ItemPrice}</td>
-                        <td className="border px-4 py-2">{item.VAT}</td>
-                        <td className="border px-4 py-2">{item.Total}</td>
+                        <td className="border px-4 py-2">{parseFloat(item.ItemPrice).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{parseFloat(item.VAT).toFixed(2)}</td>
+                        <td className="border px-4 py-2">{parseFloat(item.Total).toFixed(2)}</td>
                         <td className="border px-4 py-2 text-center">
                           <button
                             onClick={() => handleDeleteExchangeData(index)}
@@ -3988,23 +4606,20 @@ const POS = () => {
                 </table>
               </div>
               <div
-                className={`flex items-center ${
-                  i18n.language === "ar" ? " justify-start" : "justify-end"
-                }`}
+                className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"
+                  }`}
               >
                 <div className="bg-white p-4 rounded shadow-md w-[50%]">
                   <div className="flex flex-col gap-4">
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Net Without VAT")}:
                       </label>
@@ -4012,23 +4627,20 @@ const POS = () => {
                         type="text"
                         value={netWithVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total VAT")}:
                       </label>
@@ -4036,23 +4648,20 @@ const POS = () => {
                         type="text"
                         value={totalVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
 
                     <div
-                      className={`flex justify-between items-center ${
-                        i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
-                      }`}
+                      className={`flex justify-between items-center ${i18n.language === "ar" ? "flex-row-reverse" : "flex-row"
+                        }`}
                     >
                       <label
-                        className={`block text-gray-700 font-bold ${
-                          i18n.language === "ar"
-                            ? "direction-rtl"
-                            : "text-start direction-ltr"
-                        }`}
+                        className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                          ? "direction-rtl"
+                          : "text-start direction-ltr"
+                          }`}
                       >
                         {t("Total Amount With VAT")}:
                       </label>
@@ -4060,9 +4669,8 @@ const POS = () => {
                         type="text"
                         value={totalAmountWithVat}
                         readOnly
-                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                          i18n.language === "ar" ? " text-start" : "text-end"
-                        }`}
+                        className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                          }`}
                       />
                     </div>
                   </div>
@@ -4084,7 +4692,7 @@ const POS = () => {
                       <th className="px-4 py-2">{t("Item Size")}</th>
                       <th className="px-4 py-2">{t("Qty")}</th>
                       <th className="px-4 py-2">{t("Item Price")}</th>
-                      <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                      <th className="px-4 py-2">{t("VAT")}</th>
                       <th className="px-4 py-2">{t("Total")}</th>
                       <th className="px-4 py-2">{t("Action")}</th>
                     </tr>
@@ -4108,9 +4716,9 @@ const POS = () => {
                           </td>
                           <td className="border px-4 py-2">{row.ItemSize}</td>
                           <td className="border px-4 py-2">{row.Qty}</td>
-                          <td className="border px-4 py-2">{row.ItemPrice}</td>
-                          <td className="border px-4 py-2">{row.VAT}</td>
-                          <td className="border px-4 py-2">{row.Total}</td>
+                          <td className="border px-4 py-2">{parseFloat(row.ItemPrice).toFixed(2)}</td>
+                          <td className="border px-4 py-2">{parseFloat(row.VAT).toFixed(2)}</td>
+                          <td className="border px-4 py-2">{parseFloat(row.Total).toFixed(2)}</td>
                           <td className="border px-4 py-2 text-center relative">
                             <button
                               onClick={() => handleActionClick(index)}
@@ -4149,25 +4757,22 @@ const POS = () => {
                   )}
                 </table>
                 <div
-                  className={`flex items-center ${
-                    i18n.language === "ar" ? " justify-start" : "justify-end"
-                  }`}
+                  className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"
+                    }`}
                 >
                   <div className="bg-white p-4 rounded shadow-md w-[50%]">
                     <div className="flex flex-col gap-4">
                       <div
-                        className={`flex justify-between items-center ${
-                          i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
-                        }`}
+                        className={`flex justify-between items-center ${i18n.language === "ar"
+                          ? "flex-row-reverse"
+                          : "flex-row"
+                          }`}
                       >
                         <label
-                          className={`block text-gray-700 font-bold ${
-                            i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
-                          }`}
+                          className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
+                            }`}
                         >
                           {t("Net Without VAT")}:
                         </label>
@@ -4175,25 +4780,22 @@ const POS = () => {
                           type="text"
                           value={netWithOutVatDSalesNoInvoice}
                           readOnly
-                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                            i18n.language === "ar" ? " text-start" : "text-end"
-                          }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                            }`}
                         />
                       </div>
 
                       <div
-                        className={`flex justify-between items-center ${
-                          i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
-                        }`}
+                        className={`flex justify-between items-center ${i18n.language === "ar"
+                          ? "flex-row-reverse"
+                          : "flex-row"
+                          }`}
                       >
                         <label
-                          className={`block text-gray-700 font-bold ${
-                            i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
-                          }`}
+                          className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
+                            }`}
                         >
                           {t("Total VAT")}:
                         </label>
@@ -4201,25 +4803,22 @@ const POS = () => {
                           type="text"
                           value={totalWithOutVatDSalesNoInvoice}
                           readOnly
-                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                            i18n.language === "ar" ? " text-start" : "text-end"
-                          }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                            }`}
                         />
                       </div>
 
                       <div
-                        className={`flex justify-between items-center ${
-                          i18n.language === "ar"
-                            ? "flex-row-reverse"
-                            : "flex-row"
-                        }`}
+                        className={`flex justify-between items-center ${i18n.language === "ar"
+                          ? "flex-row-reverse"
+                          : "flex-row"
+                          }`}
                       >
                         <label
-                          className={`block text-gray-700 font-bold ${
-                            i18n.language === "ar"
-                              ? "direction-rtl"
-                              : "text-start direction-ltr"
-                          }`}
+                          className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                            ? "direction-rtl"
+                            : "text-start direction-ltr"
+                            }`}
                         >
                           {t("Total Amount With VAT")}:
                         </label>
@@ -4227,9 +4826,8 @@ const POS = () => {
                           type="text"
                           value={totolAmountWithoutVatDSalesNoInvoice}
                           readOnly
-                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                            i18n.language === "ar" ? " text-start" : "text-end"
-                          }`}
+                          className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar" ? " text-start" : "text-end"
+                            }`}
                         />
                       </div>
                     </div>
@@ -4240,9 +4838,9 @@ const POS = () => {
               {dSalesNoInvoiceexchangeData.length > 0 && (
                 <div className="mt-10">
                   <button className="px-3 py-2 bg-gray-300 font-sans font-semibold rounded-t-md">
-                  {selectedSalesType === "DSALES NO INVOICE"
-                    ? t("Exchange Item DSales No Invoice")
-                    : t("Exchange Item BTOC Customer")}
+                    {selectedSalesType === "DSALES NO INVOICE"
+                      ? t("Exchange Item DSales No Invoice")
+                      : t("Exchange Item BTOC Customer")}
                     {/* {t("Exchange Item DSales No Invoice")} */}
                   </button>
                   <div className="overflow-x-auto">
@@ -4253,10 +4851,10 @@ const POS = () => {
                           <th className="px-4 py-2">{t("Barcode")}</th>
                           <th className="px-4 py-2">{t("Description")}</th>
                           <th className="px-4 py-2">{t("Item Size")}</th>
-                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>      
+                          <th className="px-4 py-2">{t("Available Stock Qty")}</th>
                           <th className="px-4 py-2">{t("Qty")}</th>
                           <th className="px-4 py-2">{t("Item Price")}</th>
-                          <th className="px-4 py-2">{t("VAT (15%)")}</th>
+                          <th className="px-4 py-2">{t("VAT")}</th>
                           <th className="px-4 py-2">{t("Total")}</th>
                           <th className="px-4 py-2">{t("Action")}</th>
                         </tr>
@@ -4281,10 +4879,10 @@ const POS = () => {
                             </td>
                             <td className="border px-4 py-2">{item?.Qty}</td>
                             <td className="border px-4 py-2">
-                              {item.ItemPrice}
+                              {parseFloat(item.ItemPrice).toFixed(2)}
                             </td>
-                            <td className="border px-4 py-2">{item.VAT}</td>
-                            <td className="border px-4 py-2">{item.Total}</td>
+                            <td className="border px-4 py-2">{parseFloat(item.VAT).toFixed(2)}</td>
+                            <td className="border px-4 py-2">{parseFloat(item.Total).toFixed(2)}</td>
                             <td className="border px-4 py-2 text-center">
                               <button>
                                 <MdRemoveCircle className="text-secondary hover:text-red-500" />
@@ -4296,25 +4894,22 @@ const POS = () => {
                     </table>
                   </div>
                   <div
-                    className={`flex items-center ${
-                      i18n.language === "ar" ? " justify-start" : "justify-end"
-                    }`}
+                    className={`flex items-center ${i18n.language === "ar" ? " justify-start" : "justify-end"
+                      }`}
                   >
                     <div className="bg-white p-4 rounded shadow-md w-[50%]">
                       <div className="flex flex-col gap-4">
                         <div
-                          className={`flex justify-between items-center ${
-                            i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
-                          }`}
+                          className={`flex justify-between items-center ${i18n.language === "ar"
+                            ? "flex-row-reverse"
+                            : "flex-row"
+                            }`}
                         >
                           <label
-                            className={`block text-gray-700 font-bold ${
-                              i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
-                            }`}
+                            className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
+                              }`}
                           >
                             {t("Net Without VAT")}:
                           </label>
@@ -4322,27 +4917,24 @@ const POS = () => {
                             type="text"
                             value={netWithVat}
                             readOnly
-                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                              i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
-                            }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
+                              ? " text-start"
+                              : "text-end"
+                              }`}
                           />
                         </div>
 
                         <div
-                          className={`flex justify-between items-center ${
-                            i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
-                          }`}
+                          className={`flex justify-between items-center ${i18n.language === "ar"
+                            ? "flex-row-reverse"
+                            : "flex-row"
+                            }`}
                         >
                           <label
-                            className={`block text-gray-700 font-bold ${
-                              i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
-                            }`}
+                            className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
+                              }`}
                           >
                             {t("Total VAT")}:
                           </label>
@@ -4350,27 +4942,24 @@ const POS = () => {
                             type="text"
                             value={totalVat}
                             readOnly
-                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                              i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
-                            }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
+                              ? " text-start"
+                              : "text-end"
+                              }`}
                           />
                         </div>
 
                         <div
-                          className={`flex justify-between items-center ${
-                            i18n.language === "ar"
-                              ? "flex-row-reverse"
-                              : "flex-row"
-                          }`}
+                          className={`flex justify-between items-center ${i18n.language === "ar"
+                            ? "flex-row-reverse"
+                            : "flex-row"
+                            }`}
                         >
                           <label
-                            className={`block text-gray-700 font-bold ${
-                              i18n.language === "ar"
-                                ? "direction-rtl"
-                                : "text-start direction-ltr"
-                            }`}
+                            className={`block text-gray-700 font-bold ${i18n.language === "ar"
+                              ? "direction-rtl"
+                              : "text-start direction-ltr"
+                              }`}
                           >
                             {t("Total Amount With VAT")}:
                           </label>
@@ -4378,11 +4967,10 @@ const POS = () => {
                             type="text"
                             value={totalAmountWithVat}
                             readOnly
-                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${
-                              i18n.language === "ar"
-                                ? " text-start"
-                                : "text-end"
-                            }`}
+                            className={`mt-1 p-2 border bg-gray-100  w-[60%] ${i18n.language === "ar"
+                              ? " text-start"
+                              : "text-end"
+                              }`}
                           />
                         </div>
                       </div>
@@ -4394,34 +4982,33 @@ const POS = () => {
           )}
 
           <div
-            className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${
-              i18n.language === "ar" ? "direction-rtl" : "direction-ltr"
-            }`}
+            className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${i18n.language === "ar" ? "direction-rtl" : "direction-ltr"
+              }`}
           >
             <div className="p-4 rounded mb-4">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-center">
                 <button
                   onClick={handleShowConfirmTransactionPopup}
-                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${
-                    isConfirmDisabled
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-500"
-                  }`}
+                  className={`bg-blue-500 text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer ${isConfirmDisabled
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500"
+                    }`}
                   disabled={isConfirmDisabled}
                 >
                   {t("Confirm Transactions")}
                 </button>
                 <button
                   onClick={handleShowCreatePopup}
-                  className={`${
-                    isTenderCashEnabled
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-gray-400 cursor-not-allowed"
-                  } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
+                  className={`${isTenderCashEnabled
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-gray-400 cursor-not-allowed"
+                    } text-white py-4 px-4 rounded transform hover:scale-90 hover:cursor-pointer`}
                   disabled={!isTenderCashEnabled}
                 >
                   {t("F3 - Tender Cash")}
                 </button>
+                {/* <button onClick={handlePrintSalesInvoice}>Print</button>
+                <button onClick={sendWhatsAppInvoice}>whatsApp Send</button> */}
               </div>
             </div>
           </div>
@@ -4461,7 +5048,8 @@ const POS = () => {
               }
               selectedTransactionCode={selectedTransactionCode}
               invoiceNumber={invoiceNumber}
-              newInvoiceNumber={newInvoiceNumber}
+              newInvoiceNumber={invoiceNumber}
+              // newInvoiceNumber={newInvoiceNumber}
               isExchangeClick={isExchangeClick}
               selectedRowData={selectedRowData}
               exchangeData={exchangeData}
@@ -4530,6 +5118,7 @@ const POS = () => {
               isVisible={isConfirmTransactionPopupVisible}
               setVisibility={setIsConfirmTransactionPopupVisible}
               onSelectionsSaved={handleSelectionsSaved}
+              onPaymentModeChange={handlePaymentModeUpdate}
             />
           )}
 
@@ -4544,7 +5133,7 @@ const POS = () => {
         </div>
       </div>
 
-      {/* What QR Code PopUp */}
+      {/* What QR Code PopUp. */}
       {showPopup && <QRCodePopup qrCode={qrCode} onClose={handleClosePopup} />}
     </SideNav>
   );

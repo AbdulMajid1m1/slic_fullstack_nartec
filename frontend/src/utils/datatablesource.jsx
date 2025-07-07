@@ -6,7 +6,7 @@ import { useGridApiContext } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 const QRCodeCell = (props) => {
-  const url = `https://gs1ksa.org/?gtin=${props.value}`;
+  const url = `${props.value}`;
   return <QRCode value={url} size={40} />;
 };
 
@@ -107,7 +107,7 @@ export const GtinColumn = (t)=> [
   {
     field: "sERIALnUMBER",
     headerName: t("Serial Number"),
-    renderCell: (params) => <QRCodeCell value={params.row.sERIALnUMBER} />,
+    renderCell: (params) => <QRCodeCell value={params.row.EnglishName} />,
     // width: 50, // Adjust this width as needed
   },
   {
@@ -690,16 +690,6 @@ export const customerCodesColumn = (t)=> [
 
 export const posHistoryInvoiceColumns = (t)=> [
   {
-    field: "Rec_Num",
-    headerName: t("Record Number"),
-    width: 150,
-  },
-  {
-    field: "TblSysNoID",
-    headerName: t("Table System ID"),
-    width: 150,
-  },
-  {
     field: "CustomerName",
     headerName: t("Customer Name"),
     width: 150,
@@ -732,6 +722,11 @@ export const posHistoryInvoiceColumns = (t)=> [
   {
     field: "PendingAmount",
     headerName: t("Pending Amount"),
+    width: 180,
+  },
+  {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
     width: 180,
   },
   {
@@ -772,6 +767,21 @@ export const posHistoryInvoiceColumns = (t)=> [
   {
     field: "MobileNo",
     headerName: t("Mobile No"),
+    width: 150,
+  },
+  {
+    field: "zatcaPayment_mode_id",
+    headerName: t("ZATCA Payment Mode ID"),
+    width: 120,
+  },
+  {
+    field: "zatcaPayment_mode_name",
+    headerName: t("ZATCA Payment Mode Name"),
+    width: 180,
+  },
+  {
+    field: "BRV_REF_NO",
+    headerName: t("BRV Reference No"),
     width: 150,
   },
   {
@@ -848,3 +858,176 @@ export const LanguageDataColumn = (t, i18n) => [
     width: 300,
   },
 ];
+
+
+
+export const posBulkCashreceiptInvoiceColumns = (t)=> [
+  {
+    field: "CustomerName",
+    headerName: t("Customer Name"),
+    width: 150,
+  },
+  {
+    field: "DeliveryLocationCode",
+    headerName: t("Delivery Location Code"),
+    width: 180,
+  },
+  {
+    field: "ItemSysID",
+    headerName: t("Item System ID"),
+    width: 150,
+  },
+  {
+    field: "InvoiceNo",
+    headerName: t("Invoice No"),
+    width: 180,
+  },
+  {
+    field: "DocNo",
+    headerName: t("Document No"),
+    width: 180,
+  },
+  {
+    field: "AdjAmount",
+    headerName: t("Adjustment Amount"),
+    width: 180,
+  },
+  {
+    field: "PendingAmount",
+    headerName: t("Pending Amount"),
+    width: 180,
+  },
+  {
+    field: "AmountWithTax",
+    headerName: t("Amount With Tax"),
+    width: 180,
+  },
+  {
+    field: "VatNumber",
+    headerName: t("Vat Number (%)"),
+    width: 180,
+  },
+  {
+    field: "Head_SYS_ID",
+    headerName: t("Head System ID"),
+    width: 180,
+  },
+  {
+    field: "TransactionCode",
+    headerName: t("Transaction Code"),
+    width: 150,
+  },
+  {
+    field: "CustomerCode",
+    headerName: t("Customer Code"),
+    width: 180,
+  },
+  {
+    field: "SalesLocationCode",
+    headerName: t("Sales Location Code"),
+    width: 180,
+  },
+  {
+    field: "Remarks",
+    headerName: t("Remarks"),
+    width: 250,
+  },
+  {
+    field: "TransactionType",
+    headerName: t("Transaction Type"),
+    width: 150,
+  },
+  {
+    field: "UserID",
+    headerName: t("User ID"),
+    width: 150,
+  },
+  {
+    field: "MobileNo",
+    headerName: t("Mobile No"),
+    width: 150,
+  },
+  {
+    field: "zatcaPayment_mode_id",
+    headerName: t("ZATCA Payment Mode ID"),
+    width: 120,
+  },
+  {
+    field: "zatcaPayment_mode_name",
+    headerName: t("ZATCA Payment Mode Name"),
+    width: 180,
+  },
+  {
+    field: "TransactionDate",
+    headerName: t("Transaction Date"),
+    width: 200,
+  },
+];
+
+
+
+export const posErrorLogsColumn =(t)=> [
+  {
+    field: "inDocumentNo",
+    headerName: t("In Document No"),
+    width: 180,
+  },
+  {
+    field: "inRefSysId",
+    headerName: t("In RefSys Id"),
+    renderCell: GTINCell,
+    width: 280,
+  },
+  {
+    field: "srDocumentNo",
+    headerName: t("SR DocumentNo"),
+    width: 180,
+  },
+  {
+    field: "srRefSysId",
+    headerName: t("SR RefSysId"),
+    width: 180,
+  },
+  {
+    field: "transactionType",
+    headerName: t("Transaction Type"),
+    width: 180,
+  },
+  
+
+
+]
+
+
+
+export const taxSettingsColumn =(t)=> [
+  {
+    field: "taxAmount",
+    headerName: t("Tax Settings"),
+    width: 180,
+  },
+  {
+    field: "createdAt",
+    headerName: t("Created At"),
+    width: 180,
+
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  {
+    field: "updatedAt",
+    headerName: t("Updated At"),
+    width: 180,
+    type: "dateTime",
+    valueGetter: (params) => {
+      // Convert the string date to a Date object
+      return params.value ? new Date(params.value) : null;
+    },
+  },
+  
+
+
+]

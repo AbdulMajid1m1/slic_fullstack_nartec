@@ -5,11 +5,13 @@ import { IoBarcodeSharp } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { useTaxContext } from "../../../Contexts/TaxContext";
 
 const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selectedRowData, invoiceHeaderData, dsalesLocationCode, selectedSalesType, addDSalesExchangeData, selectedCustomerName, selectedSalesReturnType, selectedCustomeNameWithDirectInvoice, selectedTransactionCode }) => {
   const [data, setData] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { taxAmount } = useTaxContext();
 
   const EX_TRANSACTION_CODES = ["EXIN", "AXIN", "EXSR", "AXSR"];
   const getCustomerCode = () => {
@@ -43,7 +45,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      // console.log(data)
+      console.log(data)
 
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName } = data;
@@ -53,9 +55,6 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           filter: {
             P_COMP_CODE: "SLIC",
             P_ITEM_CODE: ItemCode,
-            // P_CUST_CODE: selectedSalesReturnType === "DIRECT RETURN" 
-            // ? selectedCustomeNameWithDirectInvoice?.CUST_CODE 
-            // : selectedCustomerName?.CUSTOMERCODE,
             P_CUST_CODE: customerCode,
             P_GRADE_CODE_1: ProductSize,
           },
@@ -94,14 +93,22 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
           );
 
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          const vat = itemPrice * 0.15;
+          const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
-
+          
           setData((prevData) => {
             const existingItemIndex = prevData.findIndex(
               (item) => item.Barcode === GTIN
             );
+
+            const isAXSR = selectedTransactionCode?.TXN_CODE === "AXSR";
+            // const finalItemPrice = isAXSR ? 0 : itemPrice;
+            const finalItemPrice = itemPrice;
+            // const finalVAT = isAXSR ? 0 : vat;
+            const finalVAT = vat;
+            // const finalTotal = isAXSR ? 0 : total;
+            const finalTotal = total;
 
             if (existingItemIndex !== -1) {
               // If the item already exists, just update the Qty and Total
@@ -124,9 +131,12 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   DescriptionArabic: ArabicName,
                   ItemSize: ProductSize,
                   Qty: 1,
-                  ItemPrice: itemPrice,
-                  VAT: vat,
-                  Total: total,
+                  // ItemPrice: itemPrice,
+                  // VAT: vat,
+                  // Total: total,
+                  ItemPrice: finalItemPrice,
+                  VAT: finalVAT,
+                  Total: finalTotal,
                 },
               ];
             }
@@ -297,7 +307,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
               
 
               {/* Exchange Item in Heading */}
-              <form onSubmit={handleGetBarcodes} className="flex items-center w-full mt-6">
+              <form onSubmit={handleGetBarcodes} className="flex items-center gap-3 w-full mt-6">
                 <div  className={`w-full ${
                   i18n.language === "ar" ? "text-end" : "text-start"
                 }`}>
@@ -319,6 +329,7 @@ const ExchangeItemPopUp = ({ isVisible, setVisibility, addExchangeData, selected
                   <IoBarcodeSharp size={24} />
                 </button>
               </form>
+
 
 
               <div className="mt-6 w-full overflow-x-auto h-32">

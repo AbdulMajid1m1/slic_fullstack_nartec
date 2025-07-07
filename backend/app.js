@@ -53,6 +53,32 @@ app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
 
+
+
+app.get("/test", (req, res) => {
+  
+function calculateCheckDigit(gtinWithoutCheckDigit) {
+  const digits = gtinWithoutCheckDigit.split("").map(Number);
+  let sum = 0;
+
+  // EAN-13 check digit calculation (modulo-10 algorithm)
+  for (let i = 0; i < digits.length; i++) {
+    sum += i % 2 === 0 ? digits[i] * 1 : digits[i] * 3;
+  }
+
+  const remainder = sum % 10;
+  const checkDigit = remainder === 0 ? 0 : 10 - remainder;
+  
+
+  return checkDigit.toString();
+}
+
+
+let barcod3=calculateCheckDigit("628789803474")
+console.log(barcod3)
+res.send(barcod3)
+});
+
 app.use((error, req, res, next) => {
   console.log(error);
   let status = 500;

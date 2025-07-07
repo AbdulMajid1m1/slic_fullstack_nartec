@@ -118,6 +118,7 @@ exports.sendWhatsAppMessage = [
 
       const formattedPhoneNumber = `${phoneNumber.replace(/\D/g, "")}@c.us`;
 
+      // Send the first message with the PDF attachment
       if (attachmentPath) {
         const media = MessageMedia.fromFilePath(attachmentPath);
         await client.sendMessage(formattedPhoneNumber, media, {
@@ -128,13 +129,22 @@ exports.sendWhatsAppMessage = [
         await client.sendMessage(formattedPhoneNumber, messageText);
       }
 
-      res.json({ message: "WhatsApp message sent successfully!" });
+      // Hardcoded link for feedback
+      const ratingLink =
+        "https://docs.google.com/forms/d/e/1FAIpQLSceYlSsIGZ9j6YjB0pFBnn7xcWBSRP7UOmYalyPPrWstvVvQA/viewform";
+      const ratingMessage = `We value your feedback! Please take a moment to rate your purchase order: ${ratingLink}`;
+      
+      // Send the second message with the hardcoded link
+      await client.sendMessage(formattedPhoneNumber, ratingMessage);
+
+      res.json({ message: "WhatsApp messages sent successfully!" });
     } catch (error) {
       console.error("Error sending WhatsApp message:", error);
-      res.status(500).json({ error: "Failed to send message" });
+      res.status(500).json({ error: "Failed to send messages" });
     }
   },
 ];
+
 
 // Endpoint to logout the WhatsApp client and clear the server cache
 exports.logoutWhatsApp = async (req, res) => {

@@ -151,30 +151,69 @@ model tblPOSInvoiceDetails {
 }
 
 model tblPOSInvoiceMaster {
-  Rec_Num              Float?    @map("Rec ##")
-  TblSysNoID           Float?
-  SNo                  Float?
-  DeliveryLocationCode String?   @db.NVarChar(255)
-  ItemSysID            String?   @db.NVarChar(255)
-  InvoiceNo            String?    @db.NVarChar(255)
-  Head_SYS_ID          String?   @db.NVarChar(255)
-  TransactionCode      String?   @db.NVarChar(255)
-  CustomerCode         String?   @db.NVarChar(255)
-  SalesLocationCode    String?   @db.NVarChar(255)
-  Remarks              String?   @db.NVarChar(255)
-  TransactionType      String?   @db.NVarChar(255)
-  UserID               String?   @db.NVarChar(255)
-  MobileNo             String?   @db.NVarChar(255)
-  TransactionDate      DateTime? @db.DateTime
-  id                   String    @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
-  VatNumber            String?   @db.VarChar(50)
-  CustomerName         String?   @db.NVarChar(255)
-  AdjAmount            Float?
-  DocNo                String?   @db.NVarChar(255)
-  PendingAmount        Float?
-  isReceiptCreated     Boolean?  @default(false) // New column for receipt status
-  createdAt            DateTime? @default(now()) // Automatically set to current date/time
-  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
+  Rec_Num                Float?              @map("Rec ##")
+  TblSysNoID             Float?
+  SNo                    Float?
+  zatcaPayment_mode_id   String?
+  zatcaPayment_mode_name String?
+  BRV_REF_NO             String?
+  DeliveryLocationCode   String?             @db.NVarChar(255)
+  ItemSysID              String?             @db.NVarChar(255)
+  InvoiceNo              String?             @db.NVarChar(255)
+  Head_SYS_ID            String?             @db.NVarChar(255)
+  TransactionCode        String?             @db.NVarChar(255)
+  CustomerCode           String?             @db.NVarChar(255)
+  SalesLocationCode      String?             @db.NVarChar(255)
+  Remarks                String?             @db.NVarChar(255)
+  TransactionType        String?             @db.NVarChar(255)
+  UserID                 String?             @db.NVarChar(255)
+  MobileNo               String?             @db.NVarChar(255)
+  TransactionDate        DateTime?           @db.DateTime
+  id                     String              @unique(map: "UQ_tblPOSInvoiceMaster_id") @default(uuid()) @db.UniqueIdentifier
+  VatNumber              String?             @db.VarChar(50)
+  CustomerName           String?             @db.NVarChar(255)
+  AdjAmount              Float?
+  DocNo                  String?             @db.NVarChar(255)
+  PendingAmount          Float?
+  isReceiptCreated       Boolean?            @default(false) // New column for receipt status.
+  createdAt              DateTime?           @default(now()) // Automatically set to current date/time
+  updatedAt              DateTime?           @updatedAt // Automatically updated on any data modification
+  batch                  tblPOSInvoiceBatch? @relation(fields: [batchId], references: [id])
+  batchId                String?
+}
+
+model tblPOSInvoiceBatch {
+  id                  String                @id @default(uuid())
+  bulkCashDocNo       String                @db.NVarChar(255)
+  bulkCashRefNo       String                @db.NVarChar(255)
+  bankDepositNo       String?               @db.NVarChar(255) // Nullable since it might be added later
+  createdAt           DateTime              @default(now())
+  isMatched           Boolean               @default(false)
+  updatedAt           DateTime              @updatedAt
+  tblPOSInvoiceMaster tblPOSInvoiceMaster[]
+
+  @@map("tblPOSInvoiceBatch") // Mapping the table to the database name
+}
+
+model tblTax {
+  id        String   @id @default(uuid())
+  taxAmount Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tblTax")
+}
+
+model ErrorLog {
+  id              String   @id @default(uuid())
+  inDocumentNo    String?  @db.NVarChar(255) // Optional IN document number
+  inRefSysId      String?  @db.NVarChar(255) // Optional IN reference SysID
+  srDocumentNo    String?  @db.NVarChar(255) // Optional SR document number
+  srRefSysId      String?  @db.NVarChar(255) // Optional SR reference SysID
+  transactionType String?  @db.NVarChar(50) // Transaction type (e.g., BRV, EXSR)
+  createdAt       DateTime @default(now()) // Timestamp of log creation
+
+  @@map("tblErrorLogs") // Mapping the table name to the database
 }
 
 model tblPOSInvoiceDetailsArchive {
@@ -204,30 +243,34 @@ model tblPOSInvoiceDetailsArchive {
 }
 
 model tblPOSInvoiceMasterArchive {
-  Rec_Num              Float?    @map("Rec ##")
-  TblSysNoID           Float?
-  SNo                  Float?
-  DeliveryLocationCode String?   @db.NVarChar(255)
-  ItemSysID            String?   @db.NVarChar(255)
-  InvoiceNo            String?    @db.NVarChar(255)
-  Head_SYS_ID          String?   @db.NVarChar(255)
-  TransactionCode      String?   @db.NVarChar(255)
-  CustomerCode         String?   @db.NVarChar(255)
-  SalesLocationCode    String?   @db.NVarChar(255)
-  Remarks              String?   @db.NVarChar(255)
-  TransactionType      String?   @db.NVarChar(255)
-  UserID               String?   @db.NVarChar(255)
-  MobileNo             String?   @db.NVarChar(255)
-  TransactionDate      DateTime? @db.DateTime
-  id                   String    @unique(map: "UQ_tblPOSInvoiceMasterArchive_id") @default(uuid()) @db.UniqueIdentifier
-  VatNumber            String?   @db.VarChar(50)
-  CustomerName         String?   @db.NVarChar(255)
-  AdjAmount            Float?
-  DocNo                String?   @db.NVarChar(255)
-  PendingAmount        Float?
-  isReceiptCreated     Boolean?  @default(false) // New column for receipt status
-  createdAt            DateTime? @default(now()) // Automatically set to current date/time
-  updatedAt            DateTime? @updatedAt // Automatically updated on any data modification
+  Rec_Num                Float?    @map("Rec ##")
+  TblSysNoID             Float?
+  SNo                    Float?
+  zatcaPayment_mode_id   String?
+  zatcaPayment_mode_name String?
+  BRV_REF_NO             String?
+  DeliveryLocationCode   String?   @db.NVarChar(255)
+  ItemSysID              String?   @db.NVarChar(255)
+  InvoiceNo              String?   @db.NVarChar(255)
+  Head_SYS_ID            String?   @db.NVarChar(255)
+  TransactionCode        String?   @db.NVarChar(255)
+  CustomerCode           String?   @db.NVarChar(255)
+  SalesLocationCode      String?   @db.NVarChar(255)
+  Remarks                String?   @db.NVarChar(255)
+  TransactionType        String?   @db.NVarChar(255)
+  UserID                 String?   @db.NVarChar(255)
+  MobileNo               String?   @db.NVarChar(255)
+  TransactionDate        DateTime? @db.DateTime
+  id                     String    @unique(map: "UQ_tblPOSInvoiceMasterArchive_id") @default(uuid()) @db.UniqueIdentifier
+  VatNumber              String?   @db.VarChar(50)
+  CustomerName           String?   @db.NVarChar(255)
+  AdjAmount              Float?
+  DocNo                  String?   @db.NVarChar(255)
+  PendingAmount          Float?
+  batchId                String?
+  isReceiptCreated       Boolean?  @default(false) // New column for receipt status
+  createdAt              DateTime? @default(now()) // Automatically set to current date/time
+  updatedAt              DateTime? @updatedAt // Automatically updated on any data modification
 }
 
 model TblSalesReturnInvoicetmp {
@@ -510,6 +553,7 @@ model TblTrxCodes {
   @@index([TxNCode], map: "WDIDX172070276674")
   @@index([TXName], map: "WDIDX172070276675")
 }
+
 model languages {
   id         String   @id @default(cuid())
   type       String?  @db.NVarChar(Max)

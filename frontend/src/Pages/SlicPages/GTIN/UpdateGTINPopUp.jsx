@@ -30,7 +30,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   // get this session data
   const updateProductsData = JSON.parse(sessionStorage.getItem("updateListOfEmployeeData"));
 
-  // console.log(updateProductsData);
+  // console.log(updateProductsData); //
 
   useEffect(() => {
     setItemCode(updateProductsData?.ItemCode || "");
@@ -50,8 +50,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
     try {
       const requestBody = {
         // GTIN: gtin,
-        // itemCode: itemCode,
         // quantity: quantity,
+        itemCode: itemCode,
         description: description,
         startSize: startSize,
         ArabicName: arabicDescription,
@@ -153,22 +153,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
               <form onSubmit={handleAddGTIN} className="w-full overflow-y-auto">
               <div className={`flex justify-between flex-col  sm:gap-3 gap-3 mt-5 ${i18n.language==='ar'? 'sm:flex-row-reverse':'sm:flex-row'}`}>
                   <div className="w-full lg:mt-0 md:mt-3 mt-6">
-                    {/* <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="itemCode"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
-                          Item Code
-                        </label>
-                        <input
-                          type="text"
-                          id="itemCode"
-                          value={itemCode}
-                          onChange={(e) => setItemCode(e.target.value)}
-                          placeholder="Enter item Code"
-                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
-                          required
-                        />
-                      </div>
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="quantity"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           Quantity
                         </label>
@@ -181,8 +167,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                            className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
-                      </div>
-                    </div> */}
+                      </div> */}
+                    </div>
 
                     <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
@@ -228,7 +214,7 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           Size
                         </label>
                         <input
-                          type="number"
+                          type="text"
                           id="startsize"
                           value={startSize}
                           onChange={(e) => setStartSize(e.target.value)}
@@ -237,20 +223,20 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="endsize"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
-                          End Size
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="itemCode"className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          Item Code
                         </label>
                         <input
-                          type="number"
-                          id="endsize"
-                          placeholder="Enter End Size"
-                          value={endSize}
-                          onChange={(e) => setEndSize(e.target.value)}
+                          type="text"
+                          id="itemCode"
+                          value={itemCode}
+                          onChange={(e) => setItemCode(e.target.value)}
+                          placeholder="Enter item Code"
                            className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
-                      </div> */}
+                      </div>
                     </div>
 
                     <div className="mt-5">
