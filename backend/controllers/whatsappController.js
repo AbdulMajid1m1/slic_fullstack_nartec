@@ -10,6 +10,9 @@ let client = null;
 let clientInitialized = false;
 let currentQRCodeDataURL = null;
 
+// Helper function to add delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Function to initialize the client and wait for QR code
 function initializeClient() {
   return new Promise((resolve, reject) => {
@@ -118,32 +121,46 @@ exports.sendWhatsAppMessage = [
 
       const formattedPhoneNumber = `${phoneNumber.replace(/\D/g, "")}@c.us`;
 
-      // Send the first message with the PDF attachment
+      // 1️⃣ First message with media (if any)
       if (attachmentPath) {
-        const media = MessageMedia.fromFilePath(attachmentPath);
-        await client.sendMessage(formattedPhoneNumber, media, {
-          caption: messageText,
-        });
-        fs.unlinkSync(attachmentPath);
+        try {
+          const media = MessageMedia.fromFilePath(attachmentPath);
+          await client.sendMessage(formattedPhoneNumber, media, {
+            caption: messageText,
+          });
+        } catch (err) {
+          console.error("❌ Failed to send media message:", err);
+        } finally {
+          // Always cleanup the uploaded file
+          fs.unlinkSync(attachmentPath);
+        }
       } else {
-        await client.sendMessage(formattedPhoneNumber, messageText);
+        try {
+          await client.sendMessage(formattedPhoneNumber, messageText);
+        } catch (err) {
+          console.error("❌ Failed to send text message:", err);
+        }
       }
 
-      // Hardcoded link for feedback
+      // 2️⃣ Second message: feedback link
       const ratingLink =
         "https://docs.google.com/forms/d/e/1FAIpQLSceYlSsIGZ9j6YjB0pFBnn7xcWBSRP7UOmYalyPPrWstvVvQA/viewform";
       const ratingMessage = `We value your feedback! Please take a moment to rate your purchase order: ${ratingLink}`;
-      
-      // Send the second message with the hardcoded link
-      await client.sendMessage(formattedPhoneNumber, ratingMessage);
 
-      res.json({ message: "WhatsApp messages sent successfully!" });
+      try {
+        await client.sendMessage(formattedPhoneNumber, ratingMessage);
+      } catch (err) {
+        console.error("❌ Failed to send rating message:", err);
+      }
+
+      res.json({ message: "WhatsApp messages sent." });
     } catch (error) {
-      console.error("Error sending WhatsApp message:", error);
+      console.error("❌ General error in sendWhatsAppMessage:", error);
       res.status(500).json({ error: "Failed to send messages" });
     }
   },
 ];
+
 
 
 // Endpoint to logout the WhatsApp client and clear the server cache
