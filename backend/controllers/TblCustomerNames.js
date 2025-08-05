@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const { SLIC_ERP_URL } = require("../config/envConfigs");
 const Customer = require("../models/TblCustomerNames");
 const CustomError = require("../exceptions/customError");
 const response = require("../utils/response");
