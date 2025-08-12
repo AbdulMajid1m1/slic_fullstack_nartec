@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const axios = require("axios");
 
 const TrxCodesType = require("../models/TrxCodesType");
@@ -125,8 +127,10 @@ exports.sync = async (req, res, next) => {
     }
     const token = authHeader.split(" ")[1];
 
+    const slic_erp_url = process.env.SLIC_ERP_URL;
+
     // Configuration for the external API request
-    const externalApiUrl = SLIC_ERP_URL + "/oneerpreport/api/getapi";
+    const externalApiUrl = slic_erp_url + "/oneerpreport/api/getapi";
     const requestBody = {
       filter: { P_TXN_TYPE: "LTRFO" },
       M_COMP_CODE: "SLIC",
