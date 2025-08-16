@@ -145,13 +145,13 @@ const GTIN = () => {
       "<html><head><title>GTIN Number</title>" +
       "<style>" +
       "@page { size: 2in 1in; margin: 0; }" +
-      "body { font-family: Arial, sans-serif; margin: 0; padding: 4px; }" +
+      "body { font-family: Arial, sans-serif; margin: 0; }" +
       "#header { display: flex; justify-content: start;}" +
       "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +   
       // Main container for the entire label
-      "#Qrcodeserails { width: 100%; height: 88px; display: flex; align-items: center; justify-content: center; border: 1px solid #f0f0f0; }" +
+      "#Qrcodeserails { width: 100%; height: 88px; display: flex; align-items: center; justify-content: center; }" +
       // Container for QR code and data
-      "#itemcode { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 180px; }" +
+      "#itemcode { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 180px; }" +
       // Left side - QR Code container
       "#inside-BRCode { flex-shrink: 0; display: flex; justify-content: center; align-items: center; }" +
       // Right side - Data container
@@ -421,7 +421,7 @@ const GTIN = () => {
                         <QRCodeSVG
                           value={`${barcode?.ItemCode} - ${barcode?.ProductSize} - ${barcode?.GTIN}`}
                           width="60"
-                          height="55"
+                          height="45"
                           level="M"
                           includeMargin={false}
                         />
