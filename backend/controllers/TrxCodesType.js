@@ -176,8 +176,6 @@ exports.sync = async (req, res, next) => {
     for (const externalCode of externalTrxCodes) {
       if (!existingCodesMap.has(externalCode.TXN_CODE)) {
         newCodes.push(externalCode);
-      } else {
-        oldCodes.push(externalCode);
       }
     }
 
