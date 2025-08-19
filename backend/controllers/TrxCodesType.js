@@ -148,6 +148,14 @@ exports.sync = async (req, res, next) => {
       headers,
     });
 
+    // log CURL for externalApiResponse
+    console.log("CURL for externalApiResponse:", {
+      url: externalApiUrl,
+      method: "POST",
+      headers,
+      data: requestBody,
+    });
+
     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
       throw new CustomError("Invalid response from external API", 500);
     }
