@@ -159,6 +159,8 @@ exports.sync = async (req, res, next) => {
       TXN_TYPE: requestBody.filter.P_TXN_TYPE, // You can adjust this if you need to map different types
     }));
 
+    console.table(externalTrxCodes);
+
     // Fetch all existing transaction codes from your database
     const existingTrxCodes = await TrxCodesType.fetchAll();
 
