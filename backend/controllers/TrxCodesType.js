@@ -161,6 +161,16 @@ exports.sync = async (req, res, next) => {
 
     console.table(externalTrxCodes);
 
+    // check if FG206 TXN_CODE exists or not in externalTrxCodes
+    const fg206Exists = externalTrxCodes.some(
+      (code) => code.TXN_CODE === "FG206"
+    );
+    if (!fg206Exists) {
+      console.warn("FG206 TXN_CODE does not exist in externalTrxCodes");
+    } else {
+      console.log("FG206 TXN_CODE exists in externalTrxCodes");
+    }
+
     // Fetch all existing transaction codes from your database
     const existingTrxCodes = await TrxCodesType.fetchAll();
 
