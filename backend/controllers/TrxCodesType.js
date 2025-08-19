@@ -159,17 +159,7 @@ exports.sync = async (req, res, next) => {
       TXN_TYPE: requestBody.filter.P_TXN_TYPE, // You can adjust this if you need to map different types
     }));
 
-    // console.table(externalTrxCodes);
-
-    // check if FG206 TXN_CODE exists or not in externalTrxCodes
-    const fg206Exists = externalTrxCodes.some(
-      (code) => code.TXN_CODE === "FG206"
-    );
-    if (!fg206Exists) {
-      console.warn("FG206 TXN_CODE does not exist in externalTrxCodes");
-    } else {
-      console.log("FG206 TXN_CODE exists in externalTrxCodes");
-    }
+    console.table(externalTrxCodes);
 
     // Fetch all existing transaction codes from your database
     const existingTrxCodes = await TrxCodesType.fetchAll();
@@ -181,7 +171,6 @@ exports.sync = async (req, res, next) => {
 
     // Array to store new codes that need to be added
     const newCodes = [];
-    const oldCodes = [];
 
     // Iterate through external codes and check if they exist in your database
     for (const externalCode of externalTrxCodes) {
@@ -195,10 +184,6 @@ exports.sync = async (req, res, next) => {
     // If there are new codes, add them to your database
     if (newCodes.length > 0) {
       await TrxCodesType.bulkCreate(newCodes);
-    }
-
-    if (oldCodes.length > 0) {
-      await TrxCodesType.bulkUpdate(oldCodes);
     }
 
     res

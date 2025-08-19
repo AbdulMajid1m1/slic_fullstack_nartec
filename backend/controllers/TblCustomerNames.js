@@ -67,8 +67,6 @@ exports.syncCustomers = async (req, res, next) => {
       headers,
     });
 
-    console.log(externalApiResponse.data);
-
     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
       throw new CustomError("Invalid response from external API", 500);
     }

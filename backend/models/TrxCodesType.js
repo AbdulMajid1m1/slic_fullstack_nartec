@@ -127,21 +127,6 @@ class TrxCodesType {
     }
   }
 
-  static async bulkUpdate(codesList) {
-    try {
-      for (const code of codesList) {
-        await prisma.trxCodesType.upsert({
-          where: { TXN_CODE: code.TXN_CODE },
-          update: code,
-          create: code,
-        });
-      }
-      return { count: codesList.length }; // Adjust this return statement if needed
-    } catch (error) {
-      throw new CustomError("Error updating transaction codes in bulk");
-    }
-  }
-
   static async upsert(code, data) {
     try {
       const upsertedCode = await prisma.trxCodesType.upsert({
