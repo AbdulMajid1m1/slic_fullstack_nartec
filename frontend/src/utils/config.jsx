@@ -7,6 +7,7 @@
 // ... For Development ... //
 // let mainUrl = "https://uat.slicapp.online";
 // ... for PRODUCTION .... //
+
 let mainUrl = 'https://slicapp.online';
 
 // ... For New ERPBase Url ... //
