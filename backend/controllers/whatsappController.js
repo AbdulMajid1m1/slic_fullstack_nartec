@@ -10,7 +10,8 @@ let client = null;
 let clientInitialized = false;
 let currentQRCodeDataURL = null;
 let qrTimeout = null;
-let initializationPromise = null;
+let isInitializing = false;
+let qrGeneratedTime = null;
 
 // Helper function to add delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -40,36 +41,65 @@ async function destroyClient() {
     client = null;
   }
   clientInitialized = false;
+  isInitializing = false;
   currentQRCodeDataURL = null;
+  qrGeneratedTime = null;
   if (qrTimeout) {
     clearTimeout(qrTimeout);
     qrTimeout = null;
   }
-  initializationPromise = null;
 }
 
-// Function to initialize the client and wait for QR code
-function initializeClient() {
-  // If already initializing, return the existing promise
-  if (initializationPromise) {
-    return initializationPromise;
+// Function to check if QR code is still valid (within 5 minutes)
+function isQRCodeValid() {
+  if (!currentQRCodeDataURL || !qrGeneratedTime) {
+    return false;
+  }
+  const now = new Date();
+  const timeDiff = now - qrGeneratedTime;
+  const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+  return timeDiff < fiveMinutes;
+}
+
+// Function to get remaining QR time in seconds
+function getQRRemainingTime() {
+  if (!qrGeneratedTime) return 0;
+  const now = new Date();
+  const timeDiff = now - qrGeneratedTime;
+  const fiveMinutes = 5 * 60 * 1000;
+  const remaining = Math.max(0, Math.floor((fiveMinutes - timeDiff) / 1000));
+  return remaining;
+}
+
+// Non-blocking function to initialize the client
+function initializeClientAsync() {
+  if (isInitializing) {
+    console.log("Client is already initializing...");
+    return;
   }
 
-  initializationPromise = new Promise(async (resolve, reject) => {
+  // Check if client is already authenticated
+  if (client && client.info && client.info.wid) {
+    console.log("Client is already authenticated");
+    return;
+  }
+
+  isInitializing = true;
+  console.log("Starting async client initialization...");
+
+  // Create client initialization promise but don't await it
+  const initPromise = (async () => {
     try {
-      // Check if client is already authenticated
-      if (client && client.info && client.info.wid) {
-        resolve({ status: "authenticated", data: null });
-        return;
+      // Destroy any existing client
+      if (client) {
+        await client.destroy();
+        client = null;
       }
 
-      // Destroy any existing client
-      await destroyClient();
+      console.log("Creating new WhatsApp client...");
+      clientInitialized = false;
 
-      console.log("Initializing new WhatsApp client...");
-      clientInitialized = true;
-
-      // Initialize WhatsApp client with session persistence
+      // Initialize WhatsApp client
       client = new Client({
         authStrategy: new LocalAuth({
           clientId: "client-one",
@@ -85,7 +115,8 @@ function initializeClient() {
             '--no-first-run',
             '--no-zygote',
             '--disable-gpu',
-            '--disable-extensions'
+            '--disable-extensions',
+            '--disable-web-security'
           ]
         },
         qrMaxRetries: 3
@@ -106,27 +137,26 @@ function initializeClient() {
             }
           });
           
-          console.log("QR code generated successfully");
+          qrGeneratedTime = new Date();
+          console.log("QR code generated successfully at:", qrGeneratedTime.toISOString());
 
           // Clear any existing timeout
           if (qrTimeout) {
             clearTimeout(qrTimeout);
           }
 
-          // Set QR code expiration to 5 minutes (300,000 ms)
+          // Set QR code expiration to 5 minutes
           qrTimeout = setTimeout(() => {
             console.log("QR code expired after 5 minutes");
             currentQRCodeDataURL = null;
+            qrGeneratedTime = null;
             qrTimeout = null;
           }, 300000); // 5 minutes
 
-          resolve({ 
-            status: "qr_ready", 
-            data: currentQRCodeDataURL 
-          });
         } catch (err) {
           console.error("Error generating QR code:", err);
-          reject(new Error(`QR code generation failed: ${err.message}`));
+          currentQRCodeDataURL = null;
+          qrGeneratedTime = null;
         }
       });
 
@@ -134,82 +164,99 @@ function initializeClient() {
       client.on("authenticated", () => {
         console.log("Authenticated successfully!");
         currentQRCodeDataURL = null;
+        qrGeneratedTime = null;
         if (qrTimeout) {
           clearTimeout(qrTimeout);
           qrTimeout = null;
         }
+        clientInitialized = true;
+        isInitializing = false;
       });
 
       // Handle client ready state
       client.on("ready", () => {
         console.log("WhatsApp client is ready!");
         currentQRCodeDataURL = null;
+        qrGeneratedTime = null;
         if (qrTimeout) {
           clearTimeout(qrTimeout);
           qrTimeout = null;
         }
+        clientInitialized = true;
+        isInitializing = false;
       });
 
       // Handle authentication failure
       client.on("auth_failure", (msg) => {
         console.error("Authentication failure:", msg);
         clientInitialized = false;
+        isInitializing = false;
         currentQRCodeDataURL = null;
+        qrGeneratedTime = null;
         if (qrTimeout) {
           clearTimeout(qrTimeout);
           qrTimeout = null;
         }
-        initializationPromise = null;
-        reject(new Error(`Authentication failed: ${msg}`));
       });
 
       // Handle disconnection
       client.on("disconnected", (reason) => {
         console.log("Client disconnected:", reason);
         clientInitialized = false;
+        isInitializing = false;
         currentQRCodeDataURL = null;
+        qrGeneratedTime = null;
         if (qrTimeout) {
           clearTimeout(qrTimeout);
           qrTimeout = null;
         }
         client = null;
-        initializationPromise = null;
-      });
-
-      // Handle connection state changes
-      client.on("change_state", (state) => {
-        console.log("Connection state changed:", state);
       });
 
       // Handle loading screen
       client.on("loading_screen", (percent, message) => {
-        console.log("Loading progress:", percent, message);
+        console.log("Loading progress:", percent, "%", message);
       });
 
       // Initialize the client
+      console.log("Initializing client...");
       await client.initialize();
 
-      // Set overall initialization timeout (2 minutes)
-      setTimeout(() => {
-        if (!client || !client.info) {
-          reject(new Error("Client initialization timeout after 2 minutes"));
-        }
-      }, 120000);
-
     } catch (error) {
-      console.error("Error in initializeClient:", error);
+      console.error("Error in client initialization:", error);
       clientInitialized = false;
+      isInitializing = false;
       currentQRCodeDataURL = null;
-      initializationPromise = null;
-      reject(error);
+      qrGeneratedTime = null;
+      if (client) {
+        try {
+          await client.destroy();
+        } catch (destroyError) {
+          console.error("Error destroying client on init failure:", destroyError);
+        }
+        client = null;
+      }
     }
-  });
+  })();
 
-  return initializationPromise;
+  // Don't await the promise, let it run in background
+  initPromise.catch(error => {
+    console.error("Background initialization failed:", error);
+    isInitializing = false;
+  });
 }
 
-// Endpoint to check session status and return QR code if not authenticated
+// Endpoint to check session status - NON-BLOCKING (fixed naming to match your route)
 exports.checkSession = async (req, res) => {
+  // Add CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   try {
     console.log("Checking session status...");
 
@@ -229,55 +276,120 @@ exports.checkSession = async (req, res) => {
     }
 
     // Check if we have a valid QR code
-    if (currentQRCodeDataURL) {
-      console.log("Returning existing QR code");
+    if (currentQRCodeDataURL && isQRCodeValid()) {
+      console.log("Returning existing valid QR code");
+      const remainingTime = getQRRemainingTime();
       return res.json({
         status: "qr_ready",
-        message: "QR code available. Please scan within 5 minutes.",
+        message: `QR code available. Expires in ${Math.floor(remainingTime / 60)}:${(remainingTime % 60).toString().padStart(2, '0')}`,
         authenticated: false,
         qrCode: currentQRCodeDataURL,
-        expiresIn: "5 minutes"
+        expiresInSeconds: remainingTime
       });
     }
 
-    // Initialize client and get QR code
-    console.log("Initializing client for QR code...");
-    const result = await initializeClient();
-
-    if (result.status === "authenticated") {
+    // Check if client is currently initializing
+    if (isInitializing) {
+      console.log("Client is initializing, please wait...");
       return res.json({
-        status: "success",
-        message: "Session is active",
-        authenticated: true
-      });
-    }
-
-    if (result.status === "qr_ready") {
-      return res.json({
-        status: "qr_ready",
-        message: "QR code generated. Please scan within 5 minutes.",
+        status: "initializing",
+        message: "WhatsApp client is initializing. Please wait and check again in a few seconds.",
         authenticated: false,
-        qrCode: result.data,
-        expiresIn: "5 minutes"
+        qrCode: null
       });
     }
+
+    // Start initialization in background
+    console.log("Starting client initialization...");
+    initializeClientAsync();
+
+    // Return immediately
+    return res.json({
+      status: "initializing",
+      message: "WhatsApp client initialization started. Please wait and check again in a few seconds.",
+      authenticated: false,
+      qrCode: null
+    });
 
   } catch (error) {
     console.error("Error in checkSession:", error);
     
-    // Reset state on error
-    await destroyClient();
-
     return res.status(500).json({
       status: "error",
-      message: "Failed to initialize WhatsApp session",
+      message: "Failed to check WhatsApp session",
       error: error.message,
       authenticated: false
     });
   }
 };
 
-// Controller function to send WhatsApp message with attachment and text
+// New endpoint to wait for QR code with timeout
+exports.waitForQR = async (req, res) => {
+  const timeout = parseInt(req.query.timeout) || 30; // Default 30 seconds timeout
+  const startTime = Date.now();
+  
+  console.log(`Waiting for QR code with ${timeout}s timeout...`);
+
+  // Check immediately
+  if (client && client.info && client.info.wid) {
+    return res.json({
+      status: "success",
+      message: "Already authenticated",
+      authenticated: true
+    });
+  }
+
+  if (currentQRCodeDataURL && isQRCodeValid()) {
+    return res.json({
+      status: "qr_ready",
+      message: "QR code is ready",
+      authenticated: false,
+      qrCode: currentQRCodeDataURL,
+      expiresInSeconds: getQRRemainingTime()
+    });
+  }
+
+  // Start initialization if not already running
+  if (!isInitializing) {
+    initializeClientAsync();
+  }
+
+  // Poll for QR code
+  const pollInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    
+    if (elapsed > timeout) {
+      clearInterval(pollInterval);
+      return res.json({
+        status: "timeout",
+        message: `Timeout waiting for QR code after ${timeout} seconds`,
+        authenticated: false
+      });
+    }
+
+    if (client && client.info && client.info.wid) {
+      clearInterval(pollInterval);
+      return res.json({
+        status: "success",
+        message: "Authenticated during wait",
+        authenticated: true
+      });
+    }
+
+    if (currentQRCodeDataURL && isQRCodeValid()) {
+      clearInterval(pollInterval);
+      return res.json({
+        status: "qr_ready",
+        message: "QR code is ready",
+        authenticated: false,
+        qrCode: currentQRCodeDataURL,
+        expiresInSeconds: getQRRemainingTime()
+      });
+    }
+  }, 1000); // Check every second
+};
+
+// Controller function to send WhatsApp message
 exports.sendWhatsAppMessage = [
   [
     check("phoneNumber")
@@ -393,24 +505,29 @@ exports.sendWhatsAppMessage = [
   },
 ];
 
-// Logout endpoint
+// Logout endpoint (Windows-safe)
 exports.logoutWhatsApp = async (req, res) => {
   try {
     console.log("Logging out WhatsApp client...");
 
     if (client && client.info && client.info.wid) {
-      // Logout from WhatsApp
-      await client.logout();
-      console.log("Client logged out successfully");
-
-      // Wait a bit for logout to complete
-      await delay(2000);
+      try {
+        // Logout from WhatsApp
+        await client.logout();
+        console.log("Client logged out successfully");
+        await delay(3000); // Longer delay for Windows
+      } catch (logoutError) {
+        console.log("Logout error (continuing with cleanup):", logoutError.message);
+      }
     }
 
-    // Destroy client and clear session
+    // Destroy client and wait for cleanup
     await destroyClient();
     
-    // Clear session files
+    // Additional delay before clearing session files
+    await delay(2000);
+    
+    // Clear session files (Windows-safe)
     clearSession();
 
     res.json({
@@ -424,20 +541,20 @@ exports.logoutWhatsApp = async (req, res) => {
     // Force cleanup even if logout fails
     try {
       await destroyClient();
+      await delay(2000);
       clearSession();
     } catch (cleanupError) {
       console.error("Error during force cleanup:", cleanupError);
     }
 
-    res.status(500).json({
-      status: "error",
-      message: "Logout completed with errors",
-      error: error.message
+    res.json({
+      status: "success", 
+      message: "Logout completed (session may need manual cleanup)"
     });
   }
 };
 
-// Endpoint to fetch the current connected user's profile
+// Get user profile endpoint
 exports.getUserProfile = async (req, res) => {
   try {
     if (!client || !client.info || !client.info.wid) {
@@ -458,7 +575,6 @@ exports.getUserProfile = async (req, res) => {
       profilePicUrl = await client.getProfilePicUrl(userId);
     } catch (picError) {
       console.log("Could not fetch profile picture:", picError.message);
-      // Don't fail the entire request if profile pic fails
     }
 
     res.json({
@@ -481,28 +597,39 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// Endpoint to get current QR code without reinitializing
+// Get current QR status
 exports.getCurrentQR = async (req, res) => {
   try {
     if (client && client.info && client.info.wid) {
       return res.json({
         status: "authenticated",
-        message: "Already authenticated"
+        message: "Already authenticated",
+        authenticated: true
       });
     }
 
-    if (currentQRCodeDataURL) {
+    if (isInitializing) {
+      return res.json({
+        status: "initializing",
+        message: "Client is initializing...",
+        authenticated: false
+      });
+    }
+
+    if (currentQRCodeDataURL && isQRCodeValid()) {
       return res.json({
         status: "qr_available",
         message: "QR code is available",
         qrCode: currentQRCodeDataURL,
-        expiresIn: "5 minutes"
+        expiresInSeconds: getQRRemainingTime(),
+        authenticated: false
       });
     }
 
     return res.json({
       status: "no_qr",
-      message: "No QR code available. Call /check-session to generate one."
+      message: "No QR code available. Call /check-session to generate one.",
+      authenticated: false
     });
 
   } catch (error) {
@@ -522,8 +649,12 @@ exports.healthCheck = async (req, res) => {
       server: "running",
       whatsapp: {
         clientInitialized: clientInitialized,
+        clientReady: clientReady,  // Add ready status
+        isInitializing: isInitializing,
         hasQRCode: !!currentQRCodeDataURL,
-        isAuthenticated: !!(client && client.info && client.info.wid)
+        qrCodeValid: isQRCodeValid(),
+        isAuthenticated: !!(client && client.info && client.info.wid),
+        qrRemainingTime: getQRRemainingTime()
       },
       timestamp: new Date().toISOString()
     };
@@ -544,6 +675,37 @@ exports.healthCheck = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Health check failed",
+      error: error.message
+    });
+  }
+};
+
+// Force reinitialize endpoint (for debugging)
+exports.forceReinitialize = async (req, res) => {
+  try {
+    console.log("Force reinitializing WhatsApp client...");
+    
+    // Destroy current client
+    await destroyClient();
+    
+    // Clear session if requested
+    if (req.query.clearSession === 'true') {
+      clearSession();
+    }
+    
+    // Start new initialization
+    initializeClientAsync();
+    
+    res.json({
+      status: "success",
+      message: "Reinitialization started. Check status in a few seconds."
+    });
+    
+  } catch (error) {
+    console.error("Error in force reinitialize:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to reinitialize",
       error: error.message
     });
   }
