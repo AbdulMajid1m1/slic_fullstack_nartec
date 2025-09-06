@@ -22,6 +22,7 @@ import UpdateGTINPopUp from "./UpdateGTINPopUp";
 import { QRCodeSVG } from "qrcode.react";
 import ViewGTINPopUp from "./ViewGTINPopUp";
 import { useTranslation } from "react-i18next";
+import slicShoes from "../../../Images/slicShoes.png";
 
 const GTIN = () => {
   const { t, i18n } = useTranslation();
@@ -90,19 +91,21 @@ const GTIN = () => {
   
     const html = '<html><head><title>FG Products</title>' +
       '<style>' +
-      '@page { size: 3in 2in; margin: 0; }' +
-      'body { font-size: 13px; line-height: 0.1;}' +
+      '@page { size: 3.1in 2in; margin: 0; }' +
+      'body { font-size: 13px; line-height: 0.1; margin-left: 40px;}' +
       '#header { display: flex; justify-content: start;}' +
       '#imglogo {height: 15px; width: 50px; visibility: hidden;}' +
-      '#itemcode { font-size: 12px; font-weight: 400; display: flex; justify-content: between; align-items: center;}' +
-      '#inside-BRCode { display: flex; justify-content: start; align-items: start; padding: 1px;}' +
-      
-      '#main-image {height: 100px; width: 100px; object-fit: contain;}' +
-      '#description { display: flex; flex-direction: column; justify-content: start; align-items: start; gap: 12px; padding: 1px;}' +
-      '#gtin { font-size: 12px; font-weight: 600; margin-top: 5px;}' +
-      '#batch { font-size: 12px; font-weight: 600; margin-top: 9px;}'+
+      '#itemcode { width: 100%; font-size: 12px; font-weight: 400; display: flex; justify-content: between; align-items: center;}' +
+      '#inside-BRCode { width: 100% }' +
+      '#header-description { font-size: 9px; font-weight: 600; margin: 0 0 8px 0; line-height: 1.3; word-wrap: break-word; max-width: 120px; }' +
+      '#qr-description-container { display: flex; align-items: flex-start; justify-content: space-between; gap: 5px; }' +
+      '#main-image {height: 70px; width: 100px; object-fit: contain;}' +
+      '#description { width: 80%; display: flex; flex-direction: column; justify-content: start; align-items: start; gap: 12px; padding: 1px;}' +
+      '#gtin { font-size: 11px; font-weight: 600; margin-top: 5px; margin-left: 30px;}' +
+      '#batch { font-size: 11px; font-weight: 600; margin-top: 9px; margin-left: 30px;}'+
       '#2dBarcode { margin-top: 139px; }' +
       '#Qrcodeserails { height: 100%; width: 100%;}' +
+      '#made-in-ksa { display: flex; justify-content: center; align-items: center; margin-top: 6px; font-weight: bold; font-size: 11px; }' +
       '</style>' +
       '</head><body>' +
       '<div id="printBarcode"></div>' +
@@ -112,7 +115,6 @@ const GTIN = () => {
       const barcodeContainer = printWindow.document.getElementById('printBarcode');
       const barcode = document.getElementById('barcode12').cloneNode(true);
       barcodeContainer.appendChild(barcode);
-
 
       const logoImg = new Image();
       logoImg.src = logo;
@@ -143,19 +145,20 @@ const GTIN = () => {
       "<html><head><title>GTIN Number</title>" +
       "<style>" +
       "@page { size: 2in 1in; margin: 0; }" +
-      "body { font-size: 12px; line-height: 1.0; }" +
+      "body { font-family: Arial, sans-serif; margin: 0; }" +
       "#header { display: flex; justify-content: start;}" +
-      "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +
-      "#itemcode { font-size: 8px; font-weight: 400; }" +
-      "#inside-BRCode { display: flex; justify-content: center; align-items: center; padding: 1px; margin-top: -14px;}" +
-
-      "#description { width: 100%; display: flex; flex-direction: column; justify-content: between; align-items: center; margin-top: -3px;}" +
-      "#itemSerialNo { font-size: 13px; font-weight: 400;}" +
-      "#gtin { font-size: 8px; font-weight: 500; margin-top: 5px;}" +
-      "#expiry { font-size: 8px; font-weight: 600; margin-top: 3px;}" +
-      "#batch { font-size: 8px; font-weight: 600; margin-top: 3px;}" +
-
-      "#Qrcodeserails { height: 100%; width: 100%;}" +
+      "#imglogo {height: 15px; width: 50px; visibility: hidden;}" +   
+      // Main container for the entire label
+      "#Qrcodeserails { width: 100%; height: 88px; display: flex; align-items: center; justify-content: center; }" +
+      // Container for QR code and data
+      "#itemcode { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 180px; }" +
+      // Left side - QR Code container
+      "#inside-BRCode { flex-shrink: 0; display: flex; justify-content: center; align-items: center; }" +
+      // Right side - Data container
+      "#description { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; }" +
+      "#gtin { font-size: 9px; font-weight: 600; margin: 0; color: #333; line-height: 1.2; }" +
+      "#expiry { font-size: 9px; font-weight: 600; margin: 0; color: #333; line-height: 1.2; }" +
+      "#batch { font-size: 9px; font-weight: 600; margin: 0; color: #333; line-height: 1.2; word-break: break-all; }" +
       "</style>" +
       "</head><body>" +
       '<div id="printBarcode12"></div>' +
@@ -185,9 +188,6 @@ const GTIN = () => {
 
     const handleRowClickInParent = (item) => {
       if (!item || item?.length === 0) {
-        // setTableSelectedRows(item)
-        // setTableSelectedExportRows(item);
-        // setFilteredData(data);
         return;
       }
       const formattedItems = item.map((row) => ({
@@ -355,7 +355,7 @@ const GTIN = () => {
 
 
           {/* print barcode */}
-        <div id="barcode12">
+          <div id="barcode12">
               {tableSelectedRows.map((barcode, index) => (
                 <div id="Qrcodeserails" className="hidden" key={index}>
                   <div id="header">
@@ -366,25 +366,43 @@ const GTIN = () => {
 
                   <div id="itemcode">
                     <div id="inside-BRCode">
-                      <img id="main-image" src={logo} alt="" />
+                      <div id="qr-description-container">
+                        <p id="header-description">
+                          {barcode?.EnglishName && barcode.EnglishName.length > 45 ? (
+                            <>
+                              {barcode.EnglishName.slice(0, 45)}... <span style={{color: '#888', cursor: 'pointer'}} title={barcode.EnglishName}>more</span>
+                            </>
+                          ) : (
+                            barcode?.EnglishName
+                          )}
+                        </p>
+                        <div id="qr-code-right">
+                          <QRCodeSVG
+                            value={`${barcode?.EnglishName}`}
+                            width="35"
+                            height="35"
+                          />
+                        </div>
+                      </div>
+                      <img id="main-image" src={slicShoes} alt="" />
                     </div>
                     
                     <div id="description">
-                      <div id="batch">Size#: {barcode?.ItemCode}</div>
-                      <div id="gtin">Color : {barcode?.ItemQty}</div>
-                      <div id="batch">Width#: {barcode?.WHLocation}</div>
+                      <div id="batch">Code#: {barcode?.ItemCode}</div>
+                      <div id="gtin">Size : {barcode?.ProductSize}</div>
+                      <div id="batch">GTIN:{barcode?.GTIN}</div>
                       <div id="2dBarcode">
                         <Barcode
                           value={barcode?.GTIN}
                           format="EAN13"
-                          width={1.5}
-                          height={45}
+                          width={1.1}
+                          height={40}
                         />
                       </div>
                     </div>
-
                   </div>
-                  <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '6px', fontWeight: 'bold'}}>
+                  
+                  <div id="made-in-ksa">
                     <span>Made in KSA</span>
                   </div>
                 </div>
@@ -397,32 +415,29 @@ const GTIN = () => {
               {tableSelectedRows.map((barcode, index) => {
                 return (
                   <div id="Qrcodeserails" className="hidden" key={index}>
-                    <div id="header">
-                      <div>
-                        <img src={logo} id="imglogo" alt="" />
-                      </div>
-                    </div>
-
                     <div id="itemcode">
+                      {/* Left side - QR Code */}
                       <div id="inside-BRCode">
                         <QRCodeSVG
                           value={`${barcode?.ItemCode} - ${barcode?.ProductSize} - ${barcode?.GTIN}`}
-                          width="65"
+                          width="60"
                           height="45"
+                          level="M"
+                          includeMargin={false}
                         />
                       </div>
 
+                      {/* Right side - Data */}
                       <div id="description">
                         <div id="gtin">Style# : {barcode?.ItemCode}</div>
                         <div id="expiry">Size# : {barcode?.ProductSize}</div>
-                        <div id="batch">{barcode?.GTIN}</div>
+                        <div id="batch">GTIN# : {barcode?.GTIN}</div>
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-
 
             {/* AddListOfEmployee component with handleShowCreatePopup prop */}
             {isCreatePopupVisible && (
