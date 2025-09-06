@@ -649,6 +649,7 @@ exports.healthCheck = async (req, res) => {
       server: "running",
       whatsapp: {
         clientInitialized: clientInitialized,
+        clientReady: clientReady,  // Add ready status
         isInitializing: isInitializing,
         hasQRCode: !!currentQRCodeDataURL,
         qrCodeValid: isQRCodeValid(),
