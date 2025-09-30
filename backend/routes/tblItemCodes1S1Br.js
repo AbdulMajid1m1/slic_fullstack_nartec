@@ -32,7 +32,12 @@ router.post(
   itemCodesController.postItemCodeV2
 );
 
-router.put("/v1/itemCode/:GTIN", isAuth, itemCodesController.putItemCode);
+router.put(
+  "/v1/itemCode/:GTIN",
+  isAuth,
+  upload,
+  itemCodesController.putItemCode
+);
 
 router.delete("/v1/itemCode/:GTIN", isAuth, itemCodesController.deleteItemCode);
 

@@ -246,6 +246,7 @@ exports.postItemCodeV2 = async (req, res, next) => {
 };
 
 exports.putItemCode = async (req, res, next) => {
+  let imagePath = null;
   try {
     const GTIN = req.params.GTIN;
 
@@ -270,6 +271,15 @@ exports.putItemCode = async (req, res, next) => {
       ProductSize: startSize || existingItemCode.ProductSize,
     };
 
+    if (req.file) {
+      imagePath = req.file.path; // Store the path of the uploaded image
+      // delete old image if exists
+      if (existingItemCode.image) {
+        await deleteFile(existingItemCode.image);
+      }
+      updatedData.image = imagePath; // Add the new image path to the updated data
+    }
+
     // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(
       existingItemCode.id,
@@ -293,6 +303,9 @@ exports.putItemCode = async (req, res, next) => {
         )
       );
   } catch (error) {
+    if (imagePath) {
+      await deleteFile(imagePath);
+    }
     next(error);
   }
 };
