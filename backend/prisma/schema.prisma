@@ -27,6 +27,7 @@ model TblItemCodes1S1Br {
   ProductUnit         String?   @db.VarChar(50)
   ProductSize         String?   @db.VarChar(50)
   id                  String    @id @default(cuid())
+  image               String?
   Created_at          DateTime? @default(now()) @db.DateTime
   Updated_at          DateTime? @default(now()) @db.DateTime
 }
