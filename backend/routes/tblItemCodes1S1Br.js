@@ -4,7 +4,6 @@ const itemCodesController = require("../controllers/tblItemCodes1S1Br");
 const itemCodesValidators = require("../validators/tblItemCodes1S1Br");
 const isAuth = require("../middleware/is-auth");
 const { uploadSingle } = require("multermate");
-const { ensureDir } = require("../utils/file");
 
 const PATH = "uploads/itemCodes";
 const router = express.Router();
