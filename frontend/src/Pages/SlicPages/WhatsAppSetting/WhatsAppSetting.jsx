@@ -64,7 +64,7 @@ const WhatsAppSetting = () => {
       const reponse = await newRequest.get("/whatsapp/checkSession");
     //   console.log(reponse);
       const data = reponse.data;
-      if (data.status === "failure" && data.qrCode) {
+      if ( data.qrCode) {
         setQrCode(data.qrCode);
         // console.log("QR code:", data.qrCode);
         setShowPopup(true);

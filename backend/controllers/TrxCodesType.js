@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const axios = require("axios");
 
 const TrxCodesType = require("../models/TrxCodesType");
@@ -125,8 +127,10 @@ exports.sync = async (req, res, next) => {
     }
     const token = authHeader.split(" ")[1];
 
+    const slic_erp_url = process.env.SLIC_ERP_URL;
+
     // Configuration for the external API request
-    const externalApiUrl = SLIC_ERP_URL + "/oneerpreport/api/getapi";
+    const externalApiUrl = slic_erp_url + "/oneerpreport/api/getapi";
     const requestBody = {
       filter: { P_TXN_TYPE: "LTRFO" },
       M_COMP_CODE: "SLIC",
@@ -144,6 +148,14 @@ exports.sync = async (req, res, next) => {
       headers,
     });
 
+    // log CURL for externalApiResponse
+    console.log("CURL for externalApiResponse:", {
+      url: externalApiUrl,
+      method: "POST",
+      headers,
+      data: requestBody,
+    });
+
     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
       throw new CustomError("Invalid response from external API", 500);
     }
@@ -154,6 +166,8 @@ exports.sync = async (req, res, next) => {
       TXN_NAME: item.ListOfTransactionCod.TXN_NAME,
       TXN_TYPE: requestBody.filter.P_TXN_TYPE, // You can adjust this if you need to map different types
     }));
+
+    console.table(externalTrxCodes);
 
     // Fetch all existing transaction codes from your database
     const existingTrxCodes = await TrxCodesType.fetchAll();

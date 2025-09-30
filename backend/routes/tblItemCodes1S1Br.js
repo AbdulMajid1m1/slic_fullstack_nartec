@@ -3,8 +3,15 @@ const express = require("express");
 const itemCodesController = require("../controllers/tblItemCodes1S1Br");
 const itemCodesValidators = require("../validators/tblItemCodes1S1Br");
 const isAuth = require("../middleware/is-auth");
+const { uploadSingle } = require("multermate");
+const { ensureDir } = require("../utils/file");
 
+const PATH = "uploads/itemCodes";
 const router = express.Router();
+const upload = uploadSingle({
+  destination: PATH,
+  filename: "image",
+});
 
 router.get("/v1/itemCodes", itemCodesController.getItemCodes);
 
@@ -20,6 +27,7 @@ router.post(
 router.post(
   "/v2/itemCode",
   isAuth,
+  upload,
   itemCodesValidators.postItemCode,
   itemCodesController.postItemCodeV2
 );

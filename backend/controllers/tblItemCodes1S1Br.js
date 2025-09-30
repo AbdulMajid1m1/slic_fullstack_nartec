@@ -5,6 +5,7 @@ const ItemCodeModel = require("../models/tblItemCodes1S1Br");
 const BarSeriesNo = require("../models/barSeriesNo");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
+const { deleteFile } = require("../utils/file");
 
 function calculateCheckDigit(gtinWithoutCheckDigit) {
   const digits = gtinWithoutCheckDigit.split("").map(Number);
@@ -189,6 +190,7 @@ exports.postItemCode = async (req, res, next) => {
 };
 
 exports.postItemCodeV2 = async (req, res, next) => {
+  let imagePath = null;
   try {
     const { itemCode, quantity, description, startSize, endSize } = req.body;
 
@@ -216,6 +218,11 @@ exports.postItemCodeV2 = async (req, res, next) => {
         ProductSize: size.toString(),
       };
 
+      if (req.file) {
+        imagePath = req.file.path; // Store the path of the uploaded image
+        body.image = imagePath; // Add the image path to the body
+      }
+
       const _itemCode = await ItemCodeModel.create(body);
       recordsCreated.push(_itemCode);
     }
@@ -231,6 +238,9 @@ exports.postItemCodeV2 = async (req, res, next) => {
         )
       );
   } catch (error) {
+    if (imagePath) {
+      await deleteFile(imagePath);
+    }
     next(error);
   }
 };
@@ -312,7 +322,6 @@ exports.deleteItemCode = async (req, res, next) => {
     next(error);
   }
 };
-
 
 exports.searchByPartialGTIN = async (req, res, next) => {
   try {
