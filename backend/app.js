@@ -31,10 +31,10 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from the "public" directory
-// app.use(express.static("public"));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "uploads")));
+// Serve static files from the "uploads" and "public" directories
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // Serve public files at root level
 
 // Add your routes...
 app.use("/api/itemCodes", itemCodesRoutes);
@@ -95,9 +95,9 @@ app.use((error, req, res, next) => {
 //   res.sendFile(__dirname + "/public/index.html");
 // });
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "public", "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "public", "index.html"));
+// });
 
 app.use((req, res, next) => {
   const error = new CustomError(`No route found for ${req.originalUrl}`);
