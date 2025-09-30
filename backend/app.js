@@ -95,9 +95,9 @@ app.use((error, req, res, next) => {
 //   res.sendFile(__dirname + "/public/index.html");
 // });
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "public", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+});
 
 app.use((req, res, next) => {
   const error = new CustomError(`No route found for ${req.originalUrl}`);
