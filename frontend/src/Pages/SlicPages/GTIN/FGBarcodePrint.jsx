@@ -16,7 +16,7 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
       '<style>' +
       '@page { size: 3.2in 2.3in; margin: 0; }' +
       'body { font-size: 13px; margin: 0; padding: 0;}' +
-      '.label-container { width: 3.1in; height: 2.2in; position: relative; padding: 8px; background: white; border: 2px solid #333; box-sizing: border-box; page-break-after: always;}' +
+      '.label-container { width: 3.1in; height: 2.2in; position: relative; padding: 8px; background: white; box-sizing: border-box; page-break-after: always;}' +
       '.label-container:last-child { page-break-after: auto;}' +
       
       '/* Left side - Logo and brand */' +
@@ -89,7 +89,7 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
 
             {/* ISO Text */}
             <div className="iso-text">
-              Safety Footwear / ISO 20345
+              {barcode?.label || ''}
             </div>
 
             {/* Shoe Image */}
@@ -101,7 +101,7 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
             </div>
 
             <div className="color-value">
-              {barcode?.Color || 'Black'}
+              {barcode?.color || ''}
             </div>
 
             <div className="upper-value">
