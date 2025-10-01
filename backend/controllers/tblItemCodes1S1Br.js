@@ -192,7 +192,16 @@ exports.postItemCode = async (req, res, next) => {
 exports.postItemCodeV2 = async (req, res, next) => {
   let imagePath = null;
   try {
-    const { itemCode, quantity, description, startSize, endSize } = req.body;
+    const {
+      itemCode,
+      quantity,
+      description,
+      startSize,
+      endSize,
+      upper,
+      sole,
+      width,
+    } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -216,6 +225,9 @@ exports.postItemCodeV2 = async (req, res, next) => {
         ArabicName: description,
         QRCodeInternational: barcode,
         ProductSize: size.toString(),
+        upper: upper,
+        sole: sole,
+        width: width,
       };
 
       if (req.file) {
@@ -246,6 +258,7 @@ exports.postItemCodeV2 = async (req, res, next) => {
 };
 
 exports.putItemCode = async (req, res, next) => {
+  let imagePath = null;
   try {
     const GTIN = req.params.GTIN;
 
@@ -257,8 +270,17 @@ exports.putItemCode = async (req, res, next) => {
       throw error;
     }
 
-    const { itemCode, quantity, description, startSize, ArabicName, endSize } =
-      req.body;
+    const {
+      itemCode,
+      quantity,
+      description,
+      startSize,
+      ArabicName,
+      endSize,
+      upper,
+      sole,
+      width,
+    } = req.body;
 
     // Prepare the updated data
     const updatedData = {
@@ -268,7 +290,19 @@ exports.putItemCode = async (req, res, next) => {
       EnglishName: description || existingItemCode.EnglishName,
       ArabicName: ArabicName || existingItemCode.ArabicName,
       ProductSize: startSize || existingItemCode.ProductSize,
+      upper: upper !== undefined ? upper : existingItemCode.upper,
+      sole: sole !== undefined ? sole : existingItemCode.sole,
+      width: width !== undefined ? width : existingItemCode.width,
     };
+
+    if (req.file) {
+      imagePath = req.file.path; // Store the path of the uploaded image
+      updatedData.image = imagePath; // Add the new image path to the updated data
+      // delete old image if exists
+      if (existingItemCode.image) {
+        await deleteFile(existingItemCode.image);
+      }
+    }
 
     // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(
@@ -293,6 +327,9 @@ exports.putItemCode = async (req, res, next) => {
         )
       );
   } catch (error) {
+    if (imagePath) {
+      await deleteFile(imagePath);
+    }
     next(error);
   }
 };

@@ -4,7 +4,6 @@ const itemCodesController = require("../controllers/tblItemCodes1S1Br");
 const itemCodesValidators = require("../validators/tblItemCodes1S1Br");
 const isAuth = require("../middleware/is-auth");
 const { uploadSingle } = require("multermate");
-const { ensureDir } = require("../utils/file");
 
 const PATH = "uploads/itemCodes";
 const router = express.Router();
@@ -32,7 +31,12 @@ router.post(
   itemCodesController.postItemCodeV2
 );
 
-router.put("/v1/itemCode/:GTIN", isAuth, itemCodesController.putItemCode);
+router.put(
+  "/v1/itemCode/:GTIN",
+  isAuth,
+  upload,
+  itemCodesController.putItemCode
+);
 
 router.delete("/v1/itemCode/:GTIN", isAuth, itemCodesController.deleteItemCode);
 
