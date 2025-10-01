@@ -22,7 +22,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const [upper, setUpper] = useState("");
   const [sole, setSole] = useState("");
   const [width, setWidth] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
+  const [label, setLabel] = useState("");
+  const [color, setColor] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
@@ -49,7 +50,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
     setUpper(updateProductsData?.upper || "");
     setSole(updateProductsData?.sole || "");
     setWidth(updateProductsData?.width || "");
-    setSerialNumber(updateProductsData?.sERIALnUMBER || "");
+    setLabel(updateProductsData?.label || "");
+    setColor(updateProductsData?.color || "");
     setBarcode(updateProductsData?.GTIN || "");
     setExistingImage(imageLiveUrl(updateProductsData?.image) || null);
   }, []);
@@ -98,7 +100,8 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
       formData.append('upper', upper);
       formData.append('sole', sole);
       formData.append('width', width);
-      formData.append('sERIALnUMBER', serialNumber);
+      formData.append('label', label);
+      formData.append('color', color);
       
       // Only append image if a new one is selected
       if (image) {
@@ -260,6 +263,24 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
+                      
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="color" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Color")}
+                        </label>
+                        <input
+                          type="text"
+                          id="color"
+                          value={color}
+                          onChange={(e) => setColor(e.target.value)}
+                          placeholder={t("Enter Color")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="itemCode" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           {t("Item Code")}
@@ -274,23 +295,23 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
-                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
-                        <label htmlFor="brandName" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
-                          {t("Description")}
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="label" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Label")}
                         </label>
                         <input
                           type="text"
-                          id="brandName"
-                          value={sole}
-                          onChange={(e) => setSole(e.target.value)}
-                          placeholder={t("Enter Description")}
+                          id="label"
+                          value={label}
+                          onChange={(e) => setLabel(e.target.value)}
+                          placeholder={t("Enter Label")}
                           className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
                           required
                         />
-                      </div> */}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="modelName" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           {t("Upper")}
@@ -305,9 +326,6 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                    </div>
-
-                    <div className="flex justify-center items-center sm:gap-3 gap-3">
                       <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="productType" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           {t("Sole")}
@@ -322,7 +340,9 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                    </div>
+
+                    <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
                         <label htmlFor="serialNumber" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
                           {t("Width")}
                         </label>
@@ -336,7 +356,6 @@ const UpdateGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                           required
                         />
                       </div>
-                    </div>
 
                     {/* Image Upload Section */}
                     <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0 mb-3">
