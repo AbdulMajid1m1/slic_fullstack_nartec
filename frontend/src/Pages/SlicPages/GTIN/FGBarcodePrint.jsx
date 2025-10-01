@@ -14,9 +14,9 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
   
     const html = '<html><head><title>FG Products</title>' +
       '<style>' +
-      '@page { size: 3.2in 2.3in; margin: 0; }' +
+      '@page { size: 3.7in 2.3in; margin: 0; }' +
       'body { font-size: 13px; margin: 0; padding: 0;}' +
-      '.label-container { width: 3.1in; height: 2.2in; position: relative; padding: 8px; background: white; box-sizing: border-box; page-break-after: always;}' +
+      '.label-container { width: 3.7in; height: 2.2in; position: relative; padding: 8px; background: white; box-sizing: border-box; page-break-after: always;}' +
       '.label-container:last-child { page-break-after: auto;}' +
       
       '/* Left side - Logo and brand */' +
@@ -31,7 +31,7 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
       '.iso-text { position: absolute; top: 55px; left: 15px; font-size: 11px; font-family: Arial, sans-serif;}' +
       
       '/* Shoe Image */' +
-      '.shoe-image { position: absolute; top: 85px; left: 15px; width: 140px; height: 105px; object-fit: contain;}' +
+      '.shoe-image { position: absolute; top: 75px; left: 15px; width: 200px; height: 125px; object-fit: contain;}' +
             
       '/* Right side - Size, Color, Materials, Width - Values only */' +
       '.size-value { position: absolute; top: 12px; right: 20px; font-size: 36px; font-weight: bold; font-family: Arial, sans-serif;}' +
