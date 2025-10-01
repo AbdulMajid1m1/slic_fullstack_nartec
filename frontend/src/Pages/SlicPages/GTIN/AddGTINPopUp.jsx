@@ -16,6 +16,9 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
   const [description, setDescription] = useState("");
   const [startSize, setStartSize] = useState(30);
   const [endSize, setEndSize] = useState(50);
+  const [upper, setUpper] = useState("");
+  const [sole, setSole] = useState("");
+  const [width, setWidth] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -74,6 +77,9 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
       formData.append('description', description);
       formData.append('startSize', startSize);
       formData.append('endSize', endSize);
+      formData.append('upper', upper);
+      formData.append('sole', sole);
+      formData.append('width', width);
       
       if (image) {
         formData.append('image', image);
@@ -256,6 +262,68 @@ const AddGTINPopUp = ({ isVisible, setVisibility, refreshGTINData }) => {
                             </option>
                           ))}
                         </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                      {/* <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="brandName" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Description")}
+                        </label>
+                        <input
+                          type="text"
+                          id="brandName"
+                          value={sole}
+                          onChange={(e) => setSole(e.target.value)}
+                          placeholder={t("Enter Description")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
+                      </div> */}
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="modelName" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Upper")}
+                        </label>
+                        <input
+                          type="text"
+                          id="modelName"
+                          value={upper}
+                          onChange={(e) => setUpper(e.target.value)}
+                          placeholder={t("Enter Upper")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center items-center sm:gap-3 gap-3">
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="productType" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Sole")}
+                        </label>
+                        <input
+                          type="text"
+                          id="productType"
+                          value={sole}
+                          onChange={(e) => setSole(e.target.value)}
+                          placeholder={t("Enter Sole")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
+                      </div>
+                      <div className="w-full font-body sm:text-base text-sm flex flex-col gap-0">
+                        <label htmlFor="serialNumber" className={`text-secondary ${i18n.language==='ar'?'text-end':'text-start'}`}>
+                          {t("Width")}
+                        </label>
+                        <input
+                          type="text"
+                          id="serialNumber"
+                          value={width}
+                          onChange={(e) => setWidth(e.target.value)}
+                          placeholder={t("Enter Width")}
+                          className={`border w-full rounded-md border-secondary placeholder:text-secondary p-2 mb-3  ${i18n.language==='ar'?'text-end':'text-start'}`}
+                          required
+                        />
                       </div>
                     </div>
 
