@@ -261,12 +261,7 @@ array-flatten@1.1.1:
   resolved "https://registry.npmjs.org/array-flatten/-/array-flatten-1.1.1.tgz"
   integrity sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==
 
-async@^0.2.9:
-  version "0.2.10"
-  resolved "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
-  integrity sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ==
-
-async@^3.2.4:
+async@^3.2.4, async@>=0.2.9:
   version "3.2.6"
   resolved "https://registry.npmjs.org/async/-/async-3.2.6.tgz"
   integrity sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==
@@ -897,12 +892,12 @@ find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-fluent-ffmpeg@2.1.3:
-  version "2.1.3"
-  resolved "https://registry.npmjs.org/fluent-ffmpeg/-/fluent-ffmpeg-2.1.3.tgz"
-  integrity sha512-Be3narBNt2s6bsaqP6Jzq91heDgOEaDCJAXcE3qcma/EJBSy5FB4cvO31XBInuAuKBx8Kptf8dkhjK0IOru39Q==
+fluent-ffmpeg@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/fluent-ffmpeg/-/fluent-ffmpeg-2.1.2.tgz"
+  integrity sha512-IZTB4kq5GK0DPp7sGQ0q/BWurGHffRtQQwVkiqDgeO6wYJLLV5ZhgNOQ65loZxxuPMKZKZcICCUnaGtlxBiR0Q==
   dependencies:
-    async "^0.2.9"
+    async ">=0.2.9"
     which "^1.1.1"
 
 follow-redirects@^1.15.6:
@@ -2216,13 +2211,13 @@ webidl-conversions@^3.0.0:
   resolved "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
 
-whatsapp-web.js@^1.33.3:
-  version "1.33.3"
-  resolved "https://registry.npmjs.org/whatsapp-web.js/-/whatsapp-web.js-1.33.3.tgz"
-  integrity sha512-xJmybvAq14BVLCPTVrGfHFC90fu2+ESOdFtuGGdGKImuDHXmCkxqlYyhyqpmi4aZHSsvi/wS0EqCwOpMiA4T7Q==
+whatsapp-web.js@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.npmjs.org/whatsapp-web.js/-/whatsapp-web.js-1.25.0.tgz"
+  integrity sha512-gVFPosQ5u38pNCX9HC6UiQ0o2vnqlxg+v3qDOfYeWg+M0UUExAvnc86BpItjJ3gYTxTs102i5v6uLzyP1mM7vA==
   dependencies:
     "@pedroslopez/moduleraid" "^5.0.2"
-    fluent-ffmpeg "2.1.3"
+    fluent-ffmpeg "2.1.2"
     mime "^3.0.0"
     node-fetch "^2.6.9"
     node-webpmux "3.1.7"

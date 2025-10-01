@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class ItemCodeModel {
@@ -16,23 +16,23 @@ class ItemCodeModel {
       ? {
           where: {
             OR: [
-              { GTIN: { contains: search, mode: 'insensitive' } },
-              { ItemCode: { contains: search, mode: 'insensitive' } },
-              { EnglishName: { contains: search, mode: 'insensitive' } },
-              { ArabicName: { contains: search, mode: 'insensitive' } },
-              { LotNo: { contains: search, mode: 'insensitive' } },
-              { sERIALnUMBER: { contains: search, mode: 'insensitive' } },
-              { WHLocation: { contains: search, mode: 'insensitive' } },
-              { BinLocation: { contains: search, mode: 'insensitive' } },
+              { GTIN: { contains: search } },
+              { ItemCode: { contains: search } },
+              { EnglishName: { contains: search } },
+              { ArabicName: { contains: search } },
+              { LotNo: { contains: search } },
+              { sERIALnUMBER: { contains: search } },
+              { WHLocation: { contains: search } },
+              { BinLocation: { contains: search } },
               {
-                QRCodeInternational: { contains: search, mode: 'insensitive' },
+                QRCodeInternational: { contains: search },
               },
-              { ModelName: { contains: search, mode: 'insensitive' } },
-              { ProductType: { contains: search, mode: 'insensitive' } },
-              { BrandName: { contains: search, mode: 'insensitive' } },
-              { PackagingType: { contains: search, mode: 'insensitive' } },
-              { ProductUnit: { contains: search, mode: 'insensitive' } },
-              { ProductSize: { contains: search, mode: 'insensitive' } },
+              { ModelName: { contains: search } },
+              { ProductType: { contains: search } },
+              { BrandName: { contains: search } },
+              { PackagingType: { contains: search } },
+              { ProductUnit: { contains: search } },
+              { ProductSize: { contains: search } },
             ],
           },
         }
@@ -65,7 +65,7 @@ class ItemCodeModel {
   static async findAll() {
     const itemCodes = await prisma.tblItemCodes1S1Br.findMany({
       orderBy: {
-        Created_at: 'desc', // or 'desc' for descending order
+        Created_at: "desc", // or 'desc' for descending order
       },
     });
     return itemCodes;
