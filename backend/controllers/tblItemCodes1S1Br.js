@@ -201,6 +201,8 @@ exports.postItemCodeV2 = async (req, res, next) => {
       upper,
       sole,
       width,
+      color,
+      label,
     } = req.body;
 
     const errors = validationResult(req);
@@ -228,6 +230,8 @@ exports.postItemCodeV2 = async (req, res, next) => {
         upper: upper,
         sole: sole,
         width: width,
+        color: color,
+        label: label,
       };
 
       if (req.file) {
@@ -280,6 +284,8 @@ exports.putItemCode = async (req, res, next) => {
       upper,
       sole,
       width,
+      color,
+      label,
     } = req.body;
 
     // Prepare the updated data
@@ -293,6 +299,8 @@ exports.putItemCode = async (req, res, next) => {
       upper: upper !== undefined ? upper : existingItemCode.upper,
       sole: sole !== undefined ? sole : existingItemCode.sole,
       width: width !== undefined ? width : existingItemCode.width,
+      color: color !== undefined ? color : existingItemCode.color,
+      label: label !== undefined ? label : existingItemCode.label,
     };
 
     if (req.file) {

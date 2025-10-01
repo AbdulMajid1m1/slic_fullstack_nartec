@@ -157,4 +157,8 @@ exports.postItemCode = [
   body("sole").optional().isString().withMessage("Sole must be a string."),
 
   body("width").optional().isString().withMessage("Width must be a string."),
+
+  body("color").optional().isString().withMessage("Color must be a string."),
+
+  body("label").optional().isString().withMessage("Label must be a string."),
 ];
