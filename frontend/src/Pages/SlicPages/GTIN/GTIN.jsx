@@ -22,12 +22,22 @@ import ViewGTINPopUp from "./ViewGTINPopUp";
 import { useTranslation } from "react-i18next";
 import FGBarcodePrint from "./FGBarcodePrint";
 import GTINBarcodePrint from "./GTINBarcodePrint";
+import { RolesContext } from "../../../Contexts/FetchRolesContext";
 
 const GTIN = () => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
+  const { userRoles } = useContext(RolesContext);
+
+  const canGenerateBarcode = userRoles?.some(
+    role => role.RoleName?.toLowerCase() === 'generate_new_barcode'
+  );
+  
+  const canPrintProducts = userRoles?.some(
+    role => role.RoleName?.toLowerCase() === 'print_products'
+  );
 
   const {
     setRowSelectionModel,
@@ -123,12 +133,12 @@ const GTIN = () => {
       ...row,
       updatedAt: new Date(row.updatedAt).toLocaleDateString(),
     }));
-    console.log(formattedItems);
+    // console.log(formattedItems);
     setTableSelectedRows(formattedItems);
   };
 
   const handleDelete = (row) => {
-    console.log(row);
+    // console.log(row);
     Swal.fire({
       title: `${t('Are you sure to delete this record?')}!`,
       text: `${t('You will not be able to recover this Products!')}`,
@@ -151,7 +161,7 @@ const GTIN = () => {
               reject(new Error('Failed to delete product'));
             }
           } catch (error) {
-            console.error("Error deleting product:", error);
+            // console.error("Error deleting product:", error);
             reject(error);
           }
         });
@@ -205,29 +215,44 @@ const GTIN = () => {
                 </IconButton>
               </Tooltip>
 
-              <Button
-                variant="contained"
-                onClick={handleShowCreatePopup}
-                style={{ backgroundColor: "#CFDDE0", color: "#1D2F90" }}
-                startIcon={<PiBarcodeDuotone />}
-              >
-                {t("Generate New Barcode")}
-              </Button>
+              <Tooltip title={!canGenerateBarcode ? "You don't have permission to generate barcodes" : ""}>
+                <span>
+                  <Button
+                    variant="contained"
+                    onClick={handleShowCreatePopup}
+                    disabled={!canGenerateBarcode}
+                    style={{ 
+                      backgroundColor: canGenerateBarcode ? "#CFDDE0" : "#E0E0E0", 
+                      color: canGenerateBarcode ? "#1D2F90" : "#9E9E9E",
+                      cursor: canGenerateBarcode ? "pointer" : "not-allowed"
+                    }}
+                    startIcon={<PiBarcodeDuotone />}
+                  >
+                    {t("Generate New Barcode")}
+                  </Button>
+                </span>
+              </Tooltip>
 
-              <Button
-                variant="contained"
-                onClick={handleGtinPage}
-                style={{
-                  backgroundColor: "#CFDDE0",
-                  color: "#1D2F90",
-                  paddingLeft: 70,
-                  paddingRight: 70,
-                }}
-                className="bg-[#B6BAD6]"
-                startIcon={<MdPrint />}
-              >
-                {t("Print Products")}
-              </Button>
+              <Tooltip title={!canPrintProducts ? "You don't have permission to print products" : ""}>
+                <span>
+                  <Button
+                    variant="contained"
+                    onClick={handleGtinPage}
+                    disabled={!canPrintProducts}
+                    style={{
+                      backgroundColor: canPrintProducts ? "#CFDDE0" : "#E0E0E0",
+                      color: canPrintProducts ? "#1D2F90" : "#9E9E9E",
+                      paddingLeft: 70,
+                      paddingRight: 70,
+                      cursor: canPrintProducts ? "pointer" : "not-allowed"
+                    }}
+                    className="bg-[#B6BAD6]"
+                    startIcon={<MdPrint />}
+                  >
+                    {t("Print Products")}
+                  </Button>
+                </span>
+              </Tooltip>
 
               <Button
                 variant="contained"
