@@ -14,21 +14,21 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
   
     const html = '<html><head><title>FG Products</title>' +
       '<style>' +
-      '@page { size: 4in 2.3in; margin: 0; }' +
+      '@page { size: 4.4in 2.3in; margin: 0; }' +
       'body { font-size: 13px; margin: 0; padding: 0;}' +
-      '.label-container { width: 4in; height: 2.3in; position: relative; padding: 8px; background: white; box-sizing: border-box; page-break-after: always;}' +
+      '.label-container { width: 4.4in; height: 2.3in; position: relative; padding: 8px; background: white; box-sizing: border-box; page-break-after: always;}' +
       '.label-container:last-child { page-break-after: auto;}' +
       
       '/* Left side - Logo and brand */' +
       '/* Item Code - Large number top left */' +
-      '.item-code-large { position: absolute; top: 12px; left: 35px; font-size: 32px; font-weight: bold; font-family: Arial, sans-serif;}' +
+      '.item-code-large { position: absolute; top: 12px; left: 65px; font-size: 32px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* QR Code - Right of Item Code */' +
-      '.qr-code { position: absolute; top: 12px; left: 145px;}' +
+      '.qr-code { position: absolute; top: 12px; left: 175px;}' +
       '.qr-code svg { width: 35px !important; height: 35px !important; display: block;}' +
       
       '/* ISO Text */' +
-      '.iso-text { position: absolute; top: 55px; left: 35px; font-size: 11px; font-family: Arial, sans-serif;}' +
+      '.iso-text { position: absolute; top: 55px; left: 65px; font-size: 12px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* Shoe Image */' +
       '.shoe-image { position: absolute; top: 75px; left: 35px; width: 200px; height: 125px; object-fit: contain;}' +
