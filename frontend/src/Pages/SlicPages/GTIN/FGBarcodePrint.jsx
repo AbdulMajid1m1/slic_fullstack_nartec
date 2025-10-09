@@ -24,21 +24,21 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
       '.item-code-large { position: absolute; top: 12px; left: 75px; font-size: 32px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* QR Code - Right of Item Code */' +
-      '.qr-code { position: absolute; top: 12px; left: 185px;}' +
+      '.qr-code { position: absolute; top: 12px; left: 195px;}' +
       '.qr-code svg { width: 35px !important; height: 35px !important; display: block;}' +
       
       '/* ISO Text */' +
       '.iso-text { position: absolute; top: 55px; left: 75px; font-size: 12px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* Shoe Image */' +
-      '.shoe-image { position: absolute; top: 75px; left: 45px; width: 200px; height: 125px; object-fit: contain;}' +
+      '.shoe-image { position: absolute; top: 75px; left: 65px; width: 150px; height: 125px; object-fit: contain;}' +
             
       '/* Right side - Size, Color, Materials, Width - Values only */' +
       '.size-value { position: absolute; top: 12px; right: 40px; font-size: 36px; font-weight: bold; font-family: Arial, sans-serif;}' +
-      '.color-value { position: absolute; top: 58px; right: 35px; font-size: 26px; font-weight: bold; font-family: Arial, sans-serif;}' +
-      '.upper-value { position: absolute; top: 90px; right: 35px; font-size: 10px; font-family: Arial, sans-serif; text-align: right;}' +
-      '.sole-value { position: absolute; top: 100px; right: 35px; font-size: 10px; font-family: Arial, sans-serif; text-align: right;}' +
-      '.width-value { position: absolute; top: 110px; right: 35px; font-size: 26px; font-weight: bold; font-family: Arial, sans-serif;}' +
+      '.color-value { position: absolute; top: 61px; right: 35px; font-size: 26px; font-weight: bold; font-family: Arial, sans-serif;}' +
+      '.upper-value { position: absolute; top: 93px; right: 35px; font-size: 10px; font-family: Arial, sans-serif; text-align: right;}' +
+      '.sole-value { position: absolute; top: 103px; right: 35px; font-size: 10px; font-family: Arial, sans-serif; text-align: right;}' +
+      '.width-value { position: absolute; top: 113px; right: 35px; font-size: 26px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* Barcode - Bottom Right */' +
       '.barcode-container { position: absolute; bottom: 6px; right: 25px;}' +
