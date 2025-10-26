@@ -1,5 +1,5 @@
 const axios = require("axios");
-
+const { SLIC_ERP_URL } = require("../config/envConfigs");
 const Customer = require("../models/TblCustomerNames");
 const CustomError = require("../exceptions/customError");
 const response = require("../utils/response");
@@ -46,8 +46,10 @@ exports.syncCustomers = async (req, res, next) => {
     }
     const token = authHeader.split(" ")[1];
 
+    const slic_erp_url = SLIC_ERP_URL ?? process.env.SLIC_ERP_URL;
+
     // Configuration for the external API request
-    const externalApiUrl = SLIC_ERP_URL + "/oneerpreport/api/getapi";
+    const externalApiUrl = slic_erp_url + "/oneerpreport/api/getapi";
     const requestBody = {
       filter: {},
       M_COMP_CODE: "SLIC",
@@ -64,8 +66,6 @@ exports.syncCustomers = async (req, res, next) => {
     const externalApiResponse = await axios.post(externalApiUrl, requestBody, {
       headers,
     });
-
-    console.log(externalApiResponse.data);
 
     if (!externalApiResponse.data || !Array.isArray(externalApiResponse.data)) {
       throw new CustomError("Invalid response from external API", 500);
