@@ -5,6 +5,7 @@ import { GtinColumn } from "../../../utils/datatablesource";
 import { Button, IconButton, Tooltip } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DataTable from "../../../components/Datatable/Datatable";
@@ -23,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import FGBarcodePrint from "./FGBarcodePrint";
 import GTINBarcodePrint from "./GTINBarcodePrint";
 import { RolesContext } from "../../../Contexts/FetchRolesContext";
+import { useNavigate } from "react-router-dom";
 
 const GTIN = () => {
   const { t, i18n } = useTranslation();
@@ -30,6 +32,7 @@ const GTIN = () => {
   const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
   const { userRoles } = useContext(RolesContext);
+  const navigate = useNavigate();
 
   const canGenerateBarcode = userRoles?.some(
     role => role.RoleName?.toLowerCase() === 'generate_new_barcode'
@@ -99,6 +102,10 @@ const GTIN = () => {
   const handleShowViewPopup = (row) => {
     setViewPopupVisibility(true);
     sessionStorage.setItem("viewGtinBarcodesData", JSON.stringify(row));
+  };
+
+  const handleDigitalLinks = (row) => {
+    navigate(`/controlled-serials/${row?.GTIN}`);
   };
 
   // FG Barcode Print Handler
@@ -297,6 +304,17 @@ const GTIN = () => {
                       />
                     ),
                     action: handleShowUpdatePopup,
+                  },
+                  {
+                    label: t("Digital Links"),
+                    icon: (
+                      <LinkIcon
+                        fontSize="small"
+                        color="action"
+                        style={{ color: "rgb(37 99 235)" }}
+                      />
+                    ),
+                    action: handleDigitalLinks,
                   },
                   {
                     label: t("Delete"),
