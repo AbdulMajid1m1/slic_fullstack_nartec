@@ -105,7 +105,9 @@ const GTIN = () => {
   };
 
   const handleDigitalLinks = (row) => {
-    navigate(`/controlled-serials/${row?.GTIN}`);
+    navigate(`/controlled-serials/${row?.GTIN}`, { 
+      state: { rowData: row } 
+    });
   };
 
   // FG Barcode Print Handler

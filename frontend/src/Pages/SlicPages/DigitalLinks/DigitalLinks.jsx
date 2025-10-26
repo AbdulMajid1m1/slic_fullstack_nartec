@@ -3,31 +3,27 @@ import { IoIosArrowBack } from "react-icons/io";
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
-import TabNavigation from './TabNavigation';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SideNav from '../../../components/Sidebar/SideNav';
+import imageLiveUrl from '../../../utils/urlConverter/imageLiveUrl';
 
 // Main Component
 const DigitalLinks = () => {
-  const [activeTab, setActiveTab] = useState('controlled-serials');
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Sample data
-  const productData = {
-    imageUrl: "/api/placeholder/260/120",
-    productCode: "5512345678",
-    name: "NTRL",
-    subtitle: "small fe",
-    details: [
-      { label: "Type", value: "5" },
-      { label: "Fire Class", value: "Class Abc" },
-      { label: "Capacity", value: "6kg" },
-      { label: "Price", value: "SAR150" },
-      { label: "Manufacturer", value: "Barba Gas" },
-      { label: "Model", value: "Fe86" }
-    ],
-    gtin: "612789123456"
-  };
+  const rowData = location.state?.rowData;
+  console.log('Row Data from navigation state:', rowData);
+
+  // Prepare details array from rowData
+  const productDetails = [
+    { label: "Item Code", value: rowData?.ItemCode || "N/A" },
+    { label: "English Name", value: rowData?.EnglishName || "N/A" },
+    { label: "Arabic Name", value: rowData?.ArabicName || "N/A" },
+    { label: "GTIN", value: rowData?.GTIN || "N/A" },
+    { label: "Unit", value: rowData?.ProductUnit || "N/A" },
+    { label: "Size", value: rowData?.ProductSize || "N/A" },
+  ];
 
   // Generate sample serials (simulating 5000+ records)
   const generateSerials = (count) => {
@@ -44,16 +40,6 @@ const DigitalLinks = () => {
   };
 
   const serialsData = generateSerials(5234);
-
-  const tabs = [
-    { id: 'controlled-serials', label: 'Controlled Serials' },
-    { id: 'certifications', label: 'Certifications' },
-    { id: 'safety-info', label: 'Safety Info' },
-    { id: 'packaging-info', label: 'Packaging Info' },
-    { id: 'storage-info', label: 'Storage Info' },
-    { id: 'certificate-info', label: 'Certificate Info' },
-    { id: 'inventory', label: 'Inventory' }
-  ];
 
   return (
     <div>
@@ -90,39 +76,24 @@ const DigitalLinks = () => {
               {/* Left Column - Product Card */}
               <div>
                 <ProductCard
-                  imageUrl={productData.imageUrl}
-                  productCode={productData.productCode}
-                  name={productData.name}
-                  subtitle={productData.subtitle}
-                  details={productData.details}
+                  imageUrl={imageLiveUrl(rowData?.image)}
+                  productCode={rowData?.ProductSize || "N/A"}
+                  GTIN={rowData?.GTIN || "N/A"}
+                  label={rowData?.label || "Product Name"}
+                  upper={rowData?.upper || "Product Subtitle"}
+                  details={productDetails}
                 />
               </div>
 
               {/* Right Column - QR Code and Barcode Stacked */}
               <div>
-                <CodesSection gtin={productData.gtin} />
+                <CodesSection gtin={rowData?.GTIN || ""} />
               </div>
             </div>
 
             {/* Tabs and Table */}
             <div className="bg-white rounded-lg shadow-sm">
-              <div className="px-6 pt-6">
-                <TabNavigation
-                  tabs={tabs}
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                />
-              </div>
-
-              {activeTab === 'controlled-serials' && (
-                <DigitalLinkTable serials={serialsData} />
-              )}
-
-              {activeTab !== 'controlled-serials' && (
-                <div className="text-center py-12 text-gray-500 px-6">
-                  {tabs.find(t => t.id === activeTab)?.label} content goes here
-                </div>
-              )}
+              <DigitalLinkTable serials={serialsData} />
             </div>
           </div>
         </div>
