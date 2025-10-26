@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { IoIosArrowBack } from "react-icons/io";
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
@@ -66,7 +66,7 @@ const DigitalLinks = () => {
               className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Go back"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
+              <IoIosArrowBack className="w-5 h-5 text-gray-700" />
             </button>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
