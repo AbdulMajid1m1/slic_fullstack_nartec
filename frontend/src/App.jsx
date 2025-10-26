@@ -29,7 +29,7 @@ import PosBrvMatchedReceipts from "./Pages/SlicPages/BrvMatchedReceipts/BrvMatch
 import PosErrorLogs from "./Pages/SlicPages/PosErrorLogs/PosErrorLogs.jsx";
 import TaxSettings from "./Pages/SlicPages/TaxSettings/TaxSettings.jsx";
 import { TaxProvider } from "./Contexts/TaxContext.jsx";
-import DigitalLinks from "./Pages/DigitalLinks/DigitalLinks.jsx";
+import DigitalLinks from "./Pages/SlicPages/DigitalLinks/DigitalLinks.jsx";
 
 const queryClient = new QueryClient();
 

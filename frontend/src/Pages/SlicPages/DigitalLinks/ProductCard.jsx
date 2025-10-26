@@ -1,5 +1,5 @@
 import React from 'react';
-import sliclogo from "../../Images/sliclogo.png"
+import sliclogo from "../../../Images/sliclogo.png"
 
 // Product Card Component
 const ProductCard = ({ productCode, name, subtitle, details }) => (
