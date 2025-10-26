@@ -3,9 +3,9 @@ import { ChevronLeft } from 'lucide-react';
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
-import SideNav from '../../components/Sidebar/SideNav';
 import TabNavigation from './TabNavigation';
 import { useNavigate } from 'react-router-dom';
+import SideNav from '../../../components/Sidebar/SideNav';
 
 // Main Component
 const DigitalLinks = () => {
