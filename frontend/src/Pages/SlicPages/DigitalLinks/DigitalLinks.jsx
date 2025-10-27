@@ -31,7 +31,7 @@ const DigitalLinks = () => {
 
   const fetchControlSerials = async ({ queryKey }) => {
     const [_key, currentPage, currentLimit] = queryKey;
-    const response = await newRequest.get(`/controlSerials?page=${currentPage}&limit=${currentLimit}`);
+    const response = await newRequest.get(`/controlSerials?page=${currentPage}&limit=${currentLimit}&Search=${rowData?.ItemCode || ''}`);
     
     return {
       data: response?.data?.data?.controlSerials || [],

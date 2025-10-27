@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlus, FiPrinter } from "react-icons/fi";
 import { HiRefresh } from "react-icons/hi";
 import { Button, CircularProgress } from "@mui/material";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import EditControlSerialPopup from "./EditControlSerialPopup";
+import ExportControlSerials from "./ExportControlSerials";
+import GTINBarcodePrint from "../GTIN/GTINBarcodePrint";
 
 const DigitalLinkTable = ({ 
   serials, 
@@ -19,10 +21,11 @@ const DigitalLinkTable = ({
   const [selectedSerial, setSelectedSerial] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const printTriggerRef = useRef(null);
   const itemsPerPage = 10;
 
   const serialsArray = Array.isArray(serials) ? serials : [];
-  console.log(serialsArray)
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -94,8 +97,54 @@ const DigitalLinkTable = ({
     return pages;
   };
 
-  const handleExportExcel = () => {
-    toast.info("Excel export functionality will be implemented");
+  // Handle select all checkbox
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedRows(currentSerials);
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
+  // Handle individual row selection
+  const handleSelectRow = (serial) => {
+    setSelectedRows(prev => {
+      const isSelected = prev.some(row => row.id === serial.id);
+      if (isSelected) {
+        return prev.filter(row => row.id !== serial.id);
+      } else {
+        return [...prev, serial];
+      }
+    });
+  };
+
+  // Check if row is selected
+  const isRowSelected = (serial) => {
+    return selectedRows.some(row => row.id === serial.id);
+  };
+
+  // Check if all current page rows are selected
+  const isAllSelected = currentSerials.length > 0 && 
+    currentSerials.every(serial => isRowSelected(serial));
+
+  const isSomeSelected = selectedRows.length > 0 && !isAllSelected;
+
+  // Handle print
+  const handlePrint = () => {
+    if (selectedRows.length === 0) {
+      toast.warning("Please select at least one row to print");
+      return;
+    }
+
+    // Trigger print
+    if (printTriggerRef.current) {
+      printTriggerRef.current.click();
+    }
+  };
+
+  // Clear selection after print
+  const handlePrintComplete = () => {
+    setSelectedRows([]);
   };
 
   return (
@@ -104,7 +153,10 @@ const DigitalLinkTable = ({
       <div className="px-6 py-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
           <h3 className="font-bold text-gray-900 text-lg mb-1">Controlled Serials</h3>
-          <p className="text-sm text-gray-500">Total {filteredSerials.length} controlled serials</p>
+          <p className="text-sm text-gray-500">
+            Total {filteredSerials.length} controlled serials
+            {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <input
@@ -117,18 +169,34 @@ const DigitalLinkTable = ({
             }}
             className="px-4 py-2 border border-gray-300 rounded-md text-sm flex-1 sm:w-96 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
           />
+          {selectedRows.length > 0 && (
+            <Button 
+              onClick={handlePrint}
+              variant="contained"
+              sx={{
+                backgroundColor: '#9333ea',
+                '&:hover': {
+                  backgroundColor: '#7e22ce',
+                },
+              }}
+              endIcon={<FiPrinter className="w-4 h-4" />}
+            >
+              Print Labels ({selectedRows.length})
+            </Button>
+          )}
           <Button 
             onClick={onAddSerial}
             variant="contained"
             sx={{
               backgroundColor: '#008000',
+              '&:hover': {
+                backgroundColor: '#006600',
+              },
               '&:disabled': {
                 backgroundColor: '#ccc',
               },
             }}
-            endIcon={
-              <FiPlus className="w-4 h-4" />
-            }
+            endIcon={<FiPlus className="w-4 h-4" />}
           >
             Add Serial
           </Button>
@@ -138,6 +206,9 @@ const DigitalLinkTable = ({
             disabled={isRefreshing || isLoading}
             sx={{
               backgroundColor: '#1D2F90',
+              '&:hover': {
+                backgroundColor: '#162561',
+              },
               '&:disabled': {
                 backgroundColor: '#ccc',
               },
@@ -152,15 +223,7 @@ const DigitalLinkTable = ({
           >
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
-          {/* <button 
-            onClick={handleExportExcel}
-            className="px-6 py-2 bg-secondary text-white text-sm font-medium rounded-md hover:bg-digital-color transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Excel
-          </button> */}
+          <ExportControlSerials serials={filteredSerials} />
         </div>
       </div>
 
@@ -181,6 +244,17 @@ const DigitalLinkTable = ({
             <table className="w-full">
               <thead className="bg-gray-50 border-y border-gray-200">
                 <tr>
+                  <th className="px-4 py-3 text-left w-12">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected;
+                      }}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Serial Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item Code</th>
@@ -197,13 +271,26 @@ const DigitalLinkTable = ({
               <tbody className="divide-y divide-gray-200 bg-white">
                 {currentSerials.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="12" className="px-4 py-8 text-center text-gray-500">
                       No control serials found
                     </td>
                   </tr>
                 ) : (
                   currentSerials.map((serial, idx) => (
-                    <tr key={serial.id || idx} className="hover:bg-gray-50 transition-colors">
+                    <tr 
+                      key={serial.id || idx} 
+                      className={`hover:bg-gray-50 transition-colors ${
+                        isRowSelected(serial) ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={isRowSelected(serial)}
+                          onChange={() => handleSelectRow(serial)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                           serial.status === 'Available' 
@@ -303,6 +390,21 @@ const DigitalLinkTable = ({
         setVisibility={setIsEditPopupVisible}
         refreshData={refetchSerials}
         serialData={selectedSerial}
+      />
+
+      {/* Print Component */}
+      <GTINBarcodePrint
+        selectedRows={selectedRows.map(serial => ({
+          ItemCode: serial.ItemCode || serial.serialNumber || 'N/A',
+          ProductSize: serial.width || 'N/A',
+          GTIN: serial.gtin || 'N/A',
+        }))}
+        onPrintComplete={handlePrintComplete}
+      />
+      <button 
+        ref={printTriggerRef}
+        onClick={() => document.getElementById('gtin-print-trigger')?.click()}
+        style={{ display: 'none' }}
       />
     </div>
   );
