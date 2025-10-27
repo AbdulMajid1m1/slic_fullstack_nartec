@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import { IoIosArrowBack } from "react-icons/io";
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
+import AddControlSerialPopup from './AddControlSerialPopup';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SideNav from '../../../components/Sidebar/SideNav';
 import imageLiveUrl from '../../../utils/urlConverter/imageLiveUrl';
+import newRequest from '../../../utils/userRequest';
 
-// Main Component
 const DigitalLinks = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isAddPopupVisible, setIsAddPopupVisible] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5234);
 
   const rowData = location.state?.rowData;
-  console.log('Row Data from navigation state:', rowData);
 
-  // Prepare details array from rowData
   const productDetails = [
     { label: "Item Code", value: rowData?.ItemCode || "N/A" },
     { label: "English Name", value: rowData?.EnglishName || "N/A" },
@@ -25,26 +29,54 @@ const DigitalLinks = () => {
     { label: "Size", value: rowData?.ProductSize || "N/A" },
   ];
 
-  // Generate sample serials (simulating 5000+ records)
-  const generateSerials = (count) => {
-    return Array.from({ length: count }, (_, i) => ({
-      status: i % 3 === 0 ? 'Available' : 'Reserved',
-      serialNumber: `612789123-${String(i + 1).padStart(5, '0')}`,
-      itemName: 'NTRL small fe',
-      gtin: '612789123456X100001',
-      batch: `C-${String(Math.floor(i / 100) + 1).padStart(3, '0')}`,
-      expiry: 'Sep 2A',
-      mfgDate: 'Sep 1A',
-      expiryDays: Math.floor(Math.random() * 365) + 1
-    }));
+  const fetchControlSerials = async ({ queryKey }) => {
+    const [_key, currentPage, currentLimit] = queryKey;
+    const response = await newRequest.get(`/controlSerials?page=${currentPage}&limit=${currentLimit}`);
+    
+    return {
+      data: response?.data?.data?.controlSerials || [],
+      pagination: response?.data?.data?.pagination || null,
+      totalPages: response?.data?.data?.pagination?.totalPages || 0,
+      currentPage: response?.data?.data?.pagination?.page || 1,
+      totalItems: response?.data?.data?.pagination?.total || 0
+    };
   };
 
-  const serialsData = generateSerials(5234);
+  const { 
+    data: serialsResponse, 
+    isLoading, 
+    refetch,
+    isFetching 
+  } = useQuery({
+    queryKey: ['controlSerials', page, limit],
+    queryFn: fetchControlSerials,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+    onError: (err) => {
+      // console.error('Error fetching control serials:', err);
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load control serials");
+    },
+  });
+
+  const serialsData = (serialsResponse?.data || []).map(serial => ({
+    id: serial.id,
+    serialNumber: serial.serialNumber,
+    ItemCode: serial.product?.ItemCode || 'N/A',
+    itemName: serial.product?.EnglishName || 'N/A',
+    gtin: serial.product?.GTIN || 'N/A',
+    upper: serial.product?.upper || 'N/A',
+    sole: serial.product?.sole || 'N/A',
+    width: serial.product?.width || 'N/A',
+    color: serial.product?.color || 'N/A',
+    status: 'Available',
+    product: serial.product
+  }));
 
   return (
     <div>
       <SideNav>
-        {/* Custom Header with Back Arrow */}
         <div className="bg-white border-b">
           <div className="flex items-center gap-3 px-6 py-4">
             <button
@@ -93,10 +125,27 @@ const DigitalLinks = () => {
 
             {/* Tabs and Table */}
             <div className="bg-white rounded-lg shadow-sm">
-              <DigitalLinkTable serials={serialsData} />
+              <DigitalLinkTable 
+                serials={serialsData}
+                isLoading={isLoading || isFetching}
+                refetchSerials={refetch}
+                itemCode={rowData?.ItemCode}
+                onAddSerial={() => setIsAddPopupVisible(true)}
+                pagination={serialsResponse?.pagination}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
+              />
             </div>
           </div>
         </div>
+
+        {/* Add Control Serial Popup */}
+        <AddControlSerialPopup
+          isVisible={isAddPopupVisible}
+          setVisibility={setIsAddPopupVisible}
+          refreshData={refetch}
+          itemCode={rowData?.ItemCode}
+        />
       </SideNav>
     </div>
   );
