@@ -22,6 +22,7 @@ const invoiceRoutes = require("./routes/invoice");
 const exchangeInvoiceRoutes = require("./routes/TblSalesExchangeInvoicetmp");
 const whatsappRoutes = require("./routes/whatsappRoutes.js");
 const languageRoutes = require("./routes/languageRoute.js");
+const controlSerialRoutes = require("./routes/controlSerial");
 const path = require("path");
 
 const app = express();
@@ -53,6 +54,7 @@ app.use("/api/exchangeInvoice", exchangeInvoiceRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
+app.use("/api/controlSerials", controlSerialRoutes);
 
 app.get("/test", (req, res) => {
   function calculateCheckDigit(gtinWithoutCheckDigit) {
