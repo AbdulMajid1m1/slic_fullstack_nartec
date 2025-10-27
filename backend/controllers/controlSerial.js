@@ -39,22 +39,27 @@ exports.createControlSerials = async (req, res, next) => {
 
     // Generate bulk serials
     const serials = [];
-    for (let i = 0; i < qty; i++) {
-      const seriesNumber = await ControlSerialModel.getNextSeriesNumber(
-        ItemCode
-      );
-      const serialNumber = generateSerialNumber(ItemCode, seriesNumber);
 
-      // Double-check uniqueness
-      const exists = await ControlSerialModel.serialNumberExists(serialNumber);
-      if (exists) {
-        throw new Error(`Serial number ${serialNumber} already exists`);
-      }
+    // Get the starting series number (only query once)
+    let currentSeriesNumber = await ControlSerialModel.getNextSeriesNumber(
+      product.id
+    );
+
+    for (let i = 0; i < qty; i++) {
+      // Generate serial number using the actual ItemCode string + series number
+      const serialNumber = generateSerialNumber(ItemCode, currentSeriesNumber);
 
       serials.push({
         serialNumber,
-        ItemCode,
+        ItemCode: product.id, // Use the product's id (foreign key reference)
       });
+
+      // Increment series number for next iteration
+      const nextNum = parseInt(currentSeriesNumber) + 1;
+      if (nextNum > 999999) {
+        throw new Error("Series number exceeds maximum value (999999)");
+      }
+      currentSeriesNumber = nextNum.toString().padStart(6, "0");
     }
 
     // Create all serials
@@ -281,25 +286,37 @@ exports.updateControlSerial = async (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+
+      // Prepare update data with the product's id
+      const updateData = {
+        ItemCode: product.id, // Use the product's id (foreign key reference)
+      };
+
+      const updatedSerial = await ControlSerialModel.update(id, updateData);
+
+      res
+        .status(200)
+        .json(
+          generateResponse(
+            200,
+            true,
+            "Control serial updated successfully",
+            updatedSerial
+          )
+        );
+    } else {
+      // No update needed if ItemCode is the same
+      res
+        .status(200)
+        .json(
+          generateResponse(
+            200,
+            true,
+            "Control serial is already up to date",
+            existingSerial
+          )
+        );
     }
-
-    // Prepare update data
-    const updateData = {
-      ItemCode: ItemCode || existingSerial.ItemCode,
-    };
-
-    const updatedSerial = await ControlSerialModel.update(id, updateData);
-
-    res
-      .status(200)
-      .json(
-        generateResponse(
-          200,
-          true,
-          "Control serial updated successfully",
-          updatedSerial
-        )
-      );
   } catch (error) {
     next(error);
   }

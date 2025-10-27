@@ -175,22 +175,32 @@ class ControlSerialModel {
    * @returns {Promise<number>} - Next series number (6 digits with leading zeros)
    */
   static async getNextSeriesNumber(itemCode) {
-    const lastSerial = await prisma.controlSerial.findFirst({
+    // Get all serials for this ItemCode
+    const allSerials = await prisma.controlSerial.findMany({
       where: {
         ItemCode: itemCode,
       },
-      orderBy: {
-        createdAt: "desc",
+      select: {
+        serialNumber: true,
       },
     });
 
-    if (!lastSerial) {
+    if (!allSerials || allSerials.length === 0) {
       return "000001";
     }
 
-    // Extract series number from serialNumber (last 6 digits)
-    const seriesNum = parseInt(lastSerial.serialNumber.slice(-6));
-    const nextNum = seriesNum + 1;
+    // Extract all series numbers and find the maximum
+    let maxSeriesNum = 0;
+    for (const serial of allSerials) {
+      if (serial.serialNumber && serial.serialNumber.length >= 6) {
+        const seriesNum = parseInt(serial.serialNumber.slice(-6));
+        if (seriesNum > maxSeriesNum) {
+          maxSeriesNum = seriesNum;
+        }
+      }
+    }
+
+    const nextNum = maxSeriesNum + 1;
 
     if (nextNum > 999999) {
       throw new Error("Series number exceeds maximum value (999999)");
