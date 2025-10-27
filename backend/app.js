@@ -22,6 +22,7 @@ const invoiceRoutes = require("./routes/invoice");
 const exchangeInvoiceRoutes = require("./routes/TblSalesExchangeInvoicetmp");
 const whatsappRoutes = require("./routes/whatsappRoutes.js");
 const languageRoutes = require("./routes/languageRoute.js");
+const controlSerialRoutes = require("./routes/controlSerial");
 const path = require("path");
 
 const app = express();
@@ -31,9 +32,10 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from the "public" directory
-// app.use(express.static("public"));
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from the "uploads" and "public" directories
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // Serve public files at root level
 
 // Add your routes...
 app.use("/api/itemCodes", itemCodesRoutes);
@@ -52,6 +54,7 @@ app.use("/api/exchangeInvoice", exchangeInvoiceRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
+app.use("/api/controlSerials", controlSerialRoutes);
 
 app.get("/test", (req, res) => {
   function calculateCheckDigit(gtinWithoutCheckDigit) {

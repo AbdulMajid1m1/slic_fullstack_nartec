@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { body } = require("express-validator");
 const prisma = new PrismaClient();
 
 class ItemCodeModel {
@@ -94,10 +95,12 @@ class ItemCodeModel {
   }
 
   static async update(id, data) {
-    return await prisma.tblItemCodes1S1Br.update({
+    const itemCode = await prisma.tblItemCodes1S1Br.update({
       where: { id: id.toString() },
       data,
     });
+
+    return itemCode;
   }
 
   static async delete(gtin) {

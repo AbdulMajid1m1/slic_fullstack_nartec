@@ -28,8 +28,27 @@ model TblItemCodes1S1Br {
   ProductSize         String?   @db.VarChar(50)
   id                  String    @id @default(cuid())
   image               String?
+  upper               String?
+  sole                String?
+  width               String?
+  color               String?
+  label               String?
+
+  controlledSerials  ControlSerial[]   
+
   Created_at          DateTime? @default(now()) @db.DateTime
   Updated_at          DateTime? @default(now()) @db.DateTime
+}
+
+model ControlSerial{
+    id                          String    @id @default(cuid())
+
+    serialNumber                String? // unique serial number, using formula, auto generated
+    ItemCode                    String?
+    product                     TblItemCodes1S1Br? @relation(fields: [ItemCode], references: [id])
+
+    createdAt                   DateTime @default(now())
+    updatedAt                   DateTime @updatedAt
 }
 
 model TblBarSeriesNo {
