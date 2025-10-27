@@ -9,7 +9,7 @@ import { useQueryClient } from "react-query";
 
 const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode }) => {
   const { t, i18n } = useTranslation();
-  const [qty, setQty] = useState(100);
+  const [qty, setQty] = useState(10);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 

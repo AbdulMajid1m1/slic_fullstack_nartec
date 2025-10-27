@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import EditControlSerialPopup from "./EditControlSerialPopup";
 import ExportControlSerials from "./ExportControlSerials";
-import GTINBarcodePrint from "../GTIN/GTINBarcodePrint";
+import ControlledSerialsPrint from "./ControlledSerialsPrint";
 
 const DigitalLinkTable = ({ 
   serials, 
@@ -393,10 +393,10 @@ const DigitalLinkTable = ({
       />
 
       {/* Print Component */}
-      <GTINBarcodePrint
+      <ControlledSerialsPrint
         selectedRows={selectedRows.map(serial => ({
-          ItemCode: serial.ItemCode || serial.serialNumber || 'N/A',
-          ProductSize: serial.width || 'N/A',
+          serialNo: serial.serialNumber || 'N/A',
+          ItemCode: serial.ItemCode || 'N/A',
           GTIN: serial.gtin || 'N/A',
         }))}
         onPrintComplete={handlePrintComplete}
