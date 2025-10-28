@@ -9,7 +9,7 @@ const ProductCard = ({ imageUrl, productCode, GTIN, label, upper, details }) => 
       <img 
         src={imageUrl || sliclogo} 
         alt="Product" 
-        className="w-full h-auto object-cover"
+        className="w-full sm:h-72 h-40 object-contain"
       />
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent text-white text-xs px-4 py-2">
         <span className="text-gray-300 font-medium">PRODUCT SIZE: </span>

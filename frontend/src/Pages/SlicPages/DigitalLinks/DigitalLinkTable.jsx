@@ -22,6 +22,7 @@ const DigitalLinkTable = ({
   const [deletingId, setDeletingId] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectAllMode, setSelectAllMode] = useState(false);
   const printTriggerRef = useRef(null);
   const itemsPerPage = 10;
 
@@ -97,12 +98,14 @@ const DigitalLinkTable = ({
     return pages;
   };
 
-  // Handle select all checkbox
+  // Handle select all checkbox - NOW SELECTS ALL FILTERED SERIALS
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(currentSerials);
+      setSelectedRows(filteredSerials);
+      setSelectAllMode(true);
     } else {
       setSelectedRows([]);
+      setSelectAllMode(false);
     }
   };
 
@@ -111,7 +114,12 @@ const DigitalLinkTable = ({
     setSelectedRows(prev => {
       const isSelected = prev.some(row => row.id === serial.id);
       if (isSelected) {
-        return prev.filter(row => row.id !== serial.id);
+        const newSelection = prev.filter(row => row.id !== serial.id);
+        // If we deselect and had select all mode, turn it off
+        if (selectAllMode) {
+          setSelectAllMode(false);
+        }
+        return newSelection;
       } else {
         return [...prev, serial];
       }
@@ -123,9 +131,9 @@ const DigitalLinkTable = ({
     return selectedRows.some(row => row.id === serial.id);
   };
 
-  // Check if all current page rows are selected
-  const isAllSelected = currentSerials.length > 0 && 
-    currentSerials.every(serial => isRowSelected(serial));
+  // Check if all filtered serials are selected (not just current page)
+  const isAllSelected = filteredSerials.length > 0 && 
+    selectedRows.length === filteredSerials.length;
 
   const isSomeSelected = selectedRows.length > 0 && !isAllSelected;
 
@@ -145,6 +153,7 @@ const DigitalLinkTable = ({
   // Clear selection after print
   const handlePrintComplete = () => {
     setSelectedRows([]);
+    setSelectAllMode(false);
   };
 
   return (
@@ -156,6 +165,7 @@ const DigitalLinkTable = ({
           <p className="text-sm text-gray-500">
             Total {filteredSerials.length} controlled serials
             {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
+            {selectAllMode && ` (All serials selected)`}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
@@ -166,6 +176,8 @@ const DigitalLinkTable = ({
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
+              setSelectedRows([]);
+              setSelectAllMode(false);
             }}
             className="px-4 py-2 border border-gray-300 rounded-md text-sm flex-1 sm:w-96 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
           />
@@ -245,15 +257,22 @@ const DigitalLinkTable = ({
               <thead className="bg-gray-50 border-y border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left w-12">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isSomeSelected;
-                      }}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                    />
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isSomeSelected;
+                        }}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                      {isAllSelected && (
+                        <span className="text-[9px] text-blue-600 font-medium whitespace-nowrap">
+                          All
+                        </span>
+                      )}
+                    </div>
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Serial Number</th>
@@ -397,6 +416,7 @@ const DigitalLinkTable = ({
         selectedRows={selectedRows.map(serial => ({
           serialNo: serial.serialNumber || 'N/A',
           ItemCode: serial.ItemCode || 'N/A',
+          size: serial.product?.ProductSize || 'N/A',
           GTIN: serial.gtin || 'N/A',
         }))}
         onPrintComplete={handlePrintComplete}
