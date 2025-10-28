@@ -29,6 +29,7 @@ import PosBrvMatchedReceipts from "./Pages/SlicPages/BrvMatchedReceipts/BrvMatch
 import PosErrorLogs from "./Pages/SlicPages/PosErrorLogs/PosErrorLogs.jsx";
 import TaxSettings from "./Pages/SlicPages/TaxSettings/TaxSettings.jsx";
 import { TaxProvider } from "./Contexts/TaxContext.jsx";
+import DigitalLinks from "./Pages/SlicPages/DigitalLinks/DigitalLinks.jsx";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,15 @@ const App = () => {
                         </ProtectedRoute>
                       }
                     />
+                    {/* <Route
+                      path="controlled-serials/:Id"
+                      element={
+                        <ProtectedRoute requiredRoles="controlled_serials">
+                          <ControlledSerials />
+                        </ProtectedRoute>
+                      }
+                    /> */}
+                    <Route path="controlled-serials/:Id" element={<DigitalLinks />} />
                     {/* <Route path="gtin" element={<GTIN />} /> */}
                     <Route
                       path="user-profile"
