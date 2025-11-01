@@ -4,18 +4,23 @@ import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
+import { Autocomplete, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
-const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode }) => {
+const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode, size, suppliers = [] }) => {
   const { t, i18n } = useTranslation();
   const [qty, setQty] = useState(10);
+  const [poNumber, setPoNumber] = useState("");
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const handleClosePopup = () => {
     setVisibility(false);
-    setQty(100);
+    setQty(10);
+    setPoNumber("");
+    setSelectedSupplier(null);
   };
 
   const handleSubmit = async (e) => {
@@ -36,7 +41,9 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
     try {
       const response = await newRequest.post("/controlSerials", {
         ItemCode: itemCode,
-        qty: qty
+        qty: qty,
+        // PONumber: poNumber,
+        // Supplier: selectedSupplier?.value || selectedSupplier?.label || ""
       });
       
       toast.success(response?.data?.message || t("Control serials added successfully"));
@@ -44,9 +51,8 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
       setLoading(false);
       handleClosePopup();
       refreshData();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || t("Error in adding control serials"));
-      console.error(error);
+    } catch (err) {
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || t("Error in adding control serials"));
       setLoading(false);
     }
   };
@@ -110,20 +116,83 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
 
               <form onSubmit={handleSubmit} className="w-full overflow-y-auto mt-12 px-4">
                 <div className="space-y-4">
-                  <div className="w-full font-body sm:text-base text-sm flex flex-col gap-2">
-                    <label 
-                      htmlFor="itemCode" 
-                      className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
-                    >
-                      {t("Item Code")}
-                    </label>
-                    <input
-                      type="text"
-                      id="itemCode"
-                      value={itemCode}
-                      readOnly
-                      className={`border w-full rounded-md border-secondary bg-gray-100 p-2 ${i18n.language==='ar'?'text-end':'text-start'}`}
-                    />
+                  {/* PO Number and Supplier Row */}
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
+                      <label 
+                        htmlFor="poNumber" 
+                        className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
+                      >
+                        {t("PO Number")}:
+                      </label>
+                      <input
+                        type="text"
+                        id="poNumber"
+                        value={poNumber}
+                        onChange={(e) => setPoNumber(e.target.value)}
+                        placeholder={t("Enter PO Number")}
+                        className={`border w-full rounded-md border-secondary placeholder:text-gray-400 p-2 ${i18n.language==='ar'?'text-end':'text-start'}`}
+                      />
+                    </div>
+
+                    <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
+                      <label 
+                        className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
+                      >
+                        {t("Supplier")}:
+                      </label>
+                      <Autocomplete
+                        options={suppliers}
+                        getOptionLabel={(option) => option.label || ""}
+                        value={selectedSupplier}
+                        onChange={(event, newValue) => {
+                          setSelectedSupplier(newValue);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={t("selection / search")}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                  borderColor: '#021F69',
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                        sx={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item Code and Size Row */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
+                      <label 
+                        htmlFor="itemCode" 
+                        className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
+                      >
+                        {t("Item Code")}
+                      </label>
+                      <input
+                        type="text"
+                        id="itemCode"
+                        value={itemCode}
+                        readOnly
+                        className={`border w-full rounded-md border-secondary bg-gray-100 p-2 ${i18n.language==='ar'?'text-end':'text-start'}`}
+                      />
+                    </div>
+
+                    {size && (
+                      <div className="font-body sm:text-base text-sm flex flex-col justify-center gap-2">
+                        <div className="text-blue-600 font-bold text-lg pt-9">
+                          {t("Size")} : {size}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="w-full font-body sm:text-base text-sm flex flex-col gap-2">
@@ -169,7 +238,7 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
                         )
                       }
                     >
-                      {t("Generate Control Serials")}
+                      {t("GENERATE CONTROL SERIALS")}
                     </Button>
                   </div>
                 </div>

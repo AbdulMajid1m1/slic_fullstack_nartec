@@ -145,6 +145,7 @@ const DigitalLinks = () => {
           setVisibility={setIsAddPopupVisible}
           refreshData={refetch}
           itemCode={rowData?.ItemCode}
+          size={rowData?.ProductSize}
         />
       </SideNav>
     </div>
