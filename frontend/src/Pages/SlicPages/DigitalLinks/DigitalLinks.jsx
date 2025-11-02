@@ -1,64 +1,82 @@
 import React, { useState } from 'react';
 import { IoIosArrowBack } from "react-icons/io";
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
-import TabNavigation from './TabNavigation';
-import { useNavigate } from 'react-router-dom';
+import AddControlSerialPopup from './AddControlSerialPopup';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SideNav from '../../../components/Sidebar/SideNav';
+import imageLiveUrl from '../../../utils/urlConverter/imageLiveUrl';
+import newRequest from '../../../utils/userRequest';
 
-// Main Component
 const DigitalLinks = () => {
-  const [activeTab, setActiveTab] = useState('controlled-serials');
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isAddPopupVisible, setIsAddPopupVisible] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5234);
 
-  // Sample data
-  const productData = {
-    imageUrl: "/api/placeholder/260/120",
-    productCode: "5512345678",
-    name: "NTRL",
-    subtitle: "small fe",
-    details: [
-      { label: "Type", value: "5" },
-      { label: "Fire Class", value: "Class Abc" },
-      { label: "Capacity", value: "6kg" },
-      { label: "Price", value: "SAR150" },
-      { label: "Manufacturer", value: "Barba Gas" },
-      { label: "Model", value: "Fe86" }
-    ],
-    gtin: "612789123456"
-  };
+  const rowData = location.state?.rowData;
 
-  // Generate sample serials (simulating 5000+ records)
-  const generateSerials = (count) => {
-    return Array.from({ length: count }, (_, i) => ({
-      status: i % 3 === 0 ? 'Available' : 'Reserved',
-      serialNumber: `612789123-${String(i + 1).padStart(5, '0')}`,
-      itemName: 'NTRL small fe',
-      gtin: '612789123456X100001',
-      batch: `C-${String(Math.floor(i / 100) + 1).padStart(3, '0')}`,
-      expiry: 'Sep 2A',
-      mfgDate: 'Sep 1A',
-      expiryDays: Math.floor(Math.random() * 365) + 1
-    }));
-  };
-
-  const serialsData = generateSerials(5234);
-
-  const tabs = [
-    { id: 'controlled-serials', label: 'Controlled Serials' },
-    { id: 'certifications', label: 'Certifications' },
-    { id: 'safety-info', label: 'Safety Info' },
-    { id: 'packaging-info', label: 'Packaging Info' },
-    { id: 'storage-info', label: 'Storage Info' },
-    { id: 'certificate-info', label: 'Certificate Info' },
-    { id: 'inventory', label: 'Inventory' }
+  const productDetails = [
+    { label: "Item Code", value: rowData?.ItemCode || "N/A" },
+    { label: "English Name", value: rowData?.EnglishName || "N/A" },
+    { label: "Arabic Name", value: rowData?.ArabicName || "N/A" },
+    { label: "GTIN", value: rowData?.GTIN || "N/A" },
+    { label: "Unit", value: rowData?.ProductUnit || "N/A" },
+    { label: "Size", value: rowData?.ProductSize || "N/A" },
   ];
+
+  const fetchControlSerials = async ({ queryKey }) => {
+    const [_key, currentPage, currentLimit] = queryKey;
+    const response = await newRequest.get(`/controlSerials?page=${currentPage}&limit=${currentLimit}&Search=${rowData?.ItemCode || ''}`);
+    
+    return {
+      data: response?.data?.data?.controlSerials || [],
+      pagination: response?.data?.data?.pagination || null,
+      totalPages: response?.data?.data?.pagination?.totalPages || 0,
+      currentPage: response?.data?.data?.pagination?.page || 1,
+      totalItems: response?.data?.data?.pagination?.total || 0
+    };
+  };
+
+  const { 
+    data: serialsResponse, 
+    isLoading, 
+    refetch,
+    isFetching 
+  } = useQuery({
+    queryKey: ['controlSerials', page, limit],
+    queryFn: fetchControlSerials,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+    onError: (err) => {
+      // console.error('Error fetching control serials:', err);
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load control serials");
+    },
+  });
+
+  const serialsData = (serialsResponse?.data || []).map(serial => ({
+    id: serial.id,
+    serialNumber: serial.serialNumber,
+    ItemCode: serial.product?.ItemCode || 'N/A',
+    itemName: serial.product?.EnglishName || 'N/A',
+    gtin: serial.product?.GTIN || 'N/A',
+    upper: serial.product?.upper || 'N/A',
+    sole: serial.product?.sole || 'N/A',
+    width: serial.product?.width || 'N/A',
+    color: serial.product?.color || 'N/A',
+    status: 'Available',
+    product: serial.product
+  }));
 
   return (
     <div>
       <SideNav>
-        {/* Custom Header with Back Arrow */}
         <div className="bg-white border-b">
           <div className="flex items-center gap-3 px-6 py-4">
             <button
@@ -90,42 +108,45 @@ const DigitalLinks = () => {
               {/* Left Column - Product Card */}
               <div>
                 <ProductCard
-                  imageUrl={productData.imageUrl}
-                  productCode={productData.productCode}
-                  name={productData.name}
-                  subtitle={productData.subtitle}
-                  details={productData.details}
+                  imageUrl={imageLiveUrl(rowData?.image)}
+                  productCode={rowData?.ProductSize || "N/A"}
+                  GTIN={rowData?.GTIN || "N/A"}
+                  label={rowData?.label || "Product Name"}
+                  upper={rowData?.upper || "Product Subtitle"}
+                  details={productDetails}
                 />
               </div>
 
               {/* Right Column - QR Code and Barcode Stacked */}
               <div>
-                <CodesSection gtin={productData.gtin} />
+                <CodesSection gtin={rowData?.GTIN || ""} />
               </div>
             </div>
 
             {/* Tabs and Table */}
             <div className="bg-white rounded-lg shadow-sm">
-              <div className="px-6 pt-6">
-                <TabNavigation
-                  tabs={tabs}
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                />
-              </div>
-
-              {activeTab === 'controlled-serials' && (
-                <DigitalLinkTable serials={serialsData} />
-              )}
-
-              {activeTab !== 'controlled-serials' && (
-                <div className="text-center py-12 text-gray-500 px-6">
-                  {tabs.find(t => t.id === activeTab)?.label} content goes here
-                </div>
-              )}
+              <DigitalLinkTable 
+                serials={serialsData}
+                isLoading={isLoading || isFetching}
+                refetchSerials={refetch}
+                itemCode={rowData?.ItemCode}
+                onAddSerial={() => setIsAddPopupVisible(true)}
+                pagination={serialsResponse?.pagination}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
+              />
             </div>
           </div>
         </div>
+
+        {/* Add Control Serial Popup */}
+        <AddControlSerialPopup
+          isVisible={isAddPopupVisible}
+          setVisibility={setIsAddPopupVisible}
+          refreshData={refetch}
+          itemCode={rowData?.ItemCode}
+          size={rowData?.ProductSize}
+        />
       </SideNav>
     </div>
   );

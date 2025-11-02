@@ -30,6 +30,7 @@ import PosErrorLogs from "./Pages/SlicPages/PosErrorLogs/PosErrorLogs.jsx";
 import TaxSettings from "./Pages/SlicPages/TaxSettings/TaxSettings.jsx";
 import { TaxProvider } from "./Contexts/TaxContext.jsx";
 import DigitalLinks from "./Pages/SlicPages/DigitalLinks/DigitalLinks.jsx";
+import SupplierList from "./Pages/SlicPages/SupplierList/SupplierList.jsx";
 
 const queryClient = new QueryClient();
 
@@ -191,6 +192,8 @@ const App = () => {
                         </ProtectedRoute>
                       }
                     />
+
+                    <Route path="supplier-list" element={<SupplierList />} />
                   </Routes>
                 </QueryClientProvider>
               </BrowserRouter>

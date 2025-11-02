@@ -25,7 +25,7 @@ const CodesSection = ({ gtin }) => (
         <h3 className="font-bold text-gray-900 text-base">Barcode</h3>
       </div>
       <div className="flex justify-center mb-3 bg-white">
-        <Barcode value={gtin} height={80} width={2.2} fontSize={14} margin={0} />
+        <Barcode value={gtin} height={80} width={2.2} fontSize={18} margin={0} />
       </div>
       <p className="text-sm text-gray-600 text-center">Standard barcode for inventory</p>
     </div>

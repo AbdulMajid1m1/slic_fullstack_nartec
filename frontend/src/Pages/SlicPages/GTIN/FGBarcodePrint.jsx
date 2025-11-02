@@ -24,7 +24,7 @@ const FGBarcodePrint = ({ selectedRows, onPrintComplete }) => {
       '.item-code-large { position: absolute; top: 12px; left: 75px; font-size: 32px; font-weight: bold; font-family: Arial, sans-serif;}' +
       
       '/* QR Code - Right of Item Code */' +
-      '.qr-code { position: absolute; top: 12px; left: 195px;}' +
+      '.qr-code { position: absolute; top: 12px; left: 235px;}' +
       '.qr-code svg { width: 35px !important; height: 35px !important; display: block;}' +
       
       '/* ISO Text */' +
