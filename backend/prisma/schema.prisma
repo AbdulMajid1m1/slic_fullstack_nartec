@@ -46,9 +46,30 @@ model ControlSerial{
     serialNumber                String? // unique serial number, using formula, auto generated
     ItemCode                    String?
     product                     TblItemCodes1S1Br? @relation(fields: [ItemCode], references: [id])
+    size                        String?
+    poNumber                    String?
+
+    // relation with Supplier
+    supplierId                  String?
+    supplier                    Supplier? @relation(fields: [supplierId], references: [id])
 
     createdAt                   DateTime @default(now())
     updatedAt                   DateTime @updatedAt
+}
+
+model Supplier {
+    id              String   @id @default(cuid())
+
+    name            String?
+    email           String?
+    password        String?
+    status          String? // pending, approved, rejected
+
+    controlSerials  ControlSerial[]
+
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 }
 
 model TblBarSeriesNo {
