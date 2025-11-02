@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
 import Button from "@mui/material/Button";
@@ -7,6 +7,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Autocomplete, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
+import ErpTeamRequest from "../../../utils/ErpTeamRequest";
 
 const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode, size, suppliers = [] }) => {
   const { t, i18n } = useTranslation();
@@ -14,7 +15,10 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
   const [poNumber, setPoNumber] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [supplierData, setSupplierData] = useState([]);
   const queryClient = useQueryClient();
+  const token = JSON.parse(sessionStorage.getItem("slicLoginToken"));
 
   const handleClosePopup = () => {
     setVisibility(false);
@@ -22,6 +26,51 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
     setPoNumber("");
     setSelectedSupplier(null);
   };
+
+  const fetchAllSupplierData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await ErpTeamRequest.post(
+        '/slicuat05api/v1/getApi',
+        {
+          filter: {},
+          M_COMP_CODE: "SLIC",
+          M_USER_ID: "SYSADMIN",
+          APICODE: "ListOfPO",
+          M_LANG_CODE: "ENG"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Map the API response to the expected data structure for Autocomplete
+      const mappedData = response.data.map(item => ({
+        label: item.ListOfPO.SUPP_NAME,
+        value: item.ListOfPO.SUPP_NAME,
+        Head_SYS_ID: item.ListOfPO.HEAD_SYS_ID,
+        Document_No: item.ListOfPO.DOC_NO,
+        POStatus: item.ListOfPO.STATUS,
+        PODate: item.ListOfPO.DOC_DT,
+      }));
+
+      setSupplierData(mappedData);
+      setIsLoading(false);
+    } catch (err) {
+      setIsLoading(false);
+      console.error("Error fetching supplier data:", err);
+      toast.error(err?.response?.data?.message || t("Failed to load suppliers. Please try again."));
+    }
+  };
+
+  // Fetch supplier data when popup becomes visible
+  useEffect(() => {
+    if (isVisible) {
+      fetchAllSupplierData();
+    }
+  }, [isVisible]);  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -114,9 +163,9 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="w-full overflow-y-auto mt-12 px-4">
+              <form onSubmit={handleSubmit} className="w-full overflow-y-auto mt-6 px-4">
                 <div className="space-y-4">
-                  {/* PO Number and Supplier Row */}
+                  {/* PO Number and Size Row */}
                   <div className="flex gap-4 items-start">
                     <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
                       <label 
@@ -135,57 +184,6 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
                       />
                     </div>
 
-                    <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
-                      <label 
-                        className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
-                      >
-                        {t("Supplier")}:
-                      </label>
-                      <Autocomplete
-                        options={suppliers}
-                        getOptionLabel={(option) => option.label || ""}
-                        value={selectedSupplier}
-                        onChange={(event, newValue) => {
-                          setSelectedSupplier(newValue);
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            placeholder={t("selection / search")}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                  borderColor: '#021F69',
-                                },
-                              },
-                            }}
-                          />
-                        )}
-                        sx={{ width: '100%' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Item Code and Size Row */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 font-body sm:text-base text-sm flex flex-col gap-2">
-                      <label 
-                        htmlFor="itemCode" 
-                        className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
-                      >
-                        {t("Item Code")}
-                      </label>
-                      <input
-                        type="text"
-                        id="itemCode"
-                        value={itemCode}
-                        readOnly
-                        className={`border w-full rounded-md border-secondary bg-gray-100 p-2 ${i18n.language==='ar'?'text-end':'text-start'}`}
-                      />
-                    </div>
-
                     {size && (
                       <div className="font-body sm:text-base text-sm flex flex-col justify-center gap-2">
                         <div className="text-blue-600 font-bold text-lg pt-9">
@@ -193,6 +191,58 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Supplier Row */}
+                  <div className="w-full font-body sm:text-base text-sm flex flex-col gap-2">
+                    <label 
+                      className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
+                    >
+                      {t("Supplier")}:
+                    </label>
+                    <Autocomplete
+                      options={supplierData}
+                      getOptionLabel={(option) => option.label || ""}
+                      value={selectedSupplier}
+                      onChange={(event, newValue) => {
+                        setSelectedSupplier(newValue);
+                      }}
+                      loading={isLoading}
+                      disabled={isLoading}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder={isLoading ? t("Loading suppliers...") : t("selection / search")}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              '& fieldset': {
+                                borderColor: '#021F69',
+                              },
+                            },
+                          }}
+                        />
+                      )}
+                      sx={{ width: '100%' }}
+                    />
+                  </div>
+
+                  {/* Item Code Row */}
+                  <div className="w-full font-body sm:text-base text-sm flex flex-col gap-2">
+                    <label 
+                      htmlFor="itemCode" 
+                      className={`text-secondary font-semibold ${i18n.language==='ar'?'text-end':'text-start'}`}
+                    >
+                      {t("Item Code")}
+                    </label>
+                    <input
+                      type="text"
+                      id="itemCode"
+                      value={itemCode}
+                      readOnly
+                      className={`border w-full rounded-md border-secondary bg-gray-100 p-2 ${i18n.language==='ar'?'text-end':'text-start'}`}
+                    />
                   </div>
 
                   <div className="w-full font-body sm:text-base text-sm flex flex-col gap-2">
@@ -223,7 +273,7 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
                     </p>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t">
+                  <div className="mt-6 py-4 border-t">
                     <Button
                       variant="contained"
                       style={{ backgroundColor: "#021F69", color: "#ffffff" }}
