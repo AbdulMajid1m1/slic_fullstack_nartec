@@ -248,6 +248,38 @@ class ControlSerialModel {
 
     return nextNum.toString().padStart(6, "0");
   }
+
+  /**
+   * Get unique PO numbers with supplier details for a specific supplier
+   * @param {string} supplierId - Supplier ID
+   * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
+   */
+  static async getPoNumbersWithSupplierDetailsBySupplierId(supplierId) {
+    const controlSerials = await prisma.controlSerial.findMany({
+      where: {
+        supplierId: supplierId,
+      },
+      select: {
+        poNumber: true,
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+      distinct: ['poNumber'],
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return controlSerials;
+  }
 }
 
 module.exports = ControlSerialModel;
