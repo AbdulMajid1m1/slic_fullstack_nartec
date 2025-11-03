@@ -39,7 +39,7 @@ pipeline {
         stage('Install Dependencies - Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'npm ci'
+                    bat 'npm install'
                 }
             }
         }
