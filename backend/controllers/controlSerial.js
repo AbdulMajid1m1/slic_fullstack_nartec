@@ -423,3 +423,45 @@ exports.deleteControlSerial = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Get PO numbers with supplier details for authenticated supplier
+ * Used by supplier portal with supplier bearer token
+ */
+exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
+  try {
+    // Get supplier ID from the authenticated request (set by is-supplier-auth middleware)
+    const supplierEmail = req.email;
+
+    if (!supplierEmail) {
+        const error = new CustomError("Supplier email not found in token");
+        error.statusCode = 401;
+        throw error;
+    }
+
+    // Verify supplier exists
+    const supplier = await SupplierModel.getSupplierByEmail(supplierEmail);
+    if (!supplier) {
+      const error = new CustomError("Supplier not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Get unique PO numbers with supplier details
+    const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetailsBySupplierId(supplier.id);
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "PO numbers with supplier details retrieved successfully",
+          poNumbersWithSupplier
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -4,6 +4,7 @@ const router = express.Router();
 const controlSerialController = require("../controllers/controlSerial");
 const controlSerialValidator = require("../validators/controlSerial");
 const isAuth = require("../middleware/is-auth");
+const isSupplierAuth = require("../middleware/is-supplier-auth")
 
 /**
  * POST /api/controlSerials
@@ -83,5 +84,16 @@ router.put(
  * Delete control serial
  */
 router.delete("/:id", isAuth, controlSerialController.deleteControlSerial);
+
+/**
+ * GET /api/controlSerials/supplier/po-numbers
+ * Get unique PO numbers with supplier details for authenticated supplier
+ * Requires supplier bearer token
+ */
+router.get(
+  "/supplier/po-numbers",
+  isAuth,
+  controlSerialController.getPoNumbersWithSupplierDetails
+);
 
 module.exports = router;

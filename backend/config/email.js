@@ -1,13 +1,8 @@
-import dotenv from "dotenv";
-import ejs from "ejs";
-import fs from "fs";
-import nodemailer from "nodemailer";
-import path from "path";
-import { fileURLToPath } from "url";
-
-// Get the directory name
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const dotenv = require("dotenv");
+const ejs = require("ejs");
+const fs = require("fs");
+const nodemailer = require("nodemailer");
+const path = require("path");
 
 // Ensure environment variables are loaded
 dotenv.config(path.join(__dirname, "..", ".env"));
@@ -64,7 +59,7 @@ transporter.verify((error) => {
  * @param {Array<Object>} [options.attachments] - Email attachments
  * @returns {Promise<Object>} - Nodemailer info object
  */
-export const sendTemplateEmail = async (options) => {
+const sendTemplateEmail = async (options) => {
   const { to, subject, template, data, from, attachments } = options;
 
   // Create the template path
@@ -103,7 +98,7 @@ export const sendTemplateEmail = async (options) => {
 
 // Other email functions...
 
-export default {
+module.exports = {
   transporter,
   sendTemplateEmail,
 };

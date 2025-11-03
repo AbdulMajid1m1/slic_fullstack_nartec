@@ -1,6 +1,7 @@
 {
   "name": "slic_backend_nartec",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
   "main": "app.js",
   "scripts": {
