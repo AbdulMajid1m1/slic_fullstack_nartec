@@ -62,6 +62,7 @@ const DigitalLinks = () => {
 
   const serialsData = (serialsResponse?.data || []).map(serial => ({
     id: serial.id,
+    poNumber: serial.poNumber || 'N/A',
     serialNumber: serial.serialNumber,
     ItemCode: serial.product?.ItemCode || 'N/A',
     itemName: serial.product?.EnglishName || 'N/A',
@@ -71,7 +72,9 @@ const DigitalLinks = () => {
     width: serial.product?.width || 'N/A',
     color: serial.product?.color || 'N/A',
     status: 'Available',
-    product: serial.product
+    product: serial.product,
+    supplierName: serial.supplier?.name || 'N/A',
+    supplierEmail: serial.supplier?.email || 'N/A',
   }));
 
   return (
