@@ -12,12 +12,16 @@ pipeline {
                         env.PORT = "${env.slic_dev_PORT}"
                         env.JWT_SECRET = "${env.slic_dev_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicuat05api.oneerpcloud.com'
+                        env.EMAIL_FROM = 'helpdeskgstsa@gmail.com'
+                        env.EMAIL_APP_PASSWORD = 'rgar surc lzrk nkaf'
                     } else if (env.BRANCH_NAME == 'master') {
                         env.NODE_ENV = 'master'
                         env.DATABASE_URL = "${env.slic_prod_DATABASE_URL}"
                         env.PORT = "${env.slic_prod_PORT}"
                         env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
                         env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
+                        env.EMAIL_FROM = 'helpdeskgstsa@gmail.com'
+                        env.EMAIL_APP_PASSWORD = 'rgar surc lzrk nkaf'
                     } else {
                         error "Unsupported branch: ${env.BRANCH_NAME}"
                     }
