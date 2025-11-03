@@ -2,6 +2,9 @@ const { validationResult } = require("express-validator");
 const Supplier = require("../models/supplier");
 const response = require("../utils/response");
 const CustomError = require("../exceptions/customError");
+const {
+  sendSupplierStatusNotificationEmail,
+} = require("../utils/emailManager");
 
 /**
  * Register a new supplier
@@ -163,6 +166,20 @@ exports.updateSupplierStatus = async (req, res, next) => {
     }
 
     const supplier = await Supplier.updateSupplierStatus(id, status);
+
+    // Send email notification to supplier about status change
+    try {
+      const emailResult = await sendSupplierStatusNotificationEmail({
+        supplierEmail: supplier.email,
+        supplierName: supplier.name,
+        status: supplier.status,
+      });
+
+      console.log("Email notification result:", emailResult);
+    } catch (emailError) {
+      console.error("Error sending email notification:", emailError);
+      // Don't fail the operation if email sending fails
+    }
 
     res.status(200).json(
       response(200, true, "Supplier status updated successfully", supplier)
