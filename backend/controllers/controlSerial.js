@@ -2,6 +2,8 @@ const { validationResult } = require("express-validator");
 
 const ControlSerialModel = require("../models/controlSerial");
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
+const SupplierModel = require("../models/supplier");
+const { sendControlSerialNotificationEmail } = require("../utils/emailManager");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
 
@@ -17,7 +19,7 @@ function generateSerialNumber(itemCode, seriesNumber) {
 
 exports.createControlSerials = async (req, res, next) => {
   try {
-    const { ItemCode, qty } = req.body;
+    const { ItemCode, qty, supplierId, poNumber, size } = req.body;
 
     // Validate request
     const errors = validationResult(req);
@@ -27,6 +29,14 @@ exports.createControlSerials = async (req, res, next) => {
       error.statusCode = 422;
       error.data = errors;
       return next(error);
+    }
+
+    // Verify supplier exists
+    const supplier = await SupplierModel.getSupplierById(supplierId);
+    if (!supplier) {
+      const error = new CustomError("Supplier not found");
+      error.statusCode = 404;
+      throw error;
     }
 
     // Verify product exists
@@ -52,6 +62,9 @@ exports.createControlSerials = async (req, res, next) => {
       serials.push({
         serialNumber,
         ItemCode: product.id, // Use the product's id (foreign key reference)
+        supplierId: supplierId,
+        poNumber: poNumber,
+        size: size || null,
       });
 
       // Increment series number for next iteration
@@ -78,6 +91,22 @@ exports.createControlSerials = async (req, res, next) => {
       )
     );
 
+    // Send email notification to supplier
+    try {
+      const emailResult = await sendControlSerialNotificationEmail({
+        supplierEmail: supplier.email,
+        supplierName: supplier.name,
+        poNumber: poNumber,
+        itemCode: ItemCode,
+        quantity: qty,
+        size: size || null,
+      });
+      console.log("Email notification result:", emailResult);
+    } catch (emailError) {
+      console.error("Error sending email notification:", emailError);
+      // Don't fail the operation if email sending fails
+    }
+
     res
       .status(201)
       .json(
@@ -101,11 +130,15 @@ exports.getControlSerials = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const search = req.query.search || null;
+    const poNumber = req.query.poNumber || null;
+    const supplierId = req.query.supplierId || null;
 
     const result = await ControlSerialModel.findAllWithPagination(
       page,
       limit,
-      search
+      search,
+      poNumber,
+      supplierId
     );
     const { controlSerials, pagination } = result;
 
@@ -255,6 +288,44 @@ exports.searchBySerialNumber = async (req, res, next) => {
           true,
           "Control serial retrieved successfully",
           controlSerial
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET - Search control serials by PO number
+ */
+exports.searchByPoNumber = async (req, res, next) => {
+  try {
+    const { poNumber } = req.query;
+
+    if (!poNumber) {
+      const error = new CustomError("poNumber query parameter is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+
+    if (!controlSerials || controlSerials.length === 0) {
+      const error = new CustomError(
+        "No control serials found for the given PO number"
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Control serials retrieved successfully",
+          controlSerials
         )
       );
   } catch (error) {

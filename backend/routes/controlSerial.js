@@ -8,7 +8,7 @@ const isAuth = require("../middleware/is-auth");
 /**
  * POST /api/controlSerials
  * Create bulk control serials
- * Body: { ItemCode: string, qty: number }
+ * Body: { ItemCode: string, qty: number, supplierId: string, poNumber: string, size?: string }
  */
 router.post(
   "/",
@@ -20,7 +20,7 @@ router.post(
 /**
  * GET /api/controlSerials
  * Get all control serials with pagination
- * Query: ?page=1&limit=10&search=value
+ * Query: ?page=1&limit=10&search=value&poNumber=value&supplierId=value
  */
 router.get("/", isAuth, controlSerialController.getControlSerials);
 
@@ -48,6 +48,16 @@ router.get(
   "/search/by-serial",
   isAuth,
   controlSerialController.searchBySerialNumber
+);
+
+/**
+ * GET /api/controlSerials/search/by-po?poNumber=value
+ * Search control serials by PO number
+ */
+router.get(
+  "/search/by-po",
+  isAuth,
+  controlSerialController.searchByPoNumber
 );
 
 /**

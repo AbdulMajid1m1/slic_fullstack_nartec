@@ -216,8 +216,93 @@ async function sendAdminNewSupplierNotificationEmail(options) {
   }
 }
 
+/**
+ * Send control serial creation notification email
+ * Sends an email to the supplier when new control serials are created for their PO
+ *
+ * @param {Object} options - Email options
+ * @param {string} options.supplierEmail - Supplier's email address
+ * @param {string} options.supplierName - Supplier's company name
+ * @param {string} options.poNumber - Purchase Order number
+ * @param {string} options.itemCode - Item code for which serials were created
+ * @param {number} options.quantity - Number of serials created
+ * @param {string} [options.size] - Size of the items (optional)
+ * @returns {Promise<Object>} - Email send result
+ */
+async function sendControlSerialNotificationEmail(options) {
+  const { supplierEmail, supplierName, poNumber, itemCode, quantity, size } =
+    options;
+
+  // Validate required parameters
+  if (!supplierEmail || !supplierName || !poNumber || !itemCode || !quantity) {
+    console.error(
+      "[Email Manager] Missing required parameters for control serial notification"
+    );
+    return {
+      success: false,
+      error: "Missing required parameters",
+      recipient: supplierEmail,
+      type: "control_serial_notification",
+    };
+  }
+
+  try {
+    // Prepare email subject
+    const subject = `✓ New Control Serials Created - PO: ${poNumber}`;
+
+    // Prepare template data
+    const templateData = {
+      supplierName: supplierName,
+      supplierEmail: supplierEmail,
+      poNumber: poNumber,
+      itemCode: itemCode,
+      quantity: quantity,
+      size: size || null,
+    };
+
+    console.log(
+      `[Email Manager] Sending control serial notification to ${supplierEmail} for PO ${poNumber}`
+    );
+
+    // Send email using the template
+    const result = await sendTemplateEmail({
+      to: supplierEmail,
+      subject: subject,
+      template: "controlSerialNotification",
+      context: templateData,
+    });
+
+    console.log(
+      `[Email Manager] Control serial notification sent successfully to ${supplierEmail}`
+    );
+    console.log(`[Email Manager] Message ID: ${result.messageId}`);
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: supplierEmail,
+      poNumber: poNumber,
+      quantity: quantity,
+      type: "control_serial_notification",
+    };
+  } catch (error) {
+    console.error(
+      `[Email Manager] Failed to send control serial notification to ${supplierEmail}:`,
+      error.message || error
+    );
+
+    return {
+      success: false,
+      error: error.message,
+      recipient: supplierEmail,
+      type: "control_serial_notification",
+    };
+  }
+}
+
 module.exports = {
   sendSupplierStatusNotificationEmail,
   sendSupplierRegistrationEmail,
   sendAdminNewSupplierNotificationEmail,
+  sendControlSerialNotificationEmail,
 };

@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 class ControlSerialModel {
   /**
    * Create multiple control serials in bulk
-   * @param {Array} serials - Array of serial objects with GTIN and serialNumber
+   * @param {Array} serials - Array of serial objects with ItemCode, serialNumber, size, poNumber, supplierId
    * @returns {Promise<Array>} - Created serial records
    */
   static async createBulk(serials) {
@@ -17,13 +17,14 @@ class ControlSerialModel {
   /**
    * Get a control serial by ID
    * @param {string} id - Serial ID
-   * @returns {Promise<Object>} - Serial record with product details
+   * @returns {Promise<Object>} - Serial record with product details and supplier
    */
   static async findById(id) {
     return await prisma.controlSerial.findUnique({
       where: { id },
       include: {
         product: true,
+        supplier: true,
       },
     });
   }
@@ -32,20 +33,33 @@ class ControlSerialModel {
    * Get all control serials with pagination
    * @param {number} page - Page number
    * @param {number} limit - Records per page
-   * @param {string} search - Search by serialNumber or GTIN
+   * @param {string} search - Search by serialNumber or ItemCode
+   * @param {string} poNumber - Filter by PO number (optional)
+   * @param {string} supplierId - Filter by supplier ID (optional)
    * @returns {Promise<Object>} - Paginated serials and pagination info
    */
-  static async findAllWithPagination(page = 1, limit = 10, search = null) {
+  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null, supplierId = null) {
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? {
-          OR: [
-            { serialNumber: { contains: search } },
-            { ItemCode: { contains: search } },
-          ],
-        }
-      : {};
+    const where = {};
+
+    // Add search condition
+    if (search) {
+      where.OR = [
+        { serialNumber: { contains: search } },
+        { ItemCode: { contains: search } },
+      ];
+    }
+
+    // Add PO number filter
+    if (poNumber) {
+      where.poNumber = poNumber;
+    }
+
+    // Add supplier ID filter
+    if (supplierId) {
+      where.supplierId = supplierId;
+    }
 
     const [controlSerials, total] = await Promise.all([
       prisma.controlSerial.findMany({
@@ -54,6 +68,7 @@ class ControlSerialModel {
         take: limit,
         include: {
           product: true,
+          supplier: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -85,6 +100,27 @@ class ControlSerialModel {
     return await prisma.controlSerial.findMany({
       include: {
         product: true,
+        supplier: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  /**
+   * Search control serials by PO number
+   * @param {string} poNumber - PO number to search
+   * @returns {Promise<Array>} - Matching serials
+   */
+  static async findByPoNumber(poNumber) {
+    return await prisma.controlSerial.findMany({
+      where: {
+        poNumber: poNumber,
+      },
+      include: {
+        product: true,
+        supplier: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -104,6 +140,7 @@ class ControlSerialModel {
       },
       include: {
         product: true,
+        supplier: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -123,6 +160,7 @@ class ControlSerialModel {
       },
       include: {
         product: true,
+        supplier: true,
       },
     });
   }
@@ -139,6 +177,7 @@ class ControlSerialModel {
       data,
       include: {
         product: true,
+        supplier: true,
       },
     });
   }
@@ -153,6 +192,7 @@ class ControlSerialModel {
       where: { id },
       include: {
         product: true,
+        supplier: true,
       },
     });
   }
