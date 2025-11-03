@@ -274,13 +274,15 @@ const DigitalLinkTable = ({
                       )}
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">PO Number</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supplier Name</th>
+                  {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supplier Email</th> */}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Serial Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item Code</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item Name</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">GTIN</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">upper</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">sole</th>
+                  {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">upper</th> */}
+                  {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">sole</th> */}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">width</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">color</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">QR Code</th>
@@ -312,19 +314,21 @@ const DigitalLinkTable = ({
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          serial.status === 'Available' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                          serial.poNumber === 'Available' 
+                            ? 'bg-gray-100 text-green-800' 
+                            : 'bg-green-100 text-gray-800'
                         }`}>
-                          {serial.status || 'N/A'}
+                          {serial.poNumber || 'N/A'}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 font-medium">{serial.supplierName || 'N/A'}</td>
+                      {/* <td className="px-4 py-3 text-sm text-gray-900 font-medium">{serial.supplierEmail || 'N/A'}</td> */}
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">{serial.serialNumber || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{serial.ItemCode || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{serial.itemName || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{serial.gtin || 'N/A'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{serial.upper || 'N/A'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{serial.sole || 'N/A'}</td>
+                      {/* <td className="px-4 py-3 text-sm text-gray-600">{serial.upper || 'N/A'}</td> */}
+                      {/* <td className="px-4 py-3 text-sm text-gray-600">{serial.sole || 'N/A'}</td> */}
                       <td className="px-4 py-3 text-sm text-gray-600">{serial.width || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{serial.color || ''}</td>
                       <td className="px-4 py-3">
