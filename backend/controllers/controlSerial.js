@@ -428,10 +428,10 @@ exports.deleteControlSerial = async (req, res, next) => {
  * Get PO numbers with supplier details for authenticated supplier
  * Used by supplier portal with supplier bearer token
  */
-exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
+exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
   try {
     // Get supplier ID from the authenticated request (set by is-supplier-auth middleware)
-    const supplierEmail = req.email;
+    const supplierEmail = req?.email;
 
     if (!supplierEmail) {
         const error = new CustomError("Supplier email not found in token");
@@ -465,3 +465,27 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
   }
 };
 
+/**
+ * Get PO numbers with supplier details for authenticated SLIC admin
+ * Used by SLIC project
+ */
+exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
+    try {
+
+        // Get unique PO numbers with supplier details
+        const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetails();
+
+        res
+            .status(200)
+            .json(
+                generateResponse(
+                    200,
+                    true,
+                    "PO numbers with supplier details retrieved successfully",
+                    poNumbersWithSupplier
+                )
+            );
+    } catch (error) {
+        next(error);
+    }
+};

@@ -93,7 +93,17 @@ router.delete("/:id", isAuth, controlSerialController.deleteControlSerial);
 router.get(
   "/supplier/po-numbers",
   isAuth,
-  controlSerialController.getPoNumbersWithSupplierDetails
+  controlSerialController.getSupplierPoNumbersWithSupplierDetails
+);
+
+/**
+ * GET /api/controlSerials/po-numbers
+ * Get unique PO numbers with supplier details
+ */
+router.get(
+    "/po-numbers",
+    isAuth,
+    controlSerialController.getPoNumbersWithSupplierDetails
 );
 
 module.exports = router;
