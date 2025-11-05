@@ -261,6 +261,9 @@ class ControlSerialModel {
       },
       select: {
         poNumber: true,
+        serialNumber: true,
+        itemCode: true,
+        size: true,
         supplier: {
           select: {
             id: true,
