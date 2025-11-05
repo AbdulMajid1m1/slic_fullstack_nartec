@@ -262,6 +262,11 @@ class ControlSerialModel {
       select: {
         poNumber: true,
         size: true,
+        product: {
+              select: {
+                  ItemCode: true,
+              }
+          },
         supplier: {
           select: {
             id: true,
@@ -291,6 +296,11 @@ class ControlSerialModel {
       select: {
         poNumber: true,
         size: true,
+        product: {
+            select: {
+           ItemCode: true,
+          }
+        },
         supplier: {
           select: {
             id: true,
