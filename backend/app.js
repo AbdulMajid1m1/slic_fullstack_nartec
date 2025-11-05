@@ -92,7 +92,7 @@ app.use((error, req, res, next) => {
     data = error.data || null;
   }
 
-  res.status(status).json(response(status, success, message, data));
+  res.status(status).json(response(status, success, message, data, error?.stack));
 });
 
 // app.get("*", (req, res) => {

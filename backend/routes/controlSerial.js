@@ -62,6 +62,27 @@ router.get(
 );
 
 /**
+ * GET /api/controlSerials/supplier/po-numbers
+ * Get unique PO numbers with supplier details for authenticated supplier
+ * Requires supplier bearer token
+ */
+router.get(
+    "/supplier/po-numbers",
+    isAuth,
+    controlSerialController.getSupplierPoNumbersWithSupplierDetails
+);
+
+/**
+ * GET /api/controlSerials/po-numbers
+ * Get unique PO numbers with supplier details
+ */
+router.get(
+    "/po-numbers",
+    isAuth,
+    controlSerialController.getPoNumbersWithSupplierDetails
+);
+
+/**
  * GET /api/controlSerials/:id
  * Get control serial by ID
  */
@@ -84,26 +105,5 @@ router.put(
  * Delete control serial
  */
 router.delete("/:id", isAuth, controlSerialController.deleteControlSerial);
-
-/**
- * GET /api/controlSerials/supplier/po-numbers
- * Get unique PO numbers with supplier details for authenticated supplier
- * Requires supplier bearer token
- */
-router.get(
-  "/supplier/po-numbers",
-  isAuth,
-  controlSerialController.getSupplierPoNumbersWithSupplierDetails
-);
-
-/**
- * GET /api/controlSerials/po-numbers
- * Get unique PO numbers with supplier details
- */
-router.get(
-    "/po-numbers",
-    isAuth,
-    controlSerialController.getPoNumbersWithSupplierDetails
-);
 
 module.exports = router;
