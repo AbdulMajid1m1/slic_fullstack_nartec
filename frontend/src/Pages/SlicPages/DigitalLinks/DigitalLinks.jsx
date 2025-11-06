@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import ProductCard from './ProductCard';
 import CodesSection from './CodesSection';
 import DigitalLinkTable from './DigitalLinkTable';
+import PurchaseOrderTable from './PurchaseOrderTable';
 import AddControlSerialPopup from './AddControlSerialPopup';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SideNav from '../../../components/Sidebar/SideNav';
@@ -15,8 +16,9 @@ const DigitalLinks = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAddPopupVisible, setIsAddPopupVisible] = useState(false);
+  const [selectedPO, setSelectedPO] = useState(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5234);
+  const [limit, setLimit] = useState(10);
 
   const rowData = location.state?.rowData;
 
@@ -29,9 +31,45 @@ const DigitalLinks = () => {
     { label: "Size", value: rowData?.ProductSize || "N/A" },
   ];
 
+  // Fetch Purchase Orders
+  const fetchPurchaseOrders = async () => {
+    const response = await newRequest.get(`/controlSerials/po-numbers`);
+    return response?.data?.data || [];
+  };
+
+  const { 
+    data: purchaseOrders = [], 
+    isLoading: isLoadingOrders, 
+    refetch: refetchOrders,
+  } = useQuery({
+    queryKey: ['purchaseOrders'],
+    queryFn: fetchPurchaseOrders,
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+    onError: (err) => {
+      toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load purchase orders");
+    },
+  });
+
+  // Fetch Control Serials - Modified to include PO filter
   const fetchControlSerials = async ({ queryKey }) => {
-    const [_key, currentPage, currentLimit] = queryKey;
-    const response = await newRequest.get(`/controlSerials?page=${currentPage}&limit=${currentLimit}&Search=${rowData?.ItemCode || ''}`);
+    const [_key, currentPage, currentLimit, poNumber] = queryKey;
+    
+    if (!poNumber) {
+      return {
+        data: [],
+        pagination: null,
+        totalPages: 0,
+        currentPage: 1,
+        totalItems: 0
+      };
+    }
+
+    const response = await newRequest.get(
+      `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}`
+    );
     
     return {
       data: response?.data?.data?.controlSerials || [],
@@ -48,17 +86,23 @@ const DigitalLinks = () => {
     refetch,
     isFetching 
   } = useQuery({
-    queryKey: ['controlSerials', page, limit],
+    queryKey: ['controlSerials', page, limit, selectedPO?.poNumber, rowData?.ItemCode],
     queryFn: fetchControlSerials,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    cacheTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!selectedPO,
+    staleTime: 2 * 60 * 1000,
+    cacheTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     keepPreviousData: true,
     onError: (err) => {
-      // console.error('Error fetching control serials:', err);
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load control serials");
     },
   });
+
+  // Handle PO row click
+  const handleViewOrder = (order) => {
+    setSelectedPO(order);
+    setPage(1); // Reset to first page when selecting new PO
+  };
 
   const serialsData = (serialsResponse?.data || []).map(serial => ({
     id: serial.id,
@@ -75,6 +119,17 @@ const DigitalLinks = () => {
     product: serial.product,
     supplierName: serial.supplier?.name || 'N/A',
     supplierEmail: serial.supplier?.email || 'N/A',
+  }));
+
+  // Transform purchase orders data
+  const ordersData = purchaseOrders.map(order => ({
+    id: order.supplier?.id || order.poNumber,
+    poNumber: order.poNumber,
+    supplierName: order.supplier?.name || 'N/A',
+    supplierEmail: order.supplier?.email || 'N/A',
+    supplierStatus: order.supplier?.status || 'N/A',
+    createdAt: order.supplier?.createdAt ? new Date(order.supplier.createdAt).toLocaleString() : 'N/A',
+    updatedAt: order.supplier?.updatedAt ? new Date(order.supplier.updatedAt).toLocaleString() : 'N/A'
   }));
 
   return (
@@ -106,8 +161,8 @@ const DigitalLinks = () => {
         </div>
 
         <div className="p-6 bg-gray-50 min-h-screen">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left Column - Product Card */}
               <div>
                 <ProductCard
@@ -126,10 +181,29 @@ const DigitalLinks = () => {
               </div>
             </div>
 
-            {/* Tabs and Table */}
+            {/* Purchase Orders Section */}
             <div className="bg-white rounded-lg shadow-sm">
+              <PurchaseOrderTable 
+                orders={ordersData}
+                isLoading={isLoadingOrders}
+                refetchOrders={refetchOrders}
+                onViewOrder={handleViewOrder}
+                selectedOrderId={selectedPO?.id}
+              />
+            </div>
+
+            {/* Controlled Serials Section */}
+            <div className="bg-white rounded-lg shadow-sm">
+              {selectedPO && (
+                <div className="px-6 py-3 bg-blue-50 border-b border-blue-100">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-semibold">Selected PO:</span> {selectedPO.poNumber}
+                    {selectedPO.supplierName && <span className="ml-3"><span className="font-semibold">Supplier:</span> {selectedPO.supplierName}</span>}
+                  </p>
+                </div>
+              )}
               <DigitalLinkTable 
-                serials={serialsData}
+                serials={selectedPO ? serialsData : []}
                 isLoading={isLoading || isFetching}
                 refetchSerials={refetch}
                 itemCode={rowData?.ItemCode}
