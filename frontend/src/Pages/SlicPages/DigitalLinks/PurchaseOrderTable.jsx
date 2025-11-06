@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 import { HiRefresh } from "react-icons/hi";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import newRequest from "../../../utils/userRequest";
 
 const PurchaseOrderTable = ({ 
   orders, 
@@ -12,6 +15,7 @@ const PurchaseOrderTable = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [sendingPO, setSendingPO] = useState(null);
   const itemsPerPage = 5;
 
   const ordersArray = Array.isArray(orders) ? orders : [];
@@ -27,6 +31,70 @@ const PurchaseOrderTable = ({
     setSelectedRowIndex(index);
     if (onViewOrder) {
       onViewOrder(order);
+    }
+  };
+
+  // Handle send by PO
+  const handleSendByPO = async (poNumber, event) => {
+    event.stopPropagation();
+
+    if (!poNumber) {
+      toast.error("PO Number is required");
+      return;
+    }
+
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Confirm Action',
+      text: `Are you sure you want to send control serials for PO: ${poNumber}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#1D2F90',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, send it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    setSendingPO(poNumber);
+
+    try {
+      const response = await newRequest.post("/controlSerials/send-by-po", {
+        poNumber: poNumber
+      });
+
+      // Success notification
+      toast.success(response?.data?.message || "Control serials sent successfully");
+      
+      // Show success Swal
+      await Swal.fire({
+        title: 'Success!',
+        text: response?.data?.message || 'Control serials have been sent successfully.',
+        icon: 'success',
+        confirmButtonColor: '#1D2F90'
+      });
+
+      // Refresh the orders list
+      if (refetchOrders) {
+        refetchOrders();
+      }
+    } catch (err) {
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.message || "Error sending control serials";
+      // Error notification
+      toast.error(errorMessage);
+      
+      // Show error Swal
+      Swal.fire({
+        title: 'Error!',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#1D2F90'
+      });
+    } finally {
+      setSendingPO(null);
     }
   };
 
@@ -159,6 +227,7 @@ const PurchaseOrderTable = ({
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Updated At</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -187,6 +256,32 @@ const PurchaseOrderTable = ({
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.createdAt || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.updatedAt || 'N/A'}</td>
+                      <td className="px-4 py-3">
+                        <Button
+                          onClick={(e) => handleSendByPO(order.poNumber, e)}
+                          variant="contained"
+                          size="small"
+                          disabled={sendingPO === order.poNumber}
+                          sx={{
+                            backgroundColor: '#1D2F90',
+                            '&:hover': {
+                              backgroundColor: '#162561',
+                            },
+                            '&:disabled': {
+                              backgroundColor: '#ccc',
+                            },
+                            fontSize: '0.75rem',
+                            padding: '4px 12px',
+                            minWidth: '80px'
+                          }}
+                        >
+                          {sendingPO === order.poNumber ? (
+                            <CircularProgress size={16} color="inherit" />
+                          ) : (
+                            'Send Supplier'
+                          )}
+                        </Button>
+                      </td>
                     </tr>
                   ))
                 )}
