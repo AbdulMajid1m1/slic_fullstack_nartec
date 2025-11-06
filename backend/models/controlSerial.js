@@ -261,6 +261,46 @@ class ControlSerialModel {
       },
       select: {
         poNumber: true,
+        size: true,
+        product: {
+              select: {
+                  ItemCode: true,
+              }
+          },
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+      distinct: ['poNumber'],
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return controlSerials;
+  }
+
+  /**
+   * Get PO numbers with supplier details for a SLIC Admin
+   * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
+   */
+  static async getPoNumbersWithSupplierDetails() {
+    const controlSerials = await prisma.controlSerial.findMany({
+      select: {
+        poNumber: true,
+        size: true,
+        product: {
+            select: {
+           ItemCode: true,
+          }
+        },
         supplier: {
           select: {
             id: true,
