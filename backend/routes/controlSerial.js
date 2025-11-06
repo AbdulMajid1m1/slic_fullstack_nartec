@@ -52,6 +52,17 @@ router.get(
 );
 
 /**
+ * POST /api/controlSerials/send-by-itemcode
+ * Body: { ItemCode: string }
+ * Trigger sending notification emails for all unsent control serials of a given ItemCode
+ */
+router.post(
+  "/send-by-itemcode",
+  isAuth,
+  controlSerialController.sendControlSerialsByItemCode
+);
+
+/**
  * GET /api/controlSerials/search/by-po?poNumber=value
  * Search control serials by PO number
  */

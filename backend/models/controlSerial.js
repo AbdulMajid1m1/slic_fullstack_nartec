@@ -320,6 +320,25 @@ class ControlSerialModel {
 
     return controlSerials;
   }
+
+  /**
+   * Mark multiple control serials as sent using their IDs
+   * @param {Array<string>} ids - Array of control serial IDs to mark as sent
+   * @returns {Promise<Object>} - Result of updateMany
+   */
+  static async markAsSentByIds(ids) {
+    if (!ids || ids.length === 0) return { count: 0 };
+
+    return await prisma.controlSerial.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        isSentToSupplier: true,
+      },
+    });
+  }
+
 }
 
 module.exports = ControlSerialModel;

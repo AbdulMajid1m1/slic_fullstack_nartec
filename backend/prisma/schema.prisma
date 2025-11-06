@@ -49,6 +49,8 @@ model ControlSerial{
     size                        String?
     poNumber                    String?
 
+    isSentToSupplier            Boolean     @default(false)
+
     // relation with Supplier
     supplierId                  String?
     supplier                    Supplier? @relation(fields: [supplierId], references: [id])

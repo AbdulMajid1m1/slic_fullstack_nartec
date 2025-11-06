@@ -256,6 +256,93 @@ exports.searchByItemCode = async (req, res, next) => {
 };
 
 /**
+ * POST - Send control serial notification emails by ItemCode
+ * Body: { ItemCode: string }
+ * This will find all control serials for the ItemCode which are not yet sent,
+ * group them by supplier and PO (and size), send notification email for each group,
+ * and mark those control serials as isSentToSupplier = true when email sending succeeds.
+ */
+exports.sendControlSerialsByItemCode = async (req, res, next) => {
+  try {
+    const { ItemCode } = req.body;
+
+    if (!ItemCode) {
+      const error = new CustomError("ItemCode is required in request body");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Find all control serials for this ItemCode that are not yet sent
+    const allSerials = await ControlSerialModel.findByItemCode(ItemCode);
+    const unsent = (allSerials || []).filter((s) => !s.isSentToSupplier);
+
+    if (!unsent || unsent.length === 0) {
+      return res
+        .status(200)
+        .json(generateResponse(200, true, "No unsent control serials found", { count: 0 }));
+    }
+
+    // Group by supplierId + poNumber + size to preserve the original email payload shape
+    const groups = {};
+    for (const s of unsent) {
+      const key = `${s.supplierId || "no-supplier"}::${s.poNumber || "no-po"}::${s.size || "no-size"}`;
+      if (!groups[key]) groups[key] = { supplierId: s.supplierId, poNumber: s.poNumber, size: s.size, ids: [], quantity: 0 };
+      groups[key].ids.push(s.id);
+      groups[key].quantity += 1;
+    }
+
+    const sentSummary = [];
+    const failedSummary = [];
+
+    // Iterate groups and send emails
+    for (const key of Object.keys(groups)) {
+      const grp = groups[key];
+
+      // If no supplierId, skip (can't send email)
+      if (!grp.supplierId) {
+        failedSummary.push({ reason: "No supplier associated with these serials", group: grp });
+        continue;
+      }
+
+      const supplier = await SupplierModel.getSupplierById(grp.supplierId);
+      if (!supplier) {
+        failedSummary.push({ reason: "Supplier not found", group: grp });
+        continue;
+      }
+
+      try {
+        await sendControlSerialNotificationEmail({
+          supplierEmail: supplier.email,
+          supplierName: supplier.name,
+          poNumber: grp.poNumber,
+          itemCode: ItemCode,
+          quantity: grp.quantity,
+          size: grp.size || null,
+        });
+
+        // Mark these control serials as sent
+        await ControlSerialModel.markAsSentByIds(grp.ids);
+
+        sentSummary.push({ supplierId: grp.supplierId, supplierEmail: supplier.email, poNumber: grp.poNumber, quantity: grp.quantity });
+      } catch (emailError) {
+        console.error("Error sending email for group", grp, emailError);
+        failedSummary.push({ reason: emailError.message || emailError, group: grp });
+        // Do not rethrow; continue with other groups
+      }
+    }
+
+    res.status(200).json(
+      generateResponse(200, true, "Send-by-ItemCode process completed", {
+        sent: sentSummary,
+        failed: failedSummary,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * GET - Search control serial by serial number
  */
 exports.searchBySerialNumber = async (req, res, next) => {
