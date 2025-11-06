@@ -256,39 +256,46 @@ exports.searchByItemCode = async (req, res, next) => {
 };
 
 /**
- * POST - Send control serial notification emails by ItemCode
- * Body: { ItemCode: string }
- * This will find all control serials for the ItemCode which are not yet sent,
- * group them by supplier and PO (and size), send notification email for each group,
+ * POST - Send control serial notification emails by PO number
+ * Body: { poNumber: string }
+ * This will find all control serials for the PO number which are not yet sent,
+ * group them by supplier and size, send notification email for each group,
  * and mark those control serials as isSentToSupplier = true when email sending succeeds.
  */
-exports.sendControlSerialsByItemCode = async (req, res, next) => {
+exports.sendControlSerialsByPoNumber = async (req, res, next) => {
   try {
-    const { ItemCode } = req.body;
+    const { poNumber } = req.body;
 
-    if (!ItemCode) {
-      const error = new CustomError("ItemCode is required in request body");
+    if (!poNumber) {
+      const error = new CustomError("PO number is required");
       error.statusCode = 400;
       throw error;
     }
 
-    // Find all control serials for this ItemCode that are not yet sent
-    const allSerials = await ControlSerialModel.findByItemCode(ItemCode);
+    // Find all control serials for this PO number that are not yet sent
+    const allSerials = await ControlSerialModel.findByPoNumber(poNumber);
     const unsent = (allSerials || []).filter((s) => !s.isSentToSupplier);
 
     if (!unsent || unsent.length === 0) {
-      return res
-        .status(200)
-        .json(generateResponse(200, true, "No unsent control serials found", { count: 0 }));
+      const error = new CustomError("No unsent control serials found for this PO number");
+      error.statusCode = 404;
+      throw error;
     }
 
-    // Group by supplierId + poNumber + size to preserve the original email payload shape
+    // Group by supplierId + size to preserve the original email payload shape
     const groups = {};
     for (const s of unsent) {
-      const key = `${s.supplierId || "no-supplier"}::${s.poNumber || "no-po"}::${s.size || "no-size"}`;
-      if (!groups[key]) groups[key] = { supplierId: s.supplierId, poNumber: s.poNumber, size: s.size, ids: [], quantity: 0 };
-      groups[key].ids.push(s.id);
-      groups[key].quantity += 1;
+      const key = `${s.supplierId}_${s.size || ""}`;
+      if (!groups[key]) {
+        groups[key] = {
+          supplierId: s.supplierId,
+          supplier: s.supplier,
+          poNumber: s.poNumber,
+          size: s.size,
+          serials: [],
+        };
+      }
+      groups[key].serials.push(s);
     }
 
     const sentSummary = [];
@@ -296,43 +303,44 @@ exports.sendControlSerialsByItemCode = async (req, res, next) => {
 
     // Iterate groups and send emails
     for (const key of Object.keys(groups)) {
-      const grp = groups[key];
-
-      // If no supplierId, skip (can't send email)
-      if (!grp.supplierId) {
-        failedSummary.push({ reason: "No supplier associated with these serials", group: grp });
-        continue;
-      }
-
-      const supplier = await SupplierModel.getSupplierById(grp.supplierId);
-      if (!supplier) {
-        failedSummary.push({ reason: "Supplier not found", group: grp });
-        continue;
-      }
+      const group = groups[key];
+      const supplier = group.supplier;
 
       try {
-        await sendControlSerialNotificationEmail({
+        // Send email notification
+        const emailResult = await sendControlSerialNotificationEmail({
           supplierEmail: supplier.email,
           supplierName: supplier.name,
-          poNumber: grp.poNumber,
-          itemCode: ItemCode,
-          quantity: grp.quantity,
-          size: grp.size || null,
+          poNumber: group.poNumber,
+          itemCode: group.serials.map((s) => s.product?.ItemCode).join(", "),
+          quantity: group.serials.length,
+          size: group.size || null,
         });
 
-        // Mark these control serials as sent
-        await ControlSerialModel.markAsSentByIds(grp.ids);
+        // Mark all serials in this group as sent
+        const serialIds = group.serials.map((s) => s.id);
+        await ControlSerialModel.markAsSentByIds(serialIds);
 
-        sentSummary.push({ supplierId: grp.supplierId, supplierEmail: supplier.email, poNumber: grp.poNumber, quantity: grp.quantity });
-      } catch (emailError) {
-        console.error("Error sending email for group", grp, emailError);
-        failedSummary.push({ reason: emailError.message || emailError, group: grp });
-        // Do not rethrow; continue with other groups
+        sentSummary.push({
+          supplierId: supplier.id,
+          supplierEmail: supplier.email,
+          poNumber: group.poNumber,
+          quantity: group.serials.length,
+        });
+      } catch (groupError) {
+        console.error(`Error sending email for group ${key}:`, groupError);
+        failedSummary.push({
+          supplierId: supplier.id,
+          supplierEmail: supplier.email,
+          poNumber: group.poNumber,
+          quantity: group.serials.length,
+          error: groupError.message,
+        });
       }
     }
 
     res.status(200).json(
-      generateResponse(200, true, "Send-by-ItemCode process completed", {
+      generateResponse(200, true, "Send-by-PO process completed", {
         sent: sentSummary,
         failed: failedSummary,
       })

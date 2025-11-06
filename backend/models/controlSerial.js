@@ -258,6 +258,7 @@ class ControlSerialModel {
     const controlSerials = await prisma.controlSerial.findMany({
       where: {
         supplierId: supplierId,
+        isSentToSupplier: true
       },
       select: {
         poNumber: true,

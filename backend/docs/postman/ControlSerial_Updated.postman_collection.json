@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "control-serial-v2-collection",
     "name": "Control Serial API v2 (Updated)",
-    "description": "CRUD APIs for Control Serial Management with Supplier Integration\n\n**Features:**\n- ✅ Bulk serial creation with email notifications\n- ✅ Supplier Integration with automatic email notifications\n- ✅ PO Number Tracking and Filtering\n- ✅ Size Field Support\n- ✅ Search by Serial Number, Item Code, or PO Number\n- ✅ Pagination Support with Filters\n- ✅ Send notification emails by ItemCode (retry/resend)\n- ✅ Get unique PO numbers with supplier details\n- ✅ Supplier Portal: View own PO numbers\n- ✅ Admin Dashboard: View all PO numbers with suppliers\n\n**Endpoints Summary:**\n1. POST /api/controlSerials - Create bulk serials\n2. GET /api/controlSerials - Get all (paginated + filtered)\n3. GET /api/controlSerials/all - Get all (no pagination)\n4. GET /api/controlSerials/:id - Get by ID\n5. PUT /api/controlSerials/:id - Update serial\n6. DELETE /api/controlSerials/:id - Delete serial\n7. GET /api/controlSerials/search/by-itemcode - Search by ItemCode\n8. GET /api/controlSerials/search/by-serial - Search by serial number\n9. GET /api/controlSerials/search/by-po - Search by PO number\n10. POST /api/controlSerials/send-by-itemcode - Send emails by ItemCode (NEW)\n11. GET /api/controlSerials/po-numbers - Get all PO numbers (Admin) (NEW)\n12. GET /api/controlSerials/supplier/po-numbers - Get my PO numbers (Supplier) (NEW)\n\n**Serial Number Generation Formula:** ItemCode + 6-digit Series Number\n**Example:** ITEM123 + 000001 = ITEM123000001\n\n**Version:** 2.1\n**Last Updated:** November 6, 2025\n**New APIs Added:** Send by ItemCode, PO Numbers (Admin & Supplier)",
+    "description": "CRUD APIs for Control Serial Management with Supplier Integration\n\n**Features:**\n- ✅ Bulk serial creation with email notifications\n- ✅ Supplier Integration with automatic email notifications\n- ✅ PO Number Tracking and Filtering\n- ✅ Size Field Support\n- ✅ Search by Serial Number, Item Code, or PO Number\n- ✅ Pagination Support with Filters\n- ✅ Send notification emails by ItemCode (retry/resend)\n- ✅ Get unique PO numbers with supplier details\n- ✅ Supplier Portal: View own PO numbers\n- ✅ Admin Dashboard: View all PO numbers with suppliers\n\n**Endpoints Summary:**\n1. POST /api/controlSerials - Create bulk serials\n2. GET /api/controlSerials - Get all (paginated + filtered)\n3. GET /api/controlSerials/all - Get all (no pagination)\n4. GET /api/controlSerials/:id - Get by ID\n5. PUT /api/controlSerials/:id - Update serial\n6. DELETE /api/controlSerials/:id - Delete serial\n7. GET /api/controlSerials/search/by-itemcode - Search by ItemCode\n8. GET /api/controlSerials/search/by-serial - Search by serial number\n9. GET /api/controlSerials/search/by-po - Search by PO number\n10. POST /api/controlSerials/send-by-po - Send emails by PO number (NEW)\n11. GET /api/controlSerials/po-numbers - Get all PO numbers (Admin) (NEW)\n12. GET /api/controlSerials/supplier/po-numbers - Get my PO numbers (Supplier) (NEW)\n\n**Serial Number Generation Formula:** ItemCode + 6-digit Series Number\n**Example:** ITEM123 + 000001 = ITEM123000001\n\n**Version:** 2.1\n**Last Updated:** November 6, 2025\n**New APIs Added:** Send by PO number, PO Numbers (Admin & Supplier)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -453,7 +453,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"ItemCode\": \"ITEM123\"\n}",
+          "raw": "{\n  \"poNumber\": \"PO-2024-001\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -461,11 +461,11 @@
           }
         },
         "url": {
-          "raw": "{{base_url}}/api/controlSerials/send-by-itemcode",
+          "raw": "{{base_url}}/api/controlSerials/send-by-po",
           "host": ["{{base_url}}"],
-          "path": ["api", "controlSerials", "send-by-itemcode"]
+          "path": ["api", "controlSerials", "send-by-po"]
         },
-        "description": "**NEW ENDPOINT: Send control serial notification emails by ItemCode**\n\n**Purpose:** Trigger sending notification emails for all unsent control serials of a given ItemCode\n\n**Request Body:**\n```json\n{\n  \"ItemCode\": \"ITEM123\"  // Required: Item code\n}\n```\n\n**Features:**\n- Finds all control serials for the ItemCode that haven't been sent yet\n- Groups serials by supplier, PO number, and size\n- Sends notification email for each group\n- Marks serials as `isSentToSupplier = true` upon successful email send\n- Continues with other groups even if one email fails\n- Returns summary of sent and failed groups\n\n**Response:**\n```json\n{\n  \"status\": 200,\n  \"success\": true,\n  \"message\": \"Send-by-ItemCode process completed\",\n  \"data\": {\n    \"sent\": [\n      {\n        \"supplierId\": \"clxxx123456789\",\n        \"supplierEmail\": \"supplier@example.com\",\n        \"poNumber\": \"PO-2024-001\",\n        \"quantity\": 10\n      }\n    ],\n    \"failed\": []\n  }\n}\n```\n\n**Use Cases:**\n- Manually trigger email resend for specific item\n- Send reminders to suppliers\n- Recovery from email delivery issues\n- Bulk notification management"
+        "description": "**NEW ENDPOINT: Send control serial notification emails by PO number**\n\n**Purpose:** Trigger sending notification emails for all unsent control serials of a given PO number\n\n**Request Body:**\n```json\n{\n  \"poNumber\": \"PO-2024-001\"  // Required: PO number\n}\n```\n\n**Features:**\n- Finds all control serials for the PO number that haven't been sent yet\n- Groups serials by supplier and size\n- Sends notification email for each group\n- Marks serials as `isSentToSupplier = true` upon successful email send\n- Continues with other groups even if one email fails\n- Returns summary of sent and failed groups\n\n**Response:**\n```json\n{\n  \"status\": 200,\n  \"success\": true,\n  \"message\": \"Send-by-PO process completed\",\n  \"data\": {\n    \"sent\": [\n      {\n        \"supplierId\": \"clxxx123456789\",\n        \"supplierEmail\": \"supplier@example.com\",\n        \"poNumber\": \"PO-2024-001\",\n        \"quantity\": 10\n      }\n    ],\n    \"failed\": []\n  }\n}\n```\n\n**Use Cases:**\n- Manually trigger email resend for specific PO\n- Send reminders to suppliers for specific purchase order\n- Recovery from email delivery issues\n- PO-specific notification management"
       },
       "response": [
         {
@@ -480,12 +480,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"ItemCode\": \"ITEM123\"\n}"
+              "raw": "{\n  \"poNumber\": \"PO-2024-001\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/controlSerials/send-by-itemcode",
+              "raw": "{{base_url}}/api/controlSerials/send-by-po",
               "host": ["{{base_url}}"],
-              "path": ["api", "controlSerials", "send-by-itemcode"]
+              "path": ["api", "controlSerials", "send-by-po"]
             }
           },
           "status": "OK",
@@ -498,7 +498,7 @@
             }
           ],
           "cookie": [],
-          "body": "{\n  \"status\": 200,\n  \"success\": true,\n  \"message\": \"Send-by-ItemCode process completed\",\n  \"data\": {\n    \"sent\": [\n      {\n        \"supplierId\": \"clxxx123456789\",\n        \"supplierEmail\": \"supplier@example.com\",\n        \"poNumber\": \"PO-2024-001\",\n        \"quantity\": 10\n      },\n      {\n        \"supplierId\": \"clyyy987654321\",\n        \"supplierEmail\": \"other-supplier@example.com\",\n        \"poNumber\": \"PO-2024-002\",\n        \"quantity\": 5\n      }\n    ],\n    \"failed\": []\n  }\n}"
+          "body": "{\n  \"status\": 200,\n  \"success\": true,\n  \"message\": \"Send-by-PO process completed\",\n  \"data\": {\n    \"sent\": [\n      {\n        \"supplierId\": \"clxxx123456789\",\n        \"supplierEmail\": \"supplier@example.com\",\n        \"poNumber\": \"PO-2024-001\",\n        \"quantity\": 10\n      },\n      {\n        \"supplierId\": \"clyyy987654321\",\n        \"supplierEmail\": \"other-supplier@example.com\",\n        \"poNumber\": \"PO-2024-002\",\n        \"quantity\": 5\n      }\n    ],\n    \"failed\": []\n  }\n}"
         }
       ]
     },

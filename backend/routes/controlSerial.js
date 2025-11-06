@@ -52,14 +52,14 @@ router.get(
 );
 
 /**
- * POST /api/controlSerials/send-by-itemcode
- * Body: { ItemCode: string }
- * Trigger sending notification emails for all unsent control serials of a given ItemCode
+ * POST /api/controlSerials/send-by-po
+ * Body: { poNumber: string }
+ * Trigger sending notification emails for all unsent control serials of a given PO number
  */
 router.post(
-  "/send-by-itemcode",
+  "/send-by-po",
   isAuth,
-  controlSerialController.sendControlSerialsByItemCode
+  controlSerialController.sendControlSerialsByPoNumber
 );
 
 /**
