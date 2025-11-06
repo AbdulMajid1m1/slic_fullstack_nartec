@@ -125,8 +125,8 @@ const DigitalLinks = () => {
   const ordersData = purchaseOrders.map(order => ({
     id: order.supplier?.id || order.poNumber,
     poNumber: order.poNumber,
-    supplierName: order.supplier?.name || 'N/A',
-    supplierEmail: order.supplier?.email || 'N/A',
+    ItemCode: order.product?.ItemCode || 'N/A',
+    size: order?.size || 'N/A',
     supplierStatus: order.supplier?.status || 'N/A',
     createdAt: order.supplier?.createdAt ? new Date(order.supplier.createdAt).toLocaleString() : 'N/A',
     updatedAt: order.supplier?.updatedAt ? new Date(order.supplier.updatedAt).toLocaleString() : 'N/A'
