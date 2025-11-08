@@ -224,6 +224,7 @@ const PurchaseOrderTable = ({
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">PO Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Size</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ItemCode</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SQTY</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Updated At</th>
@@ -249,6 +250,7 @@ const PurchaseOrderTable = ({
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">{order.poNumber || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.size || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.ItemCode || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{order.totalCount || 'N/A'}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.supplierStatus)}`}>
                           {order.supplierStatus || 'N/A'}
