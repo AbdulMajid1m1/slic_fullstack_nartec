@@ -38,7 +38,7 @@ class ControlSerialModel {
    * @param {string} supplierId - Filter by supplier ID (optional)
    * @returns {Promise<Object>} - Paginated serials and pagination info
    */
-  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null, supplierId = null) {
+  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null, supplierId = null, isArchived = false) {
     const skip = (page - 1) * limit;
 
     const where = {};
@@ -59,6 +59,11 @@ class ControlSerialModel {
     // Add supplier ID filter
     if (supplierId) {
       where.supplierId = supplierId;
+    }
+
+    // Add isArchived filter
+    if (typeof isArchived === 'boolean') {
+      where.isArchived = isArchived;
     }
 
     const [controlSerials, total] = await Promise.all([

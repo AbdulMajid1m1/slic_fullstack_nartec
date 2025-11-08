@@ -132,13 +132,15 @@ exports.getControlSerials = async (req, res, next) => {
     const search = req.query.search || null;
     const poNumber = req.query.poNumber || null;
     const supplierId = req.query.supplierId || null;
+    const isArchived = req.query.isArchived || null;
 
     const result = await ControlSerialModel.findAllWithPagination(
       page,
       limit,
       search,
       poNumber,
-      supplierId
+      supplierId,
+      isArchived
     );
     const { controlSerials, pagination } = result;
 
@@ -548,7 +550,7 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
         poNumbersWithSupplier.map(async (po) => {
-            const count = await ControlSerialModel.countByPoNumberAndSupplierId(po.poNumber, supplier.id);
+            const count = await ControlSerialModel.countByPoNumber(po.poNumber);
             return {
                 ...po,
                 totalCount: count
