@@ -62,7 +62,8 @@ class ControlSerialModel {
     }
 
     // Add isArchived filter
-    if (typeof isArchived === 'boolean') {
+    // Only apply filter if isArchived is explicitly true or false (not null)
+    if (isArchived !== null && typeof isArchived === 'boolean') {
       where.isArchived = isArchived;
     }
 

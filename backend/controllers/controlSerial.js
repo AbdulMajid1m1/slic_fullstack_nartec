@@ -132,7 +132,14 @@ exports.getControlSerials = async (req, res, next) => {
     const search = req.query.search || null;
     const poNumber = req.query.poNumber || null;
     const supplierId = req.query.supplierId || null;
-    const isArchived = req.query.isArchived || null;
+    
+    // Convert isArchived string to boolean: 'true' -> true, anything else (null, 'false', undefined) -> false
+    let isArchived = null;
+    if (req.query.isArchived === 'true') {
+      isArchived = true;
+    } else if (req.query.isArchived !== undefined && req.query.isArchived !== null) {
+      isArchived = false;
+    }
 
     const result = await ControlSerialModel.findAllWithPagination(
       page,
