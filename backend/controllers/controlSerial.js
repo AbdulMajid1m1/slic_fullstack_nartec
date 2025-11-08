@@ -545,6 +545,17 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
     // Get unique PO numbers with supplier details
     const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetailsBySupplierId(supplier.id);
 
+    // Get total count of control serials for each PO number
+    const poNumbersWithCount = await Promise.all(
+        poNumbersWithSupplier.map(async (po) => {
+            const count = await ControlSerialModel.countByPoNumberAndSupplierId(po.poNumber, supplier.id);
+            return {
+                ...po,
+                totalCount: count
+            };
+        })
+    );
+
     res
       .status(200)
       .json(
@@ -552,7 +563,7 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
           200,
           true,
           "PO numbers with supplier details retrieved successfully",
-          poNumbersWithSupplier
+            poNumbersWithCount,
         )
       );
   } catch (error) {
