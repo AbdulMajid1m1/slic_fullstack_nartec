@@ -44,29 +44,19 @@ const DigitalLinks = () => {
   } = useQuery({
     queryKey: ['purchaseOrders'],
     queryFn: fetchPurchaseOrders,
-    staleTime: 0,
-    cacheTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
     onError: (err) => {
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load purchase orders");
     },
   });
 
-  // Fetch Control Serials - Modified to include PO filter
+  // Fetch Control Serials - Only when PO is selected
   const fetchControlSerials = async ({ queryKey }) => {
     const [_key, currentPage, currentLimit, poNumber] = queryKey;
     
-    if (!poNumber) {
-      return {
-        data: [],
-        pagination: null,
-        totalPages: 0,
-        currentPage: 1,
-        totalItems: 0
-      };
-    }
-
     const response = await newRequest.get(
       `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}`
     );
@@ -86,9 +76,9 @@ const DigitalLinks = () => {
     refetch,
     isFetching 
   } = useQuery({
-    queryKey: ['controlSerials', page, limit, selectedPO?.poNumber, rowData?.ItemCode],
+    queryKey: ['controlSerials', page, limit, selectedPO?.poNumber],
     queryFn: fetchControlSerials,
-    enabled: !!selectedPO,
+    enabled: !!selectedPO?.poNumber, // Only fetch when PO is selected
     staleTime: 2 * 60 * 1000,
     cacheTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -127,6 +117,7 @@ const DigitalLinks = () => {
     poNumber: order.poNumber,
     ItemCode: order.product?.ItemCode || 'N/A',
     size: order?.size || 'N/A',
+    totalCount: order.totalCount || '',
     supplierStatus: order.supplier?.status || 'N/A',
     createdAt: order.supplier?.createdAt ? new Date(order.supplier.createdAt).toLocaleString() : 'N/A',
     updatedAt: order.supplier?.updatedAt ? new Date(order.supplier.updatedAt).toLocaleString() : 'N/A'
