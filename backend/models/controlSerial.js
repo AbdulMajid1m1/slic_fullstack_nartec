@@ -323,6 +323,19 @@ class ControlSerialModel {
   }
 
   /**
+   * Get total count of control serials for a specific poNumber
+   * @returns {Promise<number>} - Total count of control serials
+   */
+    static async countByPoNumber(poNumber) {
+        return await prisma.controlSerial.count({
+            where: {
+                poNumber: poNumber
+            }
+        });
+    }
+
+
+  /**
    * Mark multiple control serials as sent using their IDs
    * @param {Array<string>} ids - Array of control serial IDs to mark as sent
    * @returns {Promise<Object>} - Result of updateMany
