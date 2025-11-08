@@ -94,6 +94,28 @@ router.get(
 );
 
 /**
+ * POST /api/controlSerials/archive/by-po
+ * Body: { poNumber: string }
+ * Archive all control serials for a given PO number
+ */
+router.post(
+  "/archive/by-po",
+  isAuth,
+  controlSerialController.archiveControlSerialsByPoNumber
+);
+
+/**
+ * POST /api/controlSerials/unarchive/by-po
+ * Body: { poNumber: string }
+ * Unarchive all control serials for a given PO number
+ */
+router.post(
+  "/unarchive/by-po",
+  isAuth,
+  controlSerialController.unarchiveControlSerialsByPoNumber
+);
+
+/**
  * GET /api/controlSerials/:id
  * Get control serial by ID
  */

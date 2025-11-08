@@ -615,3 +615,104 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * POST - Archive all control serials by PO number
+ * Body: { poNumber: string }
+ */
+exports.archiveControlSerialsByPoNumber = async (req, res, next) => {
+  try {
+    const { poNumber } = req.body;
+
+    if (!poNumber) {
+      const error = new CustomError("PO number is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Check if any control serials exist for this PO number
+    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+    if (!controlSerials || controlSerials.length === 0) {
+      const error = new CustomError("No control serials found for the given PO number");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Archive all control serials for this PO number
+    const result = await ControlSerialModel.archiveByPoNumber(poNumber);
+
+    if (result.count === 0) {
+      const error = new CustomError("Failed to archive control serials");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res.status(200).json(
+      generateResponse(
+        200,
+        true,
+        `${result.count} control serial(s) archived successfully for PO number: ${poNumber}`,
+        {
+          poNumber,
+          archivedCount: result.count,
+        }
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST - Unarchive all control serials by PO number
+ * Body: { poNumber: string }
+ */
+exports.unarchiveControlSerialsByPoNumber = async (req, res, next) => {
+  try {
+    const { poNumber } = req.body;
+
+    if (!poNumber) {
+      const error = new CustomError("PO number is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Check if any archived control serials exist for this PO number
+    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+    if (!controlSerials || controlSerials.length === 0) {
+      const error = new CustomError("No control serials found for the given PO number");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const archivedSerials = controlSerials.filter(s => s.isArchived);
+    if (archivedSerials.length === 0) {
+      const error = new CustomError("No archived control serials found for the given PO number");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Unarchive all control serials for this PO number
+    const result = await ControlSerialModel.unarchiveByPoNumber(poNumber);
+
+    if (result.count === 0) {
+      const error = new CustomError("Failed to unarchive control serials");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res.status(200).json(
+      generateResponse(
+        200,
+        true,
+        `${result.count} control serial(s) unarchived successfully for PO number: ${poNumber}`,
+        {
+          poNumber,
+          unarchivedCount: result.count,
+        }
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+};

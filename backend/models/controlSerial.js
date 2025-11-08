@@ -359,6 +359,46 @@ class ControlSerialModel {
     });
   }
 
+  /**
+   * Archive all control serials by PO number
+   * @param {string} poNumber - PO number to archive
+   * @returns {Promise<Object>} - Result of updateMany with count of archived records
+   */
+  static async archiveByPoNumber(poNumber) {
+    if (!poNumber) {
+      throw new Error("PO number is required");
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: {
+        poNumber: poNumber,
+      },
+      data: {
+        isArchived: true,
+      },
+    });
+  }
+
+  /**
+   * Unarchive all control serials by PO number
+   * @param {string} poNumber - PO number to unarchive
+   * @returns {Promise<Object>} - Result of updateMany with count of unarchived records
+   */
+  static async unarchiveByPoNumber(poNumber) {
+    if (!poNumber) {
+      throw new Error("PO number is required");
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: {
+        poNumber: poNumber,
+      },
+      data: {
+        isArchived: false,
+      },
+    });
+  }
+
 }
 
 module.exports = ControlSerialModel;
