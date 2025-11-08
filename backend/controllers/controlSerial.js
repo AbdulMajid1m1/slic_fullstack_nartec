@@ -132,13 +132,22 @@ exports.getControlSerials = async (req, res, next) => {
     const search = req.query.search || null;
     const poNumber = req.query.poNumber || null;
     const supplierId = req.query.supplierId || null;
+    
+    // Convert isArchived string to boolean: 'true' -> true, anything else (null, 'false', undefined) -> false
+    let isArchived = null;
+    if (req.query.isArchived === 'true') {
+      isArchived = true;
+    } else if (req.query.isArchived !== undefined && req.query.isArchived !== null) {
+      isArchived = false;
+    }
 
     const result = await ControlSerialModel.findAllWithPagination(
       page,
       limit,
       search,
       poNumber,
-      supplierId
+      supplierId,
+      isArchived
     );
     const { controlSerials, pagination } = result;
 
@@ -545,6 +554,17 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
     // Get unique PO numbers with supplier details
     const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetailsBySupplierId(supplier.id);
 
+    // Get total count of control serials for each PO number
+    const poNumbersWithCount = await Promise.all(
+        poNumbersWithSupplier.map(async (po) => {
+            const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+            return {
+                ...po,
+                totalCount: count
+            };
+        })
+    );
+
     res
       .status(200)
       .json(
@@ -552,7 +572,7 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
           200,
           true,
           "PO numbers with supplier details retrieved successfully",
-          poNumbersWithSupplier
+            poNumbersWithCount,
         )
       );
   } catch (error) {
@@ -570,6 +590,17 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
         // Get unique PO numbers with supplier details
         const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetails();
 
+        // Get total count of control serials for each PO number
+        const poNumbersWithCount = await Promise.all(
+            poNumbersWithSupplier.map(async (po) => {
+                const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+                return {
+                    ...po,
+                    totalCount: count
+                };
+            })
+        );
+
         res
             .status(200)
             .json(
@@ -577,7 +608,7 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
                     200,
                     true,
                     "PO numbers with supplier details retrieved successfully",
-                    poNumbersWithSupplier
+                    poNumbersWithCount
                 )
             );
     } catch (error) {
