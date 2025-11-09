@@ -123,6 +123,7 @@ class ControlSerialModel {
     return await prisma.controlSerial.findMany({
       where: {
         poNumber: poNumber,
+        isArchived: false
       },
       include: {
         product: true,
@@ -133,6 +134,23 @@ class ControlSerialModel {
       },
     });
   }
+
+  /**
+   * Filter control serials by poNumber and get the totoal count for 
+   * those whose isSentToSupplier is false
+   * @param {string} poNumber - PO number to filter
+   * @returns {Promise<number>} - Total count of matching serials
+   */
+
+    static async countUnsentByPoNumber(poNumber) {
+        return await prisma.controlSerial.count({
+            where: {
+                poNumber: poNumber,
+                isSentToSupplier: false,
+                isArchived: false
+            }
+        });
+    }
 
   /**
    * Search control serials by ItemCode
