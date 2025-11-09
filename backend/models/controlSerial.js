@@ -117,14 +117,24 @@ class ControlSerialModel {
   /**
    * Search control serials by PO number
    * @param {string} poNumber - PO number to search
+   * @param {boolean} includeArchived - Whether to include archived records (default: false)
    * @returns {Promise<Array>} - Matching serials
    */
-  static async findByPoNumber(poNumber) {
+  static async findByPoNumber(poNumber, includeArchived = false) {
+    const where = {
+      poNumber: poNumber,
+    };
+
+    // Only filter by isArchived if we don't want to include archived records
+    if (!includeArchived) {
+      where.OR = [
+        { isArchived: false },
+        { isArchived: null }
+      ];
+    }
+
     return await prisma.controlSerial.findMany({
-      where: {
-        poNumber: poNumber,
-        isArchived: false
-      },
+      where,
       include: {
         product: true,
         supplier: true,
