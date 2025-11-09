@@ -269,7 +269,7 @@ async function sendControlSerialNotificationEmail(options) {
       to: supplierEmail,
       subject: subject,
       template: "controlSerialNotification",
-      context: templateData,
+      data: templateData,
     });
 
     console.log(
