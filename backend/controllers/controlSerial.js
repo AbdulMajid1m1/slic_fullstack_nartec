@@ -91,21 +91,21 @@ exports.createControlSerials = async (req, res, next) => {
       )
     );
 
-    // Send email notification to supplier
-    try {
-      const emailResult = await sendControlSerialNotificationEmail({
-        supplierEmail: supplier.email,
-        supplierName: supplier.name,
-        poNumber: poNumber,
-        itemCode: ItemCode,
-        quantity: qty,
-        size: size || null,
-      });
-      console.log("Email notification result:", emailResult);
-    } catch (emailError) {
-      console.error("Error sending email notification:", emailError);
-      // Don't fail the operation if email sending fails
-    }
+    // // Send email notification to supplier
+    // try {
+    //   const emailResult = await sendControlSerialNotificationEmail({
+    //     supplierEmail: supplier.email,
+    //     supplierName: supplier.name,
+    //     poNumber: poNumber,
+    //     itemCode: ItemCode,
+    //     quantity: qty,
+    //     size: size || null,
+    //   });
+    //   console.log("Email notification result:", emailResult);
+    // } catch (emailError) {
+    //   console.error("Error sending email notification:", emailError);
+    //   // Don't fail the operation if email sending fails
+    // }
 
     res
       .status(201)
