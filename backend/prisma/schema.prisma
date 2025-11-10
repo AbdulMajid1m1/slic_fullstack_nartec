@@ -44,7 +44,7 @@ model ControlSerial{
     id                          String    @id @default(cuid())
 
     serialNumber                String? // unique serial number, using formula, auto generated
-    ItemCode                    String?
+    ItemCode                    String? // This is actually a productId field, its typo
     product                     TblItemCodes1S1Br? @relation(fields: [ItemCode], references: [id])
     size                        String?
     poNumber                    String?

@@ -38,7 +38,7 @@ class ControlSerialModel {
    * @param {string} supplierId - Filter by supplier ID (optional)
    * @returns {Promise<Object>} - Paginated serials and pagination info
    */
-  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null, supplierId = null, isArchived = false) {
+  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null,itemCode = null, supplierId = null, isArchived = false) {
     const skip = (page - 1) * limit;
 
     const where = {};
@@ -54,6 +54,10 @@ class ControlSerialModel {
     // Add PO number filter
     if (poNumber) {
       where.poNumber = poNumber;
+    }
+
+    if (itemCode) {
+      where.product = { ItemCode: itemCode }; 
     }
 
     // Add supplier ID filter
@@ -117,13 +121,24 @@ class ControlSerialModel {
   /**
    * Search control serials by PO number
    * @param {string} poNumber - PO number to search
+   * @param {boolean} includeArchived - Whether to include archived records (default: false)
    * @returns {Promise<Array>} - Matching serials
    */
-  static async findByPoNumber(poNumber) {
+  static async findByPoNumber(poNumber, includeArchived = false) {
+    const where = {
+      poNumber: poNumber,
+    };
+
+    // Only filter by isArchived if we don't want to include archived records
+    if (!includeArchived) {
+      where.OR = [
+        { isArchived: false },
+        { isArchived: null }
+      ];
+    }
+
     return await prisma.controlSerial.findMany({
-      where: {
-        poNumber: poNumber,
-      },
+      where,
       include: {
         product: true,
         supplier: true,
@@ -133,6 +148,23 @@ class ControlSerialModel {
       },
     });
   }
+
+  /**
+   * Filter control serials by poNumber and get the totoal count for 
+   * those whose isSentToSupplier is false
+   * @param {string} poNumber - PO number to filter
+   * @returns {Promise<number>} - Total count of matching serials
+   */
+
+    static async countUnsentByPoNumber(poNumber) {
+        return await prisma.controlSerial.count({
+            where: {
+                poNumber: poNumber,
+                isSentToSupplier: false,
+                isArchived: false
+            }
+        });
+    }
 
   /**
    * Search control serials by ItemCode
@@ -298,8 +330,13 @@ class ControlSerialModel {
    * Get PO numbers with supplier details for a SLIC Admin
    * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
    */
-  static async getPoNumbersWithSupplierDetails() {
+  static async getPoNumbersWithSupplierDetails(itemCode) {
+    const where = {};
+    if (itemCode) {
+        where.product = { ItemCode: itemCode };
+    }
     const controlSerials = await prisma.controlSerial.findMany({
+      where,    
       select: {
         poNumber: true,
         size: true,
@@ -355,6 +392,46 @@ class ControlSerialModel {
       },
       data: {
         isSentToSupplier: true,
+      },
+    });
+  }
+
+  /**
+   * Archive all control serials by PO number
+   * @param {string} poNumber - PO number to archive
+   * @returns {Promise<Object>} - Result of updateMany with count of archived records
+   */
+  static async archiveByPoNumber(poNumber) {
+    if (!poNumber) {
+      throw new Error("PO number is required");
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: {
+        poNumber: poNumber,
+      },
+      data: {
+        isArchived: true,
+      },
+    });
+  }
+
+  /**
+   * Unarchive all control serials by PO number
+   * @param {string} poNumber - PO number to unarchive
+   * @returns {Promise<Object>} - Result of updateMany with count of unarchived records
+   */
+  static async unarchiveByPoNumber(poNumber) {
+    if (!poNumber) {
+      throw new Error("PO number is required");
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: {
+        poNumber: poNumber,
+      },
+      data: {
+        isArchived: false,
       },
     });
   }
