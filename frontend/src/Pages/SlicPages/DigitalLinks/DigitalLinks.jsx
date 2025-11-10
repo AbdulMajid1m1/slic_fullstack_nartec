@@ -33,7 +33,7 @@ const DigitalLinks = () => {
 
   // Fetch Purchase Orders
   const fetchPurchaseOrders = async () => {
-    const response = await newRequest.get(`/controlSerials/po-numbers`);
+    const response = await newRequest.get(`/controlSerials/po-numbers?itemCode=${rowData?.ItemCode}`);
     return response?.data?.data || [];
   };
 
@@ -42,10 +42,10 @@ const DigitalLinks = () => {
     isLoading: isLoadingOrders, 
     refetch: refetchOrders,
   } = useQuery({
-    queryKey: ['purchaseOrders'],
+    queryKey: ['purchaseOrders', rowData?.ItemCode],
     queryFn: fetchPurchaseOrders,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     onError: (err) => {
@@ -58,7 +58,7 @@ const DigitalLinks = () => {
     const [_key, currentPage, currentLimit, poNumber] = queryKey;
     
     const response = await newRequest.get(
-      `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}`
+      `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}&itemCode=${rowData?.ItemCode}&isArchived=false`
     );
     
     return {
