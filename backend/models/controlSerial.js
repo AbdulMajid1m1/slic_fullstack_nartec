@@ -38,7 +38,7 @@ class ControlSerialModel {
    * @param {string} supplierId - Filter by supplier ID (optional)
    * @returns {Promise<Object>} - Paginated serials and pagination info
    */
-  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null, supplierId = null, isArchived = false) {
+  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null,itemCode = null, supplierId = null, isArchived = false) {
     const skip = (page - 1) * limit;
 
     const where = {};
@@ -54,6 +54,10 @@ class ControlSerialModel {
     // Add PO number filter
     if (poNumber) {
       where.poNumber = poNumber;
+    }
+
+    if (itemCode) {
+      where.product = { ItemCode: itemCode }; 
     }
 
     // Add supplier ID filter
@@ -326,8 +330,13 @@ class ControlSerialModel {
    * Get PO numbers with supplier details for a SLIC Admin
    * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
    */
-  static async getPoNumbersWithSupplierDetails() {
+  static async getPoNumbersWithSupplierDetails(itemCode) {
+    const where = {};
+    if (itemCode) {
+        where.product = { ItemCode: itemCode };
+    }
     const controlSerials = await prisma.controlSerial.findMany({
+      where,    
       select: {
         poNumber: true,
         size: true,

@@ -131,6 +131,7 @@ exports.getControlSerials = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const search = req.query.search || null;
     const poNumber = req.query.poNumber || null;
+    const itemCode = req.query.itemCode || null;
     const supplierId = req.query.supplierId || null;
     
     // Convert isArchived string to boolean: 'true' -> true, anything else (null, 'false', undefined) -> false
@@ -146,8 +147,9 @@ exports.getControlSerials = async (req, res, next) => {
       limit,
       search,
       poNumber,
+      itemCode,
       supplierId,
-      isArchived
+      isArchived,
     );
     const { controlSerials, pagination } = result;
 
@@ -588,8 +590,10 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
 exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
     try {
 
+        const itemCode = req.query.itemCode || null;
+
         // Get unique PO numbers with supplier details
-        const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetails();
+        const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetails(itemCode);
 
         // Get total count of control serials for each PO number
         const poNumbersWithCount = await Promise.all(
