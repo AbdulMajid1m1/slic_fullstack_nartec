@@ -184,6 +184,13 @@ const ArchivedPO = () => {
               Archived records
             </div>
 
+            {/* Loading Overlay */}
+            {isLoading && (
+              <div className="flex items-center justify-center h-64">
+                <CircularProgress />
+              </div>
+            )}
+
             {!isLoading && (
               <>
                 {/* Fixed height table container with scroll */}
