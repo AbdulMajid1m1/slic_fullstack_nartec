@@ -248,7 +248,7 @@ const PurchaseOrderTable = ({
                       }`}
                     >
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">{order.poNumber || 'N/A'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{order.size || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{order.ProductSize || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.ItemCode || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.totalCount || 'N/A'}</td>
                       <td className="px-4 py-3">

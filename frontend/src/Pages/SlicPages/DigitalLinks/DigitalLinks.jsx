@@ -116,6 +116,7 @@ const DigitalLinks = () => {
     id: order.supplier?.id || order.poNumber,
     poNumber: order.poNumber,
     ItemCode: order.product?.ItemCode || 'N/A',
+    ProductSize: order.product?.ProductSize || 'N/A',
     size: order?.size || 'N/A',
     totalCount: order.totalCount || '',
     supplierStatus: order.supplier?.status || 'N/A',
