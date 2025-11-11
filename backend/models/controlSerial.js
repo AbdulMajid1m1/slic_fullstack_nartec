@@ -343,6 +343,7 @@ class ControlSerialModel {
         product: {
             select: {
            ItemCode: true,
+           ProductSize: true,
           }
         },
         supplier: {
