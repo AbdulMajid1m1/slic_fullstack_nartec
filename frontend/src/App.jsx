@@ -31,6 +31,7 @@ import TaxSettings from "./Pages/SlicPages/TaxSettings/TaxSettings.jsx";
 import { TaxProvider } from "./Contexts/TaxContext.jsx";
 import DigitalLinks from "./Pages/SlicPages/DigitalLinks/DigitalLinks.jsx";
 import SupplierList from "./Pages/SlicPages/SupplierList/SupplierList.jsx";
+import ArchivedPO from "./Pages/SlicPages/MasterData/ArchivedPO/ArchivedPO.jsx";
 
 const queryClient = new QueryClient();
 
@@ -194,6 +195,7 @@ const App = () => {
                     />
 
                     <Route path="supplier-list" element={<SupplierList />} />
+                    <Route path="archived-po" element={<ArchivedPO />} />
                   </Routes>
                 </QueryClientProvider>
               </BrowserRouter>
