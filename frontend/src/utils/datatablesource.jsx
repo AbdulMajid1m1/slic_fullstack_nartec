@@ -92,12 +92,12 @@ export const GtinColumn = (t)=> [
   {
     field: "EnglishName",
     headerName: t("English Name"),
-    width: 280,
+    width: 200,
   },
   {
     field: "ArabicName",
     headerName: t("Arabic Name"),
-    width: 280,
+    width: 200,
   },
   {
     field: "ItemCode",
