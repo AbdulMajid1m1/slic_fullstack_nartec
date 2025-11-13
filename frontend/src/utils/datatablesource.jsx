@@ -105,6 +105,11 @@ export const GtinColumn = (t)=> [
     width: 180,
   },
   {
+    field: "ProductSize",
+    headerName: t("Product Size"),
+    width: 180,
+  },
+  {
     field: "sERIALnUMBER",
     headerName: t("Serial Number"),
     renderCell: (params) => <QRCodeCell value={params.row.EnglishName} />,
@@ -171,11 +176,6 @@ export const GtinColumn = (t)=> [
   //   headerName: "Product Unit",
   //   width: 180,
   // },
-  {
-    field: "ProductSize",
-    headerName: t("Product Size"),
-    width: 180,
-  },
 ];
 
 export const listOfEmployeeColumn = [
