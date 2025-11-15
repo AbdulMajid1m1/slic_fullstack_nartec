@@ -40,7 +40,7 @@ exports.createControlSerials = async (req, res, next) => {
     }
 
     // Verify product exists
-    const product = await ItemCodeModel.findByItemCode(ItemCode);
+    const product = await ItemCodeModel.findByItemCodeAndSize(ItemCode, size);
     if (!product) {
       const error = new CustomError("Product with given ItemCode not found");
       error.statusCode = 404;
@@ -133,12 +133,16 @@ exports.getControlSerials = async (req, res, next) => {
     const poNumber = req.query.poNumber || null;
     const itemCode = req.query.itemCode || null;
     const supplierId = req.query.supplierId || null;
-    
+    const size = req.query.size || null;
+
     // Convert isArchived string to boolean: 'true' -> true, anything else (null, 'false', undefined) -> false
     let isArchived = null;
-    if (req.query.isArchived === 'true') {
+    if (req.query.isArchived === "true") {
       isArchived = true;
-    } else if (req.query.isArchived !== undefined && req.query.isArchived !== null) {
+    } else if (
+      req.query.isArchived !== undefined &&
+      req.query.isArchived !== null
+    ) {
       isArchived = false;
     }
 
@@ -150,6 +154,7 @@ exports.getControlSerials = async (req, res, next) => {
       itemCode,
       supplierId,
       isArchived,
+      size
     );
     const { controlSerials, pagination } = result;
 
@@ -275,7 +280,7 @@ exports.searchByItemCode = async (req, res, next) => {
  */
 exports.sendControlSerialsByPoNumber = async (req, res, next) => {
   try {
-    const { poNumber } = req.body;
+    const { poNumber, size } = req.body;
 
     if (!poNumber) {
       const error = new CustomError("PO number is required");
@@ -289,7 +294,9 @@ exports.sendControlSerialsByPoNumber = async (req, res, next) => {
     const unsent = (allSerials || []).filter((s) => !s.isSentToSupplier);
 
     if (!unsent || unsent.length === 0) {
-      const error = new CustomError("No unsent control serials found for this PO number");
+      const error = new CustomError(
+        "No unsent control serials found for this PO number"
+      );
       error.statusCode = 404;
       throw error;
     }
@@ -407,7 +414,7 @@ exports.searchBySerialNumber = async (req, res, next) => {
  */
 exports.searchByPoNumber = async (req, res, next) => {
   try {
-    const { poNumber } = req.query;
+    const { poNumber, size } = req.query;
 
     if (!poNumber) {
       const error = new CustomError("poNumber query parameter is required");
@@ -415,7 +422,11 @@ exports.searchByPoNumber = async (req, res, next) => {
       throw error;
     }
 
-    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+    const controlSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      false,
+      size
+    );
 
     if (!controlSerials || controlSerials.length === 0) {
       const error = new CustomError(
@@ -541,9 +552,9 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
     const supplierEmail = req?.email;
 
     if (!supplierEmail) {
-        const error = new CustomError("Supplier email not found in token");
-        error.statusCode = 401;
-        throw error;
+      const error = new CustomError("Supplier email not found in token");
+      error.statusCode = 401;
+      throw error;
     }
 
     // Verify supplier exists
@@ -555,17 +566,20 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
     }
 
     // Get unique PO numbers with supplier details
-    const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetailsBySupplierId(supplier.id);
+    const poNumbersWithSupplier =
+      await ControlSerialModel.getPoNumbersWithSupplierDetailsBySupplierId(
+        supplier.id
+      );
 
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
-        poNumbersWithSupplier.map(async (po) => {
-            const count = await ControlSerialModel.countByPoNumber(po.poNumber);
-            return {
-                ...po,
-                totalCount: count
-            };
-        })
+      poNumbersWithSupplier.map(async (po) => {
+        const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+        return {
+          ...po,
+          totalCount: count,
+        };
+      })
     );
 
     res
@@ -575,7 +589,7 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
           200,
           true,
           "PO numbers with supplier details retrieved successfully",
-            poNumbersWithCount,
+          poNumbersWithCount
         )
       );
   } catch (error) {
@@ -588,37 +602,38 @@ exports.getSupplierPoNumbersWithSupplierDetails = async (req, res, next) => {
  * Used by SLIC project
  */
 exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
-    try {
+  try {
+    const itemCode = req.query.itemCode || null;
+    const size = req.query.size || null;
 
-        const itemCode = req.query.itemCode || null;
+    // Get unique PO numbers with supplier details
+    const poNumbersWithSupplier =
+      await ControlSerialModel.getPoNumbersWithSupplierDetails(itemCode, size);
 
-        // Get unique PO numbers with supplier details
-        const poNumbersWithSupplier = await ControlSerialModel.getPoNumbersWithSupplierDetails(itemCode);
+    // Get total count of control serials for each PO number
+    const poNumbersWithCount = await Promise.all(
+      poNumbersWithSupplier.map(async (po) => {
+        const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+        return {
+          ...po,
+          totalCount: count,
+        };
+      })
+    );
 
-        // Get total count of control serials for each PO number
-        const poNumbersWithCount = await Promise.all(
-            poNumbersWithSupplier.map(async (po) => {
-                const count = await ControlSerialModel.countByPoNumber(po.poNumber);
-                return {
-                    ...po,
-                    totalCount: count
-                };
-            })
-        );
-
-        res
-            .status(200)
-            .json(
-                generateResponse(
-                    200,
-                    true,
-                    "PO numbers with supplier details retrieved successfully",
-                    poNumbersWithCount
-                )
-            );
-    } catch (error) {
-        next(error);
-    }
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "PO numbers with supplier details retrieved successfully",
+          poNumbersWithCount
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
@@ -627,7 +642,7 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
  */
 exports.archiveControlSerialsByPoNumber = async (req, res, next) => {
   try {
-    const { poNumber } = req.body;
+    const { poNumber, size } = req.body;
 
     if (!poNumber) {
       const error = new CustomError("PO number is required");
@@ -635,16 +650,28 @@ exports.archiveControlSerialsByPoNumber = async (req, res, next) => {
       throw error;
     }
 
+    if (!size) {
+      const error = new CustomError("Size is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
     // Check if any control serials exist for this PO number
-    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+    const controlSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      false,
+      size
+    );
     if (!controlSerials || controlSerials.length === 0) {
-      const error = new CustomError("No control serials found for the given PO number");
+      const error = new CustomError(
+        "No control serials found for the given PO number"
+      );
       error.statusCode = 404;
       throw error;
     }
 
     // Archive all control serials for this PO number
-    const result = await ControlSerialModel.archiveByPoNumber(poNumber);
+    const result = await ControlSerialModel.archiveByPoNumber(poNumber, size);
 
     if (result.count === 0) {
       const error = new CustomError("Failed to archive control serials");
@@ -674,7 +701,7 @@ exports.archiveControlSerialsByPoNumber = async (req, res, next) => {
  */
 exports.unarchiveControlSerialsByPoNumber = async (req, res, next) => {
   try {
-    const { poNumber } = req.body;
+    const { poNumber, size } = req.body;
 
     if (!poNumber) {
       const error = new CustomError("PO number is required");
@@ -682,23 +709,37 @@ exports.unarchiveControlSerialsByPoNumber = async (req, res, next) => {
       throw error;
     }
 
+    if (!size) {
+      const error = new CustomError("Size is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
     // Check if any archived control serials exist for this PO number
-    const controlSerials = await ControlSerialModel.findByPoNumber(poNumber);
+    const controlSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      false,
+      size
+    );
     if (!controlSerials || controlSerials.length === 0) {
-      const error = new CustomError("No control serials found for the given PO number");
+      const error = new CustomError(
+        "No control serials found for the given PO number"
+      );
       error.statusCode = 404;
       throw error;
     }
 
-    const archivedSerials = controlSerials.filter(s => s.isArchived);
+    const archivedSerials = controlSerials.filter((s) => s.isArchived);
     if (archivedSerials.length === 0) {
-      const error = new CustomError("No archived control serials found for the given PO number");
+      const error = new CustomError(
+        "No archived control serials found for the given PO number"
+      );
       error.statusCode = 404;
       throw error;
     }
 
     // Unarchive all control serials for this PO number
-    const result = await ControlSerialModel.unarchiveByPoNumber(poNumber);
+    const result = await ControlSerialModel.unarchiveByPoNumber(poNumber, size);
 
     if (result.count === 0) {
       const error = new CustomError("Failed to unarchive control serials");

@@ -84,6 +84,12 @@ class ItemCodeModel {
     });
   }
 
+  static async findByItemCodeAndSize(itemCode, size) {
+    return await prisma.tblItemCodes1S1Br.findFirst({
+      where: { ItemCode: itemCode.toString(), ProductSize: size.toString() },
+    });
+  }
+
   static async findByGTIN(gtin) {
     return await prisma.tblItemCodes1S1Br.findMany({
       where: {
