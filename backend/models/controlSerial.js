@@ -138,9 +138,10 @@ class ControlSerialModel {
    * @param {boolean} includeArchived - Whether to include archived records (default: false)
    * @returns {Promise<Array>} - Matching serials
    */
-  static async findByPoNumber(poNumber, includeArchived = false) {
+  static async findByPoNumber(poNumber, includeArchived = false, size = null) {
     const where = {
       poNumber: poNumber,
+      size: size,
     };
 
     // Only filter by isArchived if we don't want to include archived records
@@ -341,10 +342,13 @@ class ControlSerialModel {
    * Get PO numbers with supplier details for a SLIC Admin
    * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
    */
-  static async getPoNumbersWithSupplierDetails(itemCode) {
+  static async getPoNumbersWithSupplierDetails(itemCode, size = null) {
     const where = {};
     if (itemCode) {
       where.product = { ItemCode: itemCode };
+    }
+    if (size) {
+      where.size = size;
     }
     const controlSerials = await prisma.controlSerial.findMany({
       where,
@@ -381,11 +385,15 @@ class ControlSerialModel {
    * Get total count of control serials for a specific poNumber
    * @returns {Promise<number>} - Total count of control serials
    */
-  static async countByPoNumber(poNumber) {
+  static async countByPoNumber(poNumber, size = null) {
+    const where = { poNumber: poNumber };
+
+    if (size) {
+      where.size = size;
+    }
+
     return await prisma.controlSerial.count({
-      where: {
-        poNumber: poNumber,
-      },
+      where: where,
     });
   }
 
@@ -412,15 +420,19 @@ class ControlSerialModel {
    * @param {string} poNumber - PO number to archive
    * @returns {Promise<Object>} - Result of updateMany with count of archived records
    */
-  static async archiveByPoNumber(poNumber) {
+  static async archiveByPoNumber(poNumber, size = null) {
     if (!poNumber) {
       throw new Error("PO number is required");
     }
 
+    const where = { poNumber: poNumber };
+
+    if (size) {
+      where.size = size;
+    }
+
     return await prisma.controlSerial.updateMany({
-      where: {
-        poNumber: poNumber,
-      },
+      where: where,
       data: {
         isArchived: true,
       },
@@ -432,15 +444,18 @@ class ControlSerialModel {
    * @param {string} poNumber - PO number to unarchive
    * @returns {Promise<Object>} - Result of updateMany with count of unarchived records
    */
-  static async unarchiveByPoNumber(poNumber) {
+  static async unarchiveByPoNumber(poNumber, size = null) {
     if (!poNumber) {
       throw new Error("PO number is required");
     }
+    const where = { poNumber: poNumber };
+
+    if (size) {
+      where.size = size;
+    }
 
     return await prisma.controlSerial.updateMany({
-      where: {
-        poNumber: poNumber,
-      },
+      where: where,
       data: {
         isArchived: false,
       },
