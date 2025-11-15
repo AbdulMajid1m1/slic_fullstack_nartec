@@ -290,7 +290,7 @@ exports.sendControlSerialsByPoNumber = async (req, res, next) => {
 
     // Find all control serials for this PO number (including archived ones)
     // We pass true to include archived records, then filter by isSentToSupplier
-    const allSerials = await ControlSerialModel.findByPoNumber(poNumber, false);
+    const allSerials = await ControlSerialModel.findByPoNumber(poNumber, false, size);
     const unsent = (allSerials || []).filter((s) => !s.isSentToSupplier);
 
     if (!unsent || unsent.length === 0) {

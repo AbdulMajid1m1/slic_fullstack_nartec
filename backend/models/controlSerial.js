@@ -141,8 +141,12 @@ class ControlSerialModel {
   static async findByPoNumber(poNumber, includeArchived = false, size = null) {
     const where = {
       poNumber: poNumber,
-      size: size,
     };
+
+    // Add size filter
+    if (size) {
+      where.size = size;
+    }
 
     // Only filter by isArchived if we don't want to include archived records
     if (!includeArchived) {
