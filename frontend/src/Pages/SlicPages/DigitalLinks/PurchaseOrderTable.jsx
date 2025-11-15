@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 import { HiRefresh } from "react-icons/hi";
+import { IoSend } from "react-icons/io5";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import newRequest from "../../../utils/userRequest";
@@ -16,7 +17,8 @@ const PurchaseOrderTable = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
-  const [sendingPO, setSendingPO] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [sendingPO, setSendingPO] = useState(false);
   const itemsPerPage = 5;
 
   const ordersArray = Array.isArray(orders) ? orders : [];
@@ -30,14 +32,20 @@ const PurchaseOrderTable = ({
 
   const handleRowClick = (order, index) => {
     setSelectedRowIndex(index);
+    setSelectedOrder(order);
     if (onViewOrder) {
       onViewOrder(order);
     }
   };
 
   // Handle send by PO
-  const handleSendByPO = async (poNumber, event) => {
-    event.stopPropagation();
+  const handleSendByPO = async () => {
+    if (!selectedOrder) {
+      toast.error("Please select a PO first");
+      return;
+    }
+
+    const poNumber = selectedOrder.poNumber;
 
     if (!poNumber) {
       toast.error("PO Number is required");
@@ -60,7 +68,7 @@ const PurchaseOrderTable = ({
       return;
     }
 
-    setSendingPO(poNumber);
+    setSendingPO(true);
 
     try {
       const response = await newRequest.post("/controlSerials/send-by-po", {
@@ -81,7 +89,7 @@ const PurchaseOrderTable = ({
 
       // Refresh the orders list
       if (refetchOrders) {
-        refetchOrders();
+        await refetchOrders();
       }
     } catch (err) {
       const errorMessage = err?.response?.data?.error || err?.response?.data?.message || "Error sending control serials";
@@ -89,14 +97,14 @@ const PurchaseOrderTable = ({
       toast.error(errorMessage);
       
       // Show error Swal
-      Swal.fire({
+      await Swal.fire({
         title: 'Error!',
         text: errorMessage,
         icon: 'error',
         confirmButtonColor: '#1D2F90'
       });
     } finally {
-      setSendingPO(null);
+      setSendingPO(false);
     }
   };
 
@@ -115,7 +123,8 @@ const PurchaseOrderTable = ({
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      setSelectedRowIndex(null); // Reset selection when changing page
+      setSelectedRowIndex(null);
+      setSelectedOrder(null);
     }
   };
 
@@ -166,6 +175,11 @@ const PurchaseOrderTable = ({
           <h3 className="font-bold text-gray-900 text-lg mb-1">PO Number</h3>
           <p className="text-sm text-gray-500">
             Total {filteredOrders.length} PO Number
+            {selectedOrder && (
+              <span className="ml-2 text-blue-600 font-medium">
+                • Selected: {selectedOrder.poNumber}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
@@ -176,10 +190,34 @@ const PurchaseOrderTable = ({
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
-              setSelectedRowIndex(null); // Reset selection when searching
+              setSelectedRowIndex(null);
+              setSelectedOrder(null);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm flex-1 sm:w-96 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm flex-1 sm:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          <Button 
+            onClick={handleSendByPO}
+            variant="contained"
+            disabled={!selectedOrder || sendingPO}
+            sx={{
+              backgroundColor: '#1D2F90',
+              '&:hover': {
+                backgroundColor: '#162561',
+              },
+              '&:disabled': {
+                backgroundColor: '#ccc',
+              },
+            }}
+            startIcon={
+              sendingPO ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <IoSend className="text-lg" />
+              )
+            }
+          >
+            {sendingPO ? "Sending..." : "Send Supplier"}
+          </Button>
           <Button 
             onClick={handleRefresh}
             variant="contained"
@@ -207,7 +245,7 @@ const PurchaseOrderTable = ({
       </div>
 
       <div className="text-sm text-gray-500 px-6 pb-3">
-        Click on any row to view its controlled serials
+        Click on any row to select and view its controlled serials
       </div>
 
       {/* Loading Overlay */}
@@ -230,7 +268,6 @@ const PurchaseOrderTable = ({
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Updated At</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -260,32 +297,6 @@ const PurchaseOrderTable = ({
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.createdAt || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.updatedAt || 'N/A'}</td>
-                      <td className="px-4 py-3">
-                        <Button
-                          onClick={(e) => handleSendByPO(order.poNumber, e)}
-                          variant="contained"
-                          size="small"
-                          disabled={sendingPO === order.poNumber}
-                          sx={{
-                            backgroundColor: '#1D2F90',
-                            '&:hover': {
-                              backgroundColor: '#162561',
-                            },
-                            '&:disabled': {
-                              backgroundColor: '#ccc',
-                            },
-                            fontSize: '0.75rem',
-                            padding: '4px 12px',
-                            minWidth: '80px'
-                          }}
-                        >
-                          {sendingPO === order.poNumber ? (
-                            <CircularProgress size={16} color="inherit" />
-                          ) : (
-                            'Send Supplier'
-                          )}
-                        </Button>
-                      </td>
                     </tr>
                   ))
                 )}
