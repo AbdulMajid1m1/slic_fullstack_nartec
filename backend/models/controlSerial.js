@@ -372,7 +372,7 @@ class ControlSerialModel {
           },
         },
       },
-      distinct: ["poNumber"],
+      distinct: ["poNumber", "size"],
       orderBy: {
         createdAt: "desc",
       },
