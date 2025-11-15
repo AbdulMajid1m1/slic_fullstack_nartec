@@ -42,6 +42,7 @@ const ArchivedPO = () => {
     cacheTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     keepPreviousData: true,
+    retry: false,
     onError: (err) => {
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load archived serials");
     },
