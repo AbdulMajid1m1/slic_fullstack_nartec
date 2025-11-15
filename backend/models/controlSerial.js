@@ -38,7 +38,16 @@ class ControlSerialModel {
    * @param {string} supplierId - Filter by supplier ID (optional)
    * @returns {Promise<Object>} - Paginated serials and pagination info
    */
-  static async findAllWithPagination(page = 1, limit = 10, search = null, poNumber = null,itemCode = null, supplierId = null, isArchived = false) {
+  static async findAllWithPagination(
+    page = 1,
+    limit = 10,
+    search = null,
+    poNumber = null,
+    itemCode = null,
+    supplierId = null,
+    isArchived = false,
+    size = null
+  ) {
     const skip = (page - 1) * limit;
 
     const where = {};
@@ -57,7 +66,7 @@ class ControlSerialModel {
     }
 
     if (itemCode) {
-      where.product = { ItemCode: itemCode }; 
+      where.product = { ItemCode: itemCode };
     }
 
     // Add supplier ID filter
@@ -67,8 +76,13 @@ class ControlSerialModel {
 
     // Add isArchived filter
     // Only apply filter if isArchived is explicitly true or false (not null)
-    if (isArchived !== null && typeof isArchived === 'boolean') {
+    if (isArchived !== null && typeof isArchived === "boolean") {
       where.isArchived = isArchived;
+    }
+
+    // Add size filter
+    if (size) {
+      where.size = size;
     }
 
     const [controlSerials, total] = await Promise.all([
@@ -131,10 +145,7 @@ class ControlSerialModel {
 
     // Only filter by isArchived if we don't want to include archived records
     if (!includeArchived) {
-      where.OR = [
-        { isArchived: false },
-        { isArchived: null }
-      ];
+      where.OR = [{ isArchived: false }, { isArchived: null }];
     }
 
     return await prisma.controlSerial.findMany({
@@ -150,21 +161,21 @@ class ControlSerialModel {
   }
 
   /**
-   * Filter control serials by poNumber and get the totoal count for 
+   * Filter control serials by poNumber and get the totoal count for
    * those whose isSentToSupplier is false
    * @param {string} poNumber - PO number to filter
    * @returns {Promise<number>} - Total count of matching serials
    */
 
-    static async countUnsentByPoNumber(poNumber) {
-        return await prisma.controlSerial.count({
-            where: {
-                poNumber: poNumber,
-                isSentToSupplier: false,
-                isArchived: false
-            }
-        });
-    }
+  static async countUnsentByPoNumber(poNumber) {
+    return await prisma.controlSerial.count({
+      where: {
+        poNumber: poNumber,
+        isSentToSupplier: false,
+        isArchived: false,
+      },
+    });
+  }
 
   /**
    * Search control serials by ItemCode
@@ -296,16 +307,16 @@ class ControlSerialModel {
     const controlSerials = await prisma.controlSerial.findMany({
       where: {
         supplierId: supplierId,
-        isSentToSupplier: true
+        isSentToSupplier: true,
       },
       select: {
         poNumber: true,
         size: true,
         product: {
-              select: {
-                  ItemCode: true,
-              }
+          select: {
+            ItemCode: true,
           },
+        },
         supplier: {
           select: {
             id: true,
@@ -317,7 +328,7 @@ class ControlSerialModel {
           },
         },
       },
-      distinct: ['poNumber'],
+      distinct: ["poNumber"],
       orderBy: {
         createdAt: "desc",
       },
@@ -333,18 +344,18 @@ class ControlSerialModel {
   static async getPoNumbersWithSupplierDetails(itemCode) {
     const where = {};
     if (itemCode) {
-        where.product = { ItemCode: itemCode };
+      where.product = { ItemCode: itemCode };
     }
     const controlSerials = await prisma.controlSerial.findMany({
-      where,    
+      where,
       select: {
         poNumber: true,
         size: true,
         product: {
-            select: {
-           ItemCode: true,
-           ProductSize: true,
-          }
+          select: {
+            ItemCode: true,
+            ProductSize: true,
+          },
         },
         supplier: {
           select: {
@@ -357,7 +368,7 @@ class ControlSerialModel {
           },
         },
       },
-      distinct: ['poNumber'],
+      distinct: ["poNumber"],
       orderBy: {
         createdAt: "desc",
       },
@@ -370,14 +381,13 @@ class ControlSerialModel {
    * Get total count of control serials for a specific poNumber
    * @returns {Promise<number>} - Total count of control serials
    */
-    static async countByPoNumber(poNumber) {
-        return await prisma.controlSerial.count({
-            where: {
-                poNumber: poNumber
-            }
-        });
-    }
-
+  static async countByPoNumber(poNumber) {
+    return await prisma.controlSerial.count({
+      where: {
+        poNumber: poNumber,
+      },
+    });
+  }
 
   /**
    * Mark multiple control serials as sent using their IDs
@@ -436,7 +446,6 @@ class ControlSerialModel {
       },
     });
   }
-
 }
 
 module.exports = ControlSerialModel;
