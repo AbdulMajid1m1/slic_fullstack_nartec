@@ -238,11 +238,7 @@ const DigitalLinkTable = ({
           <ExportControlSerials serials={filteredSerials} />
         </div>
       </div>
-
-      <div className="text-sm text-gray-500 px-6 pb-3">
-        Recent past 3 months
-      </div>
-
+      
       {/* Loading Overlay */}
       {isLoading && (
         <div className="flex items-center justify-center h-64">
