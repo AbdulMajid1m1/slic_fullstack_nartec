@@ -9,7 +9,8 @@ const PurchaseOrderTable = ({
   orders, 
   isLoading, 
   refetchOrders, 
-  onViewOrder
+  onViewOrder,
+  size,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +64,8 @@ const PurchaseOrderTable = ({
 
     try {
       const response = await newRequest.post("/controlSerials/send-by-po", {
-        poNumber: poNumber
+        poNumber: poNumber,
+        size: size,
       });
 
       // Success notification

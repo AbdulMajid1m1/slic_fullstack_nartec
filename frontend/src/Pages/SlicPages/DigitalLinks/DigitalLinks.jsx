@@ -33,7 +33,7 @@ const DigitalLinks = () => {
 
   // Fetch Purchase Orders
   const fetchPurchaseOrders = async () => {
-    const response = await newRequest.get(`/controlSerials/po-numbers?itemCode=${rowData?.ItemCode}`);
+    const response = await newRequest.get(`/controlSerials/po-numbers?itemCode=${rowData?.ItemCode}&size=${rowData?.ProductSize}`);
     return response?.data?.data || [];
   };
 
@@ -48,6 +48,7 @@ const DigitalLinks = () => {
     cacheTime: 10 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    retry: false,
     onError: (err) => {
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load purchase orders");
     },
@@ -58,7 +59,7 @@ const DigitalLinks = () => {
     const [_key, currentPage, currentLimit, poNumber] = queryKey;
     
     const response = await newRequest.get(
-      `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}&itemCode=${rowData?.ItemCode}&isArchived=false`
+      `/controlSerials?page=${currentPage}&limit=${currentLimit}&poNumber=${poNumber}&itemCode=${rowData?.ItemCode}&size=${rowData?.ProductSize}&isArchived=false`
     );
     
     return {
@@ -78,11 +79,12 @@ const DigitalLinks = () => {
   } = useQuery({
     queryKey: ['controlSerials', page, limit, selectedPO?.poNumber],
     queryFn: fetchControlSerials,
-    enabled: !!selectedPO?.poNumber, // Only fetch when PO is selected
+    enabled: !!selectedPO?.poNumber,
     staleTime: 2 * 60 * 1000,
     cacheTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     keepPreviousData: true,
+    retry: false,
     onError: (err) => {
       toast.error(err?.response?.data?.error || err?.response?.data?.message || "Failed to load control serials");
     },
@@ -91,7 +93,7 @@ const DigitalLinks = () => {
   // Handle PO row click
   const handleViewOrder = (order) => {
     setSelectedPO(order);
-    setPage(1); // Reset to first page when selecting new PO
+    setPage(1);
   };
 
   const serialsData = (serialsResponse?.data || []).map(serial => ({
@@ -181,6 +183,7 @@ const DigitalLinks = () => {
                 refetchOrders={refetchOrders}
                 onViewOrder={handleViewOrder}
                 selectedOrderId={selectedPO?.id}
+                size={rowData?.ProductSize}
               />
             </div>
 
