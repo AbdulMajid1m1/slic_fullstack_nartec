@@ -312,6 +312,28 @@ exports.putItemCode = async (req, res, next) => {
       }
     }
 
+    /**
+     * All the products with the same ItemCode must have the same image
+     * So, if the image is updated for one, update for all
+     */
+
+    // Find all item codes with the same ItemCode
+    const itemCodesToUpdate = await ItemCodeModel.findByItemCode(
+      existingItemCode.ItemCode
+    );
+    // Update the image for all matching item codes
+    if (req.file && itemCodesToUpdate && itemCodesToUpdate.length > 0) {
+      const updateImagePromises = itemCodesToUpdate.map(async (item) => {
+        // delete old image if exists and is different
+        if (item.image && item.image !== imagePath) {
+          await deleteFile(item.image);
+        }
+        return await ItemCodeModel.update(item.id, { image: imagePath });
+      });
+      await Promise.all(updateImagePromises);
+    }
+
+
     // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(
       existingItemCode.id,
