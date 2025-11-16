@@ -8,6 +8,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import ImageIcon from "@mui/icons-material/Image";
 import DataTable from "../../../components/Datatable/Datatable";
 import { PiBarcodeDuotone } from "react-icons/pi";
 import { MdPrint } from "react-icons/md";
@@ -25,6 +26,7 @@ import FGBarcodePrint from "./FGBarcodePrint";
 import GTINBarcodePrint from "./GTINBarcodePrint";
 import { RolesContext } from "../../../Contexts/FetchRolesContext";
 import { useNavigate } from "react-router-dom";
+import UpdateImagesPopUp from "./UpdateImagesPopUp";
 
 const GTIN = () => {
   const { t, i18n } = useTranslation();
@@ -65,6 +67,7 @@ const GTIN = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: false,
     onError: (err) => {
       toast.error(err?.response?.data?.error || "Failed to load data");
     },
@@ -102,6 +105,15 @@ const GTIN = () => {
   const handleShowViewPopup = (row) => {
     setViewPopupVisibility(true);
     sessionStorage.setItem("viewGtinBarcodesData", JSON.stringify(row));
+  };
+
+  const [isUpdateImagesPopupVisible, setUpdateImagesPopupVisibility] = useState(false);
+  const handleShowUpdateImagesPopup = () => {
+    if (tableSelectedRows.length === 0) {
+      toast.info(t("Please select at least one product to update images"));
+      return;
+    }
+    setUpdateImagesPopupVisibility(true);
   };
 
   const handleDigitalLinks = (row) => {
@@ -142,12 +154,10 @@ const GTIN = () => {
       ...row,
       updatedAt: new Date(row.updatedAt).toLocaleDateString(),
     }));
-    // console.log(formattedItems);
     setTableSelectedRows(formattedItems);
   };
 
   const handleDelete = (row) => {
-    // console.log(row);
     Swal.fire({
       title: `${t('Are you sure to delete this record?')}!`,
       text: `${t('You will not be able to recover this Products!')}`,
@@ -164,13 +174,11 @@ const GTIN = () => {
             const response = await newRequest.delete("/itemCodes/v1/itemCode/" + row?.GTIN);
             if (response) {
               resolve(response?.data?.message || `${t('Products deleted successfully')}`);
-              // Invalidate and refetch the query after successful deletion
               queryClient.invalidateQueries(['gtinData']);
             } else {
               reject(new Error('Failed to delete product'));
             }
           } catch (error) {
-            // console.error("Error deleting product:", error);
             reject(error);
           }
         });
@@ -238,6 +246,23 @@ const GTIN = () => {
                     startIcon={<PiBarcodeDuotone />}
                   >
                     {t("Generate New Barcode")}
+                  </Button>
+                </span>
+              </Tooltip>
+
+              {/* Update Images Button */}
+              <Tooltip title={tableSelectedRows.length === 0 ? t("Please select products to update images") : ""}>
+                <span>
+                  <Button
+                    variant="contained"
+                    onClick={handleShowUpdateImagesPopup}
+                    style={{ 
+                      backgroundColor: "#CFDDE0", 
+                      color: "#1D2F90"
+                    }}
+                    startIcon={<ImageIcon />}
+                  >
+                    {t("Update Images")}
                   </Button>
                 </span>
               </Tooltip>
@@ -359,6 +384,16 @@ const GTIN = () => {
               isVisible={isUpdatePopupVisible}
               setVisibility={setUpdatePopupVisibility}
               refreshGTINData={refreshGTINData}
+            />
+          )}
+
+          {isUpdateImagesPopupVisible && (
+            <UpdateImagesPopUp
+              isVisible={isUpdateImagesPopupVisible}
+              setVisibility={setUpdateImagesPopupVisibility}
+              refreshGTINData={refreshGTINData}
+              selectedRows={tableSelectedRows}
+              onPrintComplete={handlePrintComplete}
             />
           )}
 
