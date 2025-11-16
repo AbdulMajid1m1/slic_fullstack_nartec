@@ -371,10 +371,10 @@ class ControlSerialModel {
             name: true,
             email: true,
             status: true,
-            createdAt: true,
-            updatedAt: true,
           },
         },
+        createdAt: true,
+        updatedAt: true,
       },
       distinct: ["poNumber", "size"],
       orderBy: {
