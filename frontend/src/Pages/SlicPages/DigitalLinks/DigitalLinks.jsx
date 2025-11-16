@@ -215,7 +215,7 @@ const DigitalLinks = () => {
         <AddControlSerialPopup
           isVisible={isAddPopupVisible}
           setVisibility={setIsAddPopupVisible}
-          refreshData={refetch}
+          // refreshData={refetch}
           itemCode={rowData?.ItemCode}
           size={rowData?.ProductSize}
         />
