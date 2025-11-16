@@ -122,8 +122,8 @@ const DigitalLinks = () => {
     size: order?.size || 'N/A',
     totalCount: order.totalCount || '',
     supplierStatus: order.supplier?.status || 'N/A',
-    createdAt: order.supplier?.createdAt ? new Date(order.supplier.createdAt).toLocaleString() : 'N/A',
-    updatedAt: order.supplier?.updatedAt ? new Date(order.supplier.updatedAt).toLocaleString() : 'N/A'
+    createdAt: order?.createdAt ? new Date(order?.createdAt).toLocaleString() : 'N/A',
+    updatedAt: order?.updatedAt ? new Date(order?.updatedAt).toLocaleString() : 'N/A'
   }));
 
   return (
