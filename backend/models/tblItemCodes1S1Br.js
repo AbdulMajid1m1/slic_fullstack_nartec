@@ -109,6 +109,44 @@ class ItemCodeModel {
     return itemCode;
   }
 
+  static async updateMany(gtins, data) {
+    const itemCodes = await prisma.tblItemCodes1S1Br.updateMany({
+      where: {
+        GTIN: {
+          in: gtins,
+        },
+      },
+      data,
+    });
+
+    return itemCodes;
+  }
+
+  static async updateManyByItemCodeAndSizes(itemCode, sizes, data) {
+    const itemCodes = await prisma.tblItemCodes1S1Br.updateMany({
+      where: {
+        ItemCode: itemCode,
+        ProductSize: {
+          in: sizes,
+        },
+      },
+      data,
+    });
+
+    return itemCodes;
+  }
+
+  static async findManyByItemCodeAndSizes(itemCode, sizes) {
+    return await prisma.tblItemCodes1S1Br.findMany({
+      where: {
+        ItemCode: itemCode,
+        ProductSize: {
+          in: sizes,
+        },
+      },
+    });
+  }
+
   static async delete(gtin) {
     return await prisma.tblItemCodes1S1Br.delete({
       where: { GTIN: gtin.toString() },

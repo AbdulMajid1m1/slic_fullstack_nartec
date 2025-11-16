@@ -32,6 +32,13 @@ router.post(
 );
 
 router.put(
+  "/v1/itemCodes/bulk",
+  isAuth,
+  upload,
+  itemCodesController.putMultipleItemCodes
+);
+
+router.put(
   "/v1/itemCode/:GTIN",
   isAuth,
   upload,

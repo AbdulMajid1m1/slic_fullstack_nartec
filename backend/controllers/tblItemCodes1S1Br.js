@@ -312,28 +312,6 @@ exports.putItemCode = async (req, res, next) => {
       }
     }
 
-    /**
-     * All the products with the same ItemCode must have the same image
-     * So, if the image is updated for one, update for all
-     */
-
-    // Find all item codes with the same ItemCode
-    const itemCodesToUpdate = await ItemCodeModel.findByItemCode(
-      existingItemCode.ItemCode
-    );
-    // Update the image for all matching item codes
-    if (req.file && itemCodesToUpdate && itemCodesToUpdate.length > 0) {
-      const updateImagePromises = itemCodesToUpdate.map(async (item) => {
-        // delete old image if exists and is different
-        if (item.image && item.image !== imagePath) {
-          await deleteFile(item.image);
-        }
-        return await ItemCodeModel.update(item.id, { image: imagePath });
-      });
-      await Promise.all(updateImagePromises);
-    }
-
-
     // Save the updated item code data
     const updatedItemCode = await ItemCodeModel.update(
       existingItemCode.id,
@@ -453,6 +431,139 @@ exports.findByItemCode = async (req, res, next) => {
         generateResponse(200, true, "Item code retrieved successfully", item)
       );
   } catch (error) {
+    next(error);
+  }
+};
+
+exports.putMultipleItemCodes = async (req, res, next) => {
+  let imagePath = null;
+  try {
+    const { itemCode, sizes } = req.body;
+    let updateData = {};
+
+    // Parse updateData if it's a string (from form-data)
+    if (req.body.updateData) {
+      try {
+        updateData =
+          typeof req.body.updateData === "string"
+            ? JSON.parse(req.body.updateData)
+            : req.body.updateData;
+      } catch (e) {
+        const error = new CustomError("Invalid updateData format");
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    // Validate that itemCode exists
+    if (!itemCode) {
+      const error = new CustomError("ItemCode is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Validate that sizes array exists and is not empty
+    let sizesArray = sizes;
+    if (typeof sizes === "string") {
+      try {
+        sizesArray = JSON.parse(sizes);
+      } catch (e) {
+        const error = new CustomError("Invalid sizes format");
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    if (!sizesArray || !Array.isArray(sizesArray) || sizesArray.length === 0) {
+      const error = new CustomError(
+        "Sizes array is required and cannot be empty"
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Get existing records before update to handle image deletion
+    const existingRecords = await ItemCodeModel.findManyByItemCodeAndSizes(
+      itemCode,
+      sizesArray
+    );
+
+    if (!existingRecords || existingRecords.length === 0) {
+      const error = new CustomError(
+        "No item codes found with the provided ItemCode and sizes"
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Prepare the data to be updated (only include fields that are provided)
+    const dataToUpdate = {};
+
+    if (updateData.ItemQty !== undefined)
+      dataToUpdate.ItemQty = Number(updateData.ItemQty);
+    if (updateData.EnglishName !== undefined)
+      dataToUpdate.EnglishName = updateData.EnglishName;
+    if (updateData.ArabicName !== undefined)
+      dataToUpdate.ArabicName = updateData.ArabicName;
+    if (updateData.upper !== undefined) dataToUpdate.upper = updateData.upper;
+    if (updateData.sole !== undefined) dataToUpdate.sole = updateData.sole;
+    if (updateData.width !== undefined) dataToUpdate.width = updateData.width;
+    if (updateData.color !== undefined) dataToUpdate.color = updateData.color;
+    if (updateData.label !== undefined) dataToUpdate.label = updateData.label;
+
+    // Handle image upload - applies to all selected products
+    if (req.file) {
+      imagePath = req.file.path;
+      dataToUpdate.image = imagePath;
+
+      // Delete old images from all affected records
+      for (const record of existingRecords) {
+        if (record.image) {
+          await deleteFile(record.image);
+        }
+      }
+    }
+
+    // Validate that there's something to update
+    if (Object.keys(dataToUpdate).length === 0) {
+      const error = new CustomError("Update data is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Perform bulk update
+    const result = await ItemCodeModel.updateManyByItemCodeAndSizes(
+      itemCode,
+      sizesArray,
+      dataToUpdate
+    );
+
+    if (!result || result.count === 0) {
+      const error = new CustomError(
+        "No item codes were updated. Please check if the provided ItemCode and sizes exist."
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json(
+      generateResponse(
+        200,
+        true,
+        `${result.count} item code(s) updated successfully`,
+        {
+          updatedCount: result.count,
+          itemCode,
+          sizes: sizesArray,
+          imageUpdated: !!req.file,
+        }
+      )
+    );
+  } catch (error) {
+    // Clean up uploaded image if there was an error
+    if (imagePath) {
+      await deleteFile(imagePath);
+    }
     next(error);
   }
 };
