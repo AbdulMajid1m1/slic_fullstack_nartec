@@ -92,9 +92,7 @@ const PurchaseOrderTable = ({
         await refetchOrders();
       }
     } catch (err) {
-      const errorMessage = err?.response?.data?.error || err?.response?.data?.message || "Error sending control serials";
-      // Error notification
-      toast.error(errorMessage);
+      const errorMessage = err?.response?.data?.message || "Error sending control serials";
       
       // Show error Swal
       await Swal.fire({
