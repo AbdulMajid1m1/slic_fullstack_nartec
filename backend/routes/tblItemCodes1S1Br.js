@@ -38,6 +38,13 @@ router.put(
   itemCodesController.putItemCode
 );
 
+router.put(
+  "/v1/itemCodes/bulk",
+  isAuth,
+  upload,
+  itemCodesController.putMultipleItemCodes
+);
+
 router.delete("/v1/itemCode/:GTIN", isAuth, itemCodesController.deleteItemCode);
 
 router.get("/v1/searchByGTIN", itemCodesController.searchByPartialGTIN);
