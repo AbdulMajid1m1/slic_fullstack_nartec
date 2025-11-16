@@ -290,12 +290,16 @@ exports.sendControlSerialsByPoNumber = async (req, res, next) => {
 
     // Find all control serials for this PO number (including archived ones)
     // We pass true to include archived records, then filter by isSentToSupplier
-    const allSerials = await ControlSerialModel.findByPoNumber(poNumber, false, size);
+    const allSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      false,
+      size
+    );
     const unsent = (allSerials || []).filter((s) => !s.isSentToSupplier);
 
     if (!unsent || unsent.length === 0) {
       const error = new CustomError(
-        "No unsent control serials found for this PO number"
+        "Already sent all control serials to suppliers for the given PO number"
       );
       error.statusCode = 404;
       throw error;
