@@ -45,7 +45,7 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
-      console.error("Error fetching supplier data:", err);
+      // console.error("Error fetching supplier data:", err);
       toast.error(err?.response?.data?.message || t("Failed to load suppliers. Please try again."));
     }
   };
@@ -95,9 +95,9 @@ const AddControlSerialPopup = ({ isVisible, setVisibility, refreshData, itemCode
       queryClient.invalidateQueries(['purchaseOrders']);
       setLoading(false);
       handleClosePopup();
-      refreshData();
+      // refreshData();
     } catch (err) {
-      toast.error(err?.response?.data?.error || err?.response?.data?.message || t("Error in adding control serials"));
+      toast.error(err?.response?.data?.message || err?.response?.data?.error || t("Error in adding control serials"));
       setLoading(false);
     }
   };
