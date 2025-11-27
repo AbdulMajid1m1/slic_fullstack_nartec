@@ -617,7 +617,10 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
       poNumbersWithSupplier.map(async (po) => {
-        const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+        const count = await ControlSerialModel.countByPoNumber(
+          po.poNumber,
+          size
+        );
         return {
           ...po,
           totalCount: count,
