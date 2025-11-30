@@ -124,7 +124,7 @@ router.get("/:id", isAuth, controlSerialController.getControlSerialById);
 router.put(
   "/poNumber",
   isSupplierAuth,
-  controlSerialValidator.updateControlSerial,
+  controlSerialValidator.updateControlSerialsByPoNumber,
   controlSerialController.updateControlSerialsByPoNumber
 );
 
