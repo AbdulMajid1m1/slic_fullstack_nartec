@@ -563,6 +563,37 @@ exports.updateControlSerial = async (req, res, next) => {
 };
 
 /**
+ * PUT - Update control serials by PO number and size
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+exports.updateControlSerialsByPoNumber = async (req, res, next) => {
+  try {
+    //TODO:  read from validator
+
+
+    const result = await ControlSerialModel.updateByPoNumberAndSize(
+      poNumber,
+      size,
+      updateData
+    );
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Control serials updated successfully",
+          result
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * DELETE - Delete control serial
  */
 exports.deleteControlSerial = async (req, res, next) => {

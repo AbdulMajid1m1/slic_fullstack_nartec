@@ -29,10 +29,7 @@ exports.createControlSerials = [
 ];
 
 exports.updateControlSerial = [
-  body("ItemCode")
-    .optional()
-    .isString()
-    .withMessage("ItemCode must be a string."),
+  body("ItemCode").isString().withMessage("ItemCode must be a string."),
 
   body("size").optional().isString().withMessage("Size must be a string."),
 
