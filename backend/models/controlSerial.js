@@ -396,6 +396,8 @@ class ControlSerialModel {
       select: {
         poNumber: true,
         size: true,
+        binLocationId: true,
+        isArchived: true,
         product: {
           select: {
             ItemCode: true,
@@ -452,6 +454,7 @@ class ControlSerialModel {
       },
       data: {
         isSentToSupplier: true,
+        binLocationId: null,
       },
     });
   }

@@ -752,7 +752,8 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
       await ControlSerialModel.getPoNumbersWithSupplierDetails(
         itemCode,
         size,
-        isArchived
+        isArchived,
+        hasPutAway,
       );
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
