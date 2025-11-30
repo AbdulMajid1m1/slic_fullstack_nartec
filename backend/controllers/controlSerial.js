@@ -586,7 +586,8 @@ exports.putAway = async (req, res, next) => {
     const existingSerials = await ControlSerialModel.findByPoNumber(
       poNumber,
       true,
-      size
+      size,
+      false
     );
     if (!existingSerials || existingSerials.length === 0) {
       const error = new CustomError(

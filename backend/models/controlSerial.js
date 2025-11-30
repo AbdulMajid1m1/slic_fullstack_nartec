@@ -139,7 +139,12 @@ class ControlSerialModel {
    * @param {boolean} includeArchived - Whether to include archived records (default: false)
    * @returns {Promise<Array>} - Matching serials
    */
-  static async findByPoNumber(poNumber, includeArchived = false, size = null) {
+  static async findByPoNumber(
+    poNumber,
+    includeArchived = false,
+    size = null,
+    hasPutAway = null
+  ) {
     const where = {
       poNumber: poNumber,
     };
@@ -152,6 +157,17 @@ class ControlSerialModel {
     // Only filter by isArchived if we don't want to include archived records
     if (!includeArchived) {
       where.OR = [{ isArchived: false }, { isArchived: null }];
+    }
+
+    // Add hasPutAway filter
+    if (hasPutAway !== null && typeof hasPutAway === "boolean") {
+      // if hasPutAway is true, we check for non-null binLocationId
+      if (hasPutAway) {
+        where.binLocationId = { not: null };
+      } else {
+        // if hasPutAway is false, we check for null binLocationId
+        where.binLocationId = null;
+      }
     }
 
     return await prisma.controlSerial.findMany({
