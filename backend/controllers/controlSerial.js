@@ -609,11 +609,18 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
   try {
     const itemCode = req.query.itemCode || null;
     const size = req.query.size || null;
+    const isArchived =
+      req.query.isArchived !== undefined
+        ? req.query.isArchived === "true"
+        : null;
 
     // Get unique PO numbers with supplier details
     const poNumbersWithSupplier =
-      await ControlSerialModel.getPoNumbersWithSupplierDetails(itemCode, size);
-
+      await ControlSerialModel.getPoNumbersWithSupplierDetails(
+        itemCode,
+        size,
+        isArchived
+      );
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
       poNumbersWithSupplier.map(async (po) => {

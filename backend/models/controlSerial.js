@@ -346,13 +346,20 @@ class ControlSerialModel {
    * Get PO numbers with supplier details for a SLIC Admin
    * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
    */
-  static async getPoNumbersWithSupplierDetails(itemCode, size = null) {
+  static async getPoNumbersWithSupplierDetails(
+    itemCode,
+    size = null,
+    isArchived = null
+  ) {
     const where = {};
     if (itemCode) {
       where.product = { ItemCode: itemCode };
     }
     if (size) {
       where.size = size;
+    }
+    if (isArchived !== null && typeof isArchived === "boolean") {
+      where.isArchived = isArchived;
     }
     const controlSerials = await prisma.controlSerial.findMany({
       where,

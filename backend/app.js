@@ -24,6 +24,7 @@ const whatsappRoutes = require("./routes/whatsappRoutes.js");
 const languageRoutes = require("./routes/languageRoute.js");
 const controlSerialRoutes = require("./routes/controlSerial");
 const supplierRoutes = require("./routes/supplierRoute");
+const binLocationRoutes = require("./routes/binLocation");
 const path = require("path");
 
 const app = express();
@@ -57,6 +58,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
 app.use("/api/controlSerials", controlSerialRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/binLocations", binLocationRoutes);
 
 app.get("/test", (req, res) => {
   function calculateCheckDigit(gtinWithoutCheckDigit) {
@@ -92,7 +94,9 @@ app.use((error, req, res, next) => {
     data = error.data || null;
   }
 
-  res.status(status).json(response(status, success, message, data, error?.stack));
+  res
+    .status(status)
+    .json(response(status, success, message, data, error?.stack));
 });
 
 // app.get("*", (req, res) => {
