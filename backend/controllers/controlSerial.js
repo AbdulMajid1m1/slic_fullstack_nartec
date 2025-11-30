@@ -563,6 +563,72 @@ exports.updateControlSerial = async (req, res, next) => {
 };
 
 /**
+ * PUT - Update control serials by PO number and size
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+exports.updateControlSerialsByPoNumber = async (req, res, next) => {
+  try {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new CustomError(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    const { poNumber, size, binLocationId } = req.body;
+
+    // Build update data object from validated fields
+    const updateData = {};
+
+    // If binLocationId is provided, verify the bin location exists
+    if (binLocationId !== undefined) {
+      if (binLocationId === null) {
+        // Allow unsetting the bin location
+        updateData.binLocationId = null;
+      } else {
+        const binLocation = await BinLocationModel.findById(binLocationId);
+        if (!binLocation) {
+          const error = new CustomError("Bin Location not found");
+          error.statusCode = 404;
+          throw error;
+        }
+        updateData.binLocationId = binLocationId;
+      }
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      const error = new CustomError("No update fields provided. Only binLocationId can be updated.");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const result = await ControlSerialModel.updateByPoNumberAndSize(
+      poNumber,
+      size,
+      updateData
+    );
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Control serials updated successfully",
+          result
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * DELETE - Delete control serial
  */
 exports.deleteControlSerial = async (req, res, next) => {
