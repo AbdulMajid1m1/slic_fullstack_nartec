@@ -351,7 +351,8 @@ class ControlSerialModel {
   static async getPoNumbersWithSupplierDetails(
     itemCode,
     size = null,
-    isArchived = null
+    isArchived = null,
+    hasPutAway = null
   ) {
     const where = {};
     if (itemCode) {
@@ -363,6 +364,17 @@ class ControlSerialModel {
     if (isArchived !== null && typeof isArchived === "boolean") {
       where.isArchived = isArchived;
     }
+    // Add hasPutAway filter
+    if (hasPutAway !== null && typeof hasPutAway === "boolean") {
+      // if hasPutAway is true, we check for non-null binLocationId
+      if (hasPutAway) {
+        where.binLocationId = { not: null };
+      } else {
+        // if hasPutAway is false, we check for null binLocationId
+        where.binLocationId = null;
+      }
+    }
+
     const controlSerials = await prisma.controlSerial.findMany({
       where,
       select: {

@@ -568,7 +568,7 @@ exports.updateControlSerial = async (req, res, next) => {
  * @param {*} res
  * @param {*} next
  */
-exports.updateControlSerialsByPoNumber = async (req, res, next) => {
+exports.putAway = async (req, res, next) => {
   try {
     const { poNumber, size, binLocationId } = req.body;
 
@@ -585,7 +585,7 @@ exports.updateControlSerialsByPoNumber = async (req, res, next) => {
     // Check if any control serials exist for this PO number and size
     const existingSerials = await ControlSerialModel.findByPoNumber(
       poNumber,
-      false,
+      true,
       size
     );
     if (!existingSerials || existingSerials.length === 0) {
@@ -740,6 +740,10 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
     const isArchived =
       req.query.isArchived !== undefined
         ? req.query.isArchived === "true"
+        : null;
+    const hasPutAway =
+      req.query.hasPutAway !== undefined
+        ? req.query.hasPutAway === "true"
         : null;
 
     // Get unique PO numbers with supplier details

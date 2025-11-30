@@ -123,10 +123,10 @@ router.get("/:id", isAuth, controlSerialController.getControlSerialById);
  * Update all control serials for a given PO number and size
  */
 router.put(
-  "/by-po",
+  "/put-away",
   isAuth,
   controlSerialValidator.updateControlSerialsByPoNumber,
-  controlSerialController.updateControlSerialsByPoNumber
+  controlSerialController.putAway
 );
 
 /**
