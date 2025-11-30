@@ -112,6 +112,12 @@ router.post(
 );
 
 /**
+ * GET /api/controlSerials/:id
+ * Get control serial by ID
+ */
+router.get("/:id", isAuth, controlSerialController.getControlSerialById);
+
+/**
  * PUT /api/controlSerials/update/by-po
  * Body: { poNumber: string, size: string, binLocationId?: string }
  * Update all control serials for a given PO number and size
@@ -122,12 +128,6 @@ router.put(
   controlSerialValidator.updateControlSerialsByPoNumber,
   controlSerialController.updateControlSerialsByPoNumber
 );
-
-/**
- * GET /api/controlSerials/:id
- * Get control serial by ID
- */
-router.get("/:id", isAuth, controlSerialController.getControlSerialById);
 
 /**
  * PUT /api/controlSerials/:id
