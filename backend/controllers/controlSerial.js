@@ -603,7 +603,7 @@ exports.updateControlSerialsByPoNumber = async (req, res, next) => {
 
     // Check if there's anything to update
     if (Object.keys(updateData).length === 0) {
-      const error = new CustomError("No update fields provided");
+      const error = new CustomError("No update fields provided. Only binLocationId can be updated.");
       error.statusCode = 400;
       throw error;
     }
