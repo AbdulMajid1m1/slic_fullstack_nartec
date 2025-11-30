@@ -51,3 +51,22 @@ exports.updateControlSerial = [
     .isString()
     .withMessage("Bin Location ID must be a string."),
 ];
+
+exports.updateControlSerialsByPoNumber = [
+  body("poNumber")
+    .notEmpty()
+    .withMessage("PO Number is required.")
+    .isString()
+    .withMessage("PO Number must be a string."),
+
+  body("size")
+    .notEmpty()
+    .withMessage("Size is required.")
+    .isString()
+    .withMessage("Size must be a string."),
+
+  body("binLocationId")
+    .optional({ nullable: true })
+    .isString()
+    .withMessage("Bin Location ID must be a string."),
+];

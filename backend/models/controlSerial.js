@@ -474,6 +474,28 @@ class ControlSerialModel {
       },
     });
   }
+
+  /**
+   * Update control serials by PO number and size
+   * @param {string} poNumber - PO number
+   * @param {string} size - Size
+   * @param {Object} data - Data to update
+   * @returns {Promise<Object>} - Update result with count
+   */
+  static async updateByPoNumberAndSize(poNumber, size, data) {
+    const where = {
+      poNumber: poNumber,
+    };
+
+    if (size) {
+      where.size = size;
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: where,
+      data: data,
+    });
+  }
 }
 
 module.exports = ControlSerialModel;

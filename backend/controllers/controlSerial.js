@@ -563,6 +563,87 @@ exports.updateControlSerial = async (req, res, next) => {
 };
 
 /**
+ * PUT - Update control serials by PO number and size
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+exports.updateControlSerialsByPoNumber = async (req, res, next) => {
+  try {
+    const { poNumber, size, binLocationId } = req.body;
+
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new CustomError(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    // Check if any control serials exist for this PO number and size
+    const existingSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      false,
+      size
+    );
+    if (!existingSerials || existingSerials.length === 0) {
+      const error = new CustomError(
+        "No control serials found for the given PO number and size"
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Build update data object
+    const updateData = {};
+
+    // If binLocationId is being updated, verify the bin location exists
+    if (binLocationId !== undefined) {
+      if (binLocationId === null) {
+        // Allow unsetting the bin location
+        updateData.binLocationId = null;
+      } else {
+        const binLocation = await BinLocationModel.findById(binLocationId);
+        if (!binLocation) {
+          const error = new CustomError("Bin Location not found");
+          error.statusCode = 404;
+          throw error;
+        }
+        updateData.binLocationId = binLocationId;
+      }
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      const error = new CustomError("No update data provided");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const result = await ControlSerialModel.updateByPoNumberAndSize(
+      poNumber,
+      size,
+      updateData
+    );
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          `${result.count} control serial(s) updated successfully`,
+          result
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * DELETE - Delete control serial
  */
 exports.deleteControlSerial = async (req, res, next) => {

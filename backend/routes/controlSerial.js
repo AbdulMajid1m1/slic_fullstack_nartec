@@ -4,7 +4,7 @@ const router = express.Router();
 const controlSerialController = require("../controllers/controlSerial");
 const controlSerialValidator = require("../validators/controlSerial");
 const isAuth = require("../middleware/is-auth");
-const isSupplierAuth = require("../middleware/is-supplier-auth")
+const isSupplierAuth = require("../middleware/is-supplier-auth");
 
 /**
  * POST /api/controlSerials
@@ -66,11 +66,7 @@ router.post(
  * GET /api/controlSerials/search/by-po?poNumber=value
  * Search control serials by PO number
  */
-router.get(
-  "/search/by-po",
-  isAuth,
-  controlSerialController.searchByPoNumber
-);
+router.get("/search/by-po", isAuth, controlSerialController.searchByPoNumber);
 
 /**
  * GET /api/controlSerials/supplier/po-numbers
@@ -78,9 +74,9 @@ router.get(
  * Requires supplier bearer token
  */
 router.get(
-    "/supplier/po-numbers",
-    isAuth,
-    controlSerialController.getSupplierPoNumbersWithSupplierDetails
+  "/supplier/po-numbers",
+  isAuth,
+  controlSerialController.getSupplierPoNumbersWithSupplierDetails
 );
 
 /**
@@ -88,9 +84,9 @@ router.get(
  * Get unique PO numbers with supplier details
  */
 router.get(
-    "/po-numbers",
-    isAuth,
-    controlSerialController.getPoNumbersWithSupplierDetails
+  "/po-numbers",
+  isAuth,
+  controlSerialController.getPoNumbersWithSupplierDetails
 );
 
 /**
@@ -113,6 +109,18 @@ router.post(
   "/unarchive/by-po",
   isAuth,
   controlSerialController.unarchiveControlSerialsByPoNumber
+);
+
+/**
+ * PUT /api/controlSerials/update/by-po
+ * Body: { poNumber: string, size: string, binLocationId?: string }
+ * Update all control serials for a given PO number and size
+ */
+router.put(
+  "/by-po",
+  isAuth,
+  controlSerialValidator.updateControlSerialsByPoNumber,
+  controlSerialController.updateControlSerialsByPoNumber
 );
 
 /**
