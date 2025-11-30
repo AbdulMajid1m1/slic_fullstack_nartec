@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const ControlSerialModel = require("../models/controlSerial");
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
 const SupplierModel = require("../models/supplier");
+const BinLocationModel = require("../models/binLocation");
 const { sendControlSerialNotificationEmail } = require("../utils/emailManager");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
@@ -461,7 +462,17 @@ exports.searchByPoNumber = async (req, res, next) => {
 exports.updateControlSerial = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { ItemCode } = req.body;
+    const { ItemCode, size, poNumber, supplierId, binLocationId } = req.body;
+
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new CustomError(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
 
     // Check if control serial exists
     const existingSerial = await ControlSerialModel.findById(id);
@@ -471,35 +482,58 @@ exports.updateControlSerial = async (req, res, next) => {
       throw error;
     }
 
+    // Build update data object
+    const updateData = {};
+
     // If ItemCode is being updated, verify the product exists
-    if (ItemCode && ItemCode !== existingSerial.ItemCode) {
+    if (ItemCode && ItemCode !== existingSerial.product?.ItemCode) {
       const product = await ItemCodeModel.findByItemCode(ItemCode);
       if (!product) {
         const error = new CustomError("Product with given ItemCode not found");
         error.statusCode = 404;
         throw error;
       }
+      updateData.ItemCode = product.id; // Use the product's id (foreign key reference)
+    }
 
-      // Prepare update data with the product's id
-      const updateData = {
-        ItemCode: product.id, // Use the product's id (foreign key reference)
-      };
+    // If supplierId is being updated, verify the supplier exists
+    if (supplierId && supplierId !== existingSerial.supplierId) {
+      const supplier = await SupplierModel.getSupplierById(supplierId);
+      if (!supplier) {
+        const error = new CustomError("Supplier not found");
+        error.statusCode = 404;
+        throw error;
+      }
+      updateData.supplierId = supplierId;
+    }
 
-      const updatedSerial = await ControlSerialModel.update(id, updateData);
+    // If binLocationId is being updated, verify the bin location exists
+    if (binLocationId !== undefined) {
+      if (binLocationId === null) {
+        // Allow unsetting the bin location
+        updateData.binLocationId = null;
+      } else if (binLocationId !== existingSerial.binLocationId) {
+        const binLocation = await BinLocationModel.findById(binLocationId);
+        if (!binLocation) {
+          const error = new CustomError("Bin Location not found");
+          error.statusCode = 404;
+          throw error;
+        }
+        updateData.binLocationId = binLocationId;
+      }
+    }
 
-      res
-        .status(200)
-        .json(
-          generateResponse(
-            200,
-            true,
-            "Control serial updated successfully",
-            updatedSerial
-          )
-        );
-    } else {
-      // No update needed if ItemCode is the same
-      res
+    // Add other optional fields if provided
+    if (size !== undefined) {
+      updateData.size = size;
+    }
+    if (poNumber !== undefined) {
+      updateData.poNumber = poNumber;
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      return res
         .status(200)
         .json(
           generateResponse(
@@ -510,6 +544,19 @@ exports.updateControlSerial = async (req, res, next) => {
           )
         );
     }
+
+    const updatedSerial = await ControlSerialModel.update(id, updateData);
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Control serial updated successfully",
+          updatedSerial
+        )
+      );
   } catch (error) {
     next(error);
   }

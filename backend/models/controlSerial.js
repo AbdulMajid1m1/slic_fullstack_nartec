@@ -25,6 +25,7 @@ class ControlSerialModel {
       include: {
         product: true,
         supplier: true,
+        binLocation: true,
       },
     });
   }
@@ -232,6 +233,7 @@ class ControlSerialModel {
       include: {
         product: true,
         supplier: true,
+        binLocation: true,
       },
     });
   }

@@ -56,6 +56,10 @@ model ControlSerial{
     supplierId                  String?
     supplier                    Supplier? @relation(fields: [supplierId], references: [id])
 
+    // Bin Location relation
+    binLocationId              String?
+    binLocation                BinLocation? @relation(fields: [binLocationId], references: [id])
+
     createdAt                   DateTime @default(now())
     updatedAt                   DateTime @updatedAt
 }
@@ -106,6 +110,8 @@ model BinLocation {
   availableQty    Int?
   maxQuantity     Int?
   capacityUsage   Float?    @default(0)
+
+  controlSerials  ControlSerial[]
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

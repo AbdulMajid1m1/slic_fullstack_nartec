@@ -25,10 +25,7 @@ exports.createControlSerials = [
     .isString()
     .withMessage("PO Number must be a string."),
 
-  body("size")
-    .optional()
-    .isString()
-    .withMessage("Size must be a string."),
+  body("size").optional().isString().withMessage("Size must be a string."),
 ];
 
 exports.updateControlSerial = [
@@ -37,10 +34,7 @@ exports.updateControlSerial = [
     .isString()
     .withMessage("ItemCode must be a string."),
 
-  body("size")
-    .optional()
-    .isString()
-    .withMessage("Size must be a string."),
+  body("size").optional().isString().withMessage("Size must be a string."),
 
   body("poNumber")
     .optional()
@@ -51,4 +45,9 @@ exports.updateControlSerial = [
     .optional()
     .isString()
     .withMessage("Supplier ID must be a string."),
+
+  body("binLocationId")
+    .optional({ nullable: true })
+    .isString()
+    .withMessage("Bin Location ID must be a string."),
 ];
