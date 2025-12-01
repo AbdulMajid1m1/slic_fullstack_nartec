@@ -396,7 +396,16 @@ class ControlSerialModel {
       select: {
         poNumber: true,
         size: true,
-        binLocationId: true,
+        binLocation: {
+          select: {
+            binNumber: true,
+            binType: true,
+            gln: true,
+            sgln: true,
+            zoneCode: true,
+            groupWarehouse: true,
+          },
+        },
         product: {
           select: {
             ItemCode: true,
