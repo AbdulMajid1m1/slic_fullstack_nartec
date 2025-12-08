@@ -56,7 +56,7 @@ const App = () => {
                     <Route
                       path="gtin"
                       element={
-                        <ProtectedRoute requiredRoles="Products">
+                        <ProtectedRoute requiredRoles="products">
                           <GTIN />
                         </ProtectedRoute>
                       }
@@ -107,30 +107,30 @@ const App = () => {
                         </ProtectedRoute>
                       }
                     />
-                    {/* <Route
-                    path="pos-bulkmatch-receipts"
-                    element={
-                      <ProtectedRoute requiredRoles="bulk_cash">
-                        <PosBulkMatchReceipts />
-                      </ProtectedRoute>
-                    }
-                  /> */}
                     <Route
                       path="pos-bulkmatch-receipts"
-                      element={<PosBulkMatchReceipts />}
-                    />
-                    <Route
-                      path="pos-Matched-receipts"
-                      element={<PosBrvMatchedReceipts />}
+                      element={
+                        <ProtectedRoute requiredRoles="bulk_cash">
+                          <PosBulkMatchReceipts />
+                        </ProtectedRoute>
+                      }
                     />
                     {/* <Route
-                    path="pos-Matched-receipts"
-                    element={
-                      <ProtectedRoute requiredRoles="bulk_cash">
-                        <PosBrvMatchedReceipts />
-                      </ProtectedRoute>
-                    }
-                  /> */}
+                      path="pos-bulkmatch-receipts"
+                      element={<PosBulkMatchReceipts />}
+                    /> */}
+                    {/* <Route
+                      path="pos-Matched-receipts"
+                      element={<PosBrvMatchedReceipts />}
+                    /> */}
+                    <Route
+                      path="pos-Matched-receipts"
+                      element={
+                        <ProtectedRoute requiredRoles="bulk_cash">
+                          <PosBrvMatchedReceipts />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="pos-error-logs" element={<PosErrorLogs />} />
                     <Route
                       path="purchase-order"
@@ -165,7 +165,7 @@ const App = () => {
                     <Route
                       path="roles"
                       element={
-                        <ProtectedRoute requiredRoles="Roles">
+                        <ProtectedRoute requiredRoles="roles">
                           <Roles />
                         </ProtectedRoute>
                       }
@@ -194,8 +194,25 @@ const App = () => {
                       }
                     />
 
-                    <Route path="supplier-list" element={<SupplierList />} />
-                    <Route path="archived-po" element={<ArchivedPO />} />
+                    {/* <Route path="supplier-list" element={<SupplierList />} />
+                    <Route path="archived-po" element={<ArchivedPO />} /> */}
+
+                    <Route
+                      path="supplier-list"
+                      element={
+                        <ProtectedRoute requiredRoles="supplier_list">
+                          <SupplierList />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="archived-po"
+                      element={
+                        <ProtectedRoute requiredRoles="archived_po">
+                          <ArchivedPO />
+                        </ProtectedRoute>
+                      }
+                    />
                   </Routes>
                 </QueryClientProvider>
               </BrowserRouter>
