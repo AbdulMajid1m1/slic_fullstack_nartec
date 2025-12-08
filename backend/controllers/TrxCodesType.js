@@ -145,9 +145,25 @@ exports.sync = async (req, res, next) => {
     };
 
     // Make the request to the external API
-    const externalApiResponse = await axios.post(externalApiUrl, requestBody, {
-      headers,
-    });
+    let externalApiResponse;
+    try {
+      externalApiResponse = await axios.post(externalApiUrl, requestBody, {
+        headers,
+      });
+    } catch (axiosError) {
+      // Check if the error is due to expired token
+      if (axiosError.response?.data === "Expired JWT token") {
+        throw new CustomError(
+          "External API token has expired. Please login again to get a new token.",
+          401
+        );
+      }
+      // Re-throw other axios errors with more context
+      throw new CustomError(
+        axiosError.response?.data || "Failed to connect to external API",
+        axiosError.response?.status || 500
+      );
+    }
 
     // log CURL for externalApiResponse
     console.log("CURL for externalApiResponse:", {
