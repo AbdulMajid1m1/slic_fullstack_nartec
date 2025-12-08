@@ -1,5 +1,6 @@
 const mod10CheckDigit = require("mod10-check-digit");
 const { validationResult } = require("express-validator");
+const XLSX = require("xlsx");
 
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
 const BarSeriesNo = require("../models/barSeriesNo");
@@ -563,6 +564,197 @@ exports.putMultipleItemCodes = async (req, res, next) => {
     // Clean up uploaded image if there was an error
     if (imagePath) {
       await deleteFile(imagePath);
+    }
+    next(error);
+  }
+};
+
+exports.bulkImportFromExcel = async (req, res, next) => {
+  let filePath = null;
+  try {
+    // Check if file is uploaded
+    if (!req.file) {
+      const error = new CustomError("Excel file is required");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    filePath = req.file.path;
+
+    // Read the Excel file
+    const workbook = XLSX.readFile(filePath);
+
+    const results = {
+      success: [],
+      failed: [],
+      total: 0,
+      sheetsProcessed: 0,
+    };
+
+    // Process all sheets in the workbook (skip first sheet if it's metadata)
+    for (let sheetIndex = 0; sheetIndex < workbook.SheetNames.length; sheetIndex++) {
+      const sheetName = workbook.SheetNames[sheetIndex];
+
+      // Skip first sheet if it's named "PRODUCTION DATE" or similar metadata sheets
+      if (sheetIndex === 0 && (
+        sheetName.toLowerCase().includes('production date') ||
+        sheetName.toLowerCase().includes('metadata') ||
+        sheetName.toLowerCase().includes('summary')
+      )) {
+        continue;
+      }
+
+      const worksheet = workbook.Sheets[sheetName];
+
+      // Convert sheet to JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      if (!jsonData || jsonData.length === 0) {
+        continue; // Skip empty sheets
+      }
+
+      results.total += jsonData.length;
+      results.sheetsProcessed++;
+
+      // Process each row
+      for (let i = 0; i < jsonData.length; i++) {
+        try {
+          const row = jsonData[i];
+
+          // Helper function to get value from row with multiple possible column names
+          const getValue = (possibleNames, convertToString = false) => {
+            for (const name of possibleNames) {
+              if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
+                const value = row[name];
+                // Convert to string if requested and value is not null/undefined
+                if (convertToString && value !== null && value !== undefined) {
+                  return String(value);
+                }
+                return value;
+              }
+            }
+            return null;
+          };
+
+          // Parse production date (handle "i-025" format)
+          const parseProductionDate = (dateValue) => {
+            if (!dateValue) return null;
+
+            // If it's already a date object or number (Excel serial date)
+            if (dateValue instanceof Date) return dateValue;
+            if (typeof dateValue === 'number') {
+              // Excel serial date to JS Date
+              return new Date((dateValue - 25569) * 86400 * 1000);
+            }
+
+            // If it's a string like "i-025", try to parse it or return null
+            if (typeof dateValue === 'string') {
+              // Try parsing as ISO date first
+              const parsedDate = new Date(dateValue);
+              if (!isNaN(parsedDate.getTime())) {
+                return parsedDate;
+              }
+            }
+
+            return null;
+          };
+
+          // Prepare data for insertion with flexible column mapping
+          const itemData = {
+            ItemCode: getValue(['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true), // Convert to string
+            EnglishName: getValue(['EnglishName', 'English Name', 'Name', 'Product Name', 'englishName'], true),
+            ArabicName: getValue(['ArabicName', 'Arabic Name', 'arabicName', 'arabic_name'], true),
+            GTIN: getValue(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin', 'EAN', 'UPC'], true), // Convert to string
+            LotNo: getValue(['LotNo', 'Lot No', 'Lot Number', 'lotNo', 'lot_no'], true),
+            ExpiryDate: getValue(['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date'])
+              ? parseProductionDate(getValue(['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date']))
+              : null,
+            sERIALnUMBER: getValue(['sERIALnUMBER', 'SerialNumber', 'Serial Number', 'Serial', 'serialNumber', 'serial_number'], true),
+            ItemQty: getValue(['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity'])
+              ? parseInt(getValue(['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity']))
+              : 1, // Default to 1 if not specified
+            WHLocation: getValue(['WHLocation', 'WH Location', 'Warehouse Location', 'whLocation', 'wh_location'], true),
+            BinLocation: getValue(['BinLocation', 'Bin Location', 'Bin', 'binLocation', 'bin_location'], true),
+            QRCodeInternational: (getValue(['QRCodeInternational', 'QR Code', 'QRCode', 'qrCode', 'qr_code'], true)
+              || getValue(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin'], true)), // Use GTIN as QR code if not specified
+            ModelName: getValue(['STEEL MID', 'Steel Mid', 'ModelName', 'Model Name', 'Model', 'modelName', 'model_name'], true),
+            ProductionDate: parseProductionDate(getValue(['PRO DATE', 'Pro Date', 'ProductionDate', 'Production Date', 'productionDate', 'production_date'])),
+            ProductType: getValue(['ProductType', 'Product Type', 'Type', 'productType', 'product_type'], true),
+            BrandName: getValue(['BrandName', 'Brand Name', 'Brand', 'brandName', 'brand_name'], true),
+            PackagingType: getValue(['PackagingType', 'Packaging Type', 'Packaging', 'packagingType', 'packaging_type'], true),
+            ProductUnit: getValue(['ProductUnit', 'Product Unit', 'Unit', 'productUnit', 'product_unit'], true),
+            ProductSize: getValue(['SIZE', 'Size', 'ProductSize', 'Product Size', 'productSize', 'product_size'], true), // Convert to string
+            image: getValue(['image', 'Image', 'ImagePath', 'image_path'], true),
+            upper: getValue(['upper', 'Upper'], true),
+            sole: getValue(['sole', 'Sole'], true),
+            width: getValue(['WIDTH', 'Width', 'width'], true),
+            color: getValue(['COLOR', 'Color', 'Colour', 'colour', 'color'], true),
+            label: getValue(['label', 'Label'], true),
+          };
+
+          // Create the item
+          const createdItem = await ItemCodeModel.create(itemData);
+
+          results.success.push({
+            sheet: sheetName,
+            row: i + 2, // Excel row number (adding 2 because: 1 for header, 1 for 0-based index)
+            ItemCode: itemData.ItemCode,
+            GTIN: itemData.GTIN,
+            id: createdItem.id,
+          });
+        } catch (error) {
+          const row = jsonData[i];
+          const getValueSafe = (possibleNames) => {
+            for (const name of possibleNames) {
+              if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
+                return row[name];
+              }
+            }
+            return null;
+          };
+
+          results.failed.push({
+            sheet: sheetName,
+            row: i + 2,
+            ItemCode: getValueSafe(['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code']),
+            GTIN: getValueSafe(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin']),
+            error: error.message,
+          });
+        }
+      }
+    }
+
+    // Clean up uploaded file
+    if (filePath) {
+      await deleteFile(filePath);
+    }
+
+    if (results.total === 0) {
+      const error = new CustomError("Excel file has no data to import");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const statusCode = results.failed.length === 0 ? 201 : 207; // 207 Multi-Status
+    const message =
+      results.failed.length === 0
+        ? "All items imported successfully"
+        : `Imported ${results.success.length} items, ${results.failed.length} failed`;
+
+    res.status(statusCode).json(
+      generateResponse(statusCode, true, message, {
+        successCount: results.success.length,
+        failedCount: results.failed.length,
+        total: results.total,
+        sheetsProcessed: results.sheetsProcessed,
+        successRecords: results.success,
+        failedRecords: results.failed,
+      })
+    );
+  } catch (error) {
+    // Clean up uploaded file in case of error
+    if (filePath) {
+      await deleteFile(filePath);
     }
     next(error);
   }
