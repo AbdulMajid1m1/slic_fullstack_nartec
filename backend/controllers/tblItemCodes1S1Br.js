@@ -574,22 +574,26 @@ exports.bulkImportFromExcel = async (req, res, next) => {
   try {
     // Check if file is uploaded
     if (!req.file) {
-      const error = new CustomError("Excel file is required");
+      const error = new CustomError("Excel/CSV file is required");
       error.statusCode = 400;
       throw error;
     }
 
     filePath = req.file.path;
 
-    // Read the Excel file
+    // Read the Excel/CSV file
     const workbook = XLSX.readFile(filePath);
 
     const results = {
       success: [],
       failed: [],
       total: 0,
+      created: 0,
+      updated: 0,
       sheetsProcessed: 0,
     };
+
+    const BATCH_SIZE = 2000; // Process 2000 records at a time for better performance (optimized for 100k+ records)
 
     // Process all sheets in the workbook (skip first sheet if it's metadata)
     for (let sheetIndex = 0; sheetIndex < workbook.SheetNames.length; sheetIndex++) {
@@ -616,111 +620,179 @@ exports.bulkImportFromExcel = async (req, res, next) => {
       results.total += jsonData.length;
       results.sheetsProcessed++;
 
-      // Process each row
-      for (let i = 0; i < jsonData.length; i++) {
-        try {
-          const row = jsonData[i];
-
-          // Helper function to get value from row with multiple possible column names
-          const getValue = (possibleNames, convertToString = false) => {
-            for (const name of possibleNames) {
-              if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
-                const value = row[name];
-                // Convert to string if requested and value is not null/undefined
-                if (convertToString && value !== null && value !== undefined) {
-                  return String(value);
-                }
-                return value;
-              }
+      // Helper function to get value from row with multiple possible column names
+      const getValue = (row, possibleNames, convertToString = false) => {
+        for (const name of possibleNames) {
+          if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
+            const value = row[name];
+            // Convert to string if requested and value is not null/undefined
+            if (convertToString && value !== null && value !== undefined) {
+              return String(value).trim();
             }
-            return null;
-          };
-
-          // Parse production date (handle "i-025" format)
-          const parseProductionDate = (dateValue) => {
-            if (!dateValue) return null;
-
-            // If it's already a date object or number (Excel serial date)
-            if (dateValue instanceof Date) return dateValue;
-            if (typeof dateValue === 'number') {
-              // Excel serial date to JS Date
-              return new Date((dateValue - 25569) * 86400 * 1000);
-            }
-
-            // If it's a string like "i-025", try to parse it or return null
-            if (typeof dateValue === 'string') {
-              // Try parsing as ISO date first
-              const parsedDate = new Date(dateValue);
-              if (!isNaN(parsedDate.getTime())) {
-                return parsedDate;
-              }
-            }
-
-            return null;
-          };
-
-          // Prepare data for insertion with flexible column mapping
-          const itemData = {
-            ItemCode: getValue(['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true), // Convert to string
-            EnglishName: getValue(['EnglishName', 'English Name', 'Name', 'Product Name', 'englishName'], true),
-            ArabicName: getValue(['ArabicName', 'Arabic Name', 'arabicName', 'arabic_name'], true),
-            GTIN: getValue(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin', 'EAN', 'UPC'], true), // Convert to string
-            LotNo: getValue(['LotNo', 'Lot No', 'Lot Number', 'lotNo', 'lot_no'], true),
-            ExpiryDate: getValue(['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date'])
-              ? parseProductionDate(getValue(['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date']))
-              : null,
-            sERIALnUMBER: getValue(['sERIALnUMBER', 'SerialNumber', 'Serial Number', 'Serial', 'serialNumber', 'serial_number'], true),
-            ItemQty: getValue(['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity'])
-              ? parseInt(getValue(['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity']))
-              : 1, // Default to 1 if not specified
-            WHLocation: getValue(['WHLocation', 'WH Location', 'Warehouse Location', 'whLocation', 'wh_location'], true),
-            BinLocation: getValue(['BinLocation', 'Bin Location', 'Bin', 'binLocation', 'bin_location'], true),
-            QRCodeInternational: (getValue(['QRCodeInternational', 'QR Code', 'QRCode', 'qrCode', 'qr_code'], true)
-              || getValue(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin'], true)), // Use GTIN as QR code if not specified
-            ModelName: getValue(['STEEL MID', 'Steel Mid', 'ModelName', 'Model Name', 'Model', 'modelName', 'model_name'], true),
-            ProductionDate: parseProductionDate(getValue(['PRO DATE', 'Pro Date', 'ProductionDate', 'Production Date', 'productionDate', 'production_date'])),
-            ProductType: getValue(['ProductType', 'Product Type', 'Type', 'productType', 'product_type'], true),
-            BrandName: getValue(['BrandName', 'Brand Name', 'Brand', 'brandName', 'brand_name'], true),
-            PackagingType: getValue(['PackagingType', 'Packaging Type', 'Packaging', 'packagingType', 'packaging_type'], true),
-            ProductUnit: getValue(['ProductUnit', 'Product Unit', 'Unit', 'productUnit', 'product_unit'], true),
-            ProductSize: getValue(['SIZE', 'Size', 'ProductSize', 'Product Size', 'productSize', 'product_size'], true), // Convert to string
-            image: getValue(['image', 'Image', 'ImagePath', 'image_path'], true),
-            upper: getValue(['upper', 'Upper'], true),
-            sole: getValue(['sole', 'Sole'], true),
-            width: getValue(['WIDTH', 'Width', 'width'], true),
-            color: getValue(['COLOR', 'Color', 'Colour', 'colour', 'color'], true),
-            label: getValue(['label', 'Label'], true),
-          };
-
-          // Create the item
-          const createdItem = await ItemCodeModel.create(itemData);
-
-          results.success.push({
-            sheet: sheetName,
-            row: i + 2, // Excel row number (adding 2 because: 1 for header, 1 for 0-based index)
-            ItemCode: itemData.ItemCode,
-            GTIN: itemData.GTIN,
-            id: createdItem.id,
-          });
-        } catch (error) {
-          const row = jsonData[i];
-          const getValueSafe = (possibleNames) => {
-            for (const name of possibleNames) {
-              if (row[name] !== undefined && row[name] !== null && row[name] !== '') {
-                return row[name];
-              }
-            }
-            return null;
-          };
-
-          results.failed.push({
-            sheet: sheetName,
-            row: i + 2,
-            ItemCode: getValueSafe(['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code']),
-            GTIN: getValueSafe(['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin']),
-            error: error.message,
-          });
+            return value;
+          }
         }
+        return null;
+      };
+
+      // Parse production date (handle "i-025" format and Excel serial dates)
+      const parseProductionDate = (dateValue) => {
+        if (!dateValue) return null;
+
+        // If it's already a date object or number (Excel serial date)
+        if (dateValue instanceof Date) return dateValue;
+        if (typeof dateValue === 'number') {
+          // Excel serial date to JS Date
+          return new Date((dateValue - 25569) * 86400 * 1000);
+        }
+
+        // If it's a string like "i-025", try to parse it or return null
+        if (typeof dateValue === 'string') {
+          // Try parsing as ISO date first
+          const parsedDate = new Date(dateValue);
+          if (!isNaN(parsedDate.getTime())) {
+            return parsedDate;
+          }
+        }
+
+        return null;
+      };
+
+      // Process records in batches
+      for (let batchStart = 0; batchStart < jsonData.length; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, jsonData.length);
+        const batchData = jsonData.slice(batchStart, batchEnd);
+
+        const validRecords = [];
+        const invalidRecords = [];
+
+        // Validate and prepare batch data
+        for (let i = 0; i < batchData.length; i++) {
+          try {
+            const row = batchData[i];
+            const actualRowIndex = batchStart + i;
+
+            // Prepare data for insertion with flexible column mapping
+            const itemData = {
+              ItemCode: getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true),
+              EnglishName: getValue(row, ['EnglishName', 'English Name', 'Name', 'Product Name', 'englishName'], true),
+              ArabicName: getValue(row, ['ArabicName', 'Arabic Name', 'arabicName', 'arabic_name'], true),
+              GTIN: getValue(row, ['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin', 'EAN', 'UPC'], true),
+              LotNo: getValue(row, ['LotNo', 'Lot No', 'Lot Number', 'lotNo', 'lot_no'], true),
+              ExpiryDate: getValue(row, ['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date'])
+                ? parseProductionDate(getValue(row, ['ExpiryDate', 'Expiry Date', 'expiryDate', 'expiry_date']))
+                : null,
+              sERIALnUMBER: getValue(row, ['sERIALnUMBER', 'SerialNumber', 'Serial Number', 'Serial Num', 'Serial', 'serialNumber', 'serial_number'], true),
+              ItemQty: getValue(row, ['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity'])
+                ? parseInt(getValue(row, ['ItemQty', 'Item Qty', 'Quantity', 'Qty', 'itemQty', 'quantity']))
+                : 0,
+              WHLocation: getValue(row, ['WHLocation', 'WH Location', 'Warehouse Location', 'whLocation', 'wh_location'], true),
+              BinLocation: getValue(row, ['BinLocation', 'Bin Location', 'Bin', 'binLocation', 'bin_location'], true),
+              QRCodeInternational: (getValue(row, ['QRCodeInternational', 'QR Code', 'QRCode', 'qrCode', 'qr_code'], true)
+                || getValue(row, ['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin'], true)),
+              ModelName: getValue(row, ['STEEL MID', 'Steel Mid', 'ModelName', 'Model Name', 'Model', 'modelName', 'model_name'], true),
+              ProductionDate: parseProductionDate(getValue(row, ['PRO DATE', 'Pro Date', 'ProductionDate', 'Production Date', 'productionDate', 'production_date'])),
+              ProductType: getValue(row, ['ProductType', 'Product Type', 'Type', 'productType', 'product_type'], true),
+              BrandName: getValue(row, ['BrandName', 'Brand Name', 'Brand', 'brandName', 'brand_name'], true),
+              PackagingType: getValue(row, ['PackagingType', 'Packaging Type', 'Packaging', 'packagingType', 'packaging_type'], true),
+              ProductUnit: getValue(row, ['ProductUnit', 'Product Unit', 'Unit', 'productUnit', 'product_unit'], true),
+              ProductSize: getValue(row, ['SIZE', 'Size', 'ProductSize', 'Product Size', 'productSize', 'product_size'], true),
+              image: getValue(row, ['image', 'Image', 'ImagePath', 'image_path'], true),
+              upper: getValue(row, ['upper', 'Upper'], true),
+              sole: getValue(row, ['sole', 'Sole'], true),
+              width: getValue(row, ['WIDTH', 'Width', 'width'], true),
+              color: getValue(row, ['COLOR', 'Color', 'Colour', 'colour', 'color'], true),
+              label: getValue(row, ['label', 'Label'], true),
+            };
+
+            // Remove null/undefined fields to avoid Prisma errors
+            Object.keys(itemData).forEach(key => {
+              if (itemData[key] === null || itemData[key] === undefined) {
+                delete itemData[key];
+              }
+            });
+
+            validRecords.push({
+              data: itemData,
+              rowIndex: actualRowIndex,
+            });
+          } catch (error) {
+            const row = batchData[i];
+            const actualRowIndex = batchStart + i;
+
+            invalidRecords.push({
+              sheet: sheetName,
+              row: actualRowIndex + 2,
+              ItemCode: getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true),
+              GTIN: getValue(row, ['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin'], true),
+              error: `Validation error: ${error.message}`,
+            });
+          }
+        }
+
+        // Batch upsert valid records (insert new, update existing)
+        if (validRecords.length > 0) {
+          try {
+            const batchUpsertData = validRecords.map(r => r.data);
+            const startTime = Date.now();
+
+            // Use bulkUpsert for MSSQL compatibility (no skipDuplicates)
+            const upsertResult = await ItemCodeModel.bulkUpsert(batchUpsertData);
+
+            const endTime = Date.now();
+            const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+            // Add successful records to results
+            validRecords.forEach((record) => {
+              results.success.push({
+                sheet: sheetName,
+                row: record.rowIndex + 2,
+                ItemCode: record.data.ItemCode,
+                GTIN: record.data.GTIN,
+              });
+            });
+
+            results.created += upsertResult.created;
+            results.updated += upsertResult.updated;
+
+            console.log(
+              `Batch ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(jsonData.length / BATCH_SIZE)}: ` +
+              `Created ${upsertResult.created}, Updated ${upsertResult.updated} records (${duration}s) - ` +
+              `Progress: ${Math.min(batchEnd, jsonData.length)}/${jsonData.length} records`
+            );
+          } catch (error) {
+            // If batch upsert fails, try individual upserts to identify problematic records
+            console.log(`Batch upsert failed, trying individual operations: ${error.message}`);
+
+            for (const record of validRecords) {
+              try {
+                if (record.data.GTIN) {
+                  await ItemCodeModel.upsert(record.data.GTIN, record.data);
+                } else {
+                  await ItemCodeModel.create(record.data);
+                }
+                results.success.push({
+                  sheet: sheetName,
+                  row: record.rowIndex + 2,
+                  ItemCode: record.data.ItemCode,
+                  GTIN: record.data.GTIN,
+                });
+                results.created++;
+              } catch (individualError) {
+                results.failed.push({
+                  sheet: sheetName,
+                  row: record.rowIndex + 2,
+                  ItemCode: record.data.ItemCode,
+                  GTIN: record.data.GTIN,
+                  error: individualError.message,
+                });
+              }
+            }
+          }
+        }
+
+        // Add pre-validated failed records
+        results.failed.push(...invalidRecords);
       }
     }
 
@@ -730,7 +802,7 @@ exports.bulkImportFromExcel = async (req, res, next) => {
     }
 
     if (results.total === 0) {
-      const error = new CustomError("Excel file has no data to import");
+      const error = new CustomError("Excel/CSV file has no data to import");
       error.statusCode = 400;
       throw error;
     }
@@ -738,17 +810,22 @@ exports.bulkImportFromExcel = async (req, res, next) => {
     const statusCode = results.failed.length === 0 ? 201 : 207; // 207 Multi-Status
     const message =
       results.failed.length === 0
-        ? "All items imported successfully"
-        : `Imported ${results.success.length} items, ${results.failed.length} failed`;
+        ? `All items imported successfully (${results.created} created, ${results.updated} updated)`
+        : `Imported ${results.success.length} items (${results.created} created, ${results.updated} updated), ${results.failed.length} failed`;
 
     res.status(statusCode).json(
       generateResponse(statusCode, true, message, {
         successCount: results.success.length,
         failedCount: results.failed.length,
+        createdCount: results.created,
+        updatedCount: results.updated,
         total: results.total,
         sheetsProcessed: results.sheetsProcessed,
-        successRecords: results.success,
-        failedRecords: results.failed,
+        successRecords: results.success.slice(0, 100), // Limit response size for large imports
+        failedRecords: results.failed.slice(0, 100), // Limit response size
+        note: results.success.length > 100 || results.failed.length > 100
+          ? "Only first 100 records shown in response. Check server logs for complete details."
+          : null,
       })
     );
   } catch (error) {

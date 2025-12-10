@@ -30,8 +30,9 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Increase payload limits for large file imports (100k+ records)
+app.use(express.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Serve static files from the "uploads" and "public" directories
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

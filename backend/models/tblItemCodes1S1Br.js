@@ -9,6 +9,104 @@ class ItemCodeModel {
     });
   }
 
+  static async createMany(data) {
+    return await prisma.tblItemCodes1S1Br.createMany({
+      data,
+    });
+  }
+
+  static async findManyByGTINs(gtins) {
+    return await prisma.tblItemCodes1S1Br.findMany({
+      where: {
+        GTIN: {
+          in: gtins,
+        },
+      },
+    });
+  }
+
+  static async upsert(gtin, data) {
+    // Check if record exists
+    const existing = await prisma.tblItemCodes1S1Br.findFirst({
+      where: { GTIN: gtin },
+    });
+
+    if (existing) {
+      // Update existing record, merging new data with existing data
+      return await prisma.tblItemCodes1S1Br.update({
+        where: { id: existing.id },
+        data,
+      });
+    } else {
+      // Create new record
+      return await prisma.tblItemCodes1S1Br.create({
+        data,
+      });
+    }
+  }
+
+  static async bulkUpsert(records) {
+    // Get all GTINs from records
+    const gtins = records
+      .map((r) => r.GTIN)
+      .filter((g) => g != null && g !== "");
+
+    if (gtins.length === 0) {
+      return { created: 0, updated: 0 };
+    }
+
+    // Find existing records
+    const existingRecords = await this.findManyByGTINs(gtins);
+    const existingGTINs = new Set(existingRecords.map((r) => r.GTIN));
+
+    // Separate new and existing records
+    const newRecords = [];
+    const updateRecords = [];
+
+    for (const record of records) {
+      if (record.GTIN && existingGTINs.has(record.GTIN)) {
+        updateRecords.push(record);
+      } else {
+        newRecords.push(record);
+      }
+    }
+
+    let created = 0;
+    let updated = 0;
+
+    // Insert new records
+    if (newRecords.length > 0) {
+      const result = await prisma.tblItemCodes1S1Br.createMany({
+        data: newRecords,
+      });
+      created = result.count;
+    }
+
+    // Update existing records
+    if (updateRecords.length > 0) {
+      // Update records individually (Prisma doesn't support bulk upsert efficiently)
+      for (const record of updateRecords) {
+        const existing = existingRecords.find((e) => e.GTIN === record.GTIN);
+        if (existing) {
+          // Merge existing data with new data (new data takes precedence)
+          const mergedData = { ...existing, ...record };
+          // Remove id and timestamps from update data
+          delete mergedData.id;
+          delete mergedData.Created_at;
+          delete mergedData.Updated_at;
+
+          await prisma.tblItemCodes1S1Br.update({
+            where: { id: existing.id },
+            data: mergedData,
+          });
+          updated++;
+        }
+      }
+    }
+
+    return { created, updated };
+  }
+
   static async findAllWithPagination(page = 1, limit = 10, search = null) {
     const skip = (page - 1) * limit;
 
