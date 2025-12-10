@@ -836,3 +836,132 @@ exports.bulkImportFromExcel = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.removeDuplicateGTINs = async (req, res, next) => {
+  try {
+    console.log("Starting duplicate GTIN removal process...");
+    const startTime = Date.now();
+
+    // Find all duplicate GTINs
+    const duplicateGTINs = await ItemCodeModel.findDuplicateGTINs();
+
+    if (!duplicateGTINs || duplicateGTINs.length === 0) {
+      return res.status(200).json(
+        generateResponse(200, true, "No duplicate GTINs found", {
+          duplicatesFound: 0,
+          recordsRemoved: 0,
+        })
+      );
+    }
+
+    console.log(`Found ${duplicateGTINs.length} duplicate GTINs`);
+
+    let totalRecordsRemoved = 0;
+    let processedCount = 0;
+    const details = [];
+
+    // Score a record based on how many fields are filled
+    const scoreRecord = (record) => {
+      let score = 0;
+      const fieldsToCheck = [
+        'ItemCode', 'EnglishName', 'ArabicName', 'GTIN', 'LotNo',
+        'ExpiryDate', 'sERIALnUMBER', 'ItemQty', 'WHLocation',
+        'BinLocation', 'QRCodeInternational', 'ModelName',
+        'ProductionDate', 'ProductType', 'BrandName', 'PackagingType',
+        'ProductUnit', 'ProductSize', 'image', 'upper', 'sole',
+        'width', 'color', 'label'
+      ];
+
+      fieldsToCheck.forEach((field) => {
+        if (record[field] !== null && record[field] !== undefined && record[field] !== '') {
+          score++;
+        }
+      });
+
+      return score;
+    };
+
+    // Process duplicates in batches
+    const BATCH_SIZE = 100; // Process 100 duplicate GTINs at a time
+
+    for (let i = 0; i < duplicateGTINs.length; i += BATCH_SIZE) {
+      const batch = duplicateGTINs.slice(i, Math.min(i + BATCH_SIZE, duplicateGTINs.length));
+
+      for (const duplicate of batch) {
+        const gtin = duplicate.GTIN;
+        const count = parseInt(duplicate.count);
+
+        // Get all records with this GTIN
+        const records = await ItemCodeModel.findAllByGTIN(gtin);
+
+        if (records.length <= 1) {
+          continue; // Skip if not actually duplicate
+        }
+
+        // Score each record
+        const scoredRecords = records.map((record) => ({
+          ...record,
+          score: scoreRecord(record),
+        }));
+
+        // Sort by score (highest first), then by Created_at (most recent first)
+        scoredRecords.sort((a, b) => {
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          }
+          return new Date(b.Created_at) - new Date(a.Created_at);
+        });
+
+        // Keep the first one (highest score), delete the rest
+        const recordToKeep = scoredRecords[0];
+        const recordsToDelete = scoredRecords.slice(1);
+
+        if (recordsToDelete.length > 0) {
+          const idsToDelete = recordsToDelete.map((r) => r.id);
+          await ItemCodeModel.deleteByIds(idsToDelete);
+          totalRecordsRemoved += idsToDelete.length;
+
+          details.push({
+            gtin,
+            totalRecords: records.length,
+            recordsRemoved: idsToDelete.length,
+            keptRecordId: recordToKeep.id,
+            keptRecordScore: recordToKeep.score,
+          });
+        }
+
+        processedCount++;
+
+        // Log progress every 100 GTINs
+        if (processedCount % 100 === 0) {
+          console.log(
+            `Progress: ${processedCount}/${duplicateGTINs.length} GTINs processed, ` +
+            `${totalRecordsRemoved} records removed`
+          );
+        }
+      }
+    }
+
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+    console.log(
+      `Duplicate removal completed: ${totalRecordsRemoved} records removed in ${duration}s`
+    );
+
+    res.status(200).json(
+      generateResponse(200, true, "Duplicate GTINs removed successfully", {
+        duplicateGTINsFound: duplicateGTINs.length,
+        recordsRemoved: totalRecordsRemoved,
+        duration: `${duration}s`,
+        details: details.slice(0, 100), // Return first 100 for reference
+        note: details.length > 100
+          ? "Only first 100 details shown. Check server logs for complete information."
+          : null,
+      })
+    );
+  } catch (error) {
+    console.error("Error removing duplicates:", error);
+    next(error);
+  }
+};

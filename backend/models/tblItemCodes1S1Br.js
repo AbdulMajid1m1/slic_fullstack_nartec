@@ -266,6 +266,35 @@ class ItemCodeModel {
       },
     });
   }
+
+  static async findDuplicateGTINs() {
+    // Find all GTINs that have duplicates using raw SQL for better performance
+    const duplicates = await prisma.$queryRaw`
+      SELECT GTIN, COUNT(*) as count
+      FROM TblItemCodes1S1Br
+      WHERE GTIN IS NOT NULL AND GTIN != ''
+      GROUP BY GTIN
+      HAVING COUNT(*) > 1
+    `;
+    return duplicates;
+  }
+
+  static async findAllByGTIN(gtin) {
+    return await prisma.tblItemCodes1S1Br.findMany({
+      where: { GTIN: gtin },
+      orderBy: { Created_at: 'desc' }, // Most recent first
+    });
+  }
+
+  static async deleteByIds(ids) {
+    return await prisma.tblItemCodes1S1Br.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }
 
 module.exports = ItemCodeModel;
