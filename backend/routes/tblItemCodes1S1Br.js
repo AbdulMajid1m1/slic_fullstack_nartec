@@ -62,7 +62,7 @@ router.post(
 
 router.delete(
   "/v1/remove-duplicates",
-  isAuth,
+
   itemCodesController.removeDuplicateGTINs
 );
 
