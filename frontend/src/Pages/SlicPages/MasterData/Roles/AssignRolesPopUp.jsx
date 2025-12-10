@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import newRequest from "../../../../utils/userRequest";
 import Button from "@mui/material/Button";
@@ -6,6 +6,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import SendIcon from "@mui/icons-material/Send";
 import { Autocomplete, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { MdClose, MdHorizontalRule } from 'react-icons/md';
 
 const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
   const { t, i18n } = useTranslation();
@@ -17,6 +18,7 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
   const memberDataString = sessionStorage.getItem('slicUserData');
   const memberData = JSON.parse(memberDataString);
   // console.log(memberData)
+    const hasFetchedRef = useRef(false);
   
   const handleCloseCreatePopup = () => {
     setVisibility(false);
@@ -33,23 +35,26 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
       } else {
         toast.error("Failed to fetch roles");
       }
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      toast.error("Error fetching roles");
+    } catch (err) {
+      // console.error("Error fetching roles:", error);
+      toast.error(err?.response?.data?.message || err?.response?.data?.error || "Error fetching roles");
     }
   };
 
 
   useEffect(() => {
     setEmail(updateProductsData?.UserLoginID);
-
-    fetchRoles();
+    
+    if (!hasFetchedRef.current) {
+      fetchRoles();
+      hasFetchedRef.current = true;
+    }
   }, []);
 
 
   const handleRolesTypesChange = (event, value) => {
     setSelectedRoles(value);
-    console.log(value);
+    // console.log(value);
     setSelectAll(false); // Uncheck "Select All" when individual options are selected/deselected
   };
 
@@ -83,9 +88,9 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
       setLoading(false);
       handleCloseCreatePopup();
       refreshRolesData();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Error in adding User");
-      console.log(error);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Error in adding User");
+      // console.log(error);
       setLoading(false);
     }
   };
@@ -106,60 +111,17 @@ const AssignRolesPopUp = ({ isVisible, setVisibility, refreshRolesData }) => {
                     {t("Assign Roles")}
                   </h2>
                   <div className="flex items-center space-x-3">
-                    <button className="text-white hover:text-gray-300 focus:outline-none"
-                        onClick={handleCloseCreatePopup}
+                    <button
+                      className="text-white hover:text-gray-300 focus:outline-none"
+                      onClick={handleCloseCreatePopup}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M20 14H4"
-                        />
-                      </svg>
-                    </button>
-                    <button className="text-white hover:text-gray-300 focus:outline-none"
-                        onClick={handleCloseCreatePopup}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 4h16v16H4z"
-                        />
-                      </svg>
+                      <MdHorizontalRule className="h-6 w-6" />
                     </button>
                     <button
                       className="text-white hover:text-red-600 focus:outline-none"
                       onClick={handleCloseCreatePopup}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
+                      <MdClose className="h-6 w-6" />
                     </button>
                   </div>
                 </div>
