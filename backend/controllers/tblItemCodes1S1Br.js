@@ -673,8 +673,21 @@ exports.bulkImportFromExcel = async (req, res, next) => {
             const actualRowIndex = batchStart + i;
 
             // Prepare data for insertion with flexible column mapping
+            // Handle CODE + STYLE combination for ItemCode
+            const codeValue = getValue(row, ['CODE', 'Code', 'code'], true);
+            const styleValue = getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true);
+            let itemCode = styleValue; // Default to STYLE value
+
+            // If both CODE and STYLE exist, combine them
+            if (codeValue && styleValue) {
+              itemCode = `${codeValue}${styleValue}`;
+            } else if (codeValue && !styleValue) {
+              // If only CODE exists, use it
+              itemCode = codeValue;
+            }
+
             const itemData = {
-              ItemCode: getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true),
+              ItemCode: itemCode,
               EnglishName: getValue(row, ['EnglishName', 'English Name', 'Name', 'Product Name', 'englishName'], true),
               ArabicName: getValue(row, ['ArabicName', 'Arabic Name', 'arabicName', 'arabic_name'], true),
               GTIN: getValue(row, ['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin', 'EAN', 'UPC'], true),
@@ -720,10 +733,21 @@ exports.bulkImportFromExcel = async (req, res, next) => {
             const row = batchData[i];
             const actualRowIndex = batchStart + i;
 
+            // Handle CODE + STYLE combination for error reporting
+            const codeValue = getValue(row, ['CODE', 'Code', 'code'], true);
+            const styleValue = getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true);
+            let failedItemCode = styleValue;
+
+            if (codeValue && styleValue) {
+              failedItemCode = `${codeValue}${styleValue}`;
+            } else if (codeValue && !styleValue) {
+              failedItemCode = codeValue;
+            }
+
             invalidRecords.push({
               sheet: sheetName,
               row: actualRowIndex + 2,
-              ItemCode: getValue(row, ['STYLE', 'Style', 'ItemCode', 'Item Code', 'itemCode', 'item_code'], true),
+              ItemCode: failedItemCode,
               GTIN: getValue(row, ['BARCODE', 'Barcode', 'barcode', 'GTIN', 'gtin'], true),
               error: `Validation error: ${error.message}`,
             });
@@ -833,6 +857,152 @@ exports.bulkImportFromExcel = async (req, res, next) => {
     if (filePath) {
       await deleteFile(filePath);
     }
+    next(error);
+  }
+};
+
+exports.checkDuplicateGTINs = async (req, res, next) => {
+  try {
+    console.log("Checking for duplicate GTINs...");
+    const startTime = Date.now();
+
+    // Find all duplicate GTINs
+    const duplicateGTINs = await ItemCodeModel.findDuplicateGTINs();
+
+    if (!duplicateGTINs || duplicateGTINs.length === 0) {
+      return res.status(200).json(
+        generateResponse(200, true, "No duplicate GTINs found", {
+          duplicatesFound: 0,
+          totalDuplicateRecords: 0,
+          details: [],
+        })
+      );
+    }
+
+    console.log(`Found ${duplicateGTINs.length} duplicate GTINs`);
+
+    let totalDuplicateRecords = 0;
+    let recordsToBeRemoved = 0;
+    const details = [];
+
+    // Score a record based on how many fields are filled
+    const scoreRecord = (record) => {
+      let score = 0;
+      const fieldsToCheck = [
+        'ItemCode', 'EnglishName', 'ArabicName', 'GTIN', 'LotNo',
+        'ExpiryDate', 'sERIALnUMBER', 'ItemQty', 'WHLocation',
+        'BinLocation', 'QRCodeInternational', 'ModelName',
+        'ProductionDate', 'ProductType', 'BrandName', 'PackagingType',
+        'ProductUnit', 'ProductSize', 'image', 'upper', 'sole',
+        'width', 'color', 'label'
+      ];
+
+      fieldsToCheck.forEach((field) => {
+        if (record[field] !== null && record[field] !== undefined && record[field] !== '') {
+          score++;
+        }
+      });
+
+      return score;
+    };
+
+    // Process duplicates to analyze them
+    const BATCH_SIZE = 100;
+
+    for (let i = 0; i < duplicateGTINs.length; i += BATCH_SIZE) {
+      const batch = duplicateGTINs.slice(i, Math.min(i + BATCH_SIZE, duplicateGTINs.length));
+
+      for (const duplicate of batch) {
+        const gtin = duplicate.GTIN;
+        const count = parseInt(duplicate.count);
+
+        // Get all records with this GTIN
+        const records = await ItemCodeModel.findAllByGTIN(gtin);
+
+        if (records.length <= 1) {
+          continue;
+        }
+
+        totalDuplicateRecords += records.length;
+
+        // Score each record
+        const scoredRecords = records.map((record) => ({
+          id: record.id,
+          score: scoreRecord(record),
+          createdAt: record.Created_at,
+          itemCode: record.ItemCode,
+          productSize: record.ProductSize,
+          whLocation: record.WHLocation,
+          binLocation: record.BinLocation,
+        }));
+
+        // Sort by score (highest first), then by Created_at (most recent first)
+        scoredRecords.sort((a, b) => {
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          }
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        const recordToKeep = scoredRecords[0];
+        const recordsToDelete = scoredRecords.slice(1);
+        recordsToBeRemoved += recordsToDelete.length;
+
+        details.push({
+          gtin,
+          totalRecords: records.length,
+          recordsToBeRemoved: recordsToDelete.length,
+          recordToKeep: {
+            id: recordToKeep.id,
+            score: recordToKeep.score,
+            itemCode: recordToKeep.itemCode,
+            productSize: recordToKeep.productSize,
+            whLocation: recordToKeep.whLocation,
+            binLocation: recordToKeep.binLocation,
+          },
+          recordsToDelete: recordsToDelete.map(r => ({
+            id: r.id,
+            score: r.score,
+            itemCode: r.itemCode,
+            productSize: r.productSize,
+            whLocation: r.whLocation,
+            binLocation: r.binLocation,
+          })),
+        });
+
+        // Log progress
+        if ((i + batch.indexOf(duplicate) + 1) % 100 === 0) {
+          console.log(
+            `Progress: ${i + batch.indexOf(duplicate) + 1}/${duplicateGTINs.length} GTINs analyzed`
+          );
+        }
+      }
+    }
+
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+    console.log(
+      `Duplicate check completed: ${duplicateGTINs.length} duplicate GTINs found, ` +
+      `${recordsToBeRemoved} records would be removed in ${duration}s`
+    );
+
+    res.status(200).json(
+      generateResponse(200, true, "Duplicate GTINs analysis completed", {
+        duplicateGTINsFound: duplicateGTINs.length,
+        totalDuplicateRecords,
+        recordsToBeKept: duplicateGTINs.length,
+        recordsToBeRemoved,
+        duration: `${duration}s`,
+        details: details.slice(0, 100), // Return first 100 for reference
+        note: details.length > 100
+          ? `Only first 100 details shown. Total ${details.length} duplicate GTINs found. To see all, check server logs or use pagination.`
+          : null,
+        warning: "⚠️ This is a preview. To actually remove duplicates, use DELETE /api/itemCodes/v1/remove-duplicates",
+      })
+    );
+  } catch (error) {
+    console.error("Error checking duplicates:", error);
     next(error);
   }
 };
@@ -962,6 +1132,58 @@ exports.removeDuplicateGTINs = async (req, res, next) => {
     );
   } catch (error) {
     console.error("Error removing duplicates:", error);
+    next(error);
+  }
+};
+
+exports.deleteAllBarcodes = async (req, res, next) => {
+  try {
+    // Safety check: require confirmation parameter
+    const confirmation = req.query.confirm || req.body.confirm;
+
+    if (confirmation !== "DELETE_ALL_BARCODES") {
+      const error = new CustomError(
+        "Confirmation required. Add query parameter: ?confirm=DELETE_ALL_BARCODES"
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    console.log("⚠️  Starting deletion of ALL barcode records...");
+    const startTime = Date.now();
+
+    // Count records before deletion
+    const totalRecords = await ItemCodeModel.countAll();
+
+    if (totalRecords === 0) {
+      return res.status(200).json(
+        generateResponse(200, true, "No records to delete", {
+          recordsDeleted: 0,
+        })
+      );
+    }
+
+    console.log(`⚠️  Found ${totalRecords} records. Proceeding with deletion...`);
+
+    // Delete all records
+    const result = await ItemCodeModel.deleteAll();
+
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+    console.log(
+      `✅ Deletion completed: ${result.count} records deleted in ${duration}s`
+    );
+
+    res.status(200).json(
+      generateResponse(200, true, "All barcode records deleted successfully", {
+        recordsDeleted: result.count,
+        duration: `${duration}s`,
+        warning: "⚠️ This operation is irreversible. All barcode records have been permanently deleted.",
+      })
+    );
+  } catch (error) {
+    console.error("Error deleting all barcodes:", error);
     next(error);
   }
 };

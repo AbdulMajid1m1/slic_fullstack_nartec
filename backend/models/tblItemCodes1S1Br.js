@@ -295,6 +295,14 @@ class ItemCodeModel {
       },
     });
   }
+
+  static async deleteAll() {
+    return await prisma.tblItemCodes1S1Br.deleteMany({});
+  }
+
+  static async countAll() {
+    return await prisma.tblItemCodes1S1Br.count();
+  }
 }
 
 module.exports = ItemCodeModel;

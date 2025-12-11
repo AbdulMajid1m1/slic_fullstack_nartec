@@ -60,10 +60,21 @@ router.post(
   itemCodesController.bulkImportFromExcel
 );
 
+router.get(
+  "/v1/check-duplicates",
+  itemCodesController.checkDuplicateGTINs
+);
+
 router.delete(
   "/v1/remove-duplicates",
-
+  isAuth,
   itemCodesController.removeDuplicateGTINs
+);
+
+router.delete(
+  "/v1/delete-all",
+  isAuth,
+  itemCodesController.deleteAllBarcodes
 );
 
 module.exports = router;
