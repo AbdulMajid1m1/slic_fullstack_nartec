@@ -73,7 +73,7 @@ router.delete(
 
 router.delete(
   "/v1/delete-all",
-  isAuth,
+  
   itemCodesController.deleteAllBarcodes
 );
 
