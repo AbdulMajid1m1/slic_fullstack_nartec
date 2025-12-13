@@ -71,11 +71,11 @@ router.delete(
   itemCodesController.removeDuplicateGTINs
 );
 
-router.delete(
-  "/v1/delete-all",
+// router.delete(
+//   "/v1/delete-all",
 
-  itemCodesController.deleteAllBarcodes
-);
+//   itemCodesController.deleteAllBarcodes
+// );
 
 router.delete(
   "/v1/delete-without-barcode",
