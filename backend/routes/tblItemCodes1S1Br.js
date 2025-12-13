@@ -73,8 +73,14 @@ router.delete(
 
 router.delete(
   "/v1/delete-all",
-  
+  isAuth,
   itemCodesController.deleteAllBarcodes
+);
+
+router.delete(
+  "/v1/delete-without-barcode",
+  isAuth,
+  itemCodesController.deleteItemsWithoutBarcode
 );
 
 module.exports = router;

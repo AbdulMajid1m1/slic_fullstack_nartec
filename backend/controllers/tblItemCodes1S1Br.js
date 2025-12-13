@@ -1187,3 +1187,57 @@ exports.deleteAllBarcodes = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteItemsWithoutBarcode = async (req, res, next) => {
+  try {
+    // Safety check: require confirmation parameter
+    const confirmation = req.query.confirm || req.body.confirm;
+
+    if (confirmation !== "DELETE_WITHOUT_BARCODE") {
+      const error = new CustomError(
+        "Confirmation required. Add query parameter: ?confirm=DELETE_WITHOUT_BARCODE"
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    console.log("⚠️  Starting deletion of records without barcodes...");
+    const startTime = Date.now();
+
+    // Count records without barcode before deletion
+    const recordsWithoutBarcode = await ItemCodeModel.countWithoutBarcode();
+
+    if (recordsWithoutBarcode === 0) {
+      return res.status(200).json(
+        generateResponse(200, true, "No records without barcode found", {
+          recordsDeleted: 0,
+        })
+      );
+    }
+
+    console.log(
+      `⚠️  Found ${recordsWithoutBarcode} records without barcode. Proceeding with deletion...`
+    );
+
+    // Delete records without barcode
+    const result = await ItemCodeModel.deleteWithoutBarcode();
+
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+    console.log(
+      `✅ Deletion completed: ${result.count} records without barcode deleted in ${duration}s`
+    );
+
+    res.status(200).json(
+      generateResponse(200, true, "Records without barcode deleted successfully", {
+        recordsDeleted: result.count,
+        duration: `${duration}s`,
+        warning: "⚠️ This operation is irreversible. All records without barcode have been permanently deleted.",
+      })
+    );
+  } catch (error) {
+    console.error("Error deleting records without barcode:", error);
+    next(error);
+  }
+};

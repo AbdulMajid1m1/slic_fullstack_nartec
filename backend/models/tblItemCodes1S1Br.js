@@ -303,6 +303,28 @@ class ItemCodeModel {
   static async countAll() {
     return await prisma.tblItemCodes1S1Br.count();
   }
+
+  static async deleteWithoutBarcode() {
+    return await prisma.tblItemCodes1S1Br.deleteMany({
+      where: {
+        OR: [
+          { GTIN: null },
+          { GTIN: '' },
+        ],
+      },
+    });
+  }
+
+  static async countWithoutBarcode() {
+    return await prisma.tblItemCodes1S1Br.count({
+      where: {
+        OR: [
+          { GTIN: null },
+          { GTIN: '' },
+        ],
+      },
+    });
+  }
 }
 
 module.exports = ItemCodeModel;
