@@ -25,7 +25,9 @@ const languageRoutes = require("./routes/languageRoute.js");
 const controlSerialRoutes = require("./routes/controlSerial");
 const supplierRoutes = require("./routes/supplierRoute");
 const path = require("path");
+const { PrismaClient } = require("@prisma/client");
 
+const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -111,6 +113,36 @@ app.use((req, res, next) => {
   error.statusCode = 404;
   next(error);
 });
+
+// Function to empty Arabic column in TblItemCodes1S1Br
+// async function emptyArabicColumn() {
+//   try {
+//     console.log("🔄 Starting to empty ArabicName column...");
+//     const startTime = Date.now();
+
+//     // Update all records to set ArabicName to null
+//     const result = await prisma.tblItemCodes1S1Br.updateMany({
+//       data: {
+//         ArabicName: null,
+//       },
+//     });
+
+//     const endTime = Date.now();
+//     const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+//     console.log(
+//       `✅ ArabicName column emptied successfully! ${result.count} records updated in ${duration}s`
+//     );
+
+//     return result;
+//   } catch (error) {
+//     console.error("❌ Error emptying ArabicName column:", error);
+//     throw error;
+//   }
+// }
+
+// Uncomment the line below to execute the function when server starts
+// emptyArabicColumn();
 
 app.listen(port, function () {
   console.log("Server is running on port " + port);
