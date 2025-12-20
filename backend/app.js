@@ -82,6 +82,57 @@ app.get("/test", (req, res) => {
   res.send(barcod3);
 });
 
+// Function to empty Arabic column in TblItemCodes1S1Br
+async function emptyArabicColumn() {
+  try {
+    console.log("🔄 Starting to empty ArabicName column...");
+    const startTime = Date.now();
+
+    // Update all records to set ArabicName to null
+    const result = await prisma.tblItemCodes1S1Br.updateMany({
+      data: {
+        ArabicName: null,
+      },
+    });
+
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+    console.log(
+      `✅ ArabicName column emptied successfully! ${result.count} records updated in ${duration}s`
+    );
+
+    return result;
+  } catch (error) {
+    console.error("❌ Error emptying ArabicName column:", error);
+    throw error;
+  }
+}
+
+// API endpoint to empty Arabic column
+app.post("/api/admin/empty-arabic", async (req, res) => {
+  try {
+    const result = await emptyArabicColumn();
+    res.status(200).json({
+      success: true,
+      message: "ArabicName column emptied successfully",
+      recordsUpdated: result.count,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to empty ArabicName column",
+      error: error.message,
+    });
+  }
+});
+
+// Catch-all route for serving frontend (MUST be AFTER all API routes)
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+});
+
+// Error handler (MUST be LAST)
 app.use((error, req, res, next) => {
   console.log(error);
   let status = 500;
@@ -100,50 +151,43 @@ app.use((error, req, res, next) => {
     .json(response(status, success, message, data, error?.stack));
 });
 
-// app.get("*", (req, res) => {
-//   res.sendFile(__dirname + "/public/index.html");
-// });
-
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "public", "index.html"));
-});
-
-app.use((req, res, next) => {
-  const error = new CustomError(`No route found for ${req.originalUrl}`);
-  error.statusCode = 404;
-  next(error);
-});
-
-// Function to empty Arabic column in TblItemCodes1S1Br
-// async function emptyArabicColumn() {
-//   try {
-//     console.log("🔄 Starting to empty ArabicName column...");
-//     const startTime = Date.now();
-
-//     // Update all records to set ArabicName to null
-//     const result = await prisma.tblItemCodes1S1Br.updateMany({
-//       data: {
-//         ArabicName: null,
-//       },
-//     });
-
-//     const endTime = Date.now();
-//     const duration = ((endTime - startTime) / 1000).toFixed(2);
-
-//     console.log(
-//       `✅ ArabicName column emptied successfully! ${result.count} records updated in ${duration}s`
-//     );
-
-//     return result;
-//   } catch (error) {
-//     console.error("❌ Error emptying ArabicName column:", error);
-//     throw error;
-//   }
-// }
-
-// Uncomment the line below to execute the function when server starts
-// emptyArabicColumn();
-
-app.listen(port, function () {
+const server = app.listen(port, function () {
   console.log("Server is running on port " + port);
 });
+
+// Graceful shutdown handling for PM2
+process.on("SIGINT", async () => {
+  console.log("\n🔄 SIGINT received: Starting graceful shutdown...");
+  await gracefulShutdown("SIGINT");
+});
+
+process.on("SIGTERM", async () => {
+  console.log("\n🔄 SIGTERM received: Starting graceful shutdown...");
+  await gracefulShutdown("SIGTERM");
+});
+
+async function gracefulShutdown(signal) {
+  console.log(`⏳ ${signal} - Closing server...`);
+
+  // Close server to stop accepting new connections
+  server.close(async () => {
+    console.log("✓ HTTP server closed");
+
+    // Disconnect Prisma
+    try {
+      await prisma.$disconnect();
+      console.log("✓ Database connections closed");
+    } catch (err) {
+      console.error("✗ Error disconnecting from database:", err);
+    }
+
+    console.log("✓ Graceful shutdown complete");
+    process.exit(0);
+  });
+
+  // Force shutdown after 10 seconds
+  setTimeout(() => {
+    console.error("⚠ Forced shutdown after timeout");
+    process.exit(1);
+  }, 10000);
+}
