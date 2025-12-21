@@ -11,13 +11,13 @@ pipeline {
                         env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_dev"
                         env.APP_NAME = 'slic_dev_backend'
                         env.BACKEND_PORT = '1100'
-                        echo "📁 Environment set for DEV branch"
+                        echo '📁 Environment set for DEV branch'
                     } else if (env.BRANCH_NAME == 'master') {
                         env.ENV_FILE_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\jenkinsEnv\\slic_pos\\prod\\.env"
                         env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_prod"
                         env.APP_NAME = 'slic_prod_backend'
                         env.BACKEND_PORT = '1101'
-                        echo "📁 Environment set for PROD branch"
+                        echo '📁 Environment set for PROD branch'
                     } else {
                         error "❌ Unsupported branch: ${env.BRANCH_NAME}"
                     }
@@ -33,18 +33,18 @@ pipeline {
             steps {
                 echo "📦 Checking out branch: ${env.BRANCH_NAME}"
                 checkout scmGit(
-                    branches: [[name: "*/${env.BRANCH_NAME}"]], 
+                    branches: [[name: "*/${env.BRANCH_NAME}"]],
                     extensions: [
                         [$class: 'CleanBeforeCheckout'],
                         [$class: 'CleanCheckout'],
                         [$class: 'PruneStaleBranch']
                     ],
                     userRemoteConfigs: [[
-                        credentialsId: 'dev_majid_new_github_credentials', 
+                        credentialsId: 'dev_majid_new_github_credentials',
                         url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git'
                     ]]
                 )
-                echo "✅ Current commit:"
+                echo '✅ Current commit:'
                 bat 'git log -1 --oneline'
             }
         }
@@ -53,11 +53,11 @@ pipeline {
             steps {
                 script {
                     echo "📂 Copying workspace to ${env.TARGET_PROJECT_PATH}..."
-                    bat """
+                    bat '''
                         if exist "${env.TARGET_PROJECT_PATH}" rmdir /s /q "${env.TARGET_PROJECT_PATH}"
                         mkdir "${env.TARGET_PROJECT_PATH}"
                         xcopy /E /I /H /Y "%WORKSPACE%\\*" "${env.TARGET_PROJECT_PATH}"
-                    """
+                    '''
                     echo "✅ Workspace copied successfully to ${env.TARGET_PROJECT_PATH}"
                 }
             }
@@ -82,7 +82,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\frontend") {
                         echo '🗑️ Cleaning previous build artifacts...'
                         bat 'if exist "dist" rmdir /s /q dist'
-                        
+
                         echo '🔨 Building frontend application...'
                         bat 'npm run build'
                         echo '✅ Frontend built successfully'
@@ -145,7 +145,7 @@ pipeline {
                             )
                             copy "${env.ENV_FILE_PATH}" ".env"
                         """
-                        echo "✅ Environment file copied successfully"
+                        echo '✅ Environment file copied successfully'
                     }
                 }
             }
@@ -193,12 +193,17 @@ pipeline {
         stage('🛑 Stop Existing Backend') {
             steps {
                 script {
-                    echo "🛑 Stopping existing PM2 process: ${env.APP_NAME}"
-                    bat """
-                        pm2 stop ${env.APP_NAME} || echo Process not running
-                        pm2 delete ${env.APP_NAME} || echo Process not found
-                    """
-                    echo "✅ Existing process stopped"
+                    echo "🛑 Checking and stopping existing PM2 process: ${env.APP_NAME}"
+                    def stopResult = bat(script: "pm2 describe ${env.APP_NAME} 2>nul", returnStatus: true)
+
+                    if (stopResult == 0) {
+                        echo "Process ${env.APP_NAME} found, stopping..."
+                        bat "pm2 stop ${env.APP_NAME}"
+                        bat "pm2 delete ${env.APP_NAME}"
+                        echo '✅ Existing process stopped and deleted'
+            } else {
+                        echo '✅ No existing process found, proceeding with fresh start'
+                    }
                 }
             }
         }
@@ -209,8 +214,8 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\backend") {
                         echo "🚀 Starting PM2 process: ${env.APP_NAME}"
                         bat "pm2 start app.js --name ${env.APP_NAME}"
-                        bat "pm2 save"
-                        echo "✅ Backend started successfully"
+                        bat 'pm2 save'
+                        echo '✅ Backend started successfully'
                     }
                 }
             }
@@ -220,7 +225,7 @@ pipeline {
             steps {
                 script {
                     echo '🔍 Verifying PM2 process...'
-                    bat "pm2 list"
+                    bat 'pm2 list'
                     bat "pm2 info ${env.APP_NAME}"
                     echo '✅ Deployment verified'
                 }
