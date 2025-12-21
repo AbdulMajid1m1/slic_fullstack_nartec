@@ -53,11 +53,11 @@ pipeline {
             steps {
                 script {
                     echo "📂 Copying workspace to ${env.TARGET_PROJECT_PATH}..."
-                    bat '''
+                    bat """
                         if exist "${env.TARGET_PROJECT_PATH}" rmdir /s /q "${env.TARGET_PROJECT_PATH}"
                         mkdir "${env.TARGET_PROJECT_PATH}"
                         xcopy /E /I /H /Y "%WORKSPACE%\\*" "${env.TARGET_PROJECT_PATH}"
-                    '''
+                    """
                     echo "✅ Workspace copied successfully to ${env.TARGET_PROJECT_PATH}"
                 }
             }
@@ -69,7 +69,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\frontend") {
                         echo '📥 Installing frontend dependencies...'
                         bat 'if exist "node_modules" rmdir /s /q node_modules'
-                        bat 'npm i'
+                        bat 'npm install'
                         echo '✅ Frontend dependencies installed'
                     }
                 }
@@ -126,7 +126,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\backend") {
                         echo '📥 Installing backend dependencies...'
                         bat 'if exist "node_modules" rmdir /s /q node_modules'
-                        bat 'npm i'
+                        bat 'npm install'
                         echo '✅ Backend dependencies installed'
                     }
                 }
@@ -193,17 +193,13 @@ pipeline {
         stage('🛑 Stop Existing Backend') {
             steps {
                 script {
-                    echo "🛑 Checking and stopping existing PM2 process: ${env.APP_NAME}"
-                    def stopResult = bat(script: "pm2 describe ${env.APP_NAME} 2>nul", returnStatus: true)
-
-                    if (stopResult == 0) {
-                        echo "Process ${env.APP_NAME} found, stopping..."
-                        bat "pm2 stop ${env.APP_NAME}"
-                        bat "pm2 delete ${env.APP_NAME}"
-                        echo '✅ Existing process stopped and deleted'
-            } else {
-                        echo '✅ No existing process found, proceeding with fresh start'
-                    }
+                    echo "🛑 Stopping existing PM2 process: ${env.APP_NAME}"
+                    bat """
+                        pm2 stop ${env.APP_NAME} 2>nul
+                        pm2 delete ${env.APP_NAME} 2>nul
+                        exit /b 0
+                    """
+                    echo '✅ Ready for deployment'
                 }
             }
         }
