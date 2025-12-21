@@ -194,11 +194,13 @@ pipeline {
             steps {
                 script {
                     echo "🛑 Stopping existing PM2 process: ${env.APP_NAME}"
-                    bat """
-                        pm2 stop ${env.APP_NAME} 2>nul
-                        pm2 delete ${env.APP_NAME} 2>nul
-                        exit /b 0
-                    """
+                    
+                    // Stop the process (ignore errors)
+                    bat(script: "pm2 stop ${env.APP_NAME}", returnStatus: true)
+                    
+                    // Delete the process (ignore errors)
+                    bat(script: "pm2 delete ${env.APP_NAME}", returnStatus: true)
+                    
                     echo '✅ Ready for deployment'
                 }
             }
