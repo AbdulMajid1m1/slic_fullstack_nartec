@@ -10,11 +10,13 @@ pipeline {
                         env.ENV_FILE_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\jenkinsEnv\\slic_pos\\dev\\.env"
                         env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_dev"
                         env.APP_NAME = 'slic_dev_backend'
+                        env.BACKEND_PORT = '1100'
                         echo "📁 Environment set for DEV branch"
                     } else if (env.BRANCH_NAME == 'master') {
                         env.ENV_FILE_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\jenkinsEnv\\slic_pos\\prod\\.env"
                         env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_prod"
                         env.APP_NAME = 'slic_prod_backend'
+                        env.BACKEND_PORT = '1101'
                         echo "📁 Environment set for PROD branch"
                     } else {
                         error "❌ Unsupported branch: ${env.BRANCH_NAME}"
@@ -22,6 +24,7 @@ pipeline {
                     echo "✅ Using environment file: ${env.ENV_FILE_PATH}"
                     echo "✅ Target project path: ${env.TARGET_PROJECT_PATH}"
                     echo "✅ PM2 App Name: ${env.APP_NAME}"
+                    echo "✅ Backend Port: ${env.BACKEND_PORT}"
                 }
             }
         }
@@ -88,6 +91,35 @@ pipeline {
             }
         }
 
+        stage('📝 Create web.config - Frontend') {
+            steps {
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\frontend\\dist") {
+                        echo '📝 Creating web.config for frontend SPA...'
+                        def frontendWebConfig = '''<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="SPA Routes" stopProcessing="true">
+          <match url=".*" />
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="/" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>'''
+                        writeFile file: 'web.config', text: frontendWebConfig
+                        echo '✅ Frontend web.config created successfully'
+                    }
+                }
+            }
+        }
+
         stage('📁 Install Dependencies - Backend') {
             steps {
                 script {
@@ -114,6 +146,33 @@ pipeline {
                             copy "${env.ENV_FILE_PATH}" ".env"
                         """
                         echo "✅ Environment file copied successfully"
+                    }
+                }
+            }
+        }
+
+        stage('📝 Create web.config - Backend') {
+            steps {
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\backend") {
+                        echo "📝 Creating web.config for backend reverse proxy (Port: ${env.BACKEND_PORT})..."
+                        def backendWebConfig = """<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <system.webServer>
+        <rewrite>
+            <rules>
+                <rule name="ReverseProxyInboundRule1" stopProcessing="true">
+                    <match url="(.*)" />
+                    <!-- ${env.BRANCH_NAME == 'dev' ? 'Development' : 'Production'} URL PORT -->
+                    <!-- 1101 is for the production port and 1100 for the dev -->
+                    <action type="Rewrite" url="http://localhost:${env.BACKEND_PORT}/{R:1}" />
+                </rule>
+            </rules>
+        </rewrite>
+    </system.webServer>
+</configuration>"""
+                        writeFile file: 'web.config', text: backendWebConfig
+                        echo "✅ Backend web.config created successfully with port ${env.BACKEND_PORT}"
                     }
                 }
             }
@@ -177,6 +236,7 @@ pipeline {
                 ✅ SLIC POS DEPLOYMENT SUCCESSFUL
                 ✅ Branch: ${env.BRANCH_NAME}
                 ✅ App Name: ${env.APP_NAME}
+                ✅ Backend Port: ${env.BACKEND_PORT}
                 ✅ Project Path: ${env.TARGET_PROJECT_PATH}
                 ✅ Time: ${new Date()}
                 ✅ ========================================
