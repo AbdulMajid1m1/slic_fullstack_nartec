@@ -69,7 +69,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\frontend") {
                         echo '📥 Installing frontend dependencies...'
                         bat 'if exist "node_modules" rmdir /s /q node_modules'
-                        bat 'npm ci'
+                        bat 'npm i'
                         echo '✅ Frontend dependencies installed'
                     }
                 }
@@ -126,7 +126,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\backend") {
                         echo '📥 Installing backend dependencies...'
                         bat 'if exist "node_modules" rmdir /s /q node_modules'
-                        bat 'npm ci'
+                        bat 'npm i'
                         echo '✅ Backend dependencies installed'
                     }
                 }
