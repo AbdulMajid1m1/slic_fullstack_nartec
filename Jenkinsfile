@@ -5,119 +5,198 @@ pipeline {
         stage('Set Environment Variables') {
             steps {
                 script {
-                    // Set environment variables based on the branch
+                    // Set environment file path and target path based on the branch
                     if (env.BRANCH_NAME == 'dev') {
-                        env.NODE_ENV = 'development'
-                        env.DATABASE_URL = "${env.slic_dev_DATABASE_URL}"
-                        env.PORT = "${env.slic_dev_PORT}"
-                        env.JWT_SECRET = "${env.slic_dev_JWT_SECRET}"
-                        env.SLIC_ERP_URL = 'https://slicuat05api.oneerpcloud.com'
-                        env.EMAIL_FROM = 'helpdeskgstsa@gmail.com'
-                        env.EMAIL_APP_PASSWORD = 'rgar surc lzrk nkaf'
+                        env.ENV_FILE_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\jenkinsEnv\\slic_pos\\dev\\.env"
+                        env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_dev"
+                        env.APP_NAME = 'slic_dev_backend'
+                        echo "📁 Environment set for DEV branch"
                     } else if (env.BRANCH_NAME == 'master') {
-                        env.NODE_ENV = 'master'
-                        env.DATABASE_URL = "${env.slic_prod_DATABASE_URL}"
-                        env.PORT = "${env.slic_prod_PORT}"
-                        env.JWT_SECRET = "${env.slic_prod_JWT_SECRET}"
-                        env.SLIC_ERP_URL = 'https://slicapi.oneerpcloud.com'
-                        env.EMAIL_FROM = 'helpdeskgstsa@gmail.com'
-                        env.EMAIL_APP_PASSWORD = 'rgar surc lzrk nkaf'
+                        env.ENV_FILE_PATH = "C:\\ProgramData\\Jenkins\\.jenkins\\jenkinsEnv\\slic_pos\\prod\\.env"
+                        env.TARGET_PROJECT_PATH = "C:\\Users\\Administrator\\Desktop\\JENKINS_PROJECTS\\slic_pos_prod"
+                        env.APP_NAME = 'slic_prod_backend'
+                        echo "📁 Environment set for PROD branch"
                     } else {
-                        error "Unsupported branch: ${env.BRANCH_NAME}"
+                        error "❌ Unsupported branch: ${env.BRANCH_NAME}"
                     }
-                    echo "Environment set for ${env.BRANCH_NAME} branch"
-                    echo "DATABASE_URL=${env.DATABASE_URL}"
+                    echo "✅ Using environment file: ${env.ENV_FILE_PATH}"
+                    echo "✅ Target project path: ${env.TARGET_PROJECT_PATH}"
+                    echo "✅ PM2 App Name: ${env.APP_NAME}"
                 }
             }
         }
 
-        stage('Checkout') {
+        stage('📦 Checkout') {
+            steps {
+                echo "📦 Checking out branch: ${env.BRANCH_NAME}"
+                checkout scmGit(
+                    branches: [[name: "*/${env.BRANCH_NAME}"]], 
+                    extensions: [
+                        [$class: 'CleanBeforeCheckout'],
+                        [$class: 'CleanCheckout'],
+                        [$class: 'PruneStaleBranch']
+                    ],
+                    userRemoteConfigs: [[
+                        credentialsId: 'dev_majid_new_github_credentials', 
+                        url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git'
+                    ]]
+                )
+                echo "✅ Current commit:"
+                bat 'git log -1 --oneline'
+            }
+        }
+
+        stage('📂 Copy to Target Directory') {
             steps {
                 script {
-                    echo "Checking out the branch: ${env.BRANCH_NAME}"
-                    checkout scmGit(branches: [[name: "*/${env.BRANCH_NAME}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'usernameCredentials', url: 'https://github.com/AbdulMajid1m1/slic_fullstack_nartec.git']])
+                    echo "📂 Copying workspace to ${env.TARGET_PROJECT_PATH}..."
+                    bat """
+                        if exist "${env.TARGET_PROJECT_PATH}" rmdir /s /q "${env.TARGET_PROJECT_PATH}"
+                        mkdir "${env.TARGET_PROJECT_PATH}"
+                        xcopy /E /I /H /Y "%WORKSPACE%\\*" "${env.TARGET_PROJECT_PATH}"
+                    """
+                    echo "✅ Workspace copied successfully to ${env.TARGET_PROJECT_PATH}"
                 }
             }
         }
 
-        stage('Install Dependencies - Frontend') {
+        stage('📁 Install Dependencies - Frontend') {
             steps {
-                dir('frontend') {
-                    bat 'npm install'
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\frontend") {
+                        echo '📥 Installing frontend dependencies...'
+                        bat 'if exist "node_modules" rmdir /s /q node_modules'
+                        bat 'npm ci'
+                        echo '✅ Frontend dependencies installed'
+                    }
                 }
             }
         }
 
-        stage('Build - Frontend') {
+        stage('⚙️ Build - Frontend') {
             steps {
-                dir('frontend') {
-                    bat 'npm run build'
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\frontend") {
+                        echo '🗑️ Cleaning previous build artifacts...'
+                        bat 'if exist "dist" rmdir /s /q dist'
+                        
+                        echo '🔨 Building frontend application...'
+                        bat 'npm run build'
+                        echo '✅ Frontend built successfully'
+                    }
                 }
             }
         }
 
-        stage('Install Dependencies - Backend') {
+        stage('📁 Install Dependencies - Backend') {
             steps {
-                dir('backend') {
-                    bat 'npm install'
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\backend") {
+                        echo '📥 Installing backend dependencies...'
+                        bat 'if exist "node_modules" rmdir /s /q node_modules'
+                        bat 'npm ci'
+                        echo '✅ Backend dependencies installed'
+                    }
                 }
             }
         }
 
-        stage('List Backend Files') {
+        stage('📋 Setup Environment File - Backend') {
             steps {
-                dir('backend') {
-                    bat 'dir'  // Lists the contents of the backend directory
-                }
-            }
-        }
-
-        stage('Create Environment File - Backend') {
-            steps {
-                dir('backend') {
-                    script {
-                        writeFile file: '.env', text: """
-                            NODE_ENV=${env.NODE_ENV}
-                            DATABASE_URL=${env.DATABASE_URL}
-                            PORT=${env.PORT}
-                            JWT_SECRET=${env.JWT_SECRET}
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\backend") {
+                        echo "📁 Copying .env file from ${env.ENV_FILE_PATH}..."
+                        bat """
+                            if not exist "${env.ENV_FILE_PATH}" (
+                                echo ❌ Environment file not found at ${env.ENV_FILE_PATH}
+                                exit /b 1
+                            )
+                            copy "${env.ENV_FILE_PATH}" ".env"
                         """
+                        echo "✅ Environment file copied successfully"
                     }
                 }
             }
         }
 
-        stage('Stop Existing Backend') {
+        stage('🗂️ Update Prisma Schema') {
             steps {
                 script {
-                    def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
-                    def processStatus = bat(script: 'pm2 list', returnStdout: true).trim()
-                    if (processStatus.contains(appName)) {
-                        bat "pm2 stop ${appName} || exit 0"
-                        bat "pm2 delete ${appName} || exit 0"
+                    dir("${env.TARGET_PROJECT_PATH}\\backend") {
+                        echo '🔄 Generating Prisma client...'
+                        bat 'npx prisma generate'
+                        echo '✅ Prisma client generated successfully'
                     }
                 }
             }
         }
 
-        stage('Update Prisma Schema') {
+        stage('🛑 Stop Existing Backend') {
             steps {
-                dir('backend') {
-                    bat 'npx prisma generate'
+                script {
+                    echo "🛑 Stopping existing PM2 process: ${env.APP_NAME}"
+                    bat """
+                        pm2 stop ${env.APP_NAME} || echo Process not running
+                        pm2 delete ${env.APP_NAME} || echo Process not found
+                    """
+                    echo "✅ Existing process stopped"
                 }
             }
         }
 
-        stage('Start Backend') {
+        stage('🚀 Start Backend') {
             steps {
-                dir('backend') {
-                    script {
-                        def appName = env.BRANCH_NAME == 'dev' ? 'slic_dev_backend' : 'slic_prod_backend'
-                        def port = env.PORT
-                        bat "pm2 start app.js --name ${appName} --env ${env.BRANCH_NAME} -- -p ${port}"
+                script {
+                    dir("${env.TARGET_PROJECT_PATH}\\backend") {
+                        echo "🚀 Starting PM2 process: ${env.APP_NAME}"
+                        bat "pm2 start app.js --name ${env.APP_NAME}"
+                        bat "pm2 save"
+                        echo "✅ Backend started successfully"
                     }
                 }
             }
+        }
+
+        stage('✅ Verify Deployment') {
+            steps {
+                script {
+                    echo '🔍 Verifying PM2 process...'
+                    bat "pm2 list"
+                    bat "pm2 info ${env.APP_NAME}"
+                    echo '✅ Deployment verified'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                echo """
+                ✅ ========================================
+                ✅ SLIC POS DEPLOYMENT SUCCESSFUL
+                ✅ Branch: ${env.BRANCH_NAME}
+                ✅ App Name: ${env.APP_NAME}
+                ✅ Project Path: ${env.TARGET_PROJECT_PATH}
+                ✅ Time: ${new Date()}
+                ✅ ========================================
+                """
+            }
+        }
+        failure {
+            script {
+                echo """
+                ❌ ========================================
+                ❌ SLIC POS DEPLOYMENT FAILED
+                ❌ Branch: ${env.BRANCH_NAME}
+                ❌ Please check logs for details
+                ❌ Time: ${new Date()}
+                ❌ ========================================
+                """
+            }
+        }
+        always {
+            echo "📊 Pipeline finished at: ${new Date()}"
         }
     }
 }
