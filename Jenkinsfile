@@ -246,6 +246,7 @@ pipeline {
                 """
             }
         }
+        
         failure {
             script {
                 echo """
