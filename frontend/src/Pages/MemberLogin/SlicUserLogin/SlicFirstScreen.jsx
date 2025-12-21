@@ -45,7 +45,7 @@ const SlicFirstScreen = () => {
         JSON.stringify(response?.data?.token)
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -81,7 +81,7 @@ const SlicFirstScreen = () => {
       const flattenedData = flattenCompanies(res.data);
       setCompanies(flattenedData);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error(
         error?.response?.data?.error ||
           error?.response?.data?.message ||
@@ -122,7 +122,7 @@ const SlicFirstScreen = () => {
       const flattenedData = flattenLocations(res.data);
       setLocations(flattenedData);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error(
         error?.response?.data?.error ||
           error?.response?.data?.message ||
@@ -239,7 +239,7 @@ const SlicFirstScreen = () => {
       });
         const adminData = response?.data;
          
-        console.log(adminData);
+        // console.log(adminData);
       
         sessionStorage.setItem('slicUserData', JSON.stringify(adminData));
         // fetchRoles(adminData.data?.user?.UserLoginID);
@@ -250,7 +250,7 @@ const SlicFirstScreen = () => {
         setLoading(false);
     } catch (error) {
       // console.log(error);
-      toast.error(error?.response?.data?.error || error?.response?.data?.message || "Something went wrong!");
+      toast.error(error?.response?.data?.message || error?.response?.data?.error || "Something went wrong!");
       setLoading(false);
     }
   };
