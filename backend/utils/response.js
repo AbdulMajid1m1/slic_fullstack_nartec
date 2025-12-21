@@ -4,7 +4,7 @@ function response(status, success, message, data = null, error = null) {
     success: success,
     message: message,
     data: data,
-      error: error,
+    error: error,
   };
 }
 

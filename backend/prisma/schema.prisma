@@ -56,6 +56,10 @@ model ControlSerial{
     supplierId                  String?
     supplier                    Supplier? @relation(fields: [supplierId], references: [id])
 
+    // Bin Location relation
+    binLocationId              String?
+    binLocation                BinLocation? @relation(fields: [binLocationId], references: [id])
+
     createdAt                   DateTime @default(now())
     updatedAt                   DateTime @updatedAt
 }
@@ -73,6 +77,44 @@ model Supplier {
 
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
+}
+
+model BinLocation {
+  id              String    @id @default(cuid())
+
+  // General Information
+  groupWarehouse  String?   
+  zoneCode        String?   
+  zones           String?   
+  zoneName        String?   
+  binNumber       String?   
+  zoned           String?   
+  zoneType        String?   
+  binType         String?   
+
+  // Measurements
+  binHeight       Float?
+  binRow          String?   
+  binWidth        Float?
+  binTotalSize    Float?
+
+  // Identification
+  gln             String?   
+  longitude       Float?
+  latitude        Float?
+  sgln            String?   
+  mapLocation     String?   
+
+  // Capacity
+  minQuantity     Int?
+  availableQty    Int?
+  maxQuantity     Int?
+  capacityUsage   Float?    @default(0)
+
+  controlSerials  ControlSerial[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model TblBarSeriesNo {
