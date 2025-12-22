@@ -388,6 +388,20 @@ const POS = () => {
           );
           const secondApiData = secondApiResponse?.data;
 
+          // Check if the response contains an error message even with 200 status
+          if (secondApiData?.Message && secondApiData.Message.includes("No Records Found")) {
+            toast.error(secondApiData.Message);
+            setBarcode("");
+            return;
+          }
+
+          // Check if secondApiData is an array and has data
+          if (!Array.isArray(secondApiData) || secondApiData.length === 0) {
+            toast.error("No price information found for this item");
+            setBarcode("");
+            return;
+          }
+
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
 
@@ -428,7 +442,6 @@ const POS = () => {
                 ItemSize: ProductSize,
                 Qty: 1,
                 ItemPrice: itemPrice,
-                // VAT: vat,
                 VAT: (itemPrice * taxAmount) / 100,
               };
               newData = [...prevData, newItem];
@@ -436,11 +449,10 @@ const POS = () => {
 
             // Calculate total quantity across all items
             const totalQty = newData.reduce((sum, item) => sum + item.Qty, 0);
-            console.log("Total Quantity:", totalQty);
+            // console.log("Total Quantity:", totalQty);
 
             // Prevent more than 3 items
             const isBuy2Get1Customer = selectedCustomeNameWithDirectInvoice?.CUST_NAME?.includes("Buy 2 Get 1 Free");
-            // const isBuy2Get1Customer = true;
             if (isBuy2Get1Customer && totalQty > 3) {
               toast.error("Maximum 3 items allowed for Buy 2 Get 1 Free offer");
               setBarcode("");
@@ -451,12 +463,12 @@ const POS = () => {
             const discount = calculateDiscount(newData, totalQty);
             const discountPerItem = totalQty === 3 ? discount / totalQty : 0;
             setDiscountedTotal(discount);
-            console.log("discount", discount)
+            // console.log("discount", discount)
 
             // Update totals for all items including discount
             return newData.map(item => {
               const discountedPrice = item.ItemPrice - discountPerItem;
-              const newVat = (discountedPrice * taxAmount) / 100; // Recalculate VAT based on discounted price
+              const newVat = (discountedPrice * taxAmount) / 100;
 
               return {
                 ...item,
@@ -495,6 +507,19 @@ const POS = () => {
             );
 
             const stockData = stockStatusResponse?.data;
+
+            // Check if the stock status response contains an error message
+            if (stockData?.Message && stockData.Message.includes("No Records Found")) {
+              toast.error(stockData.Message);
+              return;
+            }
+
+            // Check if stockData is an array and has data
+            if (!Array.isArray(stockData) || stockData.length === 0) {
+              toast.error("No stock information found for this item");
+              return;
+            }
+
             const availableStock = stockData[0]?.STOCKSTATUS?.FREE_STOCK;
 
             // Update the grid with available stock info only for the current item
@@ -532,6 +557,7 @@ const POS = () => {
               stockStatusError?.response?.data?.message ||
               "An error occurred while fetching stock status"
             );
+            setBarcode("");
           }
 
           setBarcode("");
@@ -540,6 +566,7 @@ const POS = () => {
             secondApiError?.response?.data?.message ||
             "An error occurred while calling the second API"
           );
+          setBarcode("");
         }
       } else {
         setData([]);
@@ -584,12 +611,11 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      // console.log(data)
-      if (data) {
-        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } =
-          data;
 
-        // call the second api later in their
+      if (data) {
+        const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } = data;
+
+        // call the second api
         const secondApiBody = {
           filter: {
             P_COMP_CODE: "SLIC",
@@ -614,7 +640,22 @@ const POS = () => {
             }
           );
           const secondApiData = secondApiResponse?.data;
-          console.log(secondApiData);
+          
+          // Check if the response contains an error message even with 200 status
+          if (secondApiData?.Message && secondApiData.Message.includes("No Records Found")) {
+            toast.error(secondApiData.Message);
+            setBarcode("");
+            return;
+          }
+
+          // Check if secondApiData is an array and has data
+          if (!Array.isArray(secondApiData) || secondApiData.length === 0) {
+            toast.error("No price information found for this item");
+            setBarcode("");
+            return;
+          }
+
+          // console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
@@ -622,9 +663,10 @@ const POS = () => {
           const itemRates = secondApiData.map(
             (item) => item?.PRICELIST?.PLI_RATE
           );
+          
           // Store the array of rates under the respective ItemCode
           storedData[ItemCode] = itemRates;
-         
+        
           sessionStorage.setItem(
             "secondApiResponses",
             JSON.stringify(storedData)
@@ -633,7 +675,7 @@ const POS = () => {
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
           const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
-          console.log(itemPrice);
+          // console.log(itemPrice);
 
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
@@ -645,9 +687,9 @@ const POS = () => {
               const updatedData = [...prevData];
               updatedData[existingItemIndex] = {
                 ...updatedData[existingItemIndex],
-                Qty: updatedData[existingItemIndex].Qty + 1, // Increment quantity by 1
+                Qty: updatedData[existingItemIndex].Qty + 1,
                 Total:
-                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat), // Update total with the new quantity
+                  (updatedData[existingItemIndex].Qty + 1) * (itemPrice + vat),
               };
               return updatedData;
             } else {
@@ -674,8 +716,8 @@ const POS = () => {
             secondApiError?.response?.data?.message ||
             "An error occurred while calling the second API"
           );
+          setBarcode("");
         }
-        setBarcode("");
       } else {
         setDSalesNoInvoiceData([]);
       }
@@ -701,12 +743,12 @@ const POS = () => {
         `/itemCodes/v2/searchByGTIN?GTIN=${barcode}`
       );
       const data = response?.data?.data;
-      // console.log(data)
+
       if (data) {
         const { ItemCode, ProductSize, GTIN, EnglishName, ArabicName, id } =
           data;
 
-        // call the second api later in their
+        // call the second api
         const secondApiBody = {
           filter: {
             P_COMP_CODE: "SLIC",
@@ -731,6 +773,21 @@ const POS = () => {
             }
           );
           const secondApiData = secondApiResponse?.data;
+
+          // Check if the response contains an error message even with 200 status
+          if (secondApiData?.Message && secondApiData.Message.includes("No Records Found")) {
+            toast.error(secondApiData.Message);
+            setBarcode("");
+            return;
+          }
+
+          // Check if secondApiData is an array and has data
+          if (!Array.isArray(secondApiData) || secondApiData.length === 0) {
+            toast.error("No price information found for this item");
+            setBarcode("");
+            return;
+          }
+
           console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
@@ -741,15 +798,13 @@ const POS = () => {
           );
           // Store the array of rates under the respective ItemCode
           storedData[ItemCode] = itemRates;
-          // storedData[ItemCode] = secondApiData;
 
           sessionStorage.setItem(
             "secondApiResponses",
             JSON.stringify(storedData)
           );
 
-          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0); // Sum of all item prices
-          // const itemPrice = 250.0; // Hardcoded for now, ideally fetched from the second API.
+          const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
           const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
           console.log(itemPrice);
@@ -792,8 +847,8 @@ const POS = () => {
             secondApiError?.response?.data?.message ||
             "An error occurred while calling the second API"
           );
+          setBarcode("");
         }
-        setBarcode("");
       } else {
         setDSalesNoInvoiceData([]);
       }
