@@ -553,26 +553,41 @@ const POS = () => {
             });
 
           } catch (stockStatusError) {
-            toast.error(
-              stockStatusError?.response?.data?.message ||
-              "An error occurred while fetching stock status"
-            );
+            const errorMessage = 
+              stockStatusError?.response?.data || 
+              stockStatusError?.response?.data?.message || 
+              stockStatusError?.response?.data?.Message ||
+              stockStatusError?.message ||
+              "An error occurred while fetching stock status";
+            
+            toast.error(errorMessage);
             setBarcode("");
           }
 
           setBarcode("");
         } catch (secondApiError) {
-          toast.error(
-            secondApiError?.response?.data?.message ||
-            "An error occurred while calling the second API"
-          );
+          const errorMessage = 
+            secondApiError?.response?.data || 
+            secondApiError?.response?.data?.message || 
+            secondApiError?.response?.data?.Message ||
+            secondApiError?.message ||
+            "An error occurred while calling the second API";
+          
+          toast.error(errorMessage);
           setBarcode("");
         }
       } else {
         setData([]);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "An error occurred");
+      const errorMessage = 
+        error?.response?.data || 
+        error?.response?.data?.message || 
+        error?.response?.data?.Message ||
+        error?.message ||
+        "An error occurred";
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -712,22 +727,32 @@ const POS = () => {
             }
           });
         } catch (secondApiError) {
-          toast.error(
-            secondApiError?.response?.data?.message ||
-            "An error occurred while calling the second API"
-          );
+          const errorMessage = 
+            secondApiError?.response?.data || 
+            secondApiError?.response?.data?.message || 
+            secondApiError?.response?.data?.Message ||
+            secondApiError?.message ||
+            "An error occurred while calling the second API";
+          
+          toast.error(errorMessage);
           setBarcode("");
         }
       } else {
         setDSalesNoInvoiceData([]);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "An error occurred");
+      const errorMessage = 
+        error?.response?.data || 
+        error?.response?.data?.message || 
+        error?.response?.data?.Message ||
+        error?.message ||
+        "An error occurred";
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   // Btoc Customer Function
   const handleGetBtocCustomerBarcodes = async (e) => {
@@ -788,7 +813,7 @@ const POS = () => {
             return;
           }
 
-          console.log(secondApiData);
+          // console.log(secondApiData);
 
           let storedData = sessionStorage.getItem("secondApiResponses");
           storedData = storedData ? JSON.parse(storedData) : {};
@@ -807,7 +832,7 @@ const POS = () => {
           const itemPrice = itemRates.reduce((sum, rate) => sum + rate, 0);
           const vat = itemPrice * taxAmount / 100;
           const total = itemPrice + vat;
-          console.log(itemPrice);
+          // console.log(itemPrice);
 
           setDSalesNoInvoiceData((prevData) => {
             const existingItemIndex = prevData.findIndex(
@@ -843,17 +868,28 @@ const POS = () => {
             }
           });
         } catch (secondApiError) {
-          toast.error(
-            secondApiError?.response?.data?.message ||
-            "An error occurred while calling the second API"
-          );
+          const errorMessage = 
+            secondApiError?.response?.data || 
+            secondApiError?.response?.data?.message || 
+            secondApiError?.response?.data?.Message ||
+            secondApiError?.message ||
+            "An error occurred while calling the second API";
+          
+          toast.error(errorMessage);
           setBarcode("");
         }
       } else {
         setDSalesNoInvoiceData([]);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "An error occurred");
+      const errorMessage = 
+        error?.response?.data ||
+        error?.response?.data?.message || 
+        error?.response?.data?.Message ||
+        error?.message ||
+        "An error occurred";
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
