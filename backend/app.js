@@ -24,6 +24,7 @@ const whatsappRoutes = require("./routes/whatsappRoutes.js");
 const languageRoutes = require("./routes/languageRoute.js");
 const controlSerialRoutes = require("./routes/controlSerial");
 const supplierRoutes = require("./routes/supplierRoute");
+const binLocationRoutes = require("./routes/binLocation");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 
@@ -60,6 +61,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/language", languageRoutes);
 app.use("/api/controlSerials", controlSerialRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/binLocations", binLocationRoutes);
 
 app.get("/test", (req, res) => {
   function calculateCheckDigit(gtinWithoutCheckDigit) {

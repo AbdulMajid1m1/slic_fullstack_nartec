@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const ControlSerialModel = require("../models/controlSerial");
 const ItemCodeModel = require("../models/tblItemCodes1S1Br");
 const SupplierModel = require("../models/supplier");
+const BinLocationModel = require("../models/binLocation");
 const { sendControlSerialNotificationEmail } = require("../utils/emailManager");
 const generateResponse = require("../utils/response");
 const CustomError = require("../exceptions/customError");
@@ -461,7 +462,17 @@ exports.searchByPoNumber = async (req, res, next) => {
 exports.updateControlSerial = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { ItemCode } = req.body;
+    const { ItemCode, size, poNumber, supplierId, binLocationId } = req.body;
+
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new CustomError(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
 
     // Check if control serial exists
     const existingSerial = await ControlSerialModel.findById(id);
@@ -471,35 +482,58 @@ exports.updateControlSerial = async (req, res, next) => {
       throw error;
     }
 
+    // Build update data object
+    const updateData = {};
+
     // If ItemCode is being updated, verify the product exists
-    if (ItemCode && ItemCode !== existingSerial.ItemCode) {
+    if (ItemCode && ItemCode !== existingSerial.product?.ItemCode) {
       const product = await ItemCodeModel.findByItemCode(ItemCode);
       if (!product) {
         const error = new CustomError("Product with given ItemCode not found");
         error.statusCode = 404;
         throw error;
       }
+      updateData.ItemCode = product.id; // Use the product's id (foreign key reference)
+    }
 
-      // Prepare update data with the product's id
-      const updateData = {
-        ItemCode: product.id, // Use the product's id (foreign key reference)
-      };
+    // If supplierId is being updated, verify the supplier exists
+    if (supplierId && supplierId !== existingSerial.supplierId) {
+      const supplier = await SupplierModel.getSupplierById(supplierId);
+      if (!supplier) {
+        const error = new CustomError("Supplier not found");
+        error.statusCode = 404;
+        throw error;
+      }
+      updateData.supplierId = supplierId;
+    }
 
-      const updatedSerial = await ControlSerialModel.update(id, updateData);
+    // If binLocationId is being updated, verify the bin location exists
+    if (binLocationId !== undefined) {
+      if (binLocationId === null) {
+        // Allow unsetting the bin location
+        updateData.binLocationId = null;
+      } else if (binLocationId !== existingSerial.binLocationId) {
+        const binLocation = await BinLocationModel.findById(binLocationId);
+        if (!binLocation) {
+          const error = new CustomError("Bin Location not found");
+          error.statusCode = 404;
+          throw error;
+        }
+        updateData.binLocationId = binLocationId;
+      }
+    }
 
-      res
-        .status(200)
-        .json(
-          generateResponse(
-            200,
-            true,
-            "Control serial updated successfully",
-            updatedSerial
-          )
-        );
-    } else {
-      // No update needed if ItemCode is the same
-      res
+    // Add other optional fields if provided
+    if (size !== undefined) {
+      updateData.size = size;
+    }
+    if (poNumber !== undefined) {
+      updateData.poNumber = poNumber;
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      return res
         .status(200)
         .json(
           generateResponse(
@@ -510,6 +544,101 @@ exports.updateControlSerial = async (req, res, next) => {
           )
         );
     }
+
+    const updatedSerial = await ControlSerialModel.update(id, updateData);
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          "Control serial updated successfully",
+          updatedSerial
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PUT - Update control serials by PO number and size
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+exports.putAway = async (req, res, next) => {
+  try {
+    const { poNumber, size, binLocationId } = req.body;
+
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const msg = errors.errors[0].msg;
+      const error = new CustomError(msg);
+      error.statusCode = 422;
+      error.data = errors;
+      return next(error);
+    }
+
+    // Check if any control serials exist for this PO number and size
+    const existingSerials = await ControlSerialModel.findByPoNumber(
+      poNumber,
+      true,
+      size,
+      false
+    );
+    if (!existingSerials || existingSerials.length === 0) {
+      const error = new CustomError(
+        "No control serials found for the given PO number and size"
+      );
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Build update data object
+    const updateData = {};
+
+    // If binLocationId is being updated, verify the bin location exists
+    if (binLocationId !== undefined) {
+      if (binLocationId === null) {
+        // Allow unsetting the bin location
+        updateData.binLocationId = null;
+      } else {
+        const binLocation = await BinLocationModel.findById(binLocationId);
+        if (!binLocation) {
+          const error = new CustomError("Bin Location not found");
+          error.statusCode = 404;
+          throw error;
+        }
+        updateData.binLocationId = binLocationId;
+      }
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      const error = new CustomError("No update data provided");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const result = await ControlSerialModel.updateByPoNumberAndSize(
+      poNumber,
+      size,
+      updateData
+    );
+
+    res
+      .status(200)
+      .json(
+        generateResponse(
+          200,
+          true,
+          `${result.count} control serial(s) updated successfully`,
+          result
+        )
+      );
   } catch (error) {
     next(error);
   }
@@ -609,15 +738,30 @@ exports.getPoNumbersWithSupplierDetails = async (req, res, next) => {
   try {
     const itemCode = req.query.itemCode || null;
     const size = req.query.size || null;
+    const isArchived =
+      req.query.isArchived !== undefined
+        ? req.query.isArchived === "true"
+        : null;
+    const hasPutAway =
+      req.query.hasPutAway !== undefined
+        ? req.query.hasPutAway === "true"
+        : null;
 
     // Get unique PO numbers with supplier details
     const poNumbersWithSupplier =
-      await ControlSerialModel.getPoNumbersWithSupplierDetails(itemCode, size);
-
+      await ControlSerialModel.getPoNumbersWithSupplierDetails(
+        itemCode,
+        size,
+        isArchived,
+        hasPutAway,
+      );
     // Get total count of control serials for each PO number
     const poNumbersWithCount = await Promise.all(
       poNumbersWithSupplier.map(async (po) => {
-        const count = await ControlSerialModel.countByPoNumber(po.poNumber);
+        const count = await ControlSerialModel.countByPoNumber(
+          po.poNumber,
+          size
+        );
         return {
           ...po,
           totalCount: count,

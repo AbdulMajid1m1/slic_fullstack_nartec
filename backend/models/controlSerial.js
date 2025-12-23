@@ -25,6 +25,7 @@ class ControlSerialModel {
       include: {
         product: true,
         supplier: true,
+        binLocation: true,
       },
     });
   }
@@ -138,7 +139,12 @@ class ControlSerialModel {
    * @param {boolean} includeArchived - Whether to include archived records (default: false)
    * @returns {Promise<Array>} - Matching serials
    */
-  static async findByPoNumber(poNumber, includeArchived = false, size = null) {
+  static async findByPoNumber(
+    poNumber,
+    includeArchived = false,
+    size = null,
+    hasPutAway = null
+  ) {
     const where = {
       poNumber: poNumber,
     };
@@ -151,6 +157,17 @@ class ControlSerialModel {
     // Only filter by isArchived if we don't want to include archived records
     if (!includeArchived) {
       where.OR = [{ isArchived: false }, { isArchived: null }];
+    }
+
+    // Add hasPutAway filter
+    if (hasPutAway !== null && typeof hasPutAway === "boolean") {
+      // if hasPutAway is true, we check for non-null binLocationId
+      if (hasPutAway) {
+        where.binLocationId = { not: null };
+      } else {
+        // if hasPutAway is false, we check for null binLocationId
+        where.binLocationId = null;
+      }
     }
 
     return await prisma.controlSerial.findMany({
@@ -232,6 +249,7 @@ class ControlSerialModel {
       include: {
         product: true,
         supplier: true,
+        binLocation: true,
       },
     });
   }
@@ -346,7 +364,12 @@ class ControlSerialModel {
    * Get PO numbers with supplier details for a SLIC Admin
    * @returns {Promise<Array>} - Array of unique PO numbers with supplier details
    */
-  static async getPoNumbersWithSupplierDetails(itemCode, size = null) {
+  static async getPoNumbersWithSupplierDetails(
+    itemCode,
+    size = null,
+    isArchived = null,
+    hasPutAway = null
+  ) {
     const where = {};
     if (itemCode) {
       where.product = { ItemCode: itemCode };
@@ -354,11 +377,35 @@ class ControlSerialModel {
     if (size) {
       where.size = size;
     }
+    if (isArchived !== null && typeof isArchived === "boolean") {
+      where.isArchived = isArchived;
+    }
+    // Add hasPutAway filter
+    if (hasPutAway !== null && typeof hasPutAway === "boolean") {
+      // if hasPutAway is true, we check for non-null binLocationId
+      if (hasPutAway) {
+        where.binLocationId = { not: null };
+      } else {
+        // if hasPutAway is false, we check for null binLocationId
+        where.binLocationId = null;
+      }
+    }
+
     const controlSerials = await prisma.controlSerial.findMany({
       where,
       select: {
         poNumber: true,
         size: true,
+        binLocation: {
+          select: {
+            binNumber: true,
+            binType: true,
+            gln: true,
+            sgln: true,
+            zoneCode: true,
+            groupWarehouse: true,
+          },
+        },
         product: {
           select: {
             ItemCode: true,
@@ -415,6 +462,7 @@ class ControlSerialModel {
       },
       data: {
         isSentToSupplier: true,
+        binLocationId: null,
       },
     });
   }
@@ -463,6 +511,28 @@ class ControlSerialModel {
       data: {
         isArchived: false,
       },
+    });
+  }
+
+  /**
+   * Update control serials by PO number and size
+   * @param {string} poNumber - PO number
+   * @param {string} size - Size
+   * @param {Object} data - Data to update
+   * @returns {Promise<Object>} - Update result with count
+   */
+  static async updateByPoNumberAndSize(poNumber, size, data) {
+    const where = {
+      poNumber: poNumber,
+    };
+
+    if (size) {
+      where.size = size;
+    }
+
+    return await prisma.controlSerial.updateMany({
+      where: where,
+      data: data,
     });
   }
 }
