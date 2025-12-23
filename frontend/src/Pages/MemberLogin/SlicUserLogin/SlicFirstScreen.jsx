@@ -191,7 +191,7 @@ const SlicFirstScreen = () => {
     // Update stock locations based on showroom selection
     let locations = [];
     if (showroom === "Factory Showroom") {
-      locations = ["FG101", "FG501", "FG502"];
+      locations = ["FG203", "FG501", "FG502"];
     } else if (showroom === "Khobar Showroom") {
       locations = ["FG201", "FG504"];
     } else if (showroom === "Jubail Showroom") {
