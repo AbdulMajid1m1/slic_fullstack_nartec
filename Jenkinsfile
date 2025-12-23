@@ -69,7 +69,7 @@ pipeline {
                     dir("${env.TARGET_PROJECT_PATH}\\frontend") {
                         echo '📥 Installing frontend dependencies...'
                         bat 'if exist "node_modules" rmdir /s /q node_modules'
-                        bat 'npm install'
+                        bat 'npm install --legacy-peer-deps'
                         echo '✅ Frontend dependencies installed'
                     }
                 }
