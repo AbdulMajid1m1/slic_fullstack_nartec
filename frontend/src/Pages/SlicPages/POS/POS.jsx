@@ -581,9 +581,9 @@ const POS = () => {
       }
     } catch (error) {
       const errorMessage = 
-        error?.response?.data || 
         error?.response?.data?.message || 
         error?.response?.data?.Message ||
+        error?.response?.data?.error || 
         error?.message ||
         "An error occurred";
       
@@ -726,6 +726,9 @@ const POS = () => {
               ];
             }
           });
+
+          setBarcode("");
+
         } catch (secondApiError) {
           const errorMessage = 
             secondApiError?.response?.data || 
@@ -742,11 +745,11 @@ const POS = () => {
       }
     } catch (error) {
       const errorMessage = 
-        error?.response?.data || 
         error?.response?.data?.message || 
         error?.response?.data?.Message ||
+        error?.response?.data?.error || 
         error?.message ||
-        "An error occurred";
+        "No item code found with the given GTIN";
       
       toast.error(errorMessage);
     } finally {
@@ -883,9 +886,9 @@ const POS = () => {
       }
     } catch (error) {
       const errorMessage = 
-        error?.response?.data ||
         error?.response?.data?.message || 
         error?.response?.data?.Message ||
+        error?.response?.data?.error || 
         error?.message ||
         "An error occurred";
       
